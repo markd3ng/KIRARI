@@ -2,8 +2,15 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
+    # 监控的目标分支，建议设为你的主要开发分支（如 develop）
+    target-branch: "develop"
     schedule:
       interval: "daily"
+    
+    # 限制同时打开的 PR 数量，避免干扰
+    open-pull-requests-limit: 10
+
+    # 你的核心逻辑：分组合并更新，减少通知噪音
     groups:
       patch-updates:
         patterns:
@@ -15,8 +22,12 @@ updates:
           - "*"
         update-types:
           - "minor"
+
+    # 自定义分支命名风格
     pull-request-branch-name:
       separator: "-"
+
+    # 你的核心逻辑：完全忽略大版本更新，确保稳定性
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
