@@ -1,10 +1,10 @@
-name: Build and Deploy
+name: Production Build (Main)
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  # Stage 1: Code quality (fast, no deps needed)
+  # Stage 1: Code quality
   quality:
     runs-on: ubuntu-latest
     name: Biome Lint
@@ -28,7 +28,7 @@ jobs:
       - name: Run Biome
         run: biome ci ./src --reporter=github
 
-  # Stage 2: Type check (needs quality to pass first)
+  # Stage 2: Type check
   check:
     needs: quality
     strategy:
@@ -56,7 +56,7 @@ jobs:
       - name: Run Astro Check
         run: pnpm astro check
 
-  # Stage 3: Build (needs quality to pass first, runs parallel with check)
+  # Stage 3: Build
   build:
     needs: quality
     strategy:
@@ -91,7 +91,7 @@ jobs:
           name: github-pages
           path: dist
 
-  # Stage 4: Deploy (needs build to pass)
+  # Stage 4: Deploy to GitHub Pages
   deploy:
     needs: build
     runs-on: ubuntu-latest
