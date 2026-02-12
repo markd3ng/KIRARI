@@ -55,7 +55,7 @@ function processDir(dir) {
         }
 
         // Parse frontmatter (simple regex)
-        const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+        const frontmatterMatch = content.match(/^---\s*[\r\n]+([\s\S]*?)[\r\n]+---/);
         if (!frontmatterMatch) {
             console.warn(`No frontmatter found in ${file}`);
             continue;
