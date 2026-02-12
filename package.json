@@ -43,7 +43,7 @@
     "@swup/progress-plugin": "^3.0.0",
     "swup": "^4.0.0",
     "@tailwindcss/typography": "^0.5.19",
-    "astro": "6.0.0-beta.6",
+    "astro": "6.0.0-beta.11",
     "astro-expressive-code": "^0.41.6",
     "astro-icon": "^1.1.5",
     "hastscript": "^9.0.1",
