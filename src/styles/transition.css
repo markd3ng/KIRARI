@@ -1,0 +1,322 @@
+@reference "./main.css";
+
+/* Smooth scrolling for anchor links (TOC navigation) */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Disable smooth scroll during View Transitions to avoid conflicts */
+html.astro-transitioning {
+    scroll-behavior: auto;
+}
+
+/* Hide TOC during View Transitions to prevent awkward visibility while page jumps to top */
+html.astro-transitioning #toc-wrapper {
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+
+/* Page transition animations with Swup (fallback for browsers without View Transitions) */
+/* Match View Transitions behavior: fade out quickly, then fade in from below */
+html.is-changing .transition-swup-fade {
+    transition: opacity 200ms ease-out, transform 200ms ease-out 200ms;
+    will-change: opacity, transform;
+    contain: layout;
+}
+html.is-animating .transition-swup-fade {
+    opacity: 0;
+    transform: translate3d(0, 0.5rem, 0);
+}
+
+/* Fade-in animations for components */
+@keyframes fade-in-up {
+    0% {
+        transform: translate3d(0, 0.5rem, 0);
+        opacity: 0;
+    }
+    100% {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+    }
+}
+
+/* Main components */
+.onload-animation {
+    opacity: 0;
+    animation: 200ms ease-out fade-in-up;
+    animation-fill-mode: forwards;
+}
+#navbar {
+    animation-delay: 0ms
+}
+#sidebar {
+    animation-delay: 100ms
+}
+#swup-container {
+    outline: none;
+}
+#content-wrapper {
+    animation-delay: var(--content-delay);
+}
+.footer {
+    animation-delay: 250ms;
+}
+#banner-credit {
+    animation-delay: 400ms;
+}
+
+/* Post content */
+#post-container > :nth-child(1) { animation-delay: calc(var(--content-delay) + 0ms) }
+#post-container > :nth-child(2) { animation-delay: calc(var(--content-delay) + 50ms) }
+#post-container > :nth-child(3) { animation-delay: calc(var(--content-delay) + 100ms) }
+#post-container > :nth-child(4) { animation-delay: calc(var(--content-delay) + 175ms) }
+#post-container > :nth-child(5) { animation-delay: calc(var(--content-delay) + 250ms) }
+/* Don't animate content beyond the 6th child to prevent blocking */
+#post-container > :nth-child(n+6) {
+    animation-delay: calc(var(--content-delay) + 325ms);
+    /* Ensure content is immediately visible and scrollable */
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+/* ============================================================
+   Micro-interactions for Enhanced UX
+   ============================================================ */
+
+/* Smooth transitions for interactive elements */
+a, button, .clickable {
+    transition: opacity 150ms ease-out, transform 150ms ease-out;
+}
+
+/* Subtle hover feedback */
+a:hover, button:hover {
+    opacity: 0.8;
+}
+
+/* Active state feedback */
+a:active, button:active {
+    transform: scale(0.98);
+}
+
+/* Focus states for accessibility */
+a:focus-visible, button:focus-visible {
+    outline: 2px solid oklch(0.7 0.15 var(--hue));
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* Card/panel hover effects */
+.card, .panel, .btn-card, .card-base {
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+}
+
+.card:hover, .panel:hover, .btn-card:hover, .card-base:hover {
+    transform: translateY(-2px);
+}
+
+/* Post container is a static content area, not a clickable card */
+#post-container:hover {
+    transform: none;
+}
+
+/* Loading states */
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* ============================================================
+   View Transitions API Animations
+   These animations apply when using Astro's ClientRouter with View Transitions
+   ============================================================ */
+
+/* Disable default position interpolation for all elements */
+::view-transition-group(root),
+::view-transition-group(navbar),
+::view-transition-group(sidebar),
+::view-transition-group(banner),
+::view-transition-group(banner-credit),
+::view-transition-group(main-content),
+::view-transition-group(toc-content),
+::view-transition-group(progress-bar) {
+    animation: none;
+}
+
+
+
+/* Progress bar - keep visible throughout View Transition.
+   Hide old snapshot to prevent doubling, show new without animation. */
+::view-transition-group(progress-bar) {
+    z-index: 99999;
+}
+::view-transition-old(progress-bar) {
+    display: none;
+}
+::view-transition-new(progress-bar) {
+    animation: vt-progress-end 350ms ease-out forwards;
+}
+
+/* Main content transition - primary focus */
+::view-transition-old(main-content) {
+    animation: vt-fade-out 200ms ease-out both;
+    will-change: opacity;
+    contain: layout;
+}
+
+::view-transition-new(main-content) {
+    animation: vt-fade-in-up 200ms ease-out 200ms both;
+    will-change: opacity, transform;
+    contain: layout;
+}
+
+/* Navbar - subtle fade to acknowledge transition */
+::view-transition-old(navbar) {
+    animation: vt-subtle-fade-out 200ms ease-out both;
+    will-change: opacity;
+}
+
+::view-transition-new(navbar) {
+    animation: vt-subtle-fade-in 200ms ease-out both;
+    will-change: opacity;
+}
+
+/* TOC - instant hide to avoid visibility while page jumps to top */
+::view-transition-old(toc-content) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    animation: none;
+}
+
+::view-transition-new(toc-content) {
+    animation: none;
+}
+
+/* Sidebar, banner, banner-credit, and root - no animation */
+::view-transition-old(sidebar),
+::view-transition-new(sidebar),
+::view-transition-old(banner),
+::view-transition-new(banner),
+::view-transition-old(banner-credit),
+::view-transition-new(banner-credit),
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+}
+
+/* Fade + slide keyframes - use translate3d for GPU acceleration */
+
+/* Main content fade out with no movement */
+@keyframes vt-fade-out {
+    from {
+        opacity: 1;
+        transform: none;
+    }
+    to {
+        opacity: 0;
+        transform: none;
+    }
+}
+
+/* Main content fade in from below moving upward */
+@keyframes vt-fade-in-up {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 0.5rem, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+/* Subtle fade out for navbar and TOC */
+@keyframes vt-subtle-fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0.3;
+    }
+}
+
+/* Subtle fade in for navbar and TOC */
+@keyframes vt-subtle-fade-in {
+    from {
+        opacity: 0.3;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Progress bar ending animation for VT pseudo-element.
+   Fades the bitmap snapshot during VT so by the time VT ends and the
+   real DOM becomes visible, both are near-transparent = smooth handoff. */
+@keyframes vt-progress-end {
+    0% { opacity: 1; }
+    40% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Navbar fade via CSS classes for browsers using the VT shim (Firefox).
+   The VT shim bypasses native View Transition rendering, so ::view-transition-*
+   pseudo-element animations don't run. These classes replicate the subtle fade. */
+#navbar-wrapper.navbar-fade-out {
+    opacity: 0.3;
+    transition: none; /* Instant dim, no animation */
+}
+#navbar-wrapper.navbar-fade-in {
+    opacity: 1;
+    transition: opacity 200ms ease-out;
+}
+
+/* Reduce motion for users who prefer it - Enhanced accessibility */
+@media (prefers-reduced-motion: reduce) {
+    /* Disable Swup transitions */
+    html.is-changing .transition-swup-fade {
+        transition-duration: 0ms;
+    }
+
+    /* Disable onload animations */
+    .onload-animation {
+        animation-duration: 0ms;
+        opacity: 1;
+    }
+
+    /* Disable all View Transitions animations */
+    ::view-transition-old(main-content),
+    ::view-transition-new(main-content),
+    ::view-transition-old(navbar),
+    ::view-transition-new(navbar),
+    ::view-transition-old(toc-content),
+    ::view-transition-new(toc-content) {
+        animation-duration: 0ms;
+    }
+
+    /* Disable micro-interactions */
+    a, button, .clickable,
+    .card, .panel, .btn-card, .card-base {
+        transition-duration: 0ms;
+    }
+
+    /* Disable loading animation */
+    .loading {
+        animation: none;
+        opacity: 0.7;
+    }
+
+    /* Keep only essential focus indicators */
+    a:focus-visible, button:focus-visible {
+        transition: none;
+    }
+}

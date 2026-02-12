@@ -1,0 +1,46 @@
+/* ==============================================
+   Font Configuration
+   ==============================================
+   By default, only Latin subsets are loaded for performance.
+   Uncomment additional subsets below if your content uses
+   Cyrillic, Greek, Vietnamese, or other scripts.
+
+   CJK (Chinese/Japanese/Korean) uses system fonts and does
+   not require additional subsets here.
+   ============================================== */
+
+/* Roboto — UI font */
+@import "@fontsource/roboto/latin-400.css";
+@import "@fontsource/roboto/latin-500.css";
+@import "@fontsource/roboto/latin-700.css";
+
+/* Uncomment for additional script support: */
+/* @import "@fontsource/roboto/cyrillic-400.css"; */
+/* @import "@fontsource/roboto/cyrillic-500.css"; */
+/* @import "@fontsource/roboto/cyrillic-700.css"; */
+/* @import "@fontsource/roboto/greek-400.css"; */
+/* @import "@fontsource/roboto/greek-500.css"; */
+/* @import "@fontsource/roboto/greek-700.css"; */
+/* @import "@fontsource/roboto/vietnamese-400.css"; */
+/* @import "@fontsource/roboto/vietnamese-500.css"; */
+/* @import "@fontsource/roboto/vietnamese-700.css"; */
+
+/* CJK (Chinese/Japanese/Korean):
+   Roboto does not include CJK glyphs — system fonts handle CJK by default.
+   To use a custom CJK font, install and import a Noto Sans package:
+     pnpm add @fontsource/noto-sans-sc   (Simplified Chinese)
+     pnpm add @fontsource/noto-sans-tc   (Traditional Chinese)
+     pnpm add @fontsource/noto-sans-jp   (Japanese)
+     pnpm add @fontsource/noto-sans-kr   (Korean)
+   Then uncomment the relevant import below and add the font name
+   to --font-sans in src/styles/main.css. */
+/* @import "@fontsource/noto-sans-sc/400.css"; */
+/* @import "@fontsource/noto-sans-sc/500.css"; */
+/* @import "@fontsource/noto-sans-sc/700.css"; */
+/* @import "@fontsource/noto-sans-jp/400.css"; */
+/* @import "@fontsource/noto-sans-jp/500.css"; */
+/* @import "@fontsource/noto-sans-jp/700.css"; */
+
+/* JetBrains Mono — code blocks */
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/jetbrains-mono/wght-italic.css";

@@ -1,0 +1,13 @@
+@reference "./main.css";
+
+.expressive-code {
+  .frame {
+      @apply !shadow-none;
+      border: 1px solid rgba(128, 128, 128, 0.4) !important;
+      border-radius: 0.75rem;
+  }
+
+  .title {
+      font-family: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+}

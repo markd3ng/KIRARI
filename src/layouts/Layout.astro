@@ -1,0 +1,1315 @@
+---
+import "../styles/fonts.css";
+
+import { getCollection } from "astro:content";
+import { ClientRouter } from "astro:transitions";
+import ConfigCarrier from "@components/ConfigCarrier.astro";
+import { profileConfig, siteConfig } from "@/config";
+import {
+	AUTO_MODE,
+	BANNER_HEIGHT,
+	BANNER_HEIGHT_EXTEND,
+	BANNER_HEIGHT_HOME,
+	DARK_MODE,
+	DEFAULT_THEME,
+	LIGHT_MODE,
+	PAGE_WIDTH,
+} from "../constants/constants";
+import { defaultFavicons } from "../constants/icon";
+import type { Favicon } from "../types/config";
+import { pathsEqual, url } from "../utils/url-utils";
+
+interface Props {
+	title?: string;
+	banner?: string;
+	description?: string;
+	lang?: string;
+	setOGTypeArticle?: boolean;
+}
+
+let { title, banner, description, lang, setOGTypeArticle } = Astro.props;
+
+let ogImage: string | undefined;
+
+if (banner && typeof banner === "string" && banner.trim() !== "") {
+	if (banner.startsWith("http://") || banner.startsWith("https://")) {
+		ogImage = banner;
+	} else {
+		ogImage = new URL(banner, Astro.site || Astro.url.origin).href;
+	}
+}
+
+const slug = Astro.url.pathname.split("/").filter(Boolean).pop();
+
+interface PageData {
+	published?: Date | string;
+	updated?: Date | string;
+	tags?: string[];
+}
+
+let pageData: PageData = {};
+
+try {
+	const allEntries = await getCollection("posts");
+	const entry = allEntries.find((e) => e.id === slug);
+	if (entry) pageData = entry.data as PageData;
+} catch (e) {
+	// No data, silent fail
+}
+
+const formatDate = (date: Date | string | undefined): string | null => {
+	if (!date) return null;
+	if (date instanceof Date) {
+		return date.toISOString().split("T")[0];
+	}
+	if (typeof date === "string") {
+		return date.split("T")[0];
+	}
+	return null;
+};
+
+const publishedDate = formatDate(pageData.published);
+const updatedDate = formatDate(pageData.updated);
+
+const tags: string[] = pageData.tags || [];
+
+// apply a class to the body element to decide the height of the banner, only used for initial page load
+// Swup can update the body for each page visit, but it's after the page transition, causing a delay for banner height change
+// so use Swup hooks instead to change the height immediately when a link is clicked
+const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
+
+// defines global css variables
+// why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
+const configHue = siteConfig.themeColor.hue;
+if (!banner || typeof banner !== "string" || banner.trim() === "") {
+	banner = siteConfig.banner.src;
+}
+
+// TODO don't use post cover as banner for now
+banner = siteConfig.banner.src;
+
+const enableBanner = siteConfig.banner.enable;
+
+let pageTitle: string;
+if (title) {
+	pageTitle = `${title} - ${siteConfig.title}`;
+} else {
+	pageTitle = `${siteConfig.title} - ${siteConfig.subtitle}`;
+}
+
+const favicons: Favicon[] =
+	siteConfig.favicon.length > 0 ? siteConfig.favicon : defaultFavicons;
+
+// const siteLang = siteConfig.lang.replace('_', '-')
+if (!lang) {
+	lang = `${siteConfig.lang}`;
+}
+const siteLang = lang.replace("_", "-");
+
+const bannerOffsetByPosition = {
+	top: `${BANNER_HEIGHT_EXTEND}vh`,
+	center: `${BANNER_HEIGHT_EXTEND / 2}vh`,
+	bottom: "0",
+};
+const bannerOffset =
+	bannerOffsetByPosition[siteConfig.banner.position || "center"];
+---
+
+<!DOCTYPE html>
+<html lang={siteLang} class="bg-[var(--page-bg)] transition text-[14px] md:text-[16px]"
+	  data-overlayscrollbars-initialize
+>
+	<head>
+		<!-- FOUC prevention disabled for debugging - CSS should be render-blocking by default -->
+
+		<title>{pageTitle}</title>
+
+		<meta charset="UTF-8" />
+		<meta name="title" content={pageTitle} />
+		<meta name="description" content={description || pageTitle}>
+		<meta name="author" content={profileConfig.name}>
+		<link rel="canonical" href={Astro.url} />
+
+		<!-- DNS prefetch for Iconify API to reduce latency -->
+		<link rel="dns-prefetch" href="https://api.iconify.design">
+		<link rel="preconnect" href="https://api.iconify.design" crossorigin>
+
+		<meta property="og:site_name" content={siteConfig.title}>
+		<meta property="og:url" content={Astro.url}>
+		<meta property="og:title" content={pageTitle}>
+		<meta property="og:description" content={description || pageTitle}>
+		{setOGTypeArticle ? (
+		<>
+			<meta property="og:type" content="article" />
+			{tags.map((tag: string) => (
+			<meta property="article:tag" content={tag} />
+			))}
+			{publishedDate && <meta property="article:published_time" content={publishedDate} />}
+			{updatedDate && <meta property="article:modified_time" content={updatedDate} />}
+		</>
+		) : (
+		<meta property="og:type" content="website" />
+		)}
+		{ogImage && <meta property="og:image" content={ogImage} />}
+
+		<meta name="twitter:card" content="summary_large_image">
+		<meta property="twitter:url" content={Astro.url}>
+		<meta name="twitter:title" content={pageTitle}>
+		<meta name="twitter:description" content={description || pageTitle}>
+		{ogImage && <meta property="twitter:image" content={ogImage} />}
+
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		{favicons.map(favicon => (
+			<link rel="icon"
+				  href={favicon.src.startsWith('/') ? url(favicon.src) : favicon.src}
+				  sizes={favicon.sizes}
+				  media={favicon.theme && `(prefers-color-scheme: ${favicon.theme})`}
+			/>
+		))}
+
+		{import.meta.env.PROD && (
+			<link rel="modulepreload" href={url('/pagefind/pagefind.js')} />
+		)}
+
+		<!-- Set the theme before the page is rendered to avoid a flash -->
+		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue}}>
+			// Load the theme from local storage
+			const theme = localStorage.getItem('theme') || DEFAULT_THEME;
+			
+			// Set data attribute for theme icon display
+			document.documentElement.setAttribute('data-theme-mode', theme);
+
+			switch (theme) {
+				case LIGHT_MODE:
+					document.documentElement.classList.remove('dark');
+					break
+				case DARK_MODE:
+					document.documentElement.classList.add('dark');
+					break
+				case AUTO_MODE:
+					if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+						document.documentElement.classList.add('dark');
+					} else {
+						document.documentElement.classList.remove('dark');
+					}
+			}
+
+			// Load the hue from local storage
+			const hue = localStorage.getItem('hue') || configHue;
+
+			// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
+			let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
+			offset = offset - offset % 4;
+
+			document.documentElement.style.setProperty('--hue', hue);
+			document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
+
+			// Disable smooth scroll when URL has a hash so the browser scrolls
+			// instantly to the target. Smooth scroll can be interrupted by layout
+			// changes from script initialization, causing "jump to target then
+			// back to top" behavior.
+			if (window.location.hash) {
+				document.documentElement.style.scrollBehavior = 'auto';
+			}
+
+			// Detect page reload while scrolled — hide page until we can
+			// restore scroll position, then reveal at the correct location.
+			try {
+				const saved = JSON.parse(sessionStorage.getItem('scrollPos') || '{}');
+				if (saved.path === location.pathname && saved.pos > 0 && !window.location.hash) {
+					document.documentElement.dataset.scrollRestore = String(saved.pos);
+					history.scrollRestoration = 'manual';
+					// Hide page until scroll is restored — avoids showing wrong position
+					document.documentElement.style.opacity = '0';
+					const s = document.createElement('style');
+					s.textContent = '.onload-animation{animation:none!important;opacity:1!important;}';
+					document.head.appendChild(s);
+				}
+				sessionStorage.removeItem('scrollPos');
+			} catch {}
+		</script>
+		
+		{import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
+		async function loadPagefind() {
+			try {
+				const response = await fetch(scriptUrl, { method: 'HEAD' });
+				if (!response.ok) {
+					throw new Error(`Pagefind script not found: ${response.status}`);
+				}
+
+				const pagefind = await import(scriptUrl);
+
+				await pagefind.options({
+					excerptLength: 20
+				});
+
+				window.pagefind = pagefind;
+
+				document.dispatchEvent(new CustomEvent('pagefindready'));
+				console.log('Pagefind loaded and initialized successfully, event dispatched.');
+			} catch (error) {
+				console.error('Failed to load Pagefind:', error);
+				window.pagefind = {
+					search: () => Promise.resolve({ results: [] }),
+					options: () => Promise.resolve(),
+				};
+				document.dispatchEvent(new CustomEvent('pagefindloaderror'));
+				console.log('Pagefind load error, event dispatched.');
+			}
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', loadPagefind);
+		} else {
+			loadPagefind();
+		}
+		</script>}
+
+		<style define:vars={{
+			configHue,
+			'page-width': `clamp(${PAGE_WIDTH}rem, 75vw, 140rem)`,
+		}}></style>  <!-- defines global css variables. This will be applied to <html> <body> and some other elements idk why -->
+
+
+		<slot name="head"></slot>
+
+		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
+
+		<!-- Firefox View Transition shim: must run BEFORE ClientRouter module loads.
+			 Firefox's CSS View Transitions Level 1 implementation still has many known bugs
+			 (https://bugzilla.mozilla.org/show_bug.cgi?id=1823896) including viewport
+			 blanking/flickering (https://bugzilla.mozilla.org/show_bug.cgi?id=1964537)
+			 and Astro-specific incompatibilities (https://github.com/withastro/astro/issues/13064).
+			 This shim bypasses the native View Transitions rendering while preserving
+			 Astro's ClientRouter client-side navigation and transition:persist behavior. -->
+		<script is:inline>
+		(function() {
+			if (typeof navigator !== 'undefined' &&
+				navigator.userAgent.toLowerCase().includes('firefox') &&
+				document.startViewTransition) {
+				window.__vtShim = true;
+				document.startViewTransition = function(callback) {
+					var done = callback();
+					return {
+						updateCallbackDone: done,
+						ready: done,
+						finished: done,
+						skipTransition: function() {},
+						types: new Set()
+					};
+				};
+			}
+		})();
+		</script>
+		<ClientRouter />
+
+	</head>
+	<body class=" min-h-screen transition " class:list={[{"lg:is-home": isHomePage, "enable-banner": enableBanner}]}
+		  data-overlayscrollbars-initialize
+	>
+		<ConfigCarrier></ConfigCarrier>
+		<div id="swup-progress-bar" class="swup-progress-bar" transition:persist transition:name="progress-bar"></div>
+		<slot />
+
+		<!-- increase the page height during page transition to prevent the scrolling animation from jumping -->
+		<div id="page-height-extend" class="hidden h-[300vh]"></div>
+
+
+
+		<!-- FOUC script disabled for debugging -->
+	</body>
+</html>
+
+<style is:global define:vars={{
+	bannerOffset,
+	'banner-height-home': `${BANNER_HEIGHT_HOME}vh`,
+	'banner-height': `${BANNER_HEIGHT}vh`,
+}}>
+@reference "tailwindcss";
+
+/* Swup navigation progress bar */
+.swup-progress-bar {
+	--progress-height: 3px;
+	--progress-duration: 8s;
+	--progress-hue-start: -30deg;
+	--progress-hue-end: 15deg;
+	--progress-glow: 0 0 8px oklch(0.7 0.15 var(--hue) / 0.6);
+
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: var(--progress-height);
+	background: var(--primary);
+	z-index: 9999;
+	pointer-events: none;
+	width: 0;
+	opacity: 0;
+}
+.swup-progress-bar.is-loading {
+	opacity: 1;
+	animation: swup-progress var(--progress-duration) cubic-bezier(0.2, 0.5, 0, 1) forwards;
+	box-shadow: var(--progress-glow);
+}
+.swup-progress-bar.is-finishing {
+	opacity: 1;
+	width: 100% !important;
+	animation: none;
+	filter: hue-rotate(var(--progress-hue-end));
+	transition: width 0.2s ease-out;
+}
+.swup-progress-bar.is-done {
+	width: 100%;
+	opacity: 0;
+	animation: none;
+	filter: hue-rotate(var(--progress-hue-end));
+	transition: opacity 0.2s ease;
+}
+@keyframes swup-progress {
+	0% { width: 0; filter: hue-rotate(var(--progress-hue-start)); }
+	20% { width: 30%; }
+	50% { width: 60%; }
+	80% { width: 80%; }
+	100% { width: 95%; filter: hue-rotate(var(--progress-hue-end)); }
+}
+
+.enable-banner.is-home #banner-wrapper {
+	@apply h-[var(--banner-height-home)] translate-y-[var(--banner-height-extend)];
+}
+.enable-banner #banner-wrapper {
+	@apply h-[var(--banner-height-home)];
+}
+
+.enable-banner.is-home #banner {
+	@apply h-[var(--banner-height-home)] translate-y-0;
+}
+.enable-banner #banner {
+	@apply h-[var(--banner-height-home)] translate-y-[var(--bannerOffset)];
+}
+.enable-banner.is-home #main-grid {
+	@apply translate-y-[var(--banner-height-extend)];
+}
+.enable-banner #top-row {
+	@apply h-[calc(var(--banner-height-home)_-_4.5rem)] transition-all duration-300;
+}
+.enable-banner.is-home #sidebar-sticky {
+	@apply top-[calc(1rem_-_var(--banner-height-extend))];
+}
+.navbar-hidden {
+	@apply opacity-0 -translate-y-16;
+}
+</style>
+
+<script>
+// Pre-load specific bundled icons for @iconify/svelte to prevent CDN requests
+import '../utils/preload-icons';
+</script>
+
+<script>
+import 'overlayscrollbars/overlayscrollbars.css';
+import {
+	OverlayScrollbars,
+	// ScrollbarsHidingPlugin,
+	// SizeObserverPlugin,
+	// ClickScrollPlugin
+} from 'overlayscrollbars';
+import {getHue, getStoredTheme, setHue, setTheme} from "../utils/setting-utils";
+import {
+	BANNER_HEIGHT,
+	BANNER_HEIGHT_HOME,
+	BANNER_HEIGHT_EXTEND,
+	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT
+} from "../constants/constants";
+import { siteConfig } from '../config';
+import { transitionManager, supportsViewTransitions } from '../utils/transition-manager';
+
+/* Preload fonts */
+// (async function() {
+// 	try {
+// 		await Promise.all([
+// 			document.fonts.load("400 1em Roboto"),
+// 			document.fonts.load("700 1em Roboto"),
+// 		]);
+// 		document.body.classList.remove("hidden");
+// 	} catch (error) {
+// 		console.log("Failed to load fonts:", error);
+// 	}
+// })();
+
+/* TODO This is a temporary solution for style flicker issue when the transition is activated */
+/* issue link: https://github.com/withastro/astro/issues/8711, the solution get from here too */
+/* update: fixed in Astro 3.2.4 */
+/*
+function disableAnimation() {
+	const css = document.createElement('style')
+	css.appendChild(
+		document.createTextNode(
+			`*{
+              -webkit-transition:none!important;
+              -moz-transition:none!important;
+              -o-transition:none!important;
+              -ms-transition:none!important;
+              transition:none!important
+              }`
+		)
+	)
+	document.head.appendChild(css)
+
+	return () => {
+		// Force restyle
+		;(() => window.getComputedStyle(document.body))()
+
+		// Wait for next tick before removing
+		setTimeout(() => {
+			document.head.removeChild(css)
+		}, 1)
+	}
+}
+*/
+
+const bannerEnabled = !!document.getElementById('banner-wrapper')
+
+function setClickOutsideToClose(panel: string, ignores: string[]) {
+	document.addEventListener("click", event => {
+		let panelDom = document.getElementById(panel);
+		let tDom = event.target;
+		if (!(tDom instanceof Node)) return;		// Ensure the event target is an HTML Node
+		for (let ig of ignores) {
+			let ie = document.getElementById(ig)
+			if (ie == tDom || (ie?.contains(tDom))) {
+				return;
+			}
+		}
+		panelDom!.classList.add("float-panel-closed");
+	});
+}
+setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"])
+setClickOutsideToClose("nav-menu-panel", ["nav-menu-panel", "nav-menu-switch"])
+setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-switch"])
+
+
+function loadTheme() {
+	// console.error('loadTheme CALLED! Stack:', new Error().stack);
+	const theme = getStoredTheme()
+	setTheme(theme)
+}
+
+function loadHue() {
+	// console.error('loadHue CALLED! Stack:', new Error().stack);
+	setHue(getHue())
+}
+
+// Scroll to the current URL's hash target.
+// Uses multiple scroll methods to handle OverlayScrollbars on <body>,
+// which can interfere with native scroll functions.
+function scrollToHash() {
+	const hash = window.location.hash;
+	if (!hash) return;
+	const id = decodeURIComponent(hash.substring(1));
+	const target = document.getElementById(id);
+	if (!target) return;
+
+	// Force instant scroll behavior to prevent smooth scroll interference
+	document.documentElement.style.scrollBehavior = 'auto';
+
+	// Method 1: scrollIntoView (works with most setups including OS)
+	target.scrollIntoView({ behavior: 'instant', block: 'start' });
+
+	// Method 2: Also scroll OS viewport directly in case scrollIntoView
+	// doesn't work correctly when OS is initialized on body
+	const bodyEl = document.querySelector('body');
+	if (bodyEl) {
+		const osInstance = OverlayScrollbars(bodyEl);
+		if (osInstance) {
+			const viewport = osInstance.elements().viewport;
+			const rect = target.getBoundingClientRect();
+			if (Math.abs(rect.top) > 2) {
+				viewport.scrollTop += rect.top;
+			}
+		}
+	}
+
+	// Restore smooth scroll after a frame
+	requestAnimationFrame(() => {
+		document.documentElement.style.removeProperty('scroll-behavior');
+	});
+
+	// Update UI state (TOC visibility, back-to-top, navbar) since
+	// programmatic viewport.scrollTop doesn't fire window.onscroll.
+	scrollFunction();
+}
+
+function initCustomScrollbar() {
+	const bodyElement = document.querySelector('body');
+	if (!bodyElement) return;
+	OverlayScrollbars(
+		// docs say that a initialization to the body element would affect native functionality like window.scrollTo
+		// but just leave it here for now
+		{
+			target: bodyElement,
+			cancel: {
+				nativeScrollbarsOverlaid: true,    // don't initialize the overlay scrollbar if there is a native one
+			}
+		}, {
+		scrollbars: {
+			theme: 'scrollbar-base scrollbar-auto py-1',
+			autoHide: 'move',
+			autoHideDelay: 500,
+			autoHideSuspend: false,
+		},
+	});
+
+	const katexElements = document.querySelectorAll('.katex-display') as NodeListOf<HTMLElement>;
+
+	const katexObserverOptions = {
+		root: null,
+		rootMargin: '100px',
+		threshold: 0.1
+	};
+
+	const processKatexElement = (element: HTMLElement) => {
+		if (!element.parentNode) return;
+		if (element.hasAttribute('data-scrollbar-initialized')) return;
+
+		const container = document.createElement('div');
+		container.className = 'katex-display-container';
+		container.setAttribute('aria-label', 'scrollable container for formulas');
+
+		element.parentNode.insertBefore(container, element);
+		container.appendChild(element);
+
+		OverlayScrollbars(container, {
+			scrollbars: {
+				theme: 'scrollbar-base scrollbar-auto',
+				autoHide: 'leave',
+				autoHideDelay: 500,
+				autoHideSuspend: false
+			}
+		});
+
+		element.setAttribute('data-scrollbar-initialized', 'true');
+	};
+
+	const katexObserver = new IntersectionObserver((entries, observer) => {
+		entries.forEach(entry => {
+			if (entry.isIntersecting) {
+			processKatexElement(entry.target as HTMLElement);
+			observer.unobserve(entry.target);
+			}
+		});
+	}, katexObserverOptions);
+
+	katexElements.forEach(element => {
+		katexObserver.observe(element);
+	});
+}
+
+function showBanner() {
+	if (!siteConfig.banner.enable) return;
+
+	const banner = document.getElementById('banner');
+	if (!banner) {
+		console.error('Banner element not found');
+		return;
+	}
+
+	banner.classList.remove('opacity-0', 'scale-105');
+}
+
+const stripOnloadAnimations = () => {
+	let animationsDone = false;
+	try {
+		animationsDone = sessionStorage.getItem('onloadAnimationsDone') === '1';
+	} catch {}
+
+	const animated = document.querySelectorAll('.onload-animation');
+	if (animationsDone) {
+		animated.forEach(el => {
+			if (el instanceof HTMLElement) {
+				el.classList.remove('onload-animation');
+			}
+		});
+		return;
+	}
+
+	let finalized = false;
+	const finalize = () => {
+		if (finalized) return;
+		finalized = true;
+		try {
+			sessionStorage.setItem('onloadAnimationsDone', '1');
+		} catch {}
+		animated.forEach(el => {
+			if (el instanceof HTMLElement) {
+				el.classList.remove('onload-animation');
+			}
+		});
+	};
+
+	animated.forEach(el => {
+		if (!(el instanceof HTMLElement)) return;
+		el.addEventListener('animationend', finalize, { once: true });
+
+		const computed = window.getComputedStyle(el);
+		if (computed.animationDuration === '0s' || computed.animationName === 'none') {
+			finalize();
+		}
+	});
+};
+
+window.stripOnloadAnimations = stripOnloadAnimations;
+
+function init() {
+	// disableAnimation()()		// TODO
+	loadTheme();
+	loadHue();
+	showBanner();
+
+	// If the URL has a hash, strip onload animations immediately so the
+	// content is visible and the browser can scroll to the anchor correctly.
+	// Without this, elements start at opacity:0 and the hash scroll may land
+	// on invisible content that shifts once animations complete.
+	const hasHash = !!window.location.hash;
+	if (hasHash) {
+		document.querySelectorAll('.onload-animation').forEach(el => {
+			if (el instanceof HTMLElement) {
+				el.classList.remove('onload-animation');
+				el.style.opacity = '1';
+			}
+		});
+		try { sessionStorage.setItem('onloadAnimationsDone', '1'); } catch {}
+	}
+
+	// Remove onload animations once they finish to prevent re-triggering
+	stripOnloadAnimations();
+
+	const scrollRestore = parseInt(document.documentElement.dataset.scrollRestore || '0');
+
+	// Normal OS init at 600ms (let animations complete first)
+	setTimeout(() => {
+		initCustomScrollbar();
+		if (window.location.hash) {
+			requestAnimationFrame(scrollToHash);
+			setTimeout(scrollToHash, 150);
+		}
+	}, 600);
+
+	// Scroll restoration for F5 refresh: don't fight async resets — instead,
+	// let everything initialize, then scroll to saved position and reveal page.
+	if (scrollRestore > 0) {
+		const doRestore = () => {
+			const bodyEl = document.querySelector('body');
+			const os = bodyEl ? OverlayScrollbars(bodyEl) : null;
+			if (os) {
+				os.elements().viewport.scrollTop = scrollRestore;
+			}
+			document.documentElement.scrollTop = scrollRestore;
+			document.body.scrollTop = scrollRestore;
+		};
+
+		// Primary restore: OS init (600ms) + async settle buffer (300ms)
+		setTimeout(() => {
+			doRestore();
+			// Reveal page at the correct scroll position
+			document.documentElement.style.opacity = '';
+		}, 900);
+
+		// Safety net re-checks for late async resets
+		setTimeout(doRestore, 1200);
+		setTimeout(doRestore, 1800);
+
+		// Cleanup after all restores complete
+		setTimeout(() => {
+			delete document.documentElement.dataset.scrollRestore;
+			try { history.scrollRestoration = 'auto'; } catch {}
+			// Failsafe: ensure page is visible
+			document.documentElement.style.opacity = '';
+		}, 2000);
+	}
+}
+
+/* Load settings when entering the site */
+init();
+
+// ============================================================
+// Unified Transition Event Handlers
+// Works with both View Transitions API (Astro ClientRouter) and Swup fallback
+// ============================================================
+
+// Track whether current navigation targets a hash anchor.
+// When set, we skip page-height-extend (300vh) and strip onload animations
+// so that scroll position calculations for the hash target are correct.
+let navigatingToHash = '';
+
+// Progress bar - start loading animation
+function onTransitionStart() {
+	const bar = document.getElementById('swup-progress-bar');
+	if (bar) {
+		bar.classList.remove('is-loading', 'is-finishing', 'is-done');
+		bar.style.width = '0';
+		void bar.offsetWidth; // force reflow to restart animation
+		bar.classList.add('is-loading');
+	}
+
+	// Remove the delay for the first time page load
+	document.documentElement.style.setProperty('--content-delay', '0ms');
+
+	// Prevent elements from overlapping the navbar
+	if (bannerEnabled) {
+		let threshold = window.innerHeight * (BANNER_HEIGHT / 100) - 72 - 16;
+		let navbar = document.getElementById('navbar-wrapper');
+		if (navbar && document.body.classList.contains('lg:is-home')) {
+			if (document.body.scrollTop >= threshold || document.documentElement.scrollTop >= threshold) {
+				navbar.classList.add('navbar-hidden');
+			}
+		}
+	}
+
+	// Increase the page height during page transition to prevent scrolling animation from jumping.
+	// Skip this for hash navigation — the extra 300vh shifts all element positions,
+	// causing Astro's built-in hash scroll to land at the wrong location.
+	if (!navigatingToHash) {
+		const heightExtend = document.getElementById('page-height-extend');
+		if (heightExtend) {
+			heightExtend.classList.remove('hidden');
+		}
+	}
+
+	// Hide the TOC while scrolling back to top (not needed for hash nav)
+	if (!navigatingToHash) {
+		let toc = document.getElementById('toc-wrapper');
+		if (toc) {
+			toc.classList.add('toc-not-ready');
+		}
+	}
+
+}
+
+// Called after DOM swap - reinitialize components
+function onTransitionAfterSwap() {
+	// Reload theme and colors (critical for Swup mode where DOM is fully replaced)
+	loadTheme();
+	loadHue();
+
+	// Update isHome state based on new body class (set by Astro at build time)
+	isHome = document.body.classList.contains('lg:is-home');
+	updateThresholds();
+
+	// Refresh DOM references after View Transition (old refs are stale)
+	refreshDomReferences();
+
+	// Ensure navbar is visible after navigation. The page scrolls to top
+	// but no scroll event fires during VT, so navbar-hidden from the
+	// previous scroll position would stick. The scroll handler will
+	// re-hide it if the user scrolls past the threshold.
+	if (navbar) {
+		navbar.classList.remove('navbar-hidden');
+	}
+
+	// Show banner after page transition
+	showBanner();
+
+	initCustomScrollbar();
+	// When using the Firefox VT shim, let onload-animation play naturally so
+	// content fades in. With real View Transitions (Chrome/Safari), strip them
+	// immediately since the VT animations handle the visual transition.
+	if (!(window as any).__vtShim) {
+		stripOnloadAnimations();
+	}
+
+	// VT shim: replicate navbar subtle fade at swap time to match Chrome's VT timing.
+	// Instantly dim to 0.3, then animate back to 1 (same as ::view-transition-old/new(navbar)).
+	if ((window as any).__vtShim) {
+		const navbarEl = document.getElementById('navbar-wrapper');
+		if (navbarEl) {
+			// Remove any previous fade-in class
+			navbarEl.classList.remove('navbar-fade-in');
+			// Instantly dim (navbar-fade-out uses transition: none)
+			navbarEl.classList.add('navbar-fade-out');
+			// Wait for next frame so the dimmed state is painted, then fade in
+			requestAnimationFrame(() => {
+				navbarEl.classList.add('navbar-fade-in');
+				// Clean up classes after transition completes
+				const cleanup = () => {
+					navbarEl.classList.remove('navbar-fade-out', 'navbar-fade-in');
+				};
+				navbarEl.addEventListener('transitionend', cleanup, { once: true });
+				setTimeout(cleanup, 300); // Fallback if transitionend doesn't fire
+			});
+		}
+	}
+
+	// Re-initialize navbar button handlers (display settings, menu)
+	if (typeof (window as any).loadNavbarButtons === 'function') {
+		(window as any).loadNavbarButtons();
+	}
+
+	// Keep page height extend visible during transition.
+	// Skip for hash navigation — the extra 300vh shifts all element positions,
+	// causing the hash scroll to land at the wrong location.
+	if (!navigatingToHash) {
+		const heightExtend = document.getElementById('page-height-extend');
+		if (heightExtend) {
+			heightExtend.classList.remove('hidden');
+		}
+	}
+
+	// Update OverlayScrollbars immediately after DOM swap
+	// Helps Safari properly detect scrollable height
+	setTimeout(() => {
+		const bodyElement = document.querySelector('body');
+		if (bodyElement) {
+			const osInstance = OverlayScrollbars(bodyElement);
+			if (osInstance) {
+				osInstance.update(true);
+			}
+		}
+	}, 50);
+}
+
+// Progress bar - complete and fade out
+function onTransitionEnd() {
+	const bar = document.getElementById('swup-progress-bar');
+	if (bar) {
+		// Phase 1: transition to 100% width
+		// Clear inline styles set during before-swap freeze (animation, opacity)
+		// but keep inline width so is-finishing can transition FROM it to 100%.
+		bar.classList.remove('is-loading');
+		bar.style.removeProperty('animation');
+		bar.style.removeProperty('opacity');
+		bar.classList.add('is-finishing');
+		// Phase 2: fade out after the width transition completes
+		setTimeout(() => {
+			bar.style.removeProperty('width');
+			bar.classList.remove('is-finishing');
+			bar.classList.add('is-done');
+		}, 200);
+	}
+
+	setTimeout(() => {
+		const heightExtend = document.getElementById('page-height-extend');
+		if (heightExtend) {
+			heightExtend.classList.add('hidden');
+		}
+
+		// Just make the transition looks better
+		const toc = document.getElementById('toc-wrapper');
+		if (toc) {
+			toc.classList.remove('toc-not-ready');
+		}
+
+		// Force OverlayScrollbars to recalculate scroll height after transition
+		// This fixes Safari scrollbar getting stuck at top during View Transitions
+		// Save/restore scroll position — update(true) can reset viewport scrollTop
+		const bodyElement = document.querySelector('body');
+		if (bodyElement) {
+			const osInstance = OverlayScrollbars(bodyElement);
+			if (osInstance) {
+				const viewport = osInstance.elements().viewport;
+				const savedScroll = viewport.scrollTop;
+				osInstance.update(true);
+				if (viewport.scrollTop !== savedScroll) {
+					viewport.scrollTop = savedScroll;
+				}
+			}
+		}
+	}, 200);
+}
+
+// Set up event handlers based on whether we're using View Transitions or Swup
+function setupTransitionHandlers() {
+	// Use Swup fallback only for browsers without View Transitions API
+	const forceSwup = !supportsViewTransitions;
+
+	let pendingTitle = '';
+
+	if (!forceSwup) {
+		// Use View Transitions (Chrome/Safari/Firefox 128+)
+		console.log('[Layout] Setting up View Transitions handlers');
+
+		document.addEventListener('astro:before-preparation', (event: any) => {
+			navigatingToHash = event.to?.hash || '';
+			onTransitionStart();
+		});
+
+		// astro:before-swap - copy theme/styles to new document to prevent black flash
+		document.addEventListener('astro:before-swap', (event: any) => {
+			console.log('[Layout] astro:before-swap triggered');
+
+		// Freeze the progress bar at its current visual position before the swap.
+		// transition:persist detaches/reattaches the element, which restarts CSS
+		// animations. By capturing the computed width and setting it as an inline
+		// style with animation:none, the bar stays at the correct position.
+		const bar = document.getElementById('swup-progress-bar');
+		if (bar && bar.classList.contains('is-loading')) {
+			bar.style.width = getComputedStyle(bar).width;
+			bar.style.animation = 'none';
+			bar.style.opacity = '1';
+		}
+
+		const newDoc = event.newDocument;
+		if (newDoc && newDoc.documentElement) {
+			// For hash navigation, strip onload-animation from the new document
+			// BEFORE swap so content is immediately visible at correct positions.
+			// Without this, elements start at opacity:0 and Astro's hash scroll
+			// targets invisible content that may be at wrong positions.
+			if (navigatingToHash) {
+				newDoc.querySelectorAll('.onload-animation').forEach((el: Element) => {
+					el.classList.remove('onload-animation');
+					if (el instanceof HTMLElement) el.style.opacity = '1';
+				});
+				// Force instant scroll on new document so Astro's built-in
+				// hash scroll isn't smooth (smooth scroll can be interrupted
+				// by layout shifts from async content rendering).
+				newDoc.documentElement.style.scrollBehavior = 'auto';
+			}
+
+			// Prevent title flickering during head swap: save the new title and
+			// temporarily set it to match the current one so Astro's head diff
+			// won't touch the <title> element. We apply the real title after swap.
+			pendingTitle = newDoc.title;
+			const titleEl = newDoc.querySelector('title');
+			if (titleEl) {
+				titleEl.textContent = document.title;
+			}
+			// Copy dark mode class
+			if (document.documentElement.classList.contains('dark')) {
+				newDoc.documentElement.classList.add('dark');
+			} else {
+				newDoc.documentElement.classList.remove('dark');
+			}
+			// Copy CSS custom properties (theme colors)
+			const currentStyle = document.documentElement.style;
+			newDoc.documentElement.style.setProperty('--hue', currentStyle.getPropertyValue('--hue'));
+			newDoc.documentElement.style.setProperty('--banner-height-extend', currentStyle.getPropertyValue('--banner-height-extend'));
+			// Copy theme mode attribute
+			const themeMode = document.documentElement.getAttribute('data-theme-mode');
+			if (themeMode) {
+				newDoc.documentElement.setAttribute('data-theme-mode', themeMode);
+			}
+			// Copy Expressive Code theme attribute (fixes code block theme after View Transitions)
+			const expressiveTheme = document.documentElement.getAttribute('data-theme');
+			if (expressiveTheme) {
+				newDoc.documentElement.setAttribute('data-theme', expressiveTheme);
+			}
+			// Remove favicon links from new document to prevent browser re-fetching
+			// them during head swap. The existing favicons are already in the current
+			// head and don't change between pages.
+			newDoc.head.querySelectorAll('link[rel="icon"]').forEach((el: Element) => el.remove());
+
+		}
+	});
+
+		document.addEventListener('astro:after-swap', () => {
+			// Apply the real page title after swap to avoid flickering
+			if (pendingTitle) {
+				document.title = pendingTitle;
+				pendingTitle = '';
+			}
+
+			onTransitionAfterSwap();
+		});
+
+		document.addEventListener('astro:page-load', () => {
+			// Start ending animation immediately. The VT pseudo-element for the
+			// progress bar fades via CSS animation (vt-progress-end), so by the
+			// time VT finishes and real DOM is revealed, both are near-transparent.
+			// This avoids the ~400ms delay from waiting for viewTransition.finished.
+			onTransitionEnd();
+
+			if (navigatingToHash) {
+				// Re-scroll to hash target after dynamic content renders.
+				// Expressive code blocks, LaTeX, and images render asynchronously
+				// and may shift element positions after Astro's initial hash scroll.
+				// Also corrects for OverlayScrollbars resetting scroll during re-init.
+				// Multiple attempts at increasing intervals:
+				//   300ms — after onTransitionEnd's OS update at 200ms
+				//   800ms — after most async content (code blocks, LaTeX) renders
+				//  1500ms — final attempt for slow content (images, heavy LaTeX)
+				setTimeout(scrollToHash, 300);
+				setTimeout(scrollToHash, 800);
+				setTimeout(scrollToHash, 1500);
+			}
+
+			navigatingToHash = '';
+		});
+	} else {
+		// Use Swup (browsers without View Transitions API)
+		console.log('[Layout] Using Swup fallback');
+
+		// Prevent Astro's ClientRouter from using View Transitions
+		// so Swup can handle navigation instead
+		document.addEventListener('astro:before-preparation', (event: any) => {
+			console.log('[Layout] Preventing Astro View Transition, using Swup instead');
+			event.preventDefault();
+		});
+
+		const setupSwupHandlers = () => {
+			if (!window.swup?.hooks) return;
+
+			console.log('[Layout] Swup handlers configured');
+
+			window.swup.hooks.on('visit:start', (visit: any) => {
+				navigatingToHash = visit.to?.hash || '';
+				onTransitionStart();
+			});
+
+			window.swup.hooks.on('content:replace', () => {
+				// For hash navigation, strip onload animations and force instant
+				// scroll so content is visible and positioned correctly.
+				if (navigatingToHash) {
+					document.querySelectorAll('.onload-animation').forEach((el: Element) => {
+						el.classList.remove('onload-animation');
+						if (el instanceof HTMLElement) el.style.opacity = '1';
+					});
+					document.documentElement.style.scrollBehavior = 'auto';
+				}
+				onTransitionAfterSwap();
+			});
+
+			window.swup.hooks.on('page:view', () => {
+				// Skip page-height-extend for hash navigation
+				if (!navigatingToHash) {
+					const heightExtend = document.getElementById('page-height-extend');
+					if (heightExtend) {
+						heightExtend.classList.remove('hidden');
+					}
+				}
+			});
+
+			window.swup.hooks.on('visit:end', () => {
+				onTransitionEnd();
+
+				if (navigatingToHash) {
+					setTimeout(scrollToHash, 300);
+					setTimeout(scrollToHash, 800);
+					setTimeout(scrollToHash, 1500);
+				}
+
+				navigatingToHash = '';
+			});
+		};
+
+		if (window.swup?.hooks) {
+			setupSwupHandlers();
+		} else {
+			document.addEventListener('swup:enable', setupSwupHandlers);
+		}
+
+		// Initialize Swup
+		transitionManager.init();
+	}
+}
+
+setupTransitionHandlers();
+
+// Save scroll position before unload so we can restore it on F5 refresh.
+// Reads from OverlayScrollbars viewport (the actual scroll container) if active.
+window.addEventListener('beforeunload', () => {
+	try {
+		const bodyEl = document.querySelector('body');
+		const os = bodyEl ? OverlayScrollbars(bodyEl) : null;
+		const scrollTop = os
+			? os.elements().viewport.scrollTop
+			: (document.documentElement.scrollTop || document.body.scrollTop);
+		sessionStorage.setItem('scrollPos', JSON.stringify({
+			path: location.pathname,
+			pos: scrollTop
+		}));
+	} catch {}
+});
+
+let backToTopBtn: HTMLElement | null = document.getElementById('back-to-top-btn');
+let toc: HTMLElement | null = document.getElementById('toc-wrapper');
+let navbar: HTMLElement | null = document.getElementById('navbar-wrapper');
+
+// Re-query DOM elements after View Transitions (old references become stale)
+function refreshDomReferences() {
+	backToTopBtn = document.getElementById('back-to-top-btn');
+	toc = document.getElementById('toc-wrapper');
+	navbar = document.getElementById('navbar-wrapper');
+}
+
+// Cache viewport dimensions and page state to avoid forced reflows
+let viewportHeight = window.innerHeight
+let viewportWidth = window.innerWidth
+let isHome = document.body.classList.contains('lg:is-home')
+let ticking = false
+
+// Pre-calculate thresholds to avoid calculations during scroll
+let bannerHeight = viewportHeight * (BANNER_HEIGHT / 100)
+let navbarThreshold = 0
+function updateThresholds() {
+	bannerHeight = viewportHeight * (BANNER_HEIGHT / 100)
+	const NAVBAR_HEIGHT = 72
+	const MAIN_PANEL_EXCESS_HEIGHT = MAIN_PANEL_OVERLAPS_BANNER_HEIGHT * 16
+	let navbarBannerHeight = BANNER_HEIGHT
+	if (isHome && viewportWidth >= 1024) {
+		navbarBannerHeight = BANNER_HEIGHT_HOME
+	}
+	navbarThreshold = viewportHeight * (navbarBannerHeight / 100) - NAVBAR_HEIGHT - MAIN_PANEL_EXCESS_HEIGHT - 16
+}
+updateThresholds()
+
+function scrollFunction() {
+	if (!ticking) {
+		window.requestAnimationFrame(() => {
+			// Single DOM read - all writes happen after
+			const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+
+			// Batch all DOM writes together
+			if (backToTopBtn) {
+				if (scrollTop > bannerHeight) {
+					backToTopBtn.classList.remove('hide')
+				} else {
+					backToTopBtn.classList.add('hide')
+				}
+			}
+
+			if (bannerEnabled && toc) {
+				if (scrollTop > bannerHeight) {
+					toc.classList.remove('toc-hide')
+				} else {
+					toc.classList.add('toc-hide')
+				}
+			}
+
+			if (bannerEnabled && navbar) {
+				if (scrollTop >= navbarThreshold) {
+					navbar.classList.add('navbar-hidden')
+				} else {
+					navbar.classList.remove('navbar-hidden')
+				}
+			}
+
+			ticking = false
+		})
+		ticking = true
+	}
+}
+window.onscroll = scrollFunction
+
+let resizeTicking = false
+window.onresize = () => {
+	if (!resizeTicking) {
+		window.requestAnimationFrame(() => {
+			// Update cached viewport dimensions
+			viewportHeight = window.innerHeight
+			viewportWidth = window.innerWidth
+
+			// Recalculate thresholds with new viewport dimensions
+			updateThresholds()
+
+			// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
+			let offset = Math.floor(viewportHeight * (BANNER_HEIGHT_EXTEND / 100));
+			offset = offset - offset % 4;
+			document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
+
+			resizeTicking = false
+		})
+		resizeTicking = true
+	}
+}
+
+</script>
+
+<script>
+import { supportsViewTransitions } from '../utils/transition-manager';
+
+let lightbox: any
+let photoSwipeLoaded = false
+
+async function createPhotoSwipe() {
+	// Lazy load both PhotoSwipe library and CSS only when needed
+	if (!photoSwipeLoaded) {
+		console.log('Loading PhotoSwipe...');
+		const [PhotoSwipeLightbox] = await Promise.all([
+			import('photoswipe/lightbox').then(m => m.default),
+			import('photoswipe/style.css'),
+			import('photoswipe')
+		]);
+		photoSwipeLoaded = true;
+		console.log('PhotoSwipe loaded');
+
+		lightbox = new PhotoSwipeLightbox({
+			gallery: ".custom-md img, #post-cover img",
+			pswpModule: () => import('photoswipe'),
+			closeSVG: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ffffff"><path fill="currentColor" d="M6.4 19L5 17.6l5.6-5.6L5 6.4L6.4 5l5.6 5.6L17.6 5L19 6.4L13.4 12l5.6 5.6l-1.4 1.4l-5.6-5.6z"/></svg>',
+			zoomSVG: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ffffff"><path fill="currentColor" d="m19.6 21l-6.3-6.3q-.75.6-1.725.95T9.5 16q-2.725 0-4.612-1.888T3 9.5t1.888-4.612T9.5 3t4.613 1.888T16 9.5q0 1.1-.35 2.075T14.7 13.3l6.3 6.3zM9.5 14q1.875 0 3.188-1.312T14 9.5t-1.312-3.187T9.5 5T6.313 6.313T5 9.5t1.313 3.188T9.5 14m-1-1.5v-2h-2v-2h2v-2h2v2h2v2h-2v2z"/></svg>',
+			padding: { top: 20, bottom: 20, left: 20, right: 20 },
+			wheelToZoom: true,
+			arrowPrev: false,
+			arrowNext: false,
+			imageClickAction: 'close',
+			tapAction: 'close',
+			doubleTapAction: 'zoom',
+		});
+
+		lightbox.addFilter("domItemData", (itemData: any, element: any) => {
+			if (element instanceof HTMLImageElement) {
+				itemData.src = element.src
+				itemData.w = Number(element.naturalWidth || window.innerWidth)
+				itemData.h = Number(element.naturalHeight || window.innerHeight)
+				itemData.msrc = element.src
+			}
+			return itemData
+		});
+
+		lightbox.init();
+	}
+}
+
+function checkAndLoadPhotoSwipe() {
+	const hasGalleryImages = document.querySelector('.custom-md img, #post-cover img');
+	if (!lightbox && hasGalleryImages) {
+		console.log('Images found, will load PhotoSwipe');
+		createPhotoSwipe();
+	} else if (!hasGalleryImages) {
+		console.log('PhotoSwipe not needed (no gallery images)');
+	}
+}
+
+function destroyPhotoSwipe() {
+	lightbox?.destroy?.();
+	lightbox = null;
+}
+
+// Set up PhotoSwipe based on transition system
+const useSwupForPhotoSwipe = !supportsViewTransitions;
+
+if (!useSwupForPhotoSwipe) {
+	// View Transitions mode
+	checkAndLoadPhotoSwipe();
+
+	document.addEventListener('astro:before-swap', () => {
+		destroyPhotoSwipe();
+	});
+
+	document.addEventListener('astro:after-swap', () => {
+		checkAndLoadPhotoSwipe();
+	});
+} else {
+	// Swup fallback mode
+	const setupSwupPhotoSwipe = () => {
+		checkAndLoadPhotoSwipe();
+
+		window.swup.hooks.on("page:view", () => {
+			checkAndLoadPhotoSwipe();
+		});
+
+		window.swup.hooks.on(
+			"content:replace",
+			() => {
+				destroyPhotoSwipe();
+			},
+			{ before: true },
+		);
+	};
+
+	if (window.swup) {
+		setupSwupPhotoSwipe();
+	} else {
+		document.addEventListener("swup:enable", setupSwupPhotoSwipe);
+	}
+}
+</script>
