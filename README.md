@@ -1,6 +1,6 @@
-# Fuwari
+# KIRARI
 
-[![Build Status](https://github.com/k3nxu/fuwari-kai/actions/workflows/build.yml/badge.svg)](https://github.com/k3nxu/fuwari-kai/actions/workflows/build.yml)
+[![Build Status](https://github.com/markd3ng/KIRARI/actions/workflows/build.yml/badge.svg)](https://github.com/markd3ng/KIRARI/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A static blog theme built with [Astro](https://astro.build/), [TailwindCSS](https://tailwindcss.com/) and [Svelte](https://svelte.dev/).
@@ -9,8 +9,8 @@ A static blog theme built with [Astro](https://astro.build/), [TailwindCSS](http
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/k3nxu/fuwari-kai.git
-    cd fuwari-kai
+    git clone https://github.com/markd3ng/KIRARI.git
+    cd KIRARI
     ```
 
 2.  **Install dependencies**
