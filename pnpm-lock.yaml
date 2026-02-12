@@ -12,8 +12,8 @@ importers:
         specifier: ^0.9.6
         version: 0.9.6(prettier@3.8.1)(typescript@5.9.3)
       '@astrojs/rss':
-        specifier: 4.0.15-beta.2
-        version: 4.0.15-beta.2
+        specifier: 4.0.15
+        version: 4.0.15
       '@astrojs/sitemap':
         specifier: ^3.7.0
         version: 3.7.0
@@ -217,8 +217,8 @@ packages:
     resolution: {integrity: sha512-3snR85nTXnXvgmFJ43AacCQcylk+mpsiQ5Gmr9hcR5IrEA6+EvaYfaF9jlxZqJIZYey/9ubSRmaERtwDhV/FeA==}
     engines: {node: ^20.19.1 || >=22.12.0}
 
-  '@astrojs/rss@4.0.15-beta.2':
-    resolution: {integrity: sha512-1mJXyt7HgRrlaPRy/vjbLgR3Pp8nf9sd3jrzNlq0QG1VjsjSof9noAFxWI++sUB094Pyqu7AxsoCtKOgbz4CMg==}
+  '@astrojs/rss@4.0.15':
+    resolution: {integrity: sha512-uXO/k6AhRkIDXmRoc6xQpoPZrimQNUmS43X4+60yunfuMNHtSRN5e/FiSi7NApcZqmugSMc5+cJi8ovqgO+qIg==}
 
   '@astrojs/sitemap@3.7.0':
     resolution: {integrity: sha512-+qxjUrz6Jcgh+D5VE1gKUJTA3pSthuPHe6Ao5JCxok794Lewx8hBFaWHtOnN0ntb2lfOf7gvOi9TefUswQ/ZVA==}
@@ -3424,11 +3424,10 @@ snapshots:
     dependencies:
       prismjs: 1.30.0
 
-  '@astrojs/rss@4.0.15-beta.2':
+  '@astrojs/rss@4.0.15':
     dependencies:
       fast-xml-parser: 5.3.5
       piccolore: 0.1.3
-      zod: 4.3.6
 
   '@astrojs/sitemap@3.7.0':
     dependencies:
