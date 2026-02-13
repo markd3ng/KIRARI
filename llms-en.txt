@@ -3,42 +3,42 @@
 
 ## Pages
 
-- [Fuwari - Demo Site](https://markd3ng.github.io/) - Fuwari - Demo Site
-- [Fuwari - Demo Site](https://markd3ng.github.io/2/) - Fuwari - Demo Site
+- [KIRARI - Demo Site](https://markd3ng.github.io/) - KIRARI - Demo Site
+- [KIRARI - Demo Site](https://markd3ng.github.io/2/) - KIRARI - Demo Site
 - [About#](https://markd3ng.github.io/about/) - About
-- [Archive - Fuwari](https://markd3ng.github.io/archive/) - Archive - Fuwari
+- [Archive - KIRARI](https://markd3ng.github.io/archive/) - Archive - KIRARI
 
 ### categories
 
-- [Archive - 示例 - Fuwari](https://markd3ng.github.io/categories/Examples/) - Archive - 示例 - Fuwari
-- [Archive - 指南 - Fuwari](https://markd3ng.github.io/categories/Guides/) - Archive - 指南 - Fuwari
+- [Archive - 示例 - KIRARI](https://markd3ng.github.io/categories/Examples/) - Archive - 示例 - KIRARI
+- [Archive - 指南 - KIRARI](https://markd3ng.github.io/categories/Guides/) - Archive - 指南 - KIRARI
 
 ### posts
 
-- [Expressive Code Example (CJK) - Fuwari](https://markd3ng.github.io/posts/expressive-code-cjk/) - How code blocks look in Markdown using Expressive Code.
-- [Expressive Code Example - Fuwari](https://markd3ng.github.io/posts/expressive-code/) - How code blocks look in Markdown using Expressive Code.
-- [Simple Guides for Fuwari - Fuwari](https://markd3ng.github.io/posts/guide/) - How to use this blog template.
+- [Expressive Code Example (CJK) - KIRARI](https://markd3ng.github.io/posts/expressive-code-cjk/) - How code blocks look in Markdown using Expressive Code.
+- [Expressive Code Example - KIRARI](https://markd3ng.github.io/posts/expressive-code/) - How code blocks look in Markdown using Expressive Code.
+- [Simple Guides for Fuwari - KIRARI](https://markd3ng.github.io/posts/guide/) - How to use this blog template.
 - [An h1 header#](https://markd3ng.github.io/posts/markdown-cjk/) - A simple example of a Markdown blog post.
-- [Markdown Extended Features (CJK) - Fuwari](https://markd3ng.github.io/posts/markdown-extended-cjk/) - Read more about Markdown features in Fuwari
-- [Markdown Extended Features - Fuwari](https://markd3ng.github.io/posts/markdown-extended/) - Read more about Markdown features in Fuwari
+- [Markdown Extended Features (CJK) - KIRARI](https://markd3ng.github.io/posts/markdown-extended-cjk/) - Read more about Markdown features in Fuwari
+- [Markdown Extended Features - KIRARI](https://markd3ng.github.io/posts/markdown-extended/) - Read more about Markdown features in Fuwari
 - [An h1 header#](https://markd3ng.github.io/posts/markdown/) - A simple example of a Markdown blog post.
-- [Include Video in the Posts (CJK) - Fuwari](https://markd3ng.github.io/posts/video-cjk/) - This post demonstrates how to include embedded video in a blog post.
-- [Include Video in the Posts - Fuwari](https://markd3ng.github.io/posts/video/) - This post demonstrates how to include embedded video in a blog post.
+- [Include Video in the Posts (CJK) - KIRARI](https://markd3ng.github.io/posts/video-cjk/) - This post demonstrates how to include embedded video in a blog post.
+- [Include Video in the Posts - KIRARI](https://markd3ng.github.io/posts/video/) - This post demonstrates how to include embedded video in a blog post.
 
 ### guide
 
-- [Simple Guides for Fuwari (CJK) - Fuwari](https://markd3ng.github.io/posts/guide/index-cjk/) - How to use this blog template.
+- [Simple Guides for Fuwari (CJK) - KIRARI](https://markd3ng.github.io/posts/guide/index-cjk/) - How to use this blog template.
 
 ### tags
 
-- [Archive - Blogging - Fuwari](https://markd3ng.github.io/tags/Blogging/) - Archive - Blogging - Fuwari
-- [Archive - CJK - Fuwari](https://markd3ng.github.io/tags/CJK/) - Archive - CJK - Fuwari
-- [Archive - Customization - Fuwari](https://markd3ng.github.io/tags/Customization/) - Archive - Customization - Fuwari
-- [Archive - 演示 - Fuwari](https://markd3ng.github.io/tags/Demo/) - Archive - 演示 - Fuwari
-- [Archive - 示例 - Fuwari](https://markd3ng.github.io/tags/Example/) - Archive - 示例 - Fuwari
-- [Archive - Fuwari - Fuwari](https://markd3ng.github.io/tags/Fuwari/) - Archive - Fuwari - Fuwari
-- [Archive - Markdown - Fuwari](https://markd3ng.github.io/tags/Markdown/) - Archive - Markdown - Fuwari
-- [Archive - Video - Fuwari](https://markd3ng.github.io/tags/Video/) - Archive - Video - Fuwari
+- [Archive - Blogging - KIRARI](https://markd3ng.github.io/tags/Blogging/) - Archive - Blogging - KIRARI
+- [Archive - CJK - KIRARI](https://markd3ng.github.io/tags/CJK/) - Archive - CJK - KIRARI
+- [Archive - Customization - KIRARI](https://markd3ng.github.io/tags/Customization/) - Archive - Customization - KIRARI
+- [Archive - 演示 - KIRARI](https://markd3ng.github.io/tags/Demo/) - Archive - 演示 - KIRARI
+- [Archive - 示例 - KIRARI](https://markd3ng.github.io/tags/Example/) - Archive - 示例 - KIRARI
+- [Archive - Fuwari - KIRARI](https://markd3ng.github.io/tags/Fuwari/) - Archive - Fuwari - KIRARI
+- [Archive - Markdown - KIRARI](https://markd3ng.github.io/tags/Markdown/) - Archive - Markdown - KIRARI
+- [Archive - Video - KIRARI](https://markd3ng.github.io/tags/Video/) - Archive - Video - KIRARI
 
 
 *Auto-generated documentation index*
