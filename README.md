@@ -1,6 +1,6 @@
 # KIRARI
 
-[![Build Status](https://github.com/markd3ng/KIRARI/actions/workflows/build.yml/badge.svg)](https://github.com/markd3ng/KIRARI/actions/workflows/build.yml)
+[![Build Status](https://github.com/markd3ng/KIRARI/actions/workflows/ci-main.yml/badge.svg)](https://github.com/markd3ng/KIRARI/actions/workflows/ci-main.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A static blog theme built with [Astro](https://astro.build/), [TailwindCSS](https://tailwindcss.com/) and [Svelte](https://svelte.dev/).
@@ -11,7 +11,7 @@ A static blog theme built with [Astro](https://astro.build/), [TailwindCSS](http
 - Integrated [astro-llms-generate](https://github.com/ColdranAI/astro-llms-generate) plugin for LLM-friendly documentation.
 - Enabled i18n support for LLM documentation generation.
 
-## �🚀 Getting Started
+## 🚀 Getting Started
 
 1.  **Clone the repository**
     ```bash
