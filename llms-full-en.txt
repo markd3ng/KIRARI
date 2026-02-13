@@ -106,6 +106,50 @@ Read more about Markdown features in Fuwari
 
 
 
+[Expressive Code Example](/posts/expressive-code/)
+
+
+
+
+
+2024-04-10
+
+
+
+
+
+[示例](/categories/Examples/)
+
+
+
+/
+
+[Markdown](/tags/Markdown/)
+
+/
+
+[Blogging](/tags/Blogging/)
+
+/
+
+[演示](/tags/Demo/)
+
+
+
+How code blocks look in Markdown using Expressive Code.
+
+
+
+737 words
+
+|
+
+4 minutes
+
+
+
+
+
 [Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
 
 
@@ -149,50 +193,6 @@ How code blocks look in Markdown using Expressive Code.
 |
 
 5 minutes
-
-
-
-
-
-[Expressive Code Example](/posts/expressive-code/)
-
-
-
-
-
-2024-04-10
-
-
-
-
-
-[示例](/categories/Examples/)
-
-
-
-/
-
-[Markdown](/tags/Markdown/)
-
-/
-
-[Blogging](/tags/Blogging/)
-
-/
-
-[演示](/tags/Demo/)
-
-
-
-How code blocks look in Markdown using Expressive Code.
-
-
-
-737 words
-
-|
-
-4 minutes
 
 
 
@@ -390,53 +390,13 @@ A simple example of a Markdown blog post.
 
 
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
 
 # KIRARI - Demo Site
 > KIRARI - Demo Site
-
-[Include Video in the Posts](/posts/video/)
-
-
-
-
-
-2023-08-01
-
-
-
-
-
-[示例](/categories/Examples/)
-
-
-
-/
-
-[示例](/tags/Example/)
-
-/
-
-[Video](/tags/Video/)
-
-
-
-This post demonstrates how to include embedded video in a blog post.
-
-
-
-61 words
-
-|
-
-1 minute
-
-
-
-
 
 [Include Video in the Posts (CJK)](/posts/video-cjk/)
 
@@ -482,6 +442,46 @@ This post demonstrates how to include embedded video in a blog post.
 
 
 
+[Include Video in the Posts](/posts/video/)
+
+
+
+
+
+2023-08-01
+
+
+
+
+
+[示例](/categories/Examples/)
+
+
+
+/
+
+[示例](/tags/Example/)
+
+/
+
+[Video](/tags/Video/)
+
+
+
+This post demonstrates how to include embedded video in a blog post.
+
+
+
+61 words
+
+|
+
+1 minute
+
+
+
+
+
 
 
 [1](/)
@@ -490,7 +490,7 @@ This post demonstrates how to include embedded video in a blog post.
 
 
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -522,7 +522,7 @@ This is the demo site for [Fuwari](https://github.com/saicaca/fuwari).
 > - [星と少女](https://www.pixiv.net/artworks/108916539) by [Stella](https://www.pixiv.net/users/93273965)
 > - [Rabbit - v1.4 Showcase](https://civitai.com/posts/586908) by [Rabbit\_YourMajesty](https://civitai.com/user/Rabbit_YourMajesty)
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -530,7 +530,7 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Archive - KIRARI
 > Archive - KIRARI
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -538,7 +538,7 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Archive - 示例 - KIRARI
 > Archive - 示例 - KIRARI
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -546,7 +546,7 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Archive - 指南 - KIRARI
 > Archive - 指南 - KIRARI
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -716,11 +716,11 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Markdown Extended Features](/posts/markdown-extended/)
-
 [Expressive Code Example](/posts/expressive-code/)
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -864,11 +864,11 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
+[Markdown Extended Features](/posts/markdown-extended/)
+
 [Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
 
-[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
-
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -948,7 +948,7 @@ License
 
 [Markdown Example (CJK)](/posts/markdown-cjk/)
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1050,11 +1050,11 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Expressive Code Example](/posts/expressive-code/)
+[Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
 
 [Simple Guides for Fuwari](/posts/guide/)
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1250,7 +1250,7 @@ License
 
 [Markdown Example](/posts/markdown/)
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1418,7 +1418,7 @@ License
 
 [Markdown Extended Features](/posts/markdown-extended/)
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1558,9 +1558,9 @@ License
 
 [Markdown Extended Features (CJK)](/posts/markdown-extended-cjk/)
 
-[Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
+[Expressive Code Example](/posts/expressive-code/)
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1728,9 +1728,9 @@ License
 
 [Markdown Example (CJK)](/posts/markdown-cjk/)
 
-[Include Video in the Posts](/posts/video/)
+[Include Video in the Posts (CJK)](/posts/video-cjk/)
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1822,11 +1822,11 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
+[Markdown Example](/posts/markdown/)
+
 [Include Video in the Posts](/posts/video/)
 
-
-
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1892,11 +1892,11 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Markdown Example](/posts/markdown/)
-
 [Include Video in the Posts (CJK)](/posts/video-cjk/)
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1904,7 +1904,7 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Archive - Blogging - KIRARI
 > Archive - Blogging - KIRARI
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1912,7 +1912,7 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Archive - CJK - KIRARI
 > Archive - CJK - KIRARI
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1920,7 +1920,7 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Archive - Customization - KIRARI
 > Archive - Customization - KIRARI
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1928,7 +1928,7 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Archive - 演示 - KIRARI
 > Archive - 演示 - KIRARI
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1936,7 +1936,7 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Archive - 示例 - KIRARI
 > Archive - 示例 - KIRARI
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1944,7 +1944,7 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Archive - Fuwari - KIRARI
 > Archive - Fuwari - KIRARI
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1952,7 +1952,7 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Archive - Markdown - KIRARI
 > Archive - Markdown - KIRARI
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
 
 ---
@@ -1960,5 +1960,5 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Archive - Video - KIRARI
 > Archive - Video - KIRARI
 
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
