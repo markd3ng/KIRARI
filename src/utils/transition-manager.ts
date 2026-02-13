@@ -27,6 +27,7 @@ type TransitionCallback = (data?: TransitionEventData) => void;
 
 class TransitionManager {
 	private listeners = new Map<TransitionEventType, Set<TransitionCallback>>();
+	// biome-ignore lint/suspicious/noExplicitAny: Swup instance is dynamically loaded and difficult to type
 	private swupInstance: any = null;
 	private initialized = false;
 
@@ -102,6 +103,7 @@ class TransitionManager {
 	 */
 	private setupAstroClientRouter(): void {
 		// astro:before-preparation - Navigation starts
+		// biome-ignore lint/suspicious/noExplicitAny: Astro view transition events are not strictly typed
 		document.addEventListener("astro:before-preparation", (event: any) => {
 			const data: TransitionEventData = {
 				from: event.from?.href,
@@ -112,6 +114,7 @@ class TransitionManager {
 		});
 
 		// astro:before-swap - Content loaded, about to swap DOM
+		// biome-ignore lint/suspicious/noExplicitAny: Astro view transition events are not strictly typed
 		document.addEventListener("astro:before-swap", (event: any) => {
 			const data: TransitionEventData = {
 				from: event.from?.href,
@@ -159,6 +162,7 @@ class TransitionManager {
 			});
 
 			// Map Swup events to unified transition events
+			// biome-ignore lint/suspicious/noExplicitAny: Swup hooks structure is complex
 			this.swupInstance.hooks.on("visit:start", (visit: any) => {
 				this.emit("transition:start", {
 					from: visit.from?.url,
@@ -178,6 +182,7 @@ class TransitionManager {
 				});
 			});
 
+			// biome-ignore lint/suspicious/noExplicitAny: Swup hooks structure is complex
 			this.swupInstance.hooks.on("visit:end", (visit: any) => {
 				this.emit("transition:end", {
 					to: visit.to?.url,
@@ -185,6 +190,7 @@ class TransitionManager {
 			});
 
 			// Expose swup globally for compatibility with existing code
+			// biome-ignore lint/suspicious/noExplicitAny: Window extension for compatibility
 			(window as any).swup = this.swupInstance;
 
 			// Dispatch event for any code waiting for swup
@@ -213,6 +219,7 @@ class TransitionManager {
 	/**
 	 * Get the Swup instance (if using fallback)
 	 */
+	// biome-ignore lint/suspicious/noExplicitAny: Return any for Swup fallbacks
 	getSwupInstance(): any {
 		return this.swupInstance;
 	}
@@ -224,6 +231,7 @@ export const transitionManager = new TransitionManager();
 // Export for type declarations
 declare global {
 	interface Window {
+		// biome-ignore lint/suspicious/noExplicitAny: Global swup instance
 		swup: any;
 		transitionManager?: TransitionManager;
 	}

@@ -1,6 +1,8 @@
 import type { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants";
 
 export type SiteConfig = {
+	url: string;
+	base: string;
 	title: string;
 	subtitle: string;
 
@@ -44,11 +46,13 @@ export type Favicon = {
 	sizes?: string;
 };
 
-export enum LinkPreset {
-	Home = 0,
-	Archive = 1,
-	About = 2,
-}
+export const LinkPreset = {
+	Home: 0,
+	Archive: 1,
+	About: 2,
+} as const;
+
+export type LinkPresetType = (typeof LinkPreset)[keyof typeof LinkPreset];
 
 export type NavBarLink = {
 	name: string;
@@ -57,7 +61,7 @@ export type NavBarLink = {
 };
 
 export type NavBarConfig = {
-	links: (NavBarLink | LinkPreset)[];
+	links: (NavBarLink | LinkPresetType)[];
 };
 
 export type ProfileConfig = {
@@ -100,4 +104,15 @@ export type BlogPostData = {
 export type ExpressiveCodeConfig = {
 	// theme: string;
 	themes: string[];
+};
+
+export type LLMsConfig = {
+	enable: boolean;
+	sitemap?: boolean;
+	title?: string;
+	description?: string;
+	includePatterns?: string[];
+	excludePatterns?: string[];
+	customSeparator?: string;
+	i18n?: boolean;
 };

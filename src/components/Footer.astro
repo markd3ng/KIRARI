@@ -1,6 +1,6 @@
 ---
 
-import { profileConfig } from "../config";
+import { llmsConfig, profileConfig } from "../config";
 import { url } from "../utils/url-utils";
 
 const currentYear = new Date().getFullYear();
@@ -11,7 +11,11 @@ const currentYear = new Date().getFullYear();
     <div class="transition text-50 text-sm text-center">
         &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. All Rights Reserved. /
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" href={url('rss.xml')}>RSS</a> /
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href={url('sitemap-index.xml')}>Sitemap</a><br>
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href={url('sitemap-index.xml')}>Sitemap</a>
+        {llmsConfig.enable && (
+            <> / <a class="transition link text-[var(--primary)] font-medium" target="_blank" href={url('llms.txt')}>LLMs</a></>
+        )}
+        <br>
         Powered by
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://astro.build">Astro</a> &middot;
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://github.com/markd3ng/KIRARI">KIRARI</a> &middot;
