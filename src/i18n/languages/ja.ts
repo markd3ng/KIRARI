@@ -2,10 +2,11 @@ import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
 export const ja: Translation = {
-	[Key.home]: "Home",
-	[Key.about]: "About",
-	[Key.archive]: "Archive",
+	[Key.home]: "家",
+	[Key.about]: "について",
+	[Key.archive]: "アーカイブ",
 	[Key.search]: "検索",
+	[Key.friends]: "友達",
 
 	[Key.tags]: "タグ",
 	[Key.categories]: "カテゴリ",
@@ -34,5 +35,7 @@ export const ja: Translation = {
 
 	[Key.author]: "作者",
 	[Key.publishedAt]: "公開日",
+	[Key.lastUpdatedAt]: "最終更新日",
+
 	[Key.license]: "ライセンス",
 };

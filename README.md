@@ -42,14 +42,40 @@ Create a new Markdown file in `src/content/posts/`:
 
 ```markdown
 ---
-title: My New Post
-published: 2024-05-01
-tags: [Demo]
-category: Guide
+title: Post Title        # [Required] The title of the post
+published: 2024-05-01  # [Required] Published date (YYYY-MM-DD)
+updated: 2024-05-02    # [Optional] Updated date (YYYY-MM-DD)
+description: Post desc   # [Optional] Short description for SEO and list pages
+image: /path/image.png # [Optional] Cover image and OG image
+tags: [Tag1, Tag2]     # [Optional] List of tags
+category: Category     # [Optional] Post category
+draft: false           # [Optional] Whether it's a draft, set to true to hide in production
+lang: en               # [Optional] Post language (e.g. en, zh_CN, ja)
 ---
 
 Hello World!
 ```
+
+> [!TIP]
+> Setting the `updated` date will automatically display a **"Last Updated at"** field in the license section at the bottom of the post.
+
+
+### Friends Page
+
+You can manage your friends page in two parts:
+
+1.  **Friend List**: Edit `src/_data/friends.json` to add or remove sites.
+    ```json
+    [
+      {
+        "siteTitle": "Site Name",
+        "siteDesc": "Site Description",
+        "siteUrl": "https://example.com",
+        "siteIcon": "https://example.com/avatar.png"
+      }
+    ]
+    ```
+2.  **Introduction Text**: Edit `src/content/spec/friends.md` to change the description text displayed at the top of the friends page.
 
 ### Site Configuration
 

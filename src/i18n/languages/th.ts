@@ -6,6 +6,7 @@ export const th: Translation = {
 	[Key.about]: "เกี่ยวกับ",
 	[Key.archive]: "คลัง",
 	[Key.search]: "ค้นหา",
+	[Key.friends]: "เพื่อน",
 
 	[Key.tags]: "ป้ายกำกับ",
 	[Key.categories]: "หมวดหมู่",
@@ -34,5 +35,6 @@ export const th: Translation = {
 
 	[Key.author]: "ผู้เขียน",
 	[Key.publishedAt]: "เผยแพร่เมื่อ",
+	[Key.lastUpdatedAt]: "อัปเดตล่าสุดเมื่อ",
 	[Key.license]: "สัญญาอนุญาต",
 };
