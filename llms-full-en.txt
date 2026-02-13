@@ -198,50 +198,6 @@ How code blocks look in Markdown using Expressive Code.
 
 
 
-[Simple Guides for Fuwari](/posts/guide/)
-
-
-
-
-
-2024-04-01
-
-
-
-
-
-[指南](/categories/Guides/)
-
-
-
-/
-
-[Fuwari](/tags/Fuwari/)
-
-/
-
-[Blogging](/tags/Blogging/)
-
-/
-
-[Customization](/tags/Customization/)
-
-
-
-How to use this blog template.
-
-
-
-160 words
-
-|
-
-1 minute
-
-
-
-
-
 [Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
 
 
@@ -285,6 +241,50 @@ How to use this blog template.
 |
 
 2 minutes
+
+
+
+
+
+[Simple Guides for Fuwari](/posts/guide/)
+
+
+
+
+
+2024-04-01
+
+
+
+
+
+[指南](/categories/Guides/)
+
+
+
+/
+
+[Fuwari](/tags/Fuwari/)
+
+/
+
+[Blogging](/tags/Blogging/)
+
+/
+
+[Customization](/tags/Customization/)
+
+
+
+How to use this blog template.
+
+
+
+160 words
+
+|
+
+1 minute
 
 
 
@@ -398,46 +398,6 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # KIRARI - Demo Site
 > KIRARI - Demo Site
 
-[Include Video in the Posts](/posts/video/)
-
-
-
-
-
-2023-08-01
-
-
-
-
-
-[示例](/categories/Examples/)
-
-
-
-/
-
-[示例](/tags/Example/)
-
-/
-
-[Video](/tags/Video/)
-
-
-
-This post demonstrates how to include embedded video in a blog post.
-
-
-
-61 words
-
-|
-
-1 minute
-
-
-
-
-
 [Include Video in the Posts (CJK)](/posts/video-cjk/)
 
 
@@ -473,6 +433,46 @@ This post demonstrates how to include embedded video in a blog post.
 
 
 233 words
+
+|
+
+1 minute
+
+
+
+
+
+[Include Video in the Posts](/posts/video/)
+
+
+
+
+
+2023-08-01
+
+
+
+
+
+[示例](/categories/Examples/)
+
+
+
+/
+
+[示例](/tags/Example/)
+
+/
+
+[Video](/tags/Video/)
+
+
+
+This post demonstrates how to include embedded video in a blog post.
+
+
+
+61 words
 
 |
 
@@ -888,7 +888,7 @@ License
 
 [Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
 
-[Simple Guides for Fuwari](/posts/guide/)
+[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -966,9 +966,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Expressive Code Example](/posts/expressive-code/)
-
 [Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
+
+[Markdown Example (CJK)](/posts/markdown-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1072,9 +1072,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Simple Guides for Fuwari](/posts/guide/)
+[Expressive Code Example](/posts/expressive-code/)
 
-[Markdown Example (CJK)](/posts/markdown-cjk/)
+[Simple Guides for Fuwari](/posts/guide/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1268,7 +1268,7 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
+[Simple Guides for Fuwari](/posts/guide/)
 
 [Markdown Example](/posts/markdown/)
 
@@ -1431,6 +1431,10 @@ Lorem Ipsum
 Published at
 
 2024-05-01
+
+Last updated at
+
+2024-11-29
 
 License
 
@@ -1599,6 +1603,10 @@ Lorem Ipsum
 Published at
 
 2024-05-01
+
+Last updated at
+
+2024-11-29
 
 License
 
@@ -1776,7 +1784,7 @@ License
 
 [Markdown Example (CJK)](/posts/markdown-cjk/)
 
-[Include Video in the Posts](/posts/video/)
+[Include Video in the Posts (CJK)](/posts/video-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1870,9 +1878,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
+[Markdown Example](/posts/markdown/)
+
 [Include Video in the Posts](/posts/video/)
-
-
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1940,9 +1948,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Markdown Example](/posts/markdown/)
-
 [Include Video in the Posts (CJK)](/posts/video-cjk/)
+
+
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
