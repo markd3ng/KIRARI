@@ -6,6 +6,54 @@
 # KIRARI - Demo Site
 > KIRARI - Demo Site
 
+[Markdown Extended Features](/posts/markdown-extended/)
+
+
+
+
+
+2024-05-01
+
+
+
+
+
+[示例](/categories/Examples/)
+
+
+
+/
+
+[演示](/tags/Demo/)
+
+/
+
+[示例](/tags/Example/)
+
+/
+
+[Markdown](/tags/Markdown/)
+
+/
+
+[Fuwari](/tags/Fuwari/)
+
+
+
+Read more about Markdown features in Fuwari
+
+
+
+176 words
+
+|
+
+1 minute
+
+
+
+
+
 [Markdown Extended Features (CJK)](/posts/markdown-extended-cjk/)
 
 
@@ -53,54 +101,6 @@ Read more about Markdown features in Fuwari
 |
 
 2 minutes
-
-
-
-
-
-[Markdown Extended Features](/posts/markdown-extended/)
-
-
-
-
-
-2024-05-01
-
-
-
-
-
-[示例](/categories/Examples/)
-
-
-
-/
-
-[演示](/tags/Demo/)
-
-/
-
-[示例](/tags/Example/)
-
-/
-
-[Markdown](/tags/Markdown/)
-
-/
-
-[Fuwari](/tags/Fuwari/)
-
-
-
-Read more about Markdown features in Fuwari
-
-
-
-176 words
-
-|
-
-1 minute
 
 
 
@@ -716,7 +716,7 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Markdown Extended Features](/posts/markdown-extended/)
+[Markdown Extended Features (CJK)](/posts/markdown-extended-cjk/)
 
 [Expressive Code Example](/posts/expressive-code/)
 
@@ -1414,9 +1414,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-
-
 [Markdown Extended Features](/posts/markdown-extended/)
+
+[Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1556,9 +1556,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Markdown Extended Features (CJK)](/posts/markdown-extended-cjk/)
 
-[Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
+
+[Markdown Extended Features (CJK)](/posts/markdown-extended-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
