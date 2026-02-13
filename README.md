@@ -160,7 +160,12 @@ The plugin will detect this and generate language-specific files automatically:
 └── astro.config.mjs    # Astro configuration (uses src/constants.ts)
 ```
 
-## 📚 Credits 
+## � TODO
+
+- [ ] Add Artalk Comments Support
+- [ ] Add Umami Support
+
+## �📚 Credits 
 
 This project pays tribute to the following projects:
 
