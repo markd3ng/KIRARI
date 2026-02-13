@@ -96,7 +96,7 @@ Read more about Markdown features in Fuwari
 
 
 
-176 words
+224 words
 
 |
 
@@ -198,6 +198,50 @@ How code blocks look in Markdown using Expressive Code.
 
 
 
+[Simple Guides for Fuwari](/posts/guide/)
+
+
+
+
+
+2024-04-01
+
+
+
+
+
+[指南](/categories/Guides/)
+
+
+
+/
+
+[Fuwari](/tags/Fuwari/)
+
+/
+
+[Blogging](/tags/Blogging/)
+
+/
+
+[Customization](/tags/Customization/)
+
+
+
+How to use this blog template.
+
+
+
+160 words
+
+|
+
+1 minute
+
+
+
+
+
 [Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
 
 
@@ -241,50 +285,6 @@ How to use this blog template.
 |
 
 2 minutes
-
-
-
-
-
-[Simple Guides for Fuwari](/posts/guide/)
-
-
-
-
-
-2024-04-01
-
-
-
-
-
-[指南](/categories/Guides/)
-
-
-
-/
-
-[Fuwari](/tags/Fuwari/)
-
-/
-
-[Blogging](/tags/Blogging/)
-
-/
-
-[Customization](/tags/Customization/)
-
-
-
-How to use this blog template.
-
-
-
-160 words
-
-|
-
-1 minute
 
 
 
@@ -398,6 +398,46 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # KIRARI - Demo Site
 > KIRARI - Demo Site
 
+[Include Video in the Posts](/posts/video/)
+
+
+
+
+
+2023-08-01
+
+
+
+
+
+[示例](/categories/Examples/)
+
+
+
+/
+
+[示例](/tags/Example/)
+
+/
+
+[Video](/tags/Video/)
+
+
+
+This post demonstrates how to include embedded video in a blog post.
+
+
+
+61 words
+
+|
+
+1 minute
+
+
+
+
+
 [Include Video in the Posts (CJK)](/posts/video-cjk/)
 
 
@@ -433,46 +473,6 @@ This post demonstrates how to include embedded video in a blog post.
 
 
 233 words
-
-|
-
-1 minute
-
-
-
-
-
-[Include Video in the Posts](/posts/video/)
-
-
-
-
-
-2023-08-01
-
-
-
-
-
-[示例](/categories/Examples/)
-
-
-
-/
-
-[示例](/tags/Example/)
-
-/
-
-[Video](/tags/Video/)
-
-
-
-This post demonstrates how to include embedded video in a blog post.
-
-
-
-61 words
 
 |
 
@@ -888,7 +888,7 @@ License
 
 [Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
 
-[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
+[Simple Guides for Fuwari](/posts/guide/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -966,9 +966,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
+[Expressive Code Example](/posts/expressive-code/)
 
-[Markdown Example (CJK)](/posts/markdown-cjk/)
+[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1072,9 +1072,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Expressive Code Example](/posts/expressive-code/)
-
 [Simple Guides for Fuwari](/posts/guide/)
+
+[Markdown Example (CJK)](/posts/markdown-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1268,7 +1268,7 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Simple Guides for Fuwari](/posts/guide/)
+[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
 
 [Markdown Example](/posts/markdown/)
 
@@ -1448,7 +1448,7 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Markdown Extended Features - KIRARI
 > Read more about Markdown features in Fuwari
 
-176 words
+224 words
 
 1 minute
 
@@ -1515,6 +1515,32 @@ You can add dynamic cards that link to GitHub repositories, on page load, the re
 [Waiting...](https://github.com/Fabrizz/MMM-OnSpotify)
 
 Create a GitHub repository card with the code `::github{repo="<owner>/<repo>"}`.
+
+## GitHub File Cards[#](#github-file-cards)
+
+You can add dynamic cards that link to a specific file in a GitHub repository, on page load, the file metadata is pulled from the GitHub API.
+
+[saicaca](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[/](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[fuwari](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[/](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[README.md](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[Theme overview](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[md](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[...](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[...](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+Create a GitHub file card with the code `::githubfile{repo="<owner>/<repo>" file="path/to/file.ext"}`.
+
+Optional parameters: `description` (string) and `path` (alias for `file`).
 
 ## Admonitions[#](#admonitions)
 
@@ -1750,7 +1776,7 @@ License
 
 [Markdown Example (CJK)](/posts/markdown-cjk/)
 
-[Include Video in the Posts (CJK)](/posts/video-cjk/)
+[Include Video in the Posts](/posts/video/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1844,9 +1870,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Markdown Example](/posts/markdown/)
-
 [Include Video in the Posts](/posts/video/)
+
+
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1914,9 +1940,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
+[Markdown Example](/posts/markdown/)
+
 [Include Video in the Posts (CJK)](/posts/video-cjk/)
-
-
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
