@@ -7,6 +7,7 @@
 - [KIRARI - Demo Site](https://markd3ng.github.io/2/) - KIRARI - Demo Site
 - [About#](https://markd3ng.github.io/about/) - About
 - [Archive - KIRARI](https://markd3ng.github.io/archive/) - Archive - KIRARI
+- [Friends#](https://markd3ng.github.io/friends/) - Friends
 
 ### categories
 

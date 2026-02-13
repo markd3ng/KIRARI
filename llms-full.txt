@@ -6,54 +6,6 @@
 # KIRARI - Demo Site
 > KIRARI - Demo Site
 
-[Markdown Extended Features](/posts/markdown-extended/)
-
-
-
-
-
-2024-05-01
-
-
-
-
-
-[示例](/categories/Examples/)
-
-
-
-/
-
-[演示](/tags/Demo/)
-
-/
-
-[示例](/tags/Example/)
-
-/
-
-[Markdown](/tags/Markdown/)
-
-/
-
-[Fuwari](/tags/Fuwari/)
-
-
-
-Read more about Markdown features in Fuwari
-
-
-
-176 words
-
-|
-
-1 minute
-
-
-
-
-
 [Markdown Extended Features (CJK)](/posts/markdown-extended-cjk/)
 
 
@@ -101,6 +53,54 @@ Read more about Markdown features in Fuwari
 |
 
 2 minutes
+
+
+
+
+
+[Markdown Extended Features](/posts/markdown-extended/)
+
+
+
+
+
+2024-05-01
+
+
+
+
+
+[示例](/categories/Examples/)
+
+
+
+/
+
+[演示](/tags/Demo/)
+
+/
+
+[示例](/tags/Example/)
+
+/
+
+[Markdown](/tags/Markdown/)
+
+/
+
+[Fuwari](/tags/Fuwari/)
+
+
+
+Read more about Markdown features in Fuwari
+
+
+
+224 words
+
+|
+
+1 minute
 
 
 
@@ -551,6 +551,28 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 
 ---
 
+# Friends#
+> Friends
+
+Lorem Ipsum
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+
+
+
+
+
+
+Edit `src/_data/friends.json` to add sites.
+
+You can also edit `src/content/spec/friends.md` to Change text here.
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
 # Expressive Code Example (CJK) - KIRARI
 > How code blocks look in Markdown using Expressive Code.
 
@@ -716,7 +738,7 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Markdown Extended Features (CJK)](/posts/markdown-extended-cjk/)
+[Markdown Extended Features](/posts/markdown-extended/)
 
 [Expressive Code Example](/posts/expressive-code/)
 
@@ -1410,13 +1432,17 @@ Published at
 
 2024-05-01
 
+Last updated at
+
+2024-11-29
+
 License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Markdown Extended Features](/posts/markdown-extended/)
 
-[Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
+
+[Markdown Extended Features](/posts/markdown-extended/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1426,7 +1452,7 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # Markdown Extended Features - KIRARI
 > Read more about Markdown features in Fuwari
 
-176 words
+224 words
 
 1 minute
 
@@ -1494,6 +1520,32 @@ You can add dynamic cards that link to GitHub repositories, on page load, the re
 
 Create a GitHub repository card with the code `::github{repo="<owner>/<repo>"}`.
 
+## GitHub File Cards[#](#github-file-cards)
+
+You can add dynamic cards that link to a specific file in a GitHub repository, on page load, the file metadata is pulled from the GitHub API.
+
+[saicaca](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[/](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[fuwari](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[/](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[README.md](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[Theme overview](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[md](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[...](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+[...](https://github.com/saicaca/fuwari/blob/HEAD/README.md)
+
+Create a GitHub file card with the code `::githubfile{repo="<owner>/<repo>" file="path/to/file.ext"}`.
+
+Optional parameters: `description` (string) and `path` (alias for `file`).
+
 ## Admonitions[#](#admonitions)
 
 Following types of admonitions are supported: `note` `tip` `important` `warning` `caution`
@@ -1552,13 +1604,17 @@ Published at
 
 2024-05-01
 
+Last updated at
+
+2024-11-29
+
 License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-
-
 [Markdown Extended Features (CJK)](/posts/markdown-extended-cjk/)
+
+[Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
