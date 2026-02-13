@@ -198,6 +198,50 @@ How code blocks look in Markdown using Expressive Code.
 
 
 
+[Simple Guides for Fuwari](/posts/guide/)
+
+
+
+
+
+2024-04-01
+
+
+
+
+
+[指南](/categories/Guides/)
+
+
+
+/
+
+[Fuwari](/tags/Fuwari/)
+
+/
+
+[Blogging](/tags/Blogging/)
+
+/
+
+[Customization](/tags/Customization/)
+
+
+
+How to use this blog template.
+
+
+
+160 words
+
+|
+
+1 minute
+
+
+
+
+
 [Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
 
 
@@ -241,50 +285,6 @@ How to use this blog template.
 |
 
 2 minutes
-
-
-
-
-
-[Simple Guides for Fuwari](/posts/guide/)
-
-
-
-
-
-2024-04-01
-
-
-
-
-
-[指南](/categories/Guides/)
-
-
-
-/
-
-[Fuwari](/tags/Fuwari/)
-
-/
-
-[Blogging](/tags/Blogging/)
-
-/
-
-[Customization](/tags/Customization/)
-
-
-
-How to use this blog template.
-
-
-
-160 words
-
-|
-
-1 minute
 
 
 
@@ -888,7 +888,7 @@ License
 
 [Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
 
-[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
+[Simple Guides for Fuwari](/posts/guide/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -966,9 +966,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
+[Expressive Code Example](/posts/expressive-code/)
 
-[Markdown Example (CJK)](/posts/markdown-cjk/)
+[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1072,9 +1072,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Expressive Code Example](/posts/expressive-code/)
-
 [Simple Guides for Fuwari](/posts/guide/)
+
+[Markdown Example (CJK)](/posts/markdown-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1268,7 +1268,7 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Simple Guides for Fuwari](/posts/guide/)
+[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
 
 [Markdown Example](/posts/markdown/)
 
