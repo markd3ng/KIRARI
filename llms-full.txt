@@ -398,6 +398,46 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 # KIRARI - Demo Site
 > KIRARI - Demo Site
 
+[Include Video in the Posts](/posts/video/)
+
+
+
+
+
+2023-08-01
+
+
+
+
+
+[示例](/categories/Examples/)
+
+
+
+/
+
+[示例](/tags/Example/)
+
+/
+
+[Video](/tags/Video/)
+
+
+
+This post demonstrates how to include embedded video in a blog post.
+
+
+
+61 words
+
+|
+
+1 minute
+
+
+
+
+
 [Include Video in the Posts (CJK)](/posts/video-cjk/)
 
 
@@ -433,46 +473,6 @@ This post demonstrates how to include embedded video in a blog post.
 
 
 233 words
-
-|
-
-1 minute
-
-
-
-
-
-[Include Video in the Posts](/posts/video/)
-
-
-
-
-
-2023-08-01
-
-
-
-
-
-[示例](/categories/Examples/)
-
-
-
-/
-
-[示例](/tags/Example/)
-
-/
-
-[Video](/tags/Video/)
-
-
-
-This post demonstrates how to include embedded video in a blog post.
-
-
-
-61 words
 
 |
 
@@ -1728,7 +1728,7 @@ License
 
 [Markdown Example (CJK)](/posts/markdown-cjk/)
 
-[Include Video in the Posts (CJK)](/posts/video-cjk/)
+[Include Video in the Posts](/posts/video/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1822,9 +1822,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Markdown Example](/posts/markdown/)
-
 [Include Video in the Posts](/posts/video/)
+
+
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1892,9 +1892,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
+[Markdown Example](/posts/markdown/)
+
 [Include Video in the Posts (CJK)](/posts/video-cjk/)
-
-
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
