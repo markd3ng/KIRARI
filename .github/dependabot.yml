@@ -2,8 +2,8 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
-    # 监控的目标分支，建议设为你的主要开发分支（如 develop）
-    target-branch: "develop"
+    # 监控的目标分支，建议设为你的主要开发分支（如 dev）
+    target-branch: "dev"
     schedule:
       interval: "daily"
     

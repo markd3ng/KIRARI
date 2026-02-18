@@ -2,9 +2,9 @@ name: EdgeOne Build (Develop)
 
 on:
   push:
-    branches: [develop]
+    branches: [dev]
   pull_request:
-    branches: [develop]
+    branches: [dev]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -95,7 +95,7 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: write
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
     name: Deploy to EdgeOne
     steps:
       - name: Download artifact
