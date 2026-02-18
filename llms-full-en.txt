@@ -6,6 +6,274 @@
 # KIRARI - Demo Site
 > KIRARI - Demo Site
 
+[Tag and Category Mapping Test](/posts/mapping-test/)
+
+
+
+
+
+2026-02-18
+
+
+
+
+
+[前端开发](/categories/frontend/)
+
+
+
+/
+
+[演示](/tags/demo/)
+
+/
+
+[示例](/tags/example/)
+
+/
+
+[教程](/tags/tutorial/)
+
+/
+
+[Web开发](/tags/web_dev/)
+
+/
+
+[前端](/tags/frontend/)
+
+/
+
+[JavaScript](/tags/javascript/)
+
+/
+
+[TypeScript](/tags/typescript/)
+
+/
+
+[Astro](/tags/astro/)
+
+/
+
+[Svelte](/tags/svelte/)
+
+/
+
+[UnmappedTag](/tags/UnmappedTag/)
+
+
+
+Comprehensive test post for verifying tag and category mapping functionality
+
+
+
+107 words
+
+|
+
+1 minute
+
+
+
+
+
+[Mermaid 图表测试](/posts/mermaid-test/)
+
+
+
+
+
+2026-02-18
+
+
+
+
+
+[示例](/categories/examples/)
+
+
+
+/
+
+[演示](/tags/demo/)
+
+
+
+测试 Mermaid 图表渲染功能
+
+
+
+265 words
+
+|
+
+1 minute
+
+
+
+
+
+[Docker and Kubernetes Deployment Guide](/posts/devops-guide/)
+
+
+
+
+
+2026-02-17
+
+
+
+
+
+[运维开发](/categories/devops/)
+
+
+
+/
+
+[Docker](/tags/docker/)
+
+/
+
+[Kubernetes](/tags/kubernetes/)
+
+/
+
+[运维开发](/tags/devops/)
+
+/
+
+[Linux](/tags/linux/)
+
+/
+
+[教程](/tags/tutorial/)
+
+
+
+A comprehensive guide to container orchestration
+
+
+
+36 words
+
+|
+
+1 minute
+
+
+
+
+
+[Caddy Reverse Proxy with Tailscale](/posts/network-setup/)
+
+
+
+
+
+2026-02-16
+
+
+
+
+
+[网络与运维](/categories/network_and_operations/)
+
+
+
+/
+
+[Caddy](/tags/caddy/)
+
+/
+
+[Tailscale](/tags/tailscale/)
+
+/
+
+[VPN](/tags/vpn/)
+
+/
+
+[反向代理](/tags/reverse_proxy/)
+
+/
+
+[Cloudflare](/tags/cloudflare/)
+
+/
+
+[Docker](/tags/docker/)
+
+
+
+Setting up Caddy as reverse proxy for Tailscale DERP server
+
+
+
+41 words
+
+|
+
+1 minute
+
+
+
+
+
+[IoT Device Development with Embedded Systems](/posts/iot-hardware/)
+
+
+
+
+
+2026-02-15
+
+
+
+
+
+[硬件与DIY](/categories/hardware_and_diy/)
+
+
+
+/
+
+[物联网](/tags/iot/)
+
+/
+
+[嵌入式](/tags/embedded/)
+
+/
+
+[硬件](/tags/hardware/)
+
+/
+
+[DIY](/tags/diy/)
+
+/
+
+[教程](/tags/tutorial/)
+
+
+
+Building IoT devices with embedded systems
+
+
+
+35 words
+
+|
+
+1 minute
+
+
+
+
+
 [Markdown Extended Features (CJK)](/posts/markdown-extended-cjk/)
 
 
@@ -153,6 +421,22 @@ How code blocks look in Markdown using Expressive Code.
 
 
 
+
+
+
+1
+
+[2](/2/)
+
+
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# KIRARI - Demo Site
+> KIRARI - Demo Site
 
 [Expressive Code Example](/posts/expressive-code/)
 
@@ -382,22 +666,6 @@ A simple example of a Markdown blog post.
 
 
 
-
-
-1
-
-[2](/2/)
-
-
-
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
-Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
-
----
-
-# KIRARI - Demo Site
-> KIRARI - Demo Site
-
 [Include Video in the Posts (CJK)](/posts/video-cjk/)
 
 
@@ -535,6 +803,14 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 
 ---
 
+# Archive - 运维开发 - KIRARI
+> Archive - 运维开发 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
 # Archive - 示例 - KIRARI
 > Archive - 示例 - KIRARI
 
@@ -543,8 +819,40 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 
 ---
 
+# Archive - 示例 - KIRARI
+> Archive - 示例 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - 前端开发 - KIRARI
+> Archive - 前端开发 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
 # Archive - 指南 - KIRARI
 > Archive - 指南 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - 硬件与DIY - KIRARI
+> Archive - 硬件与DIY - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - 网络与运维 - KIRARI
+> Archive - 网络与运维 - KIRARI
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -567,6 +875,91 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 Edit `src/_data/friends.json` to add sites.
 
 You can also edit `src/content/spec/friends.md` to Change text here.
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Docker and Kubernetes Deployment Guide - KIRARI
+> A comprehensive guide to container orchestration
+
+36 words
+
+1 minute
+
+
+
+Docker and Kubernetes Deployment Guide
+
+
+
+
+
+2026-02-17
+
+
+
+
+
+[运维开发](/categories/devops/)
+
+
+
+/
+
+[Docker](/tags/docker/)
+
+/
+
+[Kubernetes](/tags/kubernetes/)
+
+/
+
+[运维开发](/tags/devops/)
+
+/
+
+[Linux](/tags/linux/)
+
+/
+
+[教程](/tags/tutorial/)
+
+
+
+
+
+
+
+## Container Orchestration[#](#container-orchestration)
+
+This article covers Docker and Kubernetes deployment strategies.
+
+### Expected Display[#](#expected-display)
+
+- Category: `devops` → **运维开发**
+- Tags: `docker` → **Docker**, `kubernetes` → **Kubernetes**, `devops` → **运维开发**, `linux` → **Linux**, `tutorial` → **教程**
+
+Docker and Kubernetes Deployment Guide
+
+<https://markd3ng.github.io/posts/devops-guide/>
+
+Author
+
+Lorem Ipsum
+
+Published at
+
+2026-02-17
+
+License
+
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+[Mermaid 图表测试](/posts/mermaid-test/)
+
+[Caddy Reverse Proxy with Tailscale](/posts/network-setup/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1081,6 +1474,209 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 
 ---
 
+# IoT Device Development with Embedded Systems - KIRARI
+> Building IoT devices with embedded systems
+
+35 words
+
+1 minute
+
+
+
+IoT Device Development with Embedded Systems
+
+
+
+
+
+2026-02-15
+
+
+
+
+
+[硬件与DIY](/categories/hardware_and_diy/)
+
+
+
+/
+
+[物联网](/tags/iot/)
+
+/
+
+[嵌入式](/tags/embedded/)
+
+/
+
+[硬件](/tags/hardware/)
+
+/
+
+[DIY](/tags/diy/)
+
+/
+
+[教程](/tags/tutorial/)
+
+
+
+
+
+
+
+## Hardware Projects[#](#hardware-projects)
+
+This article covers IoT device development.
+
+### Expected Display[#](#expected-display)
+
+- Category: `hardware_and_diy` → **硬件与DIY**
+- Tags: `iot` → **物联网**, `embedded` → **嵌入式**, `hardware` → **硬件**, `diy` → **DIY**, `tutorial` → **教程**
+
+IoT Device Development with Embedded Systems
+
+<https://markd3ng.github.io/posts/iot-hardware/>
+
+Author
+
+Lorem Ipsum
+
+Published at
+
+2026-02-15
+
+License
+
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+[Caddy Reverse Proxy with Tailscale](/posts/network-setup/)
+
+[Markdown Extended Features (CJK)](/posts/markdown-extended-cjk/)
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Tag and Category Mapping Test - KIRARI
+> Comprehensive test post for verifying tag and category mapping functionality
+
+107 words
+
+1 minute
+
+
+
+Tag and Category Mapping Test
+
+
+
+
+
+2026-02-18
+
+
+
+
+
+[前端开发](/categories/frontend/)
+
+
+
+/
+
+[演示](/tags/demo/)
+
+/
+
+[示例](/tags/example/)
+
+/
+
+[教程](/tags/tutorial/)
+
+/
+
+[Web开发](/tags/web_dev/)
+
+/
+
+[前端](/tags/frontend/)
+
+/
+
+[JavaScript](/tags/javascript/)
+
+/
+
+[TypeScript](/tags/typescript/)
+
+/
+
+[Astro](/tags/astro/)
+
+/
+
+[Svelte](/tags/svelte/)
+
+/
+
+[UnmappedTag](/tags/UnmappedTag/)
+
+
+
+
+
+
+
+## Mapping Test[#](#mapping-test)
+
+This post is used to test the tag and category mapping functionality with comprehensive test cases.
+
+### Expected Results[#](#expected-results)
+
+**Tags:**
+
+Original | Expected Display | Status demo | 演示 | Mapped example | 示例 | Mapped tutorial | 教程 | Mapped web\_dev | Web开发 | Mapped frontend | 前端 | Mapped javascript | JavaScript | Mapped typescript | TypeScript | Mapped astro | Astro | Mapped svelte | Svelte | Mapped UnmappedTag | UnmappedTag | No mapping (fallback)
+
+**Category:**
+
+Original | Expected Display | Status frontend | 前端开发 | Mapped
+
+### How to Verify[#](#how-to-verify)
+
+1. Check the sidebar Categories widget - should show “前端开发” instead of “frontend”
+1. Check the sidebar Tags widget - should show localized names for mapped tags
+1. Check the post meta section - category and tags should display localized names
+1. Check the category archive page URL - should be `/categories/frontend/` (English slug)
+1. Check the tag archive page URLs - should be `/tags/demo/` etc. (English slug)
+
+Tag and Category Mapping Test
+
+<https://markd3ng.github.io/posts/mapping-test/>
+
+Author
+
+Lorem Ipsum
+
+Published at
+
+2026-02-18
+
+License
+
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+
+
+[Mermaid 图表测试](/posts/mermaid-test/)
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
 # An h1 header#
 > A simple example of a Markdown blog post.
 
@@ -1440,7 +2036,7 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-
+[IoT Device Development with Embedded Systems](/posts/iot-hardware/)
 
 [Markdown Extended Features](/posts/markdown-extended/)
 
@@ -1791,6 +2387,95 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 
 ---
 
+# Caddy Reverse Proxy with Tailscale - KIRARI
+> Setting up Caddy as reverse proxy for Tailscale DERP server
+
+41 words
+
+1 minute
+
+
+
+Caddy Reverse Proxy with Tailscale
+
+
+
+
+
+2026-02-16
+
+
+
+
+
+[网络与运维](/categories/network_and_operations/)
+
+
+
+/
+
+[Caddy](/tags/caddy/)
+
+/
+
+[Tailscale](/tags/tailscale/)
+
+/
+
+[VPN](/tags/vpn/)
+
+/
+
+[反向代理](/tags/reverse_proxy/)
+
+/
+
+[Cloudflare](/tags/cloudflare/)
+
+/
+
+[Docker](/tags/docker/)
+
+
+
+
+
+
+
+## Network Setup[#](#network-setup)
+
+This article covers setting up Caddy reverse proxy with Tailscale.
+
+### Expected Display[#](#expected-display)
+
+- Category: `network_and_operations` → **网络与运维**
+- Tags: `caddy` → **Caddy**, `tailscale` → **Tailscale**, `vpn` → **VPN**, `reverse_proxy` → **反向代理**, `cloudflare` → **Cloudflare**, `docker` → **Docker**
+
+Caddy Reverse Proxy with Tailscale
+
+<https://markd3ng.github.io/posts/network-setup/>
+
+Author
+
+Lorem Ipsum
+
+Published at
+
+2026-02-16
+
+License
+
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+[Docker and Kubernetes Deployment Guide](/posts/devops-guide/)
+
+[IoT Device Development with Embedded Systems](/posts/iot-hardware/)
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
 # Include Video in the Posts (CJK) - KIRARI
 > This post demonstrates how to include embedded video in a blog post.
 
@@ -1957,6 +2642,14 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 
 ---
 
+# Archive - Astro - KIRARI
+> Archive - Astro - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
 # Archive - Blogging - KIRARI
 > Archive - Blogging - KIRARI
 
@@ -1965,8 +2658,24 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 
 ---
 
+# Archive - Caddy - KIRARI
+> Archive - Caddy - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
 # Archive - CJK - KIRARI
 > Archive - CJK - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - Cloudflare - KIRARI
+> Archive - Cloudflare - KIRARI
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1989,8 +2698,64 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 
 ---
 
+# Archive - 演示 - KIRARI
+> Archive - 演示 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - 运维开发 - KIRARI
+> Archive - 运维开发 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - DIY - KIRARI
+> Archive - DIY - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - Docker - KIRARI
+> Archive - Docker - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - 嵌入式 - KIRARI
+> Archive - 嵌入式 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
 # Archive - 示例 - KIRARI
 > Archive - 示例 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - 示例 - KIRARI
+> Archive - 示例 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - 前端 - KIRARI
+> Archive - 前端 - KIRARI
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -2005,6 +2770,46 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 
 ---
 
+# Archive - 硬件 - KIRARI
+> Archive - 硬件 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - 物联网 - KIRARI
+> Archive - 物联网 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - JavaScript - KIRARI
+> Archive - JavaScript - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - Kubernetes - KIRARI
+> Archive - Kubernetes - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - Linux - KIRARI
+> Archive - Linux - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
 # Archive - Markdown - KIRARI
 > Archive - Markdown - KIRARI
 
@@ -2013,8 +2818,72 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 
 ---
 
+# Archive - 反向代理 - KIRARI
+> Archive - 反向代理 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - Svelte - KIRARI
+> Archive - Svelte - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - Tailscale - KIRARI
+> Archive - Tailscale - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - 教程 - KIRARI
+> Archive - 教程 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - TypeScript - KIRARI
+> Archive - TypeScript - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - UnmappedTag - KIRARI
+> Archive - UnmappedTag - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
 # Archive - Video - KIRARI
 > Archive - Video - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - VPN - KIRARI
+> Archive - VPN - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Archive - Web开发 - KIRARI
+> Archive - Web开发 - KIRARI
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)

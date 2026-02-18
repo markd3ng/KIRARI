@@ -1,1 +1,0 @@
-const e={site:{lang:"en"},expressiveCode:{themes:["github-dark","github-dark-dimmed"]},mappings:{tags:{demo:"演示",example:"示例",tutorial:"教程"}}},s=e.site,t=e.expressiveCode,i=e.mappings.tags;export{t as e,s,i as t};

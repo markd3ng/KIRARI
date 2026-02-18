@@ -1,4 +1,179 @@
-<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>KIRARI</title><description>Demo Site</description><link>https://markd3ng.github.io/</link><language>en</language><item><title>Markdown Extended Features (CJK)</title><link>https://markd3ng.github.io/posts/markdown-extended-cjk/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/markdown-extended-cjk/</guid><description>Read more about Markdown features in Fuwari</description><pubDate>Wed, 01 May 2024 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;GitHub Repository Cards&lt;/h2&gt;
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>KIRARI</title><description>Demo Site</description><link>https://markd3ng.github.io/</link><language>en</language><item><title>Tag and Category Mapping Test</title><link>https://markd3ng.github.io/posts/mapping-test/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/mapping-test/</guid><description>Comprehensive test post for verifying tag and category mapping functionality</description><pubDate>Wed, 18 Feb 2026 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;Mapping Test&lt;/h2&gt;
+&lt;p&gt;This post is used to test the tag and category mapping functionality with comprehensive test cases.&lt;/p&gt;
+&lt;h3&gt;Expected Results&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;Tags:&lt;/strong&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Original&lt;/th&gt;
+&lt;th&gt;Expected Display&lt;/th&gt;
+&lt;th&gt;Status&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;demo&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;演示&lt;/td&gt;
+&lt;td&gt;Mapped&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;example&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;示例&lt;/td&gt;
+&lt;td&gt;Mapped&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;tutorial&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;教程&lt;/td&gt;
+&lt;td&gt;Mapped&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;web_dev&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Web开发&lt;/td&gt;
+&lt;td&gt;Mapped&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;frontend&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;前端&lt;/td&gt;
+&lt;td&gt;Mapped&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;javascript&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;JavaScript&lt;/td&gt;
+&lt;td&gt;Mapped&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;typescript&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;TypeScript&lt;/td&gt;
+&lt;td&gt;Mapped&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;astro&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Astro&lt;/td&gt;
+&lt;td&gt;Mapped&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;svelte&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;Svelte&lt;/td&gt;
+&lt;td&gt;Mapped&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;UnmappedTag&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;UnmappedTag&lt;/td&gt;
+&lt;td&gt;No mapping (fallback)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;strong&gt;Category:&lt;/strong&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Original&lt;/th&gt;
+&lt;th&gt;Expected Display&lt;/th&gt;
+&lt;th&gt;Status&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;frontend&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;前端开发&lt;/td&gt;
+&lt;td&gt;Mapped&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3&gt;How to Verify&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;Check the sidebar Categories widget - should show &quot;前端开发&quot; instead of &quot;frontend&quot;&lt;/li&gt;
+&lt;li&gt;Check the sidebar Tags widget - should show localized names for mapped tags&lt;/li&gt;
+&lt;li&gt;Check the post meta section - category and tags should display localized names&lt;/li&gt;
+&lt;li&gt;Check the category archive page URL - should be &lt;code&gt;/categories/frontend/&lt;/code&gt; (English slug)&lt;/li&gt;
+&lt;li&gt;Check the tag archive page URLs - should be &lt;code&gt;/tags/demo/&lt;/code&gt; etc. (English slug)&lt;/li&gt;
+&lt;/ol&gt;
+</content:encoded></item><item><title>Mermaid 图表测试</title><link>https://markd3ng.github.io/posts/mermaid-test/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/mermaid-test/</guid><description>测试 Mermaid 图表渲染功能</description><pubDate>Wed, 18 Feb 2026 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;Mermaid 图表测试&lt;/h2&gt;
+&lt;p&gt;本文用于验证 Mermaid 图表渲染功能是否正常工作。&lt;/p&gt;
+&lt;h3&gt;流程图 (Flowchart)&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;graph TD;
+    A[开始] --&amp;gt; B{是否安装?};
+    B --&amp;gt;|是| C[运行项目];
+    B --&amp;gt;|否| D[安装依赖];
+    D --&amp;gt; C;
+    C --&amp;gt; E[完成];
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;序列图 (Sequence Diagram)&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;sequenceDiagram
+    participant 用户
+    participant 浏览器
+    participant 服务器
+
+    用户-&amp;gt;&amp;gt;浏览器: 访问页面
+    浏览器-&amp;gt;&amp;gt;服务器: 请求数据
+    服务器--&amp;gt;&amp;gt;浏览器: 返回 HTML
+    浏览器--&amp;gt;&amp;gt;用户: 渲染页面
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;甘特图 (Gantt Chart)&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;gantt
+    title 项目计划
+    dateFormat  YYYY-MM-DD
+    section 设计
+    需求分析       :a1, 2026-02-01, 7d
+    UI 设计        :a2, after a1, 5d
+    section 开发
+    前端开发       :b1, after a2, 10d
+    后端开发       :b2, after a2, 12d
+    section 测试
+    集成测试       :c1, after b2, 5d
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;饼图 (Pie Chart)&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;pie title 技术栈使用占比
+    &quot;Astro&quot; : 40
+    &quot;Svelte&quot; : 25
+    &quot;TailwindCSS&quot; : 20
+    &quot;TypeScript&quot; : 15
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;类图 (Class Diagram)&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;classDiagram
+    class BlogPost {
+        +String title
+        +Date published
+        +String[] tags
+        +boolean mermaid
+        +render() void
+    }
+    class Config {
+        +boolean enable
+    }
+    BlogPost --&amp;gt; Config : uses
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;普通代码块（不受影响）&lt;/h3&gt;
+&lt;p&gt;下面的代码块应该正常高亮，不会被 Mermaid 处理：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;const config = {
+  mermaid: {
+    enable: true,
+  },
+};
+console.log(&quot;Hello Mermaid!&quot;);
+&lt;/code&gt;&lt;/pre&gt;
+</content:encoded></item><item><title>Docker and Kubernetes Deployment Guide</title><link>https://markd3ng.github.io/posts/devops-guide/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/devops-guide/</guid><description>A comprehensive guide to container orchestration</description><pubDate>Tue, 17 Feb 2026 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;Container Orchestration&lt;/h2&gt;
+&lt;p&gt;This article covers Docker and Kubernetes deployment strategies.&lt;/p&gt;
+&lt;h3&gt;Expected Display&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Category: &lt;code&gt;devops&lt;/code&gt; → &lt;strong&gt;运维开发&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;Tags: &lt;code&gt;docker&lt;/code&gt; → &lt;strong&gt;Docker&lt;/strong&gt;, &lt;code&gt;kubernetes&lt;/code&gt; → &lt;strong&gt;Kubernetes&lt;/strong&gt;, &lt;code&gt;devops&lt;/code&gt; → &lt;strong&gt;运维开发&lt;/strong&gt;, &lt;code&gt;linux&lt;/code&gt; → &lt;strong&gt;Linux&lt;/strong&gt;, &lt;code&gt;tutorial&lt;/code&gt; → &lt;strong&gt;教程&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</content:encoded></item><item><title>Caddy Reverse Proxy with Tailscale</title><link>https://markd3ng.github.io/posts/network-setup/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/network-setup/</guid><description>Setting up Caddy as reverse proxy for Tailscale DERP server</description><pubDate>Mon, 16 Feb 2026 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;Network Setup&lt;/h2&gt;
+&lt;p&gt;This article covers setting up Caddy reverse proxy with Tailscale.&lt;/p&gt;
+&lt;h3&gt;Expected Display&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Category: &lt;code&gt;network_and_operations&lt;/code&gt; → &lt;strong&gt;网络与运维&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;Tags: &lt;code&gt;caddy&lt;/code&gt; → &lt;strong&gt;Caddy&lt;/strong&gt;, &lt;code&gt;tailscale&lt;/code&gt; → &lt;strong&gt;Tailscale&lt;/strong&gt;, &lt;code&gt;vpn&lt;/code&gt; → &lt;strong&gt;VPN&lt;/strong&gt;, &lt;code&gt;reverse_proxy&lt;/code&gt; → &lt;strong&gt;反向代理&lt;/strong&gt;, &lt;code&gt;cloudflare&lt;/code&gt; → &lt;strong&gt;Cloudflare&lt;/strong&gt;, &lt;code&gt;docker&lt;/code&gt; → &lt;strong&gt;Docker&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</content:encoded></item><item><title>IoT Device Development with Embedded Systems</title><link>https://markd3ng.github.io/posts/iot-hardware/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/iot-hardware/</guid><description>Building IoT devices with embedded systems</description><pubDate>Sun, 15 Feb 2026 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;Hardware Projects&lt;/h2&gt;
+&lt;p&gt;This article covers IoT device development.&lt;/p&gt;
+&lt;h3&gt;Expected Display&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Category: &lt;code&gt;hardware_and_diy&lt;/code&gt; → &lt;strong&gt;硬件与DIY&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;Tags: &lt;code&gt;iot&lt;/code&gt; → &lt;strong&gt;物联网&lt;/strong&gt;, &lt;code&gt;embedded&lt;/code&gt; → &lt;strong&gt;嵌入式&lt;/strong&gt;, &lt;code&gt;hardware&lt;/code&gt; → &lt;strong&gt;硬件&lt;/strong&gt;, &lt;code&gt;diy&lt;/code&gt; → &lt;strong&gt;DIY&lt;/strong&gt;, &lt;code&gt;tutorial&lt;/code&gt; → &lt;strong&gt;教程&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</content:encoded></item><item><title>Markdown Extended Features (CJK)</title><link>https://markd3ng.github.io/posts/markdown-extended-cjk/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/markdown-extended-cjk/</guid><description>Read more about Markdown features in Fuwari</description><pubDate>Wed, 01 May 2024 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;GitHub Repository Cards&lt;/h2&gt;
 &lt;p&gt;You can add dynamic cards that link to GitHub repositories, on page load, the repository information is pulled from the GitHub API.&lt;/p&gt;
 &lt;p&gt;::github{repo=&quot;Fabrizz/MMM-OnSpotify&quot;}&lt;/p&gt;
 &lt;p&gt;Create a GitHub repository card with the code &lt;code&gt;::github{repo=&quot;&amp;lt;owner&amp;gt;/&amp;lt;repo&amp;gt;&quot;}&lt;/code&gt;.&lt;/p&gt;
