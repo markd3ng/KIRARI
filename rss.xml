@@ -88,6 +88,70 @@
 &lt;li&gt;Check the category archive page URL - should be &lt;code&gt;/categories/frontend/&lt;/code&gt; (English slug)&lt;/li&gt;
 &lt;li&gt;Check the tag archive page URLs - should be &lt;code&gt;/tags/demo/&lt;/code&gt; etc. (English slug)&lt;/li&gt;
 &lt;/ol&gt;
+</content:encoded></item><item><title>Mermaid 图表测试</title><link>https://markd3ng.github.io/posts/mermaid-test/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/mermaid-test/</guid><description>测试 Mermaid 图表渲染功能</description><pubDate>Wed, 18 Feb 2026 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;Mermaid 图表测试&lt;/h2&gt;
+&lt;p&gt;本文用于验证 Mermaid 图表渲染功能是否正常工作。&lt;/p&gt;
+&lt;h3&gt;流程图 (Flowchart)&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;graph TD;
+    A[开始] --&amp;gt; B{是否安装?};
+    B --&amp;gt;|是| C[运行项目];
+    B --&amp;gt;|否| D[安装依赖];
+    D --&amp;gt; C;
+    C --&amp;gt; E[完成];
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;序列图 (Sequence Diagram)&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;sequenceDiagram
+    participant 用户
+    participant 浏览器
+    participant 服务器
+
+    用户-&amp;gt;&amp;gt;浏览器: 访问页面
+    浏览器-&amp;gt;&amp;gt;服务器: 请求数据
+    服务器--&amp;gt;&amp;gt;浏览器: 返回 HTML
+    浏览器--&amp;gt;&amp;gt;用户: 渲染页面
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;甘特图 (Gantt Chart)&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;gantt
+    title 项目计划
+    dateFormat  YYYY-MM-DD
+    section 设计
+    需求分析       :a1, 2026-02-01, 7d
+    UI 设计        :a2, after a1, 5d
+    section 开发
+    前端开发       :b1, after a2, 10d
+    后端开发       :b2, after a2, 12d
+    section 测试
+    集成测试       :c1, after b2, 5d
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;饼图 (Pie Chart)&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;pie title 技术栈使用占比
+    &quot;Astro&quot; : 40
+    &quot;Svelte&quot; : 25
+    &quot;TailwindCSS&quot; : 20
+    &quot;TypeScript&quot; : 15
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;类图 (Class Diagram)&lt;/h3&gt;
+&lt;pre&gt;&lt;code&gt;classDiagram
+    class BlogPost {
+        +String title
+        +Date published
+        +String[] tags
+        +boolean mermaid
+        +render() void
+    }
+    class Config {
+        +boolean enable
+    }
+    BlogPost --&amp;gt; Config : uses
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h3&gt;普通代码块（不受影响）&lt;/h3&gt;
+&lt;p&gt;下面的代码块应该正常高亮，不会被 Mermaid 处理：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;const config = {
+  mermaid: {
+    enable: true,
+  },
+};
+console.log(&quot;Hello Mermaid!&quot;);
+&lt;/code&gt;&lt;/pre&gt;
 </content:encoded></item><item><title>Docker and Kubernetes Deployment Guide</title><link>https://markd3ng.github.io/posts/devops-guide/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/devops-guide/</guid><description>A comprehensive guide to container orchestration</description><pubDate>Tue, 17 Feb 2026 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;Container Orchestration&lt;/h2&gt;
 &lt;p&gt;This article covers Docker and Kubernetes deployment strategies.&lt;/p&gt;
 &lt;h3&gt;Expected Display&lt;/h3&gt;
@@ -680,67 +744,6 @@ console.log(&apos;Sorry, do you know what line I am on?&apos;)
 &lt;pre&gt;&lt;code&gt;console.log(&apos;Greetings from line 5!&apos;)
 console.log(&apos;I am on line 6&apos;)
 &lt;/code&gt;&lt;/pre&gt;
-</content:encoded></item><item><title>Simple Guides for Fuwari</title><link>https://markd3ng.github.io/posts/guide/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/guide/</guid><description>How to use this blog template.</description><pubDate>Mon, 01 Apr 2024 00:00:00 GMT</pubDate><content:encoded>&lt;blockquote&gt;
-&lt;p&gt;Cover image source: &lt;a href=&quot;https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/208fc754-890d-4adb-9753-2c963332675d/width=2048/01651-1456859105-(colour_1.5),girl,_Blue,yellow,green,cyan,purple,red,pink,_best,8k,UHD,masterpiece,male%20focus,%201boy,gloves,%20ponytail,%20long%20hair,.jpeg&quot;&gt;Source&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;This blog template is built with &lt;a href=&quot;https://astro.build/&quot;&gt;Astro&lt;/a&gt;. For the things that are not mentioned in this guide, you may find the answers in the &lt;a href=&quot;https://docs.astro.build/&quot;&gt;Astro Docs&lt;/a&gt;.&lt;/p&gt;
-&lt;h2&gt;Front-matter of Posts&lt;/h2&gt;
-&lt;pre&gt;&lt;code&gt;---
-title: My First Blog Post
-published: 2023-09-09
-description: This is the first post of my new Astro blog.
-image: ./cover.jpg
-tags: [Foo, Bar]
-category: Front-end
-draft: false
----
-&lt;/code&gt;&lt;/pre&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;Attribute&lt;/th&gt;
-&lt;th&gt;Description&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;title&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;The title of the post.&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;published&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;The date the post was published.&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;description&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;A short description of the post. Displayed on index page.&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;image&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;The cover image path of the post.&amp;lt;br/&amp;gt;1. Start with &lt;code&gt;http://&lt;/code&gt; or &lt;code&gt;https://&lt;/code&gt;: Use web image&amp;lt;br/&amp;gt;2. Start with &lt;code&gt;/&lt;/code&gt;: For image in &lt;code&gt;public&lt;/code&gt; dir&amp;lt;br/&amp;gt;3. With none of the prefixes: Relative to the markdown file&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;tags&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;The tags of the post.&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;category&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;The category of the post.&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;&lt;code&gt;draft&lt;/code&gt;&lt;/td&gt;
-&lt;td&gt;If this post is still a draft, which won&apos;t be displayed.&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h2&gt;Where to Place the Post Files&lt;/h2&gt;
-&lt;p&gt;Your post files should be placed in &lt;code&gt;src/content/posts/&lt;/code&gt; directory. You can also create sub-directories to better organize your posts and assets.&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;src/content/posts/
-├── post-1.md
-└── post-2/
-    ├── cover.png
-    └── index.md
-&lt;/code&gt;&lt;/pre&gt;
 </content:encoded></item><item><title>Simple Guides for Fuwari (CJK)</title><link>https://markd3ng.github.io/posts/guide/index-cjk/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/guide/index-cjk/</guid><description>How to use this blog template.</description><pubDate>Mon, 01 Apr 2024 00:00:00 GMT</pubDate><content:encoded>&lt;blockquote&gt;
 &lt;p&gt;Cover image source: &lt;a href=&quot;https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/208fc754-890d-4adb-9753-2c963332675d/width=2048/01651-1456859105-(colour_1.5),girl,_Blue,yellow,green,cyan,purple,red,pink,_best,8k,UHD,masterpiece,male%20focus,%201boy,gloves,%20ponytail,%20long%20hair,.jpeg&quot;&gt;Source&lt;/a&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -817,6 +820,67 @@ draft: false
 가나다라마바사 아자차카타파하&lt;/p&gt;
 &lt;h3&gt;Mixed&lt;/h3&gt;
 &lt;p&gt;中文、日本語、한국어 mixed text line.&lt;/p&gt;
+</content:encoded></item><item><title>Simple Guides for Fuwari</title><link>https://markd3ng.github.io/posts/guide/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/guide/</guid><description>How to use this blog template.</description><pubDate>Mon, 01 Apr 2024 00:00:00 GMT</pubDate><content:encoded>&lt;blockquote&gt;
+&lt;p&gt;Cover image source: &lt;a href=&quot;https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/208fc754-890d-4adb-9753-2c963332675d/width=2048/01651-1456859105-(colour_1.5),girl,_Blue,yellow,green,cyan,purple,red,pink,_best,8k,UHD,masterpiece,male%20focus,%201boy,gloves,%20ponytail,%20long%20hair,.jpeg&quot;&gt;Source&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;This blog template is built with &lt;a href=&quot;https://astro.build/&quot;&gt;Astro&lt;/a&gt;. For the things that are not mentioned in this guide, you may find the answers in the &lt;a href=&quot;https://docs.astro.build/&quot;&gt;Astro Docs&lt;/a&gt;.&lt;/p&gt;
+&lt;h2&gt;Front-matter of Posts&lt;/h2&gt;
+&lt;pre&gt;&lt;code&gt;---
+title: My First Blog Post
+published: 2023-09-09
+description: This is the first post of my new Astro blog.
+image: ./cover.jpg
+tags: [Foo, Bar]
+category: Front-end
+draft: false
+---
+&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Attribute&lt;/th&gt;
+&lt;th&gt;Description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;title&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;The title of the post.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;published&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;The date the post was published.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;description&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;A short description of the post. Displayed on index page.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;image&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;The cover image path of the post.&amp;lt;br/&amp;gt;1. Start with &lt;code&gt;http://&lt;/code&gt; or &lt;code&gt;https://&lt;/code&gt;: Use web image&amp;lt;br/&amp;gt;2. Start with &lt;code&gt;/&lt;/code&gt;: For image in &lt;code&gt;public&lt;/code&gt; dir&amp;lt;br/&amp;gt;3. With none of the prefixes: Relative to the markdown file&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;tags&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;The tags of the post.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;category&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;The category of the post.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;&lt;code&gt;draft&lt;/code&gt;&lt;/td&gt;
+&lt;td&gt;If this post is still a draft, which won&apos;t be displayed.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2&gt;Where to Place the Post Files&lt;/h2&gt;
+&lt;p&gt;Your post files should be placed in &lt;code&gt;src/content/posts/&lt;/code&gt; directory. You can also create sub-directories to better organize your posts and assets.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;src/content/posts/
+├── post-1.md
+└── post-2/
+    ├── cover.png
+    └── index.md
+&lt;/code&gt;&lt;/pre&gt;
 </content:encoded></item><item><title>Markdown Example (CJK)</title><link>https://markd3ng.github.io/posts/markdown-cjk/</link><guid isPermaLink="true">https://markd3ng.github.io/posts/markdown-cjk/</guid><description>A simple example of a Markdown blog post.</description><pubDate>Sun, 01 Oct 2023 00:00:00 GMT</pubDate><content:encoded>&lt;h1&gt;An h1 header&lt;/h1&gt;
 &lt;p&gt;Paragraphs are separated by a blank line.&lt;/p&gt;
 &lt;p&gt;2nd paragraph. &lt;em&gt;Italic&lt;/em&gt;, &lt;strong&gt;bold&lt;/strong&gt;, and &lt;code&gt;monospace&lt;/code&gt;. Itemized lists

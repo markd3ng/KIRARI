@@ -12,6 +12,7 @@
 ### categories
 
 - [Archive - 运维开发 - KIRARI](https://markd3ng.github.io/categories/devops/) - Archive - 运维开发 - KIRARI
+- [Archive - 示例 - KIRARI](https://markd3ng.github.io/categories/examples/) - Archive - 示例 - KIRARI
 - [Archive - 示例 - KIRARI](https://markd3ng.github.io/categories/Examples/) - Archive - 示例 - KIRARI
 - [Archive - 前端开发 - KIRARI](https://markd3ng.github.io/categories/frontend/) - Archive - 前端开发 - KIRARI
 - [Archive - 指南 - KIRARI](https://markd3ng.github.io/categories/Guides/) - Archive - 指南 - KIRARI

@@ -78,6 +78,42 @@ Comprehensive test post for verifying tag and category mapping functionality
 
 
 
+[Mermaid 图表测试](/posts/mermaid-test/)
+
+
+
+
+
+2026-02-18
+
+
+
+
+
+[示例](/categories/examples/)
+
+
+
+/
+
+[演示](/tags/demo/)
+
+
+
+测试 Mermaid 图表渲染功能
+
+
+
+265 words
+
+|
+
+1 minute
+
+
+
+
+
 [Docker and Kubernetes Deployment Guide](/posts/devops-guide/)
 
 
@@ -386,6 +422,22 @@ How code blocks look in Markdown using Expressive Code.
 
 
 
+
+
+1
+
+[2](/2/)
+
+
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# KIRARI - Demo Site
+> KIRARI - Demo Site
+
 [Expressive Code Example](/posts/expressive-code/)
 
 
@@ -425,66 +477,6 @@ How code blocks look in Markdown using Expressive Code.
 |
 
 4 minutes
-
-
-
-
-
-
-
-1
-
-[2](/2/)
-
-
-
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
-Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
-
----
-
-# KIRARI - Demo Site
-> KIRARI - Demo Site
-
-[Simple Guides for Fuwari](/posts/guide/)
-
-
-
-
-
-2024-04-01
-
-
-
-
-
-[指南](/categories/Guides/)
-
-
-
-/
-
-[Fuwari](/tags/Fuwari/)
-
-/
-
-[Blogging](/tags/Blogging/)
-
-/
-
-[Customization](/tags/Customization/)
-
-
-
-How to use this blog template.
-
-
-
-160 words
-
-|
-
-1 minute
 
 
 
@@ -533,6 +525,50 @@ How to use this blog template.
 |
 
 2 minutes
+
+
+
+
+
+[Simple Guides for Fuwari](/posts/guide/)
+
+
+
+
+
+2024-04-01
+
+
+
+
+
+[指南](/categories/Guides/)
+
+
+
+/
+
+[Fuwari](/tags/Fuwari/)
+
+/
+
+[Blogging](/tags/Blogging/)
+
+/
+
+[Customization](/tags/Customization/)
+
+
+
+How to use this blog template.
+
+
+
+160 words
+
+|
+
+1 minute
 
 
 
@@ -783,6 +819,14 @@ Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/
 
 ---
 
+# Archive - 示例 - KIRARI
+> Archive - 示例 - KIRARI
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
 # Archive - 前端开发 - KIRARI
 > Archive - 前端开发 - KIRARI
 
@@ -913,7 +957,7 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Tag and Category Mapping Test](/posts/mapping-test/)
+[Mermaid 图表测试](/posts/mermaid-test/)
 
 [Caddy Reverse Proxy with Tailscale](/posts/network-setup/)
 
@@ -1237,7 +1281,7 @@ License
 
 [Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
 
-[Simple Guides for Fuwari](/posts/guide/)
+[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1315,9 +1359,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Expressive Code Example](/posts/expressive-code/)
-
 [Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
+
+[Markdown Example (CJK)](/posts/markdown-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1421,9 +1465,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Simple Guides for Fuwari](/posts/guide/)
+[Expressive Code Example](/posts/expressive-code/)
 
-[Markdown Example (CJK)](/posts/markdown-cjk/)
+[Simple Guides for Fuwari](/posts/guide/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1626,7 +1670,7 @@ License
 
 
 
-[Docker and Kubernetes Deployment Guide](/posts/devops-guide/)
+[Mermaid 图表测试](/posts/mermaid-test/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1820,7 +1864,7 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
+[Simple Guides for Fuwari](/posts/guide/)
 
 [Markdown Example](/posts/markdown/)
 
@@ -2337,6 +2381,142 @@ License
 [Markdown Example (CJK)](/posts/markdown-cjk/)
 
 [Include Video in the Posts (CJK)](/posts/video-cjk/)
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# Mermaid 图表测试 - KIRARI
+> 测试 Mermaid 图表渲染功能
+
+265 words
+
+1 minute
+
+
+
+Mermaid 图表测试
+
+
+
+
+
+2026-02-18
+
+
+
+
+
+[示例](/categories/examples/)
+
+
+
+/
+
+[演示](/tags/demo/)
+
+
+
+
+
+
+
+## Mermaid 图表测试[#](#mermaid-图表测试)
+
+本文用于验证 Mermaid 图表渲染功能是否正常工作。
+
+### 流程图 (Flowchart)[#](#流程图-flowchart)
+
+```
+graph TD;
+    A[开始] --> B{是否安装?};
+    B -->|是| C[运行项目];
+    B -->|否| D[安装依赖];
+    D --> C;
+    C --> E[完成];
+```
+
+### 序列图 (Sequence Diagram)[#](#序列图-sequence-diagram)
+
+```
+sequenceDiagram
+    participant 用户
+    participant 浏览器
+    participant 服务器
+
+    用户->>浏览器: 访问页面
+    浏览器->>服务器: 请求数据
+    服务器-->>浏览器: 返回 HTML
+    浏览器-->>用户: 渲染页面
+```
+
+### 甘特图 (Gantt Chart)[#](#甘特图-gantt-chart)
+
+```
+gantt
+    title 项目计划
+    dateFormat  YYYY-MM-DD
+    section 设计
+    需求分析       :a1, 2026-02-01, 7d
+    UI 设计        :a2, after a1, 5d
+    section 开发
+    前端开发       :b1, after a2, 10d
+    后端开发       :b2, after a2, 12d
+    section 测试
+    集成测试       :c1, after b2, 5d
+```
+
+### 饼图 (Pie Chart)[#](#饼图-pie-chart)
+
+```
+pie title 技术栈使用占比
+    "Astro" : 40
+    "Svelte" : 25
+    "TailwindCSS" : 20
+    "TypeScript" : 15
+```
+
+### 类图 (Class Diagram)[#](#类图-class-diagram)
+
+```
+classDiagram
+    class BlogPost {
+        +String title
+        +Date published
+        +String[] tags
+        +boolean mermaid
+        +render() void
+    }
+    class Config {
+        +boolean enable
+    }
+    BlogPost --> Config : uses
+```
+
+### 普通代码块（不受影响）[#](#普通代码块不受影响)
+
+下面的代码块应该正常高亮，不会被 Mermaid 处理：
+
+Mermaid 图表测试
+
+<https://markd3ng.github.io/posts/mermaid-test/>
+
+Author
+
+Lorem Ipsum
+
+Published at
+
+2026-02-18
+
+License
+
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+[Tag and Category Mapping Test](/posts/mapping-test/)
+
+[Docker and Kubernetes Deployment Guide](/posts/devops-guide/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)

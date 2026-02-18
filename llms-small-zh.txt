@@ -1,0 +1,4 @@
+# KIRARI
+> Structure-only documentation
+
+- [Mermaid 图表测试 - KIRARI](https://markd3ng.github.io/posts/mermaid-test/)

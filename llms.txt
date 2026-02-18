@@ -12,6 +12,7 @@
 ### categories
 
 - [Archive - 运维开发 - KIRARI](https://markd3ng.github.io/categories/devops/) - Archive - 运维开发 - KIRARI
+- [Archive - 示例 - KIRARI](https://markd3ng.github.io/categories/examples/) - Archive - 示例 - KIRARI
 - [Archive - 示例 - KIRARI](https://markd3ng.github.io/categories/Examples/) - Archive - 示例 - KIRARI
 - [Archive - 前端开发 - KIRARI](https://markd3ng.github.io/categories/frontend/) - Archive - 前端开发 - KIRARI
 - [Archive - 指南 - KIRARI](https://markd3ng.github.io/categories/Guides/) - Archive - 指南 - KIRARI
@@ -30,6 +31,7 @@
 - [Markdown Extended Features (CJK) - KIRARI](https://markd3ng.github.io/posts/markdown-extended-cjk/) - Read more about Markdown features in Fuwari
 - [Markdown Extended Features - KIRARI](https://markd3ng.github.io/posts/markdown-extended/) - Read more about Markdown features in Fuwari
 - [An h1 header#](https://markd3ng.github.io/posts/markdown/) - A simple example of a Markdown blog post.
+- [Mermaid 图表测试 - KIRARI](https://markd3ng.github.io/posts/mermaid-test/) - 测试 Mermaid 图表渲染功能
 - [Caddy Reverse Proxy with Tailscale - KIRARI](https://markd3ng.github.io/posts/network-setup/) - Setting up Caddy as reverse proxy for Tailscale DERP server
 - [Include Video in the Posts (CJK) - KIRARI](https://markd3ng.github.io/posts/video-cjk/) - This post demonstrates how to include embedded video in a blog post.
 - [Include Video in the Posts - KIRARI](https://markd3ng.github.io/posts/video/) - This post demonstrates how to include embedded video in a blog post.
