@@ -7,16 +7,16 @@ export type SiteConfig = {
 	subtitle: string;
 
 	lang:
-		| "en"
-		| "zh_CN"
-		| "zh_TW"
-		| "ja"
-		| "ko"
-		| "es"
-		| "th"
-		| "vi"
-		| "tr"
-		| "id";
+	| "en"
+	| "zh_CN"
+	| "zh_TW"
+	| "ja"
+	| "ko"
+	| "es"
+	| "th"
+	| "vi"
+	| "tr"
+	| "id";
 
 	themeColor: {
 		hue: number;
@@ -80,6 +80,10 @@ export type LicenseConfig = {
 	enable: boolean;
 	name: string;
 	url: string;
+};
+
+export type MermaidConfig = {
+	enable: boolean;
 };
 
 export type LIGHT_DARK_MODE =

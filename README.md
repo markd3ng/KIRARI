@@ -5,12 +5,6 @@
 
 A static blog theme built with [Astro](https://astro.build/), [TailwindCSS](https://tailwindcss.com/) and [Svelte](https://svelte.dev/).
 
-## 📜 Changelog
-
-### 2026-02-13
-- Integrated [astro-llms-generate](https://github.com/ColdranAI/astro-llms-generate) plugin for LLM-friendly documentation.
-- Enabled i18n support for LLM documentation generation.
-
 ## 🚀 Getting Started
 
 1.  **Clone the repository**
@@ -99,6 +93,52 @@ export const Config = {
   // ...
 }
 ```
+
+## 🧜 Mermaid Diagrams
+
+This project integrates [rehype-mermaid](https://github.com/remcohaszing/rehype-mermaid) to render Mermaid diagrams in your posts.
+
+### Plugin Configuration
+
+Configuration is managed in `src/constants.ts` under the `mermaid` object:
+
+```typescript
+// src/constants.ts
+export const Config = {
+  // ...
+  mermaid: {
+    enable: true, // Global toggle for Mermaid support
+  },
+  // ...
+}
+```
+
+### Usage
+
+To enable Mermaid rendering in a specific post, add `mermaid: true` to the frontmatter:
+
+````markdown
+---
+title: My Post
+published: 2026-02-18
+mermaid: true
+---
+
+Here's a flowchart:
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+````
+
+> [!TIP]
+> Mermaid JS (~500KB) is only loaded on pages with `mermaid: true` in frontmatter. All other pages are unaffected.
+
+**Supported diagram types include:** Flowchart, Sequence Diagram, Class Diagram, State Diagram, Gantt Chart, Pie Chart, ER Diagram, and more. See the [Mermaid documentation](https://mermaid.js.org/) for the full list.
 
 ## 🤖 LLMs Documentation Generator
 

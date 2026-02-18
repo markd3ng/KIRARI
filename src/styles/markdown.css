@@ -106,9 +106,24 @@
     }
 
     /* Optimize rendering of code elements */
-    pre {
+    pre:not(.mermaid) {
         content-visibility: auto;
         contain-intrinsic-size: auto 300px;
+    }
+
+    /* Mermaid diagram styling */
+    pre.mermaid {
+        background: transparent;
+        border: none;
+        padding: 1rem 0;
+        text-align: center;
+        overflow-x: auto;
+        font-family: inherit;
+    }
+
+    pre.mermaid svg {
+        max-width: 100%;
+        height: auto;
     }
 
     /* Performance: Apply to all direct children for better granularity */

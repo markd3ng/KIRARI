@@ -3,6 +3,7 @@ import type {
 	ExpressiveCodeConfig,
 	LicenseConfig,
 	LLMsConfig,
+	MermaidConfig,
 	NavBarConfig,
 	ProfileConfig,
 	SiteConfig,
@@ -24,6 +25,9 @@ export const licenseConfig: LicenseConfig = Config.license as LicenseConfig;
 // Expressive Code configuration
 export const expressiveCodeConfig: ExpressiveCodeConfig =
 	Config.expressiveCode as ExpressiveCodeConfig;
+
+// Mermaid configuration
+export const mermaidConfig: MermaidConfig = Config.mermaid as MermaidConfig;
 
 // Tag mapping (slug -> display name)
 export const tagMapping: Record<string, string> = Config.mappings.tags;

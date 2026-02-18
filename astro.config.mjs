@@ -26,6 +26,7 @@ import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.
 import { GithubFileCardComponent } from "./src/plugins/rehype-component-github-file-card.mjs";
 import { rehypeLazyLoadImage } from "./src/plugins/rehype-lazy-load-image.mjs";
 import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
+import { rehypeMermaidPreProcess } from "./src/plugins/rehype-mermaid-pre.mjs";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 
@@ -147,6 +148,10 @@ export default defineConfig({
 		}),
 	].filter(Boolean),
 	markdown: {
+		syntaxHighlight: {
+			type: "shiki",
+			excludeLangs: ["mermaid"],
+		},
 		remarkPlugins: [
 			remarkMath,
 			remarkReadingTime,
@@ -158,6 +163,7 @@ export default defineConfig({
 		],
 		rehypePlugins: [
 			rehypeKatex,
+			rehypeMermaidPreProcess,
 			rehypeSlug,
 			rehypeLazyLoadImage,
 			[

@@ -8,7 +8,7 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getSortedPosts } from "@utils/content-utils";
 import { getDir, getPostUrlBySlug } from "@utils/url-utils";
 import { Icon } from "astro-icon/components";
-import { licenseConfig } from "src/config";
+import { licenseConfig, mermaidConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
 import { profileConfig, siteConfig } from "../../config";
@@ -161,3 +161,33 @@ if (document.readyState === 'loading') {
 document.addEventListener('astro:after-swap', lazyLoadImages);
 document.addEventListener('astro:page-load', lazyLoadImages);
 </script>
+
+{mermaidConfig.enable && entry.data.mermaid && (
+<script>
+import mermaid from 'mermaid';
+
+function getTheme() {
+    return document.documentElement.classList.contains('dark') ? 'dark' : 'default';
+}
+
+async function initMermaid() {
+    const mermaidBlocks = document.querySelectorAll('pre.mermaid');
+    if (mermaidBlocks.length === 0) return;
+
+    mermaid.initialize({
+        startOnLoad: false,
+        theme: getTheme(),
+    });
+    await mermaid.run({ querySelector: 'pre.mermaid' });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMermaid);
+} else {
+    initMermaid();
+}
+
+document.addEventListener('astro:after-swap', initMermaid);
+document.addEventListener('astro:page-load', initMermaid);
+</script>
+)}
