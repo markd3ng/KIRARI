@@ -1,6 +1,6 @@
 ---
 
-import { llmsConfig, profileConfig } from "../config";
+import { footerConfig, llmsConfig, profileConfig } from "../config";
 import { url } from "../utils/url-utils";
 
 const currentYear = new Date().getFullYear();
@@ -23,4 +23,10 @@ const currentYear = new Date().getFullYear();
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://github.com/JoeyC-Dev/saicaca-fuwari">JoeyC-Dev/saicaca-fuwari</a> &
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://github.com/saicaca/fuwari">saicaca/fuwari</a>
     </div>
+    {footerConfig.customHtml && (
+        <div class="transition text-50 text-sm text-center mt-1" set:html={footerConfig.customHtml} />
+    )}
+    {footerConfig.customScript && (
+        <script is:inline set:html={footerConfig.customScript} />
+    )}
 </div>

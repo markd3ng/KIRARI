@@ -4,7 +4,7 @@ import "../styles/fonts.css";
 import { getCollection } from "astro:content";
 import { ClientRouter } from "astro:transitions";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
-import { profileConfig, siteConfig } from "@/config";
+import { headConfig, profileConfig, siteConfig } from "@/config";
 import {
 	AUTO_MODE,
 	BANNER_HEIGHT,
@@ -273,6 +273,25 @@ const bannerOffset =
 
 
 		<slot name="head"></slot>
+
+		{headConfig.verification.google && (
+			<meta name="google-site-verification" content={headConfig.verification.google} />
+		)}
+		{headConfig.verification.bing && (
+			<meta name="msvalidate.01" content={headConfig.verification.bing} />
+		)}
+		{headConfig.verification.yandex && (
+			<meta name="yandex-verification" content={headConfig.verification.yandex} />
+		)}
+		{headConfig.verification.naver && (
+			<meta name="naver-site-verification" content={headConfig.verification.naver} />
+		)}
+		{headConfig.customHtml && (
+			<Fragment set:html={headConfig.customHtml} />
+		)}
+		{headConfig.customScript && (
+			<script is:inline set:html={headConfig.customScript} />
+		)}
 
 		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
 

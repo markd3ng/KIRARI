@@ -123,6 +123,20 @@ export const Config = {
 	mermaid: {
 		enable: true, // Enable Mermaid diagram rendering (requires per-post `mermaid: true` in frontmatter)
 	},
+	head: {
+		verification: {
+			google: "", // Google Search Console verification code
+			bing: "", // Bing Webmaster Tools verification code
+			yandex: "", // Yandex Webmaster verification code
+			naver: "", // Naver Search Advisor verification code
+		},
+		customHtml: "", // Custom HTML injected into <head> (external CSS/JS, custom meta tags, etc.)
+		customScript: "", // Custom inline JS injected into <head> (third-party SDK, early init scripts, etc.)
+	},
+	footer: {
+		customHtml: "", // Custom HTML rendered in footer (ICP filing, public security filing, badges, etc.)
+		customScript: "", // Custom inline JS injected in footer (analytics: Umami / Plausible / GA, etc.)
+	},
 	llms: {
 		enable: true,
 		sitemap: true,

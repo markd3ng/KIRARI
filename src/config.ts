@@ -1,6 +1,8 @@
 import { Config } from "./constants";
 import type {
 	ExpressiveCodeConfig,
+	FooterConfig,
+	HeadConfig,
 	LicenseConfig,
 	LLMsConfig,
 	MermaidConfig,
@@ -28,6 +30,12 @@ export const expressiveCodeConfig: ExpressiveCodeConfig =
 
 // Mermaid configuration
 export const mermaidConfig: MermaidConfig = Config.mermaid as MermaidConfig;
+
+// Head configuration
+export const headConfig: HeadConfig = Config.head as HeadConfig;
+
+// Footer configuration
+export const footerConfig: FooterConfig = Config.footer as FooterConfig;
 
 // Tag mapping (slug -> display name)
 export const tagMapping: Record<string, string> = Config.mappings.tags;

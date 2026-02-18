@@ -139,6 +139,36 @@ graph TD;
 > Mermaid JS (~500KB) is only loaded on pages with `mermaid: true` in frontmatter. All other pages are unaffected.
 
 **Supported diagram types include:** Flowchart, Sequence Diagram, Class Diagram, State Diagram, Gantt Chart, Pie Chart, ER Diagram, and more. See the [Mermaid documentation](https://mermaid.js.org/) for the full list.
+## 🔧 Head & Footer Customization
+
+Custom HTML and JS can be injected into `<head>` and footer via `src/constants.ts`.
+
+### Head Configuration
+
+```typescript
+head: {
+    verification: {
+        google: 'your-verification-code',  // Google Search Console
+        bing: 'your-verification-code',    // Bing Webmaster Tools
+        yandex: '',                        // Yandex Webmaster
+        naver: '',                         // Naver Search Advisor
+    },
+    customHtml: '',   // Custom HTML in <head> (external CSS/JS, meta tags)
+    customScript: '', // Custom inline JS in <head> (SDK init, early scripts)
+},
+```
+
+### Footer Configuration
+
+```typescript
+footer: {
+    customHtml: '<a href="https://beian.miit.gov.cn/" target="_blank">京ICP备XXXXXXXX号</a>',
+    customScript: '', // Custom inline JS in footer (analytics scripts)
+},
+```
+
+> [!TIP]
+> Leave fields empty (`''`) to disable. Only non-empty values are rendered.
 
 ## 🤖 LLMs Documentation Generator
 

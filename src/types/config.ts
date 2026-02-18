@@ -86,6 +86,22 @@ export type MermaidConfig = {
 	enable: boolean;
 };
 
+export type HeadConfig = {
+	verification: {
+		google: string;
+		bing: string;
+		yandex: string;
+		naver: string;
+	};
+	customHtml: string;
+	customScript: string;
+};
+
+export type FooterConfig = {
+	customHtml: string;
+	customScript: string;
+};
+
 export type LIGHT_DARK_MODE =
 	| typeof LIGHT_MODE
 	| typeof DARK_MODE

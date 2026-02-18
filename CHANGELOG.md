@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 - Added Mermaid diagram support via custom `rehype-mermaid-pre.mjs` plugin for client-side rendering
 - Added `mermaid.enable` global toggle in `src/constants.ts`
 - Added per-post `mermaid` frontmatter option to control Mermaid JS loading
+- Added `head` config with site verification (Google/Bing/Yandex/Naver), custom HTML and custom JS injection
+- Added `footer` config with custom HTML and custom JS injection
 - Added comprehensive tag/category mapping configuration with 26 tags and 8 categories in `src/constants.ts`
 - Created 4 test articles to verify mapping functionality across different categories
 
