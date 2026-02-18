@@ -1,0 +1,1 @@
+import"./disclose-version.DsnmJJEf.js";import{p as a}from"./props.Cj-u1ASz.js";import{I as n}from"./Icon.CVJ3xzpn.js";function i(r,o){let t=a(o,"class",3,"");n(r,{get icon(){return o.icon},get class(){return t()}})}export{i as default};
