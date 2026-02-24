@@ -374,6 +374,66 @@ Read more about Markdown features in Fuwari
 
 
 
+[Expressive Code Example](/posts/expressive-code/)
+
+
+
+
+
+2024-04-10
+
+
+
+
+
+[示例](/categories/Examples/)
+
+
+
+/
+
+[Markdown](/tags/Markdown/)
+
+/
+
+[Blogging](/tags/Blogging/)
+
+/
+
+[演示](/tags/Demo/)
+
+
+
+How code blocks look in Markdown using Expressive Code.
+
+
+
+737 words
+
+|
+
+4 minutes
+
+
+
+
+
+
+
+1
+
+[2](/2/)
+
+
+
+© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
+Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
+
+---
+
+# KIRARI - Demo Site
+> KIRARI - Demo Site
+
 [Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
 
 
@@ -417,66 +477,6 @@ How code blocks look in Markdown using Expressive Code.
 |
 
 5 minutes
-
-
-
-
-
-
-
-1
-
-[2](/2/)
-
-
-
-© 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
-Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
-
----
-
-# KIRARI - Demo Site
-> KIRARI - Demo Site
-
-[Expressive Code Example](/posts/expressive-code/)
-
-
-
-
-
-2024-04-10
-
-
-
-
-
-[示例](/categories/Examples/)
-
-
-
-/
-
-[Markdown](/tags/Markdown/)
-
-/
-
-[Blogging](/tags/Blogging/)
-
-/
-
-[演示](/tags/Demo/)
-
-
-
-How code blocks look in Markdown using Expressive Code.
-
-
-
-737 words
-
-|
-
-4 minutes
 
 
 
@@ -1131,9 +1131,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Markdown Extended Features](/posts/markdown-extended/)
-
 [Expressive Code Example](/posts/expressive-code/)
+
+[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1279,9 +1279,9 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
+[Markdown Extended Features](/posts/markdown-extended/)
 
-[Simple Guides for Fuwari (CJK)](/posts/guide/index-cjk/)
+[Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
@@ -1465,7 +1465,7 @@ License
 
 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-[Expressive Code Example](/posts/expressive-code/)
+[Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
 
 [Simple Guides for Fuwari](/posts/guide/)
 
@@ -2210,7 +2210,7 @@ License
 
 [Markdown Extended Features (CJK)](/posts/markdown-extended-cjk/)
 
-[Expressive Code Example (CJK)](/posts/expressive-code-cjk/)
+[Expressive Code Example](/posts/expressive-code/)
 
 © 2026 Lorem Ipsum. All Rights Reserved. / [RSS](/rss.xml) / [Sitemap](/sitemap-index.xml) / [LLMs](/llms.txt)\
 Powered by [Astro](https://astro.build) · [KIRARI](https://github.com/markd3ng/KIRARI) · Based on [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) & [saicaca/fuwari](https://github.com/saicaca/fuwari)
