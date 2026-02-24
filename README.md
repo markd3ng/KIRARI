@@ -234,6 +234,7 @@ The plugin will detect this and generate language-specific files automatically:
 
 - [ ] Add Artalk Comments Support
 - [ ] Add Umami Support
+- [ ] Add og:logo tag
 
 ## �📚 Credits 
 
