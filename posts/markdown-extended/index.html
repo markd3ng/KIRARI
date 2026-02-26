@@ -511,33 +511,33 @@ const configHue = 250;
                 <a href="/tags/Markdown/" aria-label="View all posts with the Markdown tag" class="link-lg transition text-50 text-sm font-medium
                                 hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap"> Markdown </a><div class="mx-1.5 text-[var(--meta-divider)] text-sm">/</div>
                 <a href="/tags/Fuwari/" aria-label="View all posts with the Fuwari tag" class="link-lg transition text-50 text-sm font-medium
-                                hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap"> Fuwari </a>  </div> </div> </div> <div class="border-[var(--line-divider)] border-dashed border-b-[1px] mb-5"></div> </div> <!-- always show cover as long as it has one -->  <div class="markdown-wrapper relative"> <div data-pagefind-body class="prose dark:prose-invert prose-base !max-w-none custom-md mb-6 markdown-content"> <!--<div class="prose dark:prose-invert max-w-none custom-md">--> <!--<div class="max-w-none custom-md">-->  <section><h2 id="github-repository-cards">GitHub Repository Cards<a class="anchor" href="#github-repository-cards"><span class="anchor-icon" data-pagefind-ignore="">#</span></a></h2><p>You can add dynamic cards that link to GitHub repositories, on page load, the repository information is pulled from the GitHub API.</p><a id="GCyl6agl-card" class="card-github fetch-waiting no-styling" href="https://github.com/Fabrizz/MMM-OnSpotify" target="_blank" repo="Fabrizz/MMM-OnSpotify"><div class="gc-titlebar"><div class="gc-titlebar-left"><div class="gc-owner"><div id="GCyl6agl-avatar" class="gc-avatar"></div><div class="gc-user">Fabrizz</div></div><div class="gc-divider">/</div><div class="gc-repo">MMM-OnSpotify</div></div><div class="github-logo"></div></div><div id="GCyl6agl-description" class="gc-description">Waiting for api.github.com...</div><div class="gc-infobar"><div id="GCyl6agl-stars" class="gc-stars">00K</div><div id="GCyl6agl-forks" class="gc-forks">0K</div><div id="GCyl6agl-license" class="gc-license">0K</div><span id="GCyl6agl-language" class="gc-language">Waiting...</span></div><script id="GCyl6agl-script" type="text/javascript" defer>
+                                hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap"> Fuwari </a>  </div> </div> </div> <div class="border-[var(--line-divider)] border-dashed border-b-[1px] mb-5"></div> </div> <!-- always show cover as long as it has one -->  <div class="markdown-wrapper relative"> <div data-pagefind-body class="prose dark:prose-invert prose-base !max-w-none custom-md mb-6 markdown-content"> <!--<div class="prose dark:prose-invert max-w-none custom-md">--> <!--<div class="max-w-none custom-md">-->  <section><h2 id="github-repository-cards">GitHub Repository Cards<a class="anchor" href="#github-repository-cards"><span class="anchor-icon" data-pagefind-ignore="">#</span></a></h2><p>You can add dynamic cards that link to GitHub repositories, on page load, the repository information is pulled from the GitHub API.</p><a id="GCn9w9fy-card" class="card-github fetch-waiting no-styling" href="https://github.com/Fabrizz/MMM-OnSpotify" target="_blank" repo="Fabrizz/MMM-OnSpotify"><div class="gc-titlebar"><div class="gc-titlebar-left"><div class="gc-owner"><div id="GCn9w9fy-avatar" class="gc-avatar"></div><div class="gc-user">Fabrizz</div></div><div class="gc-divider">/</div><div class="gc-repo">MMM-OnSpotify</div></div><div class="github-logo"></div></div><div id="GCn9w9fy-description" class="gc-description">Waiting for api.github.com...</div><div class="gc-infobar"><div id="GCn9w9fy-stars" class="gc-stars">00K</div><div id="GCn9w9fy-forks" class="gc-forks">0K</div><div id="GCn9w9fy-license" class="gc-license">0K</div><span id="GCn9w9fy-language" class="gc-language">Waiting...</span></div><script id="GCn9w9fy-script" type="text/javascript" defer>
       fetch('https://api.github.com/repos/Fabrizz/MMM-OnSpotify', { referrerPolicy: "no-referrer" }).then(response => response.json()).then(data => {
-        document.getElementById('GCyl6agl-description').innerText = data.description?.replace(/:[a-zA-Z0-9_]+:/g, '') || "Description not set";
-        document.getElementById('GCyl6agl-language').innerText = data.language;
-        document.getElementById('GCyl6agl-forks').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.forks).replaceAll(" ", '');
-        document.getElementById('GCyl6agl-stars').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.stargazers_count).replaceAll(" ", '');
-        const avatarEl = document.getElementById('GCyl6agl-avatar');
+        document.getElementById('GCn9w9fy-description').innerText = data.description?.replace(/:[a-zA-Z0-9_]+:/g, '') || "Description not set";
+        document.getElementById('GCn9w9fy-language').innerText = data.language;
+        document.getElementById('GCn9w9fy-forks').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.forks).replaceAll(" ", '');
+        document.getElementById('GCn9w9fy-stars').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.stargazers_count).replaceAll(" ", '');
+        const avatarEl = document.getElementById('GCn9w9fy-avatar');
         avatarEl.style.backgroundImage = 'url(' + data.owner.avatar_url + ')';
         avatarEl.style.backgroundColor = 'transparent';
-        document.getElementById('GCyl6agl-license').innerText = data.license?.spdx_id || "no-license";
-        document.getElementById('GCyl6agl-card').classList.remove("fetch-waiting");
-        console.log("[GITHUB-CARD] Loaded card for Fabrizz/MMM-OnSpotify | GCyl6agl.")
+        document.getElementById('GCn9w9fy-license').innerText = data.license?.spdx_id || "no-license";
+        document.getElementById('GCn9w9fy-card').classList.remove("fetch-waiting");
+        console.log("[GITHUB-CARD] Loaded card for Fabrizz/MMM-OnSpotify | GCn9w9fy.")
       }).catch(err => {
-        const c = document.getElementById('GCyl6agl-card');
+        const c = document.getElementById('GCn9w9fy-card');
         c?.classList.add("fetch-error");
-        console.warn("[GITHUB-CARD] (Error) Loading card for Fabrizz/MMM-OnSpotify | GCyl6agl.")
+        console.warn("[GITHUB-CARD] (Error) Loading card for Fabrizz/MMM-OnSpotify | GCn9w9fy.")
       })
     </script></a><p>Create a GitHub repository card with the code <code>::github{repo="&#x3C;owner>/&#x3C;repo>"}</code>.</p><div class="expressive-code"><link rel="stylesheet" href="/_astro/ec.pj0n5.css"><script type="module" src="/_astro/ec.g1fg5.js"></script><figure class="frame"><figcaption class="header"></figcaption><pre data-language="markdown" class="wrap" style="--ecMaxLine:31ch"><code><div class="ec-line"><div class="gutter"><div class="ln" aria-hidden="true">1</div></div><div class="code"><span style="--0:#E1E4E8;--1:#ADBAC7">::github{repo="saicaca/fuwari"}</span></div></div></code><button class="copy-btn" aria-label="Copy code"><div class="copy-btn-icon"><svg viewBox="0 -960 960 960" xmlns="http://www.w3.org/2000/svg" class="copy-btn-icon copy-icon"><path d="M368.37-237.37q-34.48 0-58.74-24.26-24.26-24.26-24.26-58.74v-474.26q0-34.48 24.26-58.74 24.26-24.26 58.74-24.26h378.26q34.48 0 58.74 24.26 24.26 24.26 24.26 58.74v474.26q0 34.48-24.26 58.74-24.26 24.26-58.74 24.26H368.37Zm0-83h378.26v-474.26H368.37v474.26Zm-155 238q-34.48 0-58.74-24.26-24.26-24.26-24.26-58.74v-515.76q0-17.45 11.96-29.48 11.97-12.02 29.33-12.02t29.54 12.02q12.17 12.03 12.17 29.48v515.76h419.76q17.45 0 29.48 11.96 12.02 11.97 12.02 29.33t-12.02 29.54q-12.03 12.17-29.48 12.17H213.37Zm155-238v-474.26 474.26Z"></path></svg><svg viewBox="0 -960 960 960" xmlns="http://www.w3.org/2000/svg" class="copy-btn-icon success-icon"><path d="m389-377.13 294.7-294.7q12.58-12.67 29.52-12.67 16.93 0 29.61 12.67 12.67 12.68 12.67 29.53 0 16.86-12.28 29.14L419.07-288.41q-12.59 12.67-29.52 12.67-16.94 0-29.62-12.67L217.41-430.93q-12.67-12.68-12.79-29.45-.12-16.77 12.55-29.45 12.68-12.67 29.62-12.67 16.93 0 29.28 12.67L389-377.13Z"></path></svg></div></button></pre></figure></div></section>
-<section><h2 id="github-file-cards">GitHub File Cards<a class="anchor" href="#github-file-cards"><span class="anchor-icon" data-pagefind-ignore="">#</span></a></h2><p>You can add dynamic cards that link to a specific file in a GitHub repository, on page load, the file metadata is pulled from the GitHub API.</p><a id="GFCuz7vgn-card" class="card-github card-github-file fetch-waiting no-styling" href="https://github.com/saicaca/fuwari/blob/HEAD/README.md" target="_blank" repo="saicaca/fuwari" file="README.md" ref="HEAD"><div class="gc-titlebar"><div class="gc-titlebar-left"><div class="gc-owner"><div id="GFCuz7vgn-avatar" class="gc-avatar"></div><div class="gc-user">saicaca</div></div><div class="gc-divider">/</div><div class="gc-user">fuwari</div><div class="gc-divider">/</div><div class="gc-repo">README.md</div></div><div class="github-logo"></div></div><div id="GFCuz7vgn-description" class="gc-description">Theme overview</div><div class="gc-infobar"><div id="GFCuz7vgn-filetype" class="gc-filetype">md</div><div id="GFCuz7vgn-filesize" class="gc-filesize">...</div><div id="GFCuz7vgn-updated" class="gc-updated">...</div></div><script id="GFCuz7vgn-script" type="text/javascript" defer>
+<section><h2 id="github-file-cards">GitHub File Cards<a class="anchor" href="#github-file-cards"><span class="anchor-icon" data-pagefind-ignore="">#</span></a></h2><p>You can add dynamic cards that link to a specific file in a GitHub repository, on page load, the file metadata is pulled from the GitHub API.</p><a id="GFCyob4j8-card" class="card-github card-github-file fetch-waiting no-styling" href="https://github.com/saicaca/fuwari/blob/HEAD/README.md" target="_blank" repo="saicaca/fuwari" file="README.md" ref="HEAD"><div class="gc-titlebar"><div class="gc-titlebar-left"><div class="gc-owner"><div id="GFCyob4j8-avatar" class="gc-avatar"></div><div class="gc-user">saicaca</div></div><div class="gc-divider">/</div><div class="gc-user">fuwari</div><div class="gc-divider">/</div><div class="gc-repo">README.md</div></div><div class="github-logo"></div></div><div id="GFCyob4j8-description" class="gc-description">Theme overview</div><div class="gc-infobar"><div id="GFCyob4j8-filetype" class="gc-filetype">md</div><div id="GFCyob4j8-filesize" class="gc-filesize">...</div><div id="GFCyob4j8-updated" class="gc-updated">...</div></div><script id="GFCyob4j8-script" type="text/javascript" defer>
       const initGithubFileCard = () => {
-        const cardEl = document.getElementById('GFCuz7vgn-card');
-        const avatarEl = document.getElementById('GFCuz7vgn-avatar');
-        const fileTypeEl = document.getElementById('GFCuz7vgn-filetype');
-        const fileSizeEl = document.getElementById('GFCuz7vgn-filesize');
-        const updatedEl = document.getElementById('GFCuz7vgn-updated');
+        const cardEl = document.getElementById('GFCyob4j8-card');
+        const avatarEl = document.getElementById('GFCyob4j8-avatar');
+        const fileTypeEl = document.getElementById('GFCyob4j8-filetype');
+        const fileSizeEl = document.getElementById('GFCyob4j8-filesize');
+        const updatedEl = document.getElementById('GFCyob4j8-updated');
         if (!cardEl || !avatarEl || !fileTypeEl || !fileSizeEl || !updatedEl) {
-          console.warn("[GITHUB-FILE-CARD] Missing card elements for saicaca/fuwari | GFCuz7vgn.");
+          console.warn("[GITHUB-FILE-CARD] Missing card elements for saicaca/fuwari | GFCyob4j8.");
           return;
         }
 
@@ -573,7 +573,7 @@ const configHue = 250;
             avatarEl.style.backgroundColor = 'transparent';
           })
           .catch(() => {
-            console.warn("[GITHUB-FILE-CARD] (Error) Loading avatar for saicaca/fuwari | GFCuz7vgn.");
+            console.warn("[GITHUB-FILE-CARD] (Error) Loading avatar for saicaca/fuwari | GFCyob4j8.");
           });
 
         const contentsFetch = fetch('https://api.github.com/repos/saicaca/fuwari/contents/README.md', { referrerPolicy: "no-referrer" })
@@ -583,7 +583,7 @@ const configHue = 250;
           })
           .catch(() => {
             fileSizeEl.innerText = "unknown";
-            console.warn("[GITHUB-FILE-CARD] (Error) Loading file size for saicaca/fuwari | GFCuz7vgn.");
+            console.warn("[GITHUB-FILE-CARD] (Error) Loading file size for saicaca/fuwari | GFCyob4j8.");
           });
 
         const commitsFetch = fetch('https://api.github.com/repos/saicaca/fuwari/commits?path=README.md&per_page=1', { referrerPolicy: "no-referrer" })
@@ -594,12 +594,12 @@ const configHue = 250;
           })
           .catch(() => {
             updatedEl.innerText = "unknown";
-            console.warn("[GITHUB-FILE-CARD] (Error) Loading commit date for saicaca/fuwari | GFCuz7vgn.");
+            console.warn("[GITHUB-FILE-CARD] (Error) Loading commit date for saicaca/fuwari | GFCyob4j8.");
           });
 
         Promise.allSettled([repoFetch, contentsFetch, commitsFetch]).then(() => {
           cardEl.classList.remove("fetch-waiting");
-          console.log("[GITHUB-FILE-CARD] Loaded card for saicaca/fuwari | GFCuz7vgn.");
+          console.log("[GITHUB-FILE-CARD] Loaded card for saicaca/fuwari | GFCyob4j8.");
         });
       }
       if (document.readyState === "loading") {
