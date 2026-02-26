@@ -69,7 +69,7 @@
     "stylus": "^0.64.0",
     "svelte": "^5.51.3",
     "swup": "^4.8.2",
-    "tailwindcss": "^4.1.18",
+    "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3",
     "unist-util-visit": "^5.1.0"
   },
