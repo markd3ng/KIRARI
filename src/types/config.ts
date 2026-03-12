@@ -38,6 +38,7 @@ export type SiteConfig = {
 	};
 
 	favicon: Favicon[];
+	og?: OGConfig;
 };
 
 export type Favicon = {
@@ -136,4 +137,19 @@ export type LLMsConfig = {
 	excludePatterns?: string[];
 	customSeparator?: string;
 	i18n?: boolean;
+};
+
+export type OGConfig = {
+	/** Default OG image for non-article pages */
+	defaultImage: string;
+	/** Width of generated OG images */
+	width: number;
+	/** Height of generated OG images */
+	height: number;
+	/** Brand name displayed on OG images */
+	brand?: string;
+	/** Background color for OG images */
+	backgroundColor?: string;
+	/** Text color for OG images */
+	textColor?: string;
 };

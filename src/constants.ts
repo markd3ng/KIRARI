@@ -144,4 +144,12 @@ export const Config = {
 		description: "Documentation for KIRARI",
 		i18n: true,
 	},
+	og: {
+		defaultImage: "/og/default.svg",
+		width: 1200,
+		height: 630,
+		brand: "KIRARI",
+		backgroundColor: "#1a1a2e",
+		textColor: "#ffffff",
+	},
 };

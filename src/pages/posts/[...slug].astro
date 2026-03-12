@@ -8,10 +8,10 @@ import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getSortedPosts } from "@utils/content-utils";
 import { getDir, getPostUrlBySlug } from "@utils/url-utils";
 import { Icon } from "astro-icon/components";
-import { licenseConfig, mermaidConfig } from "src/config";
+import { licenseConfig, mermaidConfig, siteConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
-import { profileConfig, siteConfig } from "../../config";
+import { profileConfig } from "../../config";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
 
 export async function getStaticPaths() {
@@ -26,6 +26,9 @@ import { render } from "astro:content";
 
 const { entry } = Astro.props;
 const { Content, headings, remarkPluginFrontmatter } = await render(entry);
+
+// Generate OG image URL for this post
+const ogImageUrl = `/og/${entry.id}.png`;
 
 const jsonLd = {
 	"@context": "https://schema.org",
@@ -42,10 +45,24 @@ const jsonLd = {
 	inLanguage: entry.data.lang
 		? entry.data.lang.replace("_", "-")
 		: siteConfig.lang.replace("_", "-"),
-	// TODO include cover image here
+	// Cover image for JSON-LD
+	image: entry.data.image
+		? new URL(entry.data.image, Astro.site).href
+		: undefined,
 };
 ---
-<MainGridLayout banner={entry.data.image} title={entry.data.title} description={entry.data.description} lang={entry.data.lang} setOGTypeArticle={true} headings={headings}>
+<MainGridLayout 
+	banner={entry.data.image} 
+	title={entry.data.title} 
+	description={entry.data.description} 
+	lang={entry.data.lang} 
+	setOGTypeArticle={true} 
+	headings={headings}
+	ogImage={ogImageUrl}
+	articlePublished={entry.data.published}
+	articleUpdated={entry.data.updated}
+	articleTags={entry.data.tags}
+>
     <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
     <div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4">
         <div id="post-container" class:list={["card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full ",
