@@ -82,8 +82,6 @@ const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
 const configHue = siteConfig.themeColor.hue;
 
 // Banner is used for page visual only, not for OG
-// If no banner provided, use site default banner
-const displayBanner = banner || siteConfig.banner.src;
 const enableBanner = siteConfig.banner.enable;
 
 let pageTitle: string;

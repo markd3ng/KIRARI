@@ -145,7 +145,7 @@ export const Config = {
 		i18n: true,
 	},
 	og: {
-		defaultImage: "/og/default.svg",
+		defaultImage: "/og/default.png",
 		width: 1200,
 		height: 630,
 		brand: "KIRARI",

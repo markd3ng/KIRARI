@@ -12,8 +12,10 @@ let fontCache: { regular: ArrayBuffer | null; bold: ArrayBuffer | null } = {
 };
 
 async function loadFont(weight: number): Promise<ArrayBuffer> {
-	// Try to load from node_modules @fontsource/roboto (WOFF format)
-	// Note: satori's opentype.js doesn't support WOFF2, so we use WOFF
+	const cacheKey = weight === 700 ? "bold" : "regular";
+	const cached = fontCache[cacheKey];
+	if (cached) return cached;
+
 	const fontFile = weight === 700
 		? "roboto-latin-700-normal.woff"
 		: "roboto-latin-400-normal.woff";
@@ -25,20 +27,29 @@ async function loadFont(weight: number): Promise<ArrayBuffer> {
 			fontFile
 		);
 		const buffer = await readFile(fontPath);
-		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+		const arrayBuffer = buffer.buffer.slice(
+			buffer.byteOffset,
+			buffer.byteOffset + buffer.byteLength
+		);
+		fontCache[cacheKey] = arrayBuffer;
+		return arrayBuffer;
 	} catch {
-		// Fallback: fetch from CDN (TTF format for better compatibility)
 		const cdnUrl = weight === 700
 			? "https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-700-normal.woff"
 			: "https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-400-normal.woff";
-		
+
 		const response = await fetch(cdnUrl);
-		return response.arrayBuffer();
+		const arrayBuffer = await response.arrayBuffer();
+		fontCache[cacheKey] = arrayBuffer;
+		return arrayBuffer;
 	}
 }
 
-export async function GET({ params, site }: { params: { slug: string }; site: URL }) {
+export async function GET({ params }: { params: { slug?: string } }) {
 	const slug = params.slug;
+	if (!slug) {
+		return new Response("Post not found", { status: 404 });
+	}
 
 	// Get post by slug
 	const posts = await getCollection("posts");

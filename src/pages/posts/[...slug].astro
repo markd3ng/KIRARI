@@ -45,10 +45,7 @@ const jsonLd = {
 	inLanguage: entry.data.lang
 		? entry.data.lang.replace("_", "-")
 		: siteConfig.lang.replace("_", "-"),
-	// Cover image for JSON-LD
-	image: entry.data.image
-		? new URL(entry.data.image, Astro.site).href
-		: undefined,
+	image: new URL(ogImageUrl, Astro.site || Astro.url.origin).href,
 };
 ---
 <MainGridLayout 

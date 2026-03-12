@@ -140,7 +140,7 @@ export type LLMsConfig = {
 };
 
 export type OGConfig = {
-	/** Default OG image for non-article pages */
+	/** Default OG image for non-article pages, e.g. /og/default.png */
 	defaultImage: string;
 	/** Width of generated OG images */
 	width: number;

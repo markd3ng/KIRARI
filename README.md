@@ -245,7 +245,7 @@ All notable changes to this project will be documented in this section.
 ### Added
 - **Dynamic OG Images**: Added automatic OG image generation for blog posts via `/og/[slug].png` endpoint
   - OG images are generated using `satori` with post title, description, date, and tags
-  - Non-article pages use a default OG image (`/og/default.svg`)
+  - Non-article pages use a default OG image (`/og/default.png`)
   - Added `site.og` configuration in `src/constants.ts` for OG image settings (width, height, brand, colors)
 - **OG Configuration Type**: Extended `SiteConfig` type with `OGConfig` for OG image customization
 - **SEO Improvements**: 
