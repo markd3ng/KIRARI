@@ -31,3 +31,6 @@ yarn.lock
 *.iml
 .vscode/
 _content_repo/
+
+# codebuddy
+.codebuddy/
