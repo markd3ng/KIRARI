@@ -1,7 +1,41 @@
 import { getCollection } from "astro:content";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import satori from "satori";
 import sharp from "sharp";
 import { siteConfig } from "@/config";
+
+// Cache fonts in memory
+let fontCache: { regular: ArrayBuffer | null; bold: ArrayBuffer | null } = {
+	regular: null,
+	bold: null,
+};
+
+async function loadFont(weight: number): Promise<ArrayBuffer> {
+	// Try to load from node_modules @fontsource/roboto (WOFF format)
+	// Note: satori's opentype.js doesn't support WOFF2, so we use WOFF
+	const fontFile = weight === 700
+		? "roboto-latin-700-normal.woff"
+		: "roboto-latin-400-normal.woff";
+
+	try {
+		const fontPath = join(
+			process.cwd(),
+			"node_modules/@fontsource/roboto/files",
+			fontFile
+		);
+		const buffer = await readFile(fontPath);
+		return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+	} catch {
+		// Fallback: fetch from CDN (TTF format for better compatibility)
+		const cdnUrl = weight === 700
+			? "https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-700-normal.woff"
+			: "https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-400-normal.woff";
+		
+		const response = await fetch(cdnUrl);
+		return response.arrayBuffer();
+	}
+}
 
 export async function GET({ params, site }: { params: { slug: string }; site: URL }) {
 	const slug = params.slug;
@@ -33,15 +67,15 @@ export async function GET({ params, site }: { params: { slug: string }; site: UR
 		{
 			type: "div",
 			props: {
-				style: {
-					width: "100%",
-					height: "100%",
-					display: "flex",
-					flexDirection: "column",
-					backgroundColor: bgColor,
-					padding: "60px",
-					fontFamily: "sans-serif",
-				},
+					style: {
+						width: "100%",
+						height: "100%",
+						display: "flex",
+						flexDirection: "column",
+						backgroundColor: bgColor,
+						padding: "60px",
+						fontFamily: "Roboto",
+					},
 				children: [
 					{
 						type: "div",
@@ -169,14 +203,14 @@ export async function GET({ params, site }: { params: { slug: string }; site: UR
 			height,
 			fonts: [
 				{
-					name: "sans-serif",
-					data: await fetchFont(),
+					name: "Roboto",
+					data: await loadFont(400),
 					weight: 400,
 					style: "normal",
 				},
 				{
-					name: "sans-serif",
-					data: await fetchFont(700),
+					name: "Roboto",
+					data: await loadFont(700),
 					weight: 700,
 					style: "normal",
 				},
@@ -197,16 +231,6 @@ export async function GET({ params, site }: { params: { slug: string }; site: UR
 			"Cache-Control": "public, max-age=31536000, immutable",
 		},
 	});
-}
-
-async function fetchFont(weight: number = 400): Promise<ArrayBuffer> {
-	// Use Google Fonts Inter as fallback
-	const url = weight === 700
-		? "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2"
-		: "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2";
-
-	const response = await fetch(url);
-	return response.arrayBuffer();
 }
 
 export async function getStaticPaths() {
