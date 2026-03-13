@@ -3,306 +3,229 @@
 [![Build Status](https://github.com/markd3ng/KIRARI/actions/workflows/ci-main.yml/badge.svg)](https://github.com/markd3ng/KIRARI/actions/workflows/ci-main.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A static blog theme built with [Astro](https://astro.build/), [TailwindCSS](https://tailwindcss.com/) and [Svelte](https://svelte.dev/).
+A modern static blog built with **Astro 6** + **Svelte 5** + **TailwindCSS 4**.
 
-## 🚀 Getting Started
+## Features
 
-1.  **Clone the repository**
-    ```bash
-    git clone https://github.com/markd3ng/KIRARI.git
-    cd KIRARI
-    ```
+- **Dynamic OG Images** - Auto-generated OG images for each post with title, date, and tags
+- **Full-text Search** - Powered by Pagefind
+- **Mermaid Diagrams** - Flowcharts, sequence diagrams, and more
+- **Math Equations** - KaTeX for LaTeX rendering
+- **Multi-language** - 10 languages supported (en, zh_CN, zh_TW, ja, ko, es, th, vi, tr, id)
+- **LLM-Ready** - Auto-generates `llms.txt` for AI indexing
+- **Dark Mode** - System preference + manual toggle
+- **Smooth Transitions** - View Transitions API with Swup fallback
 
-2.  **Install dependencies**
-    ```bash
-    pnpm install
-    ```
+## Quick Start
 
-3.  **Start development server**
-    ```bash
-    pnpm dev
-    ```
+```bash
+# Clone
+git clone https://github.com/markd3ng/KIRARI.git
+cd KIRARI
 
-4.  **Build for production**
-    ```bash
-    pnpm build
-    ```
+# Install
+pnpm install
 
-## 📝 Usage
+# Develop
+pnpm dev
 
-### Writing Posts
+# Build
+pnpm build
+```
 
-Create a new Markdown file in `src/content/posts/`:
+## Writing Posts
+
+Create Markdown files in `src/content/posts/`:
 
 ```markdown
 ---
-title: Post Title        # [Required] The title of the post
-published: 2024-05-01  # [Required] Published date (YYYY-MM-DD)
-updated: 2024-05-02    # [Optional] Updated date (YYYY-MM-DD)
-description: Post desc   # [Optional] Short description for SEO and list pages
-image: /path/image.png # [Optional] Cover image displayed at the top of the post (not used for OG)
-tags: [Tag1, Tag2]     # [Optional] List of tags
-category: Category     # [Optional] Post category
-draft: false           # [Optional] Whether it's a draft, set to true to hide in production
-lang: en               # [Optional] Post language (e.g. en, zh_CN, ja)
+title: Post Title
+published: 2024-05-01
+updated: 2024-05-02      # Optional
+description: Short desc  # Optional
+image: /cover.png        # Optional banner image
+tags: [tag1, tag2]       # Optional
+category: Guides         # Optional
+draft: false             # Hide in production
+lang: en                 # Language code
+mermaid: true            # Enable Mermaid diagrams
 ---
 
-Hello World!
+Your content here.
 ```
 
-> [!TIP]
-> Setting the `updated` date will automatically display a **"Last Updated at"** field in the license section at the bottom of the post.
+## Configuration
 
-
-### Friends Page
-
-You can manage your friends page in two parts:
-
-1.  **Friend List**: Edit `src/_data/friends.json` to add or remove sites.
-    ```json
-    [
-      {
-        "siteTitle": "Site Name",
-        "siteDesc": "Site Description",
-        "siteUrl": "https://example.com",
-        "siteIcon": "https://example.com/avatar.png"
-      }
-    ]
-    ```
-2.  **Introduction Text**: Edit `src/content/spec/friends.md` to change the description text displayed at the top of the friends page.
-
-### Site Configuration
-
-Site configuration is managed in **`src/constants.ts`**. This file is the **single source of truth** for all site settings, including URL, title, navigation, and plugin options.
+All settings in **`src/constants.ts`** (single source of truth):
 
 ```typescript
-// src/constants.ts
-
 export const Config = {
   site: {
-    url: "https://markd3ng.github.io", // Your site's URL
-    base: "/",                         // Base path (e.g. /blog/)
-    title: "KIRARI",                   // Site title
-    subtitle: "Demo Site",             // Site subtitle
+    url: "https://your-domain.com",
+    title: "Your Site",
+    subtitle: "Your Tagline",
     lang: "en",
-    // ...
+    themeColor: { hue: 250, fixed: false },
+    og: {
+      defaultImage: "/og/default.png",
+      width: 1200,
+      height: 630,
+      brand: "KIRARI",
+      backgroundColor: "#1a1a2e",
+      textColor: "#ffffff",
+    },
   },
-  navBar: {
-    // ...
+  profile: {
+    avatar: "/avatar.png",
+    name: "Your Name",
+    bio: "Your bio",
   },
-  // ...
+  // ... more options
 }
 ```
 
-## 🧜 Mermaid Diagrams
+## Key Features
 
-This project integrates [rehype-mermaid](https://github.com/remcohaszing/rehype-mermaid) to render Mermaid diagrams in your posts.
+### OG Images
 
-### Plugin Configuration
+- Posts: Auto-generated via `/og/[slug].png` using Satori
+- Other pages: Uses `/og/default.png`
 
-Configuration is managed in `src/constants.ts` under the `mermaid` object:
+### Mermaid Diagrams
 
-```typescript
-// src/constants.ts
-export const Config = {
-  // ...
-  mermaid: {
-    enable: true, // Global toggle for Mermaid support
-  },
-  // ...
-}
-```
-
-### Usage
-
-To enable Mermaid rendering in a specific post, add `mermaid: true` to the frontmatter:
+Add `mermaid: true` to frontmatter:
 
 ````markdown
 ---
-title: My Post
-published: 2026-02-18
 mermaid: true
 ---
 
-Here's a flowchart:
-
 ```mermaid
 graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+    A --> B;
 ```
 ````
 
-> [!TIP]
-> Mermaid JS (~500KB) is only loaded on pages with `mermaid: true` in frontmatter. All other pages are unaffected.
+### Friends Page
 
-**Supported diagram types include:** Flowchart, Sequence Diagram, Class Diagram, State Diagram, Gantt Chart, Pie Chart, ER Diagram, and more. See the [Mermaid documentation](https://mermaid.js.org/) for the full list.
-## 🔧 Head & Footer Customization
+Edit `src/_data/friends.json`:
 
-Custom HTML and JS can be injected into `<head>` and footer via `src/constants.ts`.
-
-### Head Configuration
-
-```typescript
-head: {
-    verification: {
-        google: 'your-verification-code',  // Google Search Console
-        bing: 'your-verification-code',    // Bing Webmaster Tools
-        yandex: '',                        // Yandex Webmaster
-        naver: '',                         // Naver Search Advisor
-    },
-    customHtml: '',   // Custom HTML in <head> (external CSS/JS, meta tags)
-    customScript: '', // Custom inline JS in <head> (SDK init, early scripts)
-},
+```json
+[
+  {
+    "siteTitle": "Friend's Blog",
+    "siteDesc": "Description",
+    "siteUrl": "https://example.com",
+    "siteIcon": "https://example.com/avatar.png"
+  }
+]
 ```
 
-### Footer Configuration
-
-```typescript
-footer: {
-    customHtml: '<a href="https://beian.miit.gov.cn/" target="_blank">京ICP备XXXXXXXX号</a>',
-    customScript: '', // Custom inline JS in footer (analytics scripts)
-},
-```
-
-> [!TIP]
-> Leave fields empty (`''`) to disable. Only non-empty values are rendered.
-
-## 🤖 LLMs Documentation Generator
-
-This project integrates `astro-llms-generate` to automatically create documentation files optimized for LLMs (Large Language Models).
-
-### Plugin Configuration
-
-Configuration is managed in `src/constants.ts` under the `llms` object:
+### Custom Head/Footer
 
 ```typescript
 // src/constants.ts
-export const Config = {
-  // ...
-  llms: {
-    enable: true,
-    sitemap: true,      // Add generated files to sitemap
-    title: "KIRARI",
-    description: "Documentation for KIRARI",
-    i18n: true,         // Enable multilingual support (creates llms-en.txt, llms-zh.txt etc.)
+head: {
+  verification: {
+    google: "your-code",
+    bing: "your-code",
   },
-  // ...
-}
+  customHtml: "<!-- external CSS/JS -->",
+  customScript: "// inline JS",
+},
+footer: {
+  customHtml: "<a href='https://beian.miit.gov.cn'>ICP备案</a>",
+},
 ```
 
-### Usage
+### LLMs Documentation
 
-Upon building the project (`pnpm build`), the following files will be generated in the `dist/` directory:
+Build generates:
+- `llms.txt` - Main index
+- `llms-full.txt` - Complete content
+- `llms-en.txt`, `llms-zh.txt` - Language-specific
 
-- `llms.txt`: The main documentation index.
-- `llms-small.txt`: A concise version containing only structure.
-- `llms-full.txt`: The complete documentation content.
+## Tech Stack
 
-**For i18n support:**
-You can specify the language of a page or post in its frontmatter:
+| Category | Technology |
+|----------|------------|
+| Framework | Astro 6.0 |
+| UI | Svelte 5 |
+| Styling | TailwindCSS 4 |
+| Search | Pagefind |
+| Code Highlight | Expressive Code |
+| Math | KaTeX |
+| Diagrams | Mermaid |
+| OG Images | Satori + Sharp |
+| Transitions | View Transitions / Swup |
 
-```yaml
----
-title: My Post
-lang: en
----
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start dev server |
+| `pnpm build` | Build + generate search index |
+| `pnpm preview` | Preview build locally |
+| `pnpm check` | Astro diagnostics |
+| `pnpm type-check` | TypeScript check |
+| `pnpm new-post` | Create new post from template |
+
+## Directory Structure
+
+```
+src/
+├── components/       # UI components
+├── content/posts/    # Blog posts (Markdown)
+├── content/spec/     # Static pages content
+├── i18n/            # Translations (10 languages)
+├── layouts/         # Page layouts
+├── pages/           # Routes
+│   ├── og/[...slug].png.ts  # Dynamic OG images
+│   ├── rss.xml.ts           # RSS feed
+│   └── robots.txt.ts        # Robots.txt
+├── plugins/         # Custom rehype/remark plugins
+├── styles/          # CSS/Stylus
+├── utils/           # Helper functions
+├── constants.ts     # Main configuration
+└── config.ts        # Type exports (do not edit)
 ```
 
-The plugin will detect this and generate language-specific files automatically:
-- `llms-en.txt` / `llms-small-en.txt` / `llms-full-en.txt`
-- `llms-zh.txt` / `llms-small-zh.txt` / `llms-full-zh.txt`
-
-## 📂 Directory Structure
-
-```
-.
-├── src/
-│   ├── components/     # Astro components
-│   ├── layouts/        # Page layouts
-│   ├── pages/          # Routing logic
-│   ├── content/        # Markdown posts
-│   ├── constants.ts    # [NEW] Single source of truth for configuration
-│   └── config.ts       # Type definitions and exports (do not edit)
-├── public/             # Static assets (favicons, etc.)
-└── astro.config.mjs    # Astro configuration (uses src/constants.ts)
-```
-
-## 📋 TODO
-
-- [ ] Add Artalk Comments Support
-- [ ] Add Umami Support
-- [ ] Add og:logo tag
-
-## 📋 Changelog
-
-All notable changes to this project will be documented in this section.
+## Changelog
 
 ### [2026-03-12]
 
-### Added
-- **Dynamic OG Images**: Added automatic OG image generation for blog posts via `/og/[slug].png` endpoint
-  - OG images are generated using `satori` with post title, description, date, and tags
-  - Non-article pages use a default OG image (`/og/default.png`)
-  - Added `site.og` configuration in `src/constants.ts` for OG image settings (width, height, brand, colors)
-- **OG Configuration Type**: Extended `SiteConfig` type with `OGConfig` for OG image customization
-- **SEO Improvements**: 
-  - Separated banner (page visual) and OG image (social sharing) responsibilities
-  - Article OG images now correctly display post metadata on social platforms
+**Added**
+- Dynamic OG image generation via `/og/[slug].png` endpoint
+- `site.og` configuration for OG image customization
 
-### Changed
-- **Layout Refactoring**: 
-  - Removed implicit `getCollection` queries from `Layout.astro`
-  - Layout now receives OG metadata explicitly from parent components
-  - Improved performance by avoiding redundant content queries
-- **Configuration**: Moved OG image settings to centralized `src/constants.ts`
+**Changed**
+- Refactored Layout to separate banner and OG image responsibilities
+
+**Removed**
+- Biome (linter/formatter) - not needed in CI/CD workflow
 
 ### [2026-02-18]
 
-### Added
-- Added Mermaid diagram support via custom `rehype-mermaid-pre.mjs` plugin for client-side rendering
-- Added `mermaid.enable` global toggle in `src/constants.ts`
-- Added per-post `mermaid` frontmatter option to control Mermaid JS loading
-- Added `head` config with site verification (Google/Bing/Yandex/Naver), custom HTML and custom JS injection
-- Added `footer` config with custom HTML and custom JS injection
-- Added comprehensive tag/category mapping configuration with 26 tags and 8 categories in `src/constants.ts`
-- Created 4 test articles to verify mapping functionality across different categories
+**Added**
+- Mermaid diagram support with client-side rendering
+- `head` config for site verification and custom injections
+- `footer` config for custom HTML/JS
+- Tag/category mapping configuration
 
-### Fixed
-- Fixed tag/category mapping functionality to ensure proper Chinese display in UI components
-- Fixed `Categories.astro` not using `getCategoryName` mapping function for localized category display
-- Fixed GitHub Actions workflow pnpm version conflict by removing manual version specification
-- Removed unused `LinkPreset` import from `Navbar.astro` (TypeScript hint cleanup)
-- Fixed pnpm-lock.yaml: updated all svelte@5.49.1 references to 5.51.3
-- Fixed pnpm-lock.yaml: removed @biomejs/biome 2.3.14 platform package remnants
-- Updated swup dependencies in package.json to match lockfile versions
-
-### Changed
-- Optimized GitHub Actions workflows (`ci-main.yml` and `ci-edgeone.yml`):
-  - Removed Node.js version matrix (now using Node 22 LTS only)
-  - Added pnpm cache for faster dependency installation
-  - Added timeout settings to prevent stuck jobs
-  - Added environment variables for centralized version management
-  - Deploy job now depends on both `check` and `build` jobs
-  - Artifact retention reduced to 1 day
-  - Deployment condition now requires `push` event (not PR)
+**Fixed**
+- Tag/category display localization
+- GitHub Actions workflow pnpm version conflicts
 
 ### [2026-02-13]
 
-### Added
-- Integrated [astro-llms-generate](https://github.com/ColdranAI/astro-llms-generate) plugin for LLM-friendly documentation
-- Enabled i18n support for LLM documentation generation
+**Added**
+- `astro-llms-generate` plugin for LLM-friendly documentation
 
-## 📚 Credits 
+## Credits
 
-This project pays tribute to the following projects:
+- [saicaca/fuwari](https://github.com/saicaca/fuwari) - Original theme
+- [ColdranAI/astro-llms-generate](https://github.com/ColdranAI/astro-llms-generate) - LLM docs generator
 
-- [saicaca/fuwari](https://github.com/saicaca/fuwari)
-- [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari)
-- [ColdranAI/astro-llms-generate](https://github.com/ColdranAI/astro-llms-generate)
-
-## 📄 License
+## License
 
 MIT
