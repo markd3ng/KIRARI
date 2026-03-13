@@ -223,7 +223,10 @@ src/
 
 ## Credits
 
+This project pays tribute to:
+
 - [saicaca/fuwari](https://github.com/saicaca/fuwari) - Original theme
+- [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) - Enhanced fork
 - [ColdranAI/astro-llms-generate](https://github.com/ColdranAI/astro-llms-generate) - LLM docs generator
 
 ## License
