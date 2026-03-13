@@ -45,7 +45,7 @@
     "astro": "6.0.4",
     "astro-expressive-code": "^0.41.7",
     "astro-icon": "^1.1.5",
-    "astro-llms-generate": "ColdranAI/astro-llms-generate",
+    "astro-llms-generate": "github:ColdranAI/astro-llms-generate",
     "hastscript": "^9.0.1",
     "katex": "^0.16.38",
     "markdown-it": "^14.1.1",
