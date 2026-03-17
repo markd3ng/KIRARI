@@ -25,7 +25,7 @@ export function getPostUrlBySlug(slug: string): string {
 }
 
 export function getTagUrl(tag: string): string {
-	return url(`/tags/${tag}/`);
+	return url(`/tags/${tag.trim().toLowerCase()}/`);
 }
 
 export function getCategoryUrl(category: string | null): string {
@@ -35,7 +35,7 @@ export function getCategoryUrl(category: string | null): string {
 		category.trim().toLowerCase() === i18n(I18nKey.uncategorized).toLowerCase()
 	)
 		return url("/categories/uncategorized/");
-	return url(`/categories/${category.trim()}/`);
+	return url(`/categories/${category.trim().toLowerCase()}/`);
 }
 
 export function getTagName(

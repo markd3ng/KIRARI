@@ -142,13 +142,14 @@ export async function getTagList(): Promise<Tag[]> {
 	const countMap: { [key: string]: number } = {};
 	allBlogPosts.forEach((post: { data: { tags: string[] } }) => {
 		post.data.tags.forEach((tag: string) => {
-			if (!countMap[tag]) countMap[tag] = 0;
-			countMap[tag]++;
+			const normalizedKey = tag.trim().toLowerCase();
+			if (!countMap[normalizedKey]) countMap[normalizedKey] = 0;
+			countMap[normalizedKey]++;
 		});
 	});
 
 	const keys: string[] = Object.keys(countMap).sort((a, b) => {
-		return a.toLowerCase().localeCompare(b.toLowerCase());
+		return a.localeCompare(b);
 	});
 
 	return keys.map((key) => ({ name: key, count: countMap[key] }));
@@ -165,21 +166,21 @@ export async function getCategoryList(): Promise<Category[]> {
 	const count: { [key: string]: number } = {};
 	allBlogPosts.forEach((post: { data: { category: string | null } }) => {
 		if (!post.data.category) {
-			const ucKey = i18n(I18nKey.uncategorized);
+			const ucKey = "uncategorized";
 			count[ucKey] = count[ucKey] ? count[ucKey] + 1 : 1;
 			return;
 		}
 
-		const categoryName =
+		const normalizedKey =
 			typeof post.data.category === "string"
-				? post.data.category.trim()
-				: String(post.data.category).trim();
+				? post.data.category.trim().toLowerCase()
+				: String(post.data.category).trim().toLowerCase();
 
-		count[categoryName] = count[categoryName] ? count[categoryName] + 1 : 1;
+		count[normalizedKey] = count[normalizedKey] ? count[normalizedKey] + 1 : 1;
 	});
 
 	const lst = Object.keys(count).sort((a, b) => {
-		return a.toLowerCase().localeCompare(b.toLowerCase());
+		return a.localeCompare(b);
 	});
 
 	const ret: Category[] = [];

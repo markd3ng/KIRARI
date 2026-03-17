@@ -16,7 +16,7 @@ export async function getStaticPaths() {
 	posts.forEach((post) => {
 		const category = post.data.category;
 		if (category && category.trim() !== "") {
-			allCategories.add(category.trim());
+			allCategories.add(category.trim().toLowerCase());
 		} else {
 			allCategories.add("uncategorized");
 		}
@@ -34,13 +34,13 @@ const { category } = Astro.params as { category: string };
 const posts = await getSortedPostsList();
 const { categories: categoryDisplayMap, tags: tagDisplayMap } =
 	await getTaxonomyDisplayMappings();
+const normalizedCategory = category.toLowerCase();
 const filteredPosts = posts.filter((p) => {
-
 	const postCat = p.data.category;
-	if (category === "uncategorized") {
+	if (normalizedCategory === "uncategorized") {
 		return !postCat || postCat.trim() === "";
 	}
-	return postCat && postCat.trim() === category;
+	return postCat && postCat.trim().toLowerCase() === normalizedCategory;
 });
 
 const categoryName =

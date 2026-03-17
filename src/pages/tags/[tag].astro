@@ -15,7 +15,7 @@ export async function getStaticPaths() {
 	const allTags = new Set<string>();
 	posts.forEach((post) => {
 		post.data.tags.forEach((tag) => {
-			allTags.add(tag);
+			allTags.add(tag.trim().toLowerCase());
 		});
 	});
 
@@ -30,7 +30,10 @@ const { tag } = Astro.params as { tag: string };
 
 const posts = await getSortedPostsList();
 const { tags: tagDisplayMap } = await getTaxonomyDisplayMappings();
-const filteredPosts = posts.filter((p) => p.data.tags.includes(tag));
+const normalizedTag = tag.toLowerCase();
+const filteredPosts = posts.filter((p) =>
+	p.data.tags.some((t) => t.trim().toLowerCase() === normalizedTag)
+);
 const tagName = getTagName(tag, tagDisplayMap);
 
 ---
