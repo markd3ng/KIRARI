@@ -1,0 +1,250 @@
+[English](./README.md)
+
+<div align="center">
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/markd3ng/KIRARI)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/markd3ng/KIRARI)
+[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/markd3ng/KIRARI)
+[![Deploy to EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy/zh-CN.svg)](https://edgeone.ai/pages/new?repository=https://github.com/markd3ng/KIRARI)
+
+</div>
+
+# KIRARI
+
+一个基于 **Astro 6** + **Svelte 5** + **TailwindCSS 4** 构建的现代化、高性能静态博客主题。支持动态 OG 图片生成、全文搜索、流畅的页面过渡以及 LLM 文档支持。
+
+## 特性
+
+- **动态 OG 图片** - 使用 Satori + Sharp 为每篇文章自动生成 OG 图片
+- **全文搜索** - 基于 Pagefind，支持防抖和并发请求处理
+- **Mermaid 图表** - 流程图、时序图等，客户端渲染
+- **数学公式** - 使用 KaTeX 渲染 LaTeX
+- **多语言** - 支持 10 种语言（en、zh_CN、zh_TW、ja、ko、es、th、vi、tr、id）
+- **LLM 就绪** - 自动生成 `llms.txt` 供 AI 索引
+- **深色模式** - 支持系统偏好检测 + 手动切换
+- **平滑过渡** - View Transitions API，旧浏览器自动降级到 Swup
+- **安全加固** - 所有外链均包含 `rel="noopener noreferrer"`
+
+## 快速开始
+
+```bash
+# 克隆仓库
+git clone https://github.com/markd3ng/KIRARI.git
+cd KIRARI
+
+# 安装依赖
+pnpm install
+
+# 启动开发服务器
+pnpm dev
+
+# 生产构建
+pnpm build
+
+# 预览构建结果
+pnpm preview
+```
+
+## 配置
+
+所有设置集中在 **`src/constants.ts`** 中：
+
+```typescript
+export const Config = {
+  site: {
+    url: "https://your-domain.com",
+    title: "你的站点",
+    subtitle: "你的标语",
+    lang: "zh_CN",
+    themeColor: { hue: 250, fixed: false },
+    banner: {
+      enable: true,
+      src: "assets/images/banner.png",
+      position: "center", // 'top' | 'center' | 'bottom'
+      credit: { enable: false, text: "", url: "" }
+    },
+    toc: { enable: true, depth: 3 },
+  },
+  profile: {
+    avatar: "assets/images/avatar.png",
+    name: "你的名字",
+    bio: "你的简介",
+    links: [
+      { name: "GitHub", icon: "fa6-brands:github", url: "https://github.com/you" }
+    ]
+  },
+  license: {
+    enable: true,
+    name: "CC BY-NC-SA 4.0",
+    url: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+  },
+  head: {
+    verification: { google: "", bing: "", yandex: "", naver: "" },
+    customHtml: "",
+    customScript: ""
+  },
+  footer: {
+    customHtml: "",
+    customScript: ""
+  },
+  og: {
+    defaultImage: "/og/default.png",
+    width: 1200,
+    height: 630,
+    brand: "KIRARI",
+    backgroundColor: "#1a1a2e",
+    textColor: "#ffffff"
+  },
+  llms: {
+    enable: true,
+    sitemap: true,
+    title: "你的站点",
+    description: "站点描述",
+    i18n: true
+  }
+}
+```
+
+## 主要功能
+
+### 撰写文章
+
+在 `src/content/posts/` 中创建 Markdown 文件：
+
+```markdown
+---
+title: 文章标题
+published: 2024-05-01
+updated: 2024-05-02      # 可选
+description: 简短描述    # 可选
+image: /cover.png        # 可选，横幅图片
+tags: [标签1, 标签2]     # 可选
+category: Guides         # 可选
+draft: false             # 在生产环境隐藏
+lang: zh_CN              # 语言代码
+mermaid: true            # 启用 Mermaid 图表
+---
+
+你的内容在这里。
+```
+
+### OG 图片
+
+- **文章页面**：通过 `/og/[slug].png` 端点使用 Satori 自动生成
+- **其他页面**：使用 `og.defaultImage` 配置的默认图片
+
+### Mermaid 图表
+
+在 frontmatter 中添加 `mermaid: true`：
+
+````markdown
+---
+mermaid: true
+---
+
+```mermaid
+graph TD;
+    A --> B;
+```
+````
+
+### 友链页面
+
+编辑 `src/_data/friends.json`：
+
+```json
+[
+  {
+    "siteTitle": "朋友的博客",
+    "siteDesc": "描述",
+    "siteUrl": "https://example.com",
+    "siteIcon": "https://example.com/avatar.png"
+  }
+]
+```
+
+### 自定义 Head/Footer
+
+```typescript
+// src/constants.ts
+head: {
+  verification: {
+    google: "你的验证码",
+    bing: "你的验证码"
+  },
+  customHtml: "<!-- 外部 CSS/JS -->",
+  customScript: "// 内联 JS"
+},
+footer: {
+  customHtml: "<a href='https://beian.miit.gov.cn'>ICP备案</a>"
+}
+```
+
+### LLM 文档
+
+构建时生成：
+- `llms.txt` - 主索引
+- `llms-full.txt` - 完整内容
+- `llms-en.txt`、`llms-zh.txt` - 按语言分类的文件
+
+## 技术栈
+
+| 类别 | 技术 |
+|------|------|
+| 框架 | Astro 6.0 |
+| UI | Svelte 5 |
+| 样式 | TailwindCSS 4 |
+| 搜索 | Pagefind |
+| 代码高亮 | Expressive Code |
+| 数学 | KaTeX |
+| 图表 | Mermaid |
+| OG 图片 | Satori + Sharp |
+| 过渡动画 | View Transitions API / Swup |
+| 滚动条 | OverlayScrollbars |
+
+## 脚本命令
+
+| 命令 | 描述 |
+|------|------|
+| `pnpm dev` | 启动开发服务器 |
+| `pnpm build` | 构建 + 生成搜索索引 |
+| `pnpm preview` | 本地预览构建结果 |
+| `pnpm check` | Astro 诊断检查 |
+| `pnpm type-check` | TypeScript 类型检查 |
+| `pnpm new-post` | 从模板创建新文章 |
+
+## 目录结构
+
+```
+KIRARI/
+├── src/
+│   ├── components/       # UI 组件
+│   ├── content/posts/    # 博客文章（Markdown）
+│   ├── content/spec/     # 静态页面内容
+│   ├── i18n/             # 翻译文件（10 种语言）
+│   ├── layouts/          # 页面布局
+│   ├── pages/            # 路由
+│   │   ├── og/[...slug].png.ts  # 动态 OG 图片
+│   │   ├── rss.xml.ts           # RSS 订阅
+│   │   └── robots.txt.ts        # Robots.txt
+│   ├── plugins/          # 自定义 rehype/remark 插件
+│   ├── styles/           # CSS/Stylus
+│   ├── utils/            # 工具函数
+│   ├── constants.ts      # 主配置文件
+│   └── config.ts         # 类型导出（请勿编辑）
+├── public/               # 静态资源
+├── scripts/              # 构建脚本
+└── _data/                # 数据文件（friends.json）
+```
+
+## 致谢
+
+本项目致敬以下项目：
+
+- [saicaca/fuwari](https://github.com/saicaca/fuwari) - 原始主题
+- [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) - 增强分支
+- [ColdranAI/astro-llms-generate](https://github.com/ColdranAI/astro-llms-generate) - LLM 文档生成器
+
+## 许可证
+
+MIT

@@ -32,6 +32,11 @@ let isSearching = false;
 let pagefindLoaded = false;
 let initialized = false;
 
+// Debounce and concurrency control
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+let searchId = 0; // Used to prevent stale results from concurrent searches
+const DEBOUNCE_DELAY = 300; // ms
+
 const fakeResult: SearchResult[] = [
 	{
 		url: url("/"),
@@ -77,6 +82,9 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 		return;
 	}
 
+	// Increment search ID to invalidate any previous pending searches
+	const currentSearchId = ++searchId;
+
 	isSearching = true;
 
 	try {
@@ -84,6 +92,10 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 
 		if (import.meta.env.PROD && pagefindLoaded && window.pagefind) {
 			const response = await window.pagefind.search(keyword);
+			// Check if this search is still relevant (not superseded by newer search)
+			if (currentSearchId !== searchId) {
+				return; // Abandon stale search
+			}
 			searchResults = await Promise.all(
 				response.results.map((item) => item.data()),
 			);
@@ -94,15 +106,35 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 			console.error("Pagefind is not available in production environment.");
 		}
 
+		// Final check before updating results
+		if (currentSearchId !== searchId) {
+			return;
+		}
+
 		result = searchResults;
 		setPanelVisibility(result.length > 0, isDesktop);
 	} catch (error) {
-		console.error("Search error:", error);
-		result = [];
-		setPanelVisibility(false, isDesktop);
+		// Only update if this search is still relevant
+		if (currentSearchId === searchId) {
+			console.error("Search error:", error);
+			result = [];
+			setPanelVisibility(false, isDesktop);
+		}
 	} finally {
-		isSearching = false;
+		if (currentSearchId === searchId) {
+			isSearching = false;
+		}
 	}
+};
+
+// Debounced search wrapper
+const debouncedSearch = (keyword: string, isDesktop: boolean): void => {
+	if (searchTimeout) {
+		clearTimeout(searchTimeout);
+	}
+	searchTimeout = setTimeout(() => {
+		search(keyword, isDesktop);
+	}, DEBOUNCE_DELAY);
 };
 
 onMount(() => {
@@ -164,15 +196,11 @@ onMount(() => {
 });
 
 $: if (initialized && keywordDesktop) {
-	(async () => {
-		await search(keywordDesktop, true);
-	})();
+	debouncedSearch(keywordDesktop, true);
 }
 
 $: if (initialized && keywordMobile) {
-	(async () => {
-		await search(keywordMobile, false);
-	})();
+	debouncedSearch(keywordMobile, false);
 }
 </script>
 

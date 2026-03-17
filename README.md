@@ -1,39 +1,113 @@
+[中文文档](./README_CN.md)
+
+<div align="center">
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/markd3ng/KIRARI)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/markd3ng/KIRARI)
+[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/markd3ng/KIRARI)
+[![Deploy to EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy/zh-CN.svg)](https://edgeone.ai/pages/new?repository=https://github.com/markd3ng/KIRARI)
+
+</div>
+
 # KIRARI
 
-[![Build Status](https://github.com/markd3ng/KIRARI/actions/workflows/ci-main.yml/badge.svg)](https://github.com/markd3ng/KIRARI/actions/workflows/ci-main.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-A modern static blog built with **Astro 6** + **Svelte 5** + **TailwindCSS 4**.
+A modern, high-performance static blog theme built with **Astro 6** + **Svelte 5** + **TailwindCSS 4**. Features dynamic OG image generation, full-text search, smooth page transitions, and LLM-ready documentation support.
 
 ## Features
 
-- **Dynamic OG Images** - Auto-generated OG images for each post with title, date, and tags
-- **Full-text Search** - Powered by Pagefind
-- **Mermaid Diagrams** - Flowcharts, sequence diagrams, and more
+- **Dynamic OG Images** - Auto-generated OG images for each post using Satori + Sharp
+- **Full-text Search** - Powered by Pagefind, with debounce and concurrent request handling
+- **Mermaid Diagrams** - Flowcharts, sequence diagrams, and more with client-side rendering
 - **Math Equations** - KaTeX for LaTeX rendering
 - **Multi-language** - 10 languages supported (en, zh_CN, zh_TW, ja, ko, es, th, vi, tr, id)
 - **LLM-Ready** - Auto-generates `llms.txt` for AI indexing
-- **Dark Mode** - System preference + manual toggle
-- **Smooth Transitions** - View Transitions API with Swup fallback
+- **Dark Mode** - System preference detection + manual toggle
+- **Smooth Transitions** - View Transitions API with Swup fallback for older browsers
+- **Security Hardened** - All external links include `rel="noopener noreferrer"`
 
 ## Quick Start
 
 ```bash
-# Clone
+# Clone the repository
 git clone https://github.com/markd3ng/KIRARI.git
 cd KIRARI
 
-# Install
+# Install dependencies
 pnpm install
 
-# Develop
+# Start development server
 pnpm dev
 
-# Build
+# Build for production
 pnpm build
+
+# Preview production build
+pnpm preview
 ```
 
-## Writing Posts
+## Configuration
+
+All settings are centralized in **`src/constants.ts`**:
+
+```typescript
+export const Config = {
+  site: {
+    url: "https://your-domain.com",
+    title: "Your Site",
+    subtitle: "Your Tagline",
+    lang: "en",
+    themeColor: { hue: 250, fixed: false },
+    banner: {
+      enable: true,
+      src: "assets/images/banner.png",
+      position: "center", // 'top' | 'center' | 'bottom'
+      credit: { enable: false, text: "", url: "" }
+    },
+    toc: { enable: true, depth: 3 },
+  },
+  profile: {
+    avatar: "assets/images/avatar.png",
+    name: "Your Name",
+    bio: "Your bio",
+    links: [
+      { name: "GitHub", icon: "fa6-brands:github", url: "https://github.com/you" }
+    ]
+  },
+  license: {
+    enable: true,
+    name: "CC BY-NC-SA 4.0",
+    url: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+  },
+  head: {
+    verification: { google: "", bing: "", yandex: "", naver: "" },
+    customHtml: "",
+    customScript: ""
+  },
+  footer: {
+    customHtml: "",
+    customScript: ""
+  },
+  og: {
+    defaultImage: "/og/default.png",
+    width: 1200,
+    height: 630,
+    brand: "KIRARI",
+    backgroundColor: "#1a1a2e",
+    textColor: "#ffffff"
+  },
+  llms: {
+    enable: true,
+    sitemap: true,
+    title: "Your Site",
+    description: "Your site description",
+    i18n: true
+  }
+}
+```
+
+## Key Features
+
+### Writing Posts
 
 Create Markdown files in `src/content/posts/`:
 
@@ -54,42 +128,10 @@ mermaid: true            # Enable Mermaid diagrams
 Your content here.
 ```
 
-## Configuration
-
-All settings in **`src/constants.ts`** (single source of truth):
-
-```typescript
-export const Config = {
-  site: {
-    url: "https://your-domain.com",
-    title: "Your Site",
-    subtitle: "Your Tagline",
-    lang: "en",
-    themeColor: { hue: 250, fixed: false },
-    og: {
-      defaultImage: "/og/default.png",
-      width: 1200,
-      height: 630,
-      brand: "KIRARI",
-      backgroundColor: "#1a1a2e",
-      textColor: "#ffffff",
-    },
-  },
-  profile: {
-    avatar: "/avatar.png",
-    name: "Your Name",
-    bio: "Your bio",
-  },
-  // ... more options
-}
-```
-
-## Key Features
-
 ### OG Images
 
-- Posts: Auto-generated via `/og/[slug].png` using Satori
-- Other pages: Uses `/og/default.png`
+- **Posts**: Auto-generated via `/og/[slug].png` endpoint using Satori
+- **Other pages**: Uses the default OG image from `og.defaultImage` config
 
 ### Mermaid Diagrams
 
@@ -127,15 +169,15 @@ Edit `src/_data/friends.json`:
 // src/constants.ts
 head: {
   verification: {
-    google: "your-code",
-    bing: "your-code",
+    google: "your-verification-code",
+    bing: "your-verification-code"
   },
   customHtml: "<!-- external CSS/JS -->",
-  customScript: "// inline JS",
+  customScript: "// inline JS"
 },
 footer: {
-  customHtml: "<a href='https://beian.miit.gov.cn'>ICP备案</a>",
-},
+  customHtml: "<a href='https://beian.miit.gov.cn'>ICP备案</a>"
+}
 ```
 
 ### LLMs Documentation
@@ -143,7 +185,7 @@ footer: {
 Build generates:
 - `llms.txt` - Main index
 - `llms-full.txt` - Complete content
-- `llms-en.txt`, `llms-zh.txt` - Language-specific
+- `llms-en.txt`, `llms-zh.txt` - Language-specific files
 
 ## Tech Stack
 
@@ -157,13 +199,14 @@ Build generates:
 | Math | KaTeX |
 | Diagrams | Mermaid |
 | OG Images | Satori + Sharp |
-| Transitions | View Transitions / Swup |
+| Transitions | View Transitions API / Swup |
+| Scrollbars | OverlayScrollbars |
 
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start dev server |
+| `pnpm dev` | Start development server |
 | `pnpm build` | Build + generate search index |
 | `pnpm preview` | Preview build locally |
 | `pnpm check` | Astro diagnostics |
@@ -173,53 +216,26 @@ Build generates:
 ## Directory Structure
 
 ```
-src/
-├── components/       # UI components
-├── content/posts/    # Blog posts (Markdown)
-├── content/spec/     # Static pages content
-├── i18n/            # Translations (10 languages)
-├── layouts/         # Page layouts
-├── pages/           # Routes
-│   ├── og/[...slug].png.ts  # Dynamic OG images
-│   ├── rss.xml.ts           # RSS feed
-│   └── robots.txt.ts        # Robots.txt
-├── plugins/         # Custom rehype/remark plugins
-├── styles/          # CSS/Stylus
-├── utils/           # Helper functions
-├── constants.ts     # Main configuration
-└── config.ts        # Type exports (do not edit)
+KIRARI/
+├── src/
+│   ├── components/       # UI components
+│   ├── content/posts/    # Blog posts (Markdown)
+│   ├── content/spec/     # Static pages content
+│   ├── i18n/             # Translations (10 languages)
+│   ├── layouts/          # Page layouts
+│   ├── pages/            # Routes
+│   │   ├── og/[...slug].png.ts  # Dynamic OG images
+│   │   ├── rss.xml.ts           # RSS feed
+│   │   └── robots.txt.ts        # Robots.txt
+│   ├── plugins/          # Custom rehype/remark plugins
+│   ├── styles/           # CSS/Stylus
+│   ├── utils/            # Helper functions
+│   ├── constants.ts      # Main configuration
+│   └── config.ts         # Type exports (do not edit)
+├── public/               # Static assets
+├── scripts/              # Build scripts
+└── _data/                # Data files (friends.json)
 ```
-
-## Changelog
-
-### [2026-03-12]
-
-**Added**
-- Dynamic OG image generation via `/og/[slug].png` endpoint
-- `site.og` configuration for OG image customization
-
-**Changed**
-- Refactored Layout to separate banner and OG image responsibilities
-
-**Removed**
-- Biome (linter/formatter) - not needed in CI/CD workflow
-
-### [2026-02-18]
-
-**Added**
-- Mermaid diagram support with client-side rendering
-- `head` config for site verification and custom injections
-- `footer` config for custom HTML/JS
-- Tag/category mapping configuration
-
-**Fixed**
-- Tag/category display localization
-- GitHub Actions workflow pnpm version conflicts
-
-### [2026-02-13]
-
-**Added**
-- `astro-llms-generate` plugin for LLM-friendly documentation
 
 ## Credits
 

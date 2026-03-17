@@ -10,18 +10,18 @@ const currentYear = new Date().getFullYear();
 <div class="transition border-dashed border-[oklch(85%_0.01_var(--hue))] dark:border-white/15 rounded-2xl mb-12 flex flex-col items-center justify-center px-6">
     <div class="transition text-50 text-sm text-center">
         &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. All Rights Reserved. /
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href={url('rss.xml')}>RSS</a> /
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href={url('sitemap-index.xml')}>Sitemap</a>
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={url('rss.xml')}>RSS</a> /
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={url('sitemap-index.xml')}>Sitemap</a>
         {llmsConfig.enable && (
-            <> / <a class="transition link text-[var(--primary)] font-medium" target="_blank" href={url('llms.txt')}>LLMs</a></>
+            <> / <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={url('llms.txt')}>LLMs</a></>
         )}
         <br>
         Powered by
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://astro.build">Astro</a> &middot;
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://github.com/markd3ng/KIRARI">KIRARI</a> &middot;
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://astro.build">Astro</a> &middot;
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/markd3ng/KIRARI">KIRARI</a> &middot;
         Based on
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://github.com/JoeyC-Dev/saicaca-fuwari">JoeyC-Dev/saicaca-fuwari</a> &
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" href="https://github.com/saicaca/fuwari">saicaca/fuwari</a>
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/JoeyC-Dev/saicaca-fuwari">JoeyC-Dev/saicaca-fuwari</a> &
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/saicaca/fuwari">saicaca/fuwari</a>
     </div>
     {footerConfig.customHtml && (
         <div class="transition text-50 text-sm text-center mt-1" set:html={footerConfig.customHtml} />
