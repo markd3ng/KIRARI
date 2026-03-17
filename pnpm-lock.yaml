@@ -72,7 +72,7 @@ importers:
         specifier: ^1.1.5
         version: 1.1.5
       astro-llms-generate:
-        specifier: github:ColdranAI/astro-llms-generate
+        specifier: git+https://github.com/ColdranAI/astro-llms-generate.git
         version: https://codeload.github.com/ColdranAI/astro-llms-generate/tar.gz/aadd9412255b0bdd0b12a4216daf74ecc15b1026(astro@6.0.4(@types/node@25.4.0)(jiti@2.6.1)(lightningcss@1.30.2)(rollup@4.59.0)(sass@1.80.4)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.3)(yaml@2.8.2))
       hastscript:
         specifier: ^9.0.1
