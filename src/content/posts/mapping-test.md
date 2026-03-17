@@ -4,7 +4,18 @@ published: 2026-02-18
 description: "Comprehensive test post for verifying tag and category mapping functionality"
 image: ""
 tags: [demo, example, tutorial, web_dev, frontend, javascript, typescript, astro, svelte, UnmappedTag]
+tagLabels:
+  demo: 演示
+  example: 示例
+  tutorial: 教程
+  web_dev: Web开发
+  frontend: 前端
+  javascript: JavaScript
+  typescript: TypeScript
+  astro: Astro
+  svelte: Svelte
 category: frontend
+categoryLabel: 前端开发
 draft: false
 ---
 

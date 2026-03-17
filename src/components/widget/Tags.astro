@@ -2,14 +2,20 @@
 
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
-import { getTagList } from "../../utils/content-utils";
+import {
+	getTagList,
+	getTaxonomyDisplayMappings,
+} from "../../utils/content-utils";
 import { getTagName, getTagUrl } from "../../utils/url-utils";
+
 import ButtonTag from "../control/ButtonTag.astro";
 import WidgetLayout from "./WidgetLayout.astro";
 
 const tags = await getTagList();
+const { tags: tagDisplayMap } = await getTaxonomyDisplayMappings();
 
 const COLLAPSED_HEIGHT = "7.5rem";
+
 
 const isCollapsed = tags.length >= 20;
 
@@ -24,7 +30,8 @@ const style = Astro.props.style;
     <div class="flex gap-2 flex-wrap">
         {tags.map(t => (
             <ButtonTag href={getTagUrl(t.name)} label={`View all posts with the ${t.name.trim()} tag`}>
-                {getTagName(t.name.trim())}
+                {getTagName(t.name.trim(), tagDisplayMap)}
+
             </ButtonTag>
         ))}
     </div>

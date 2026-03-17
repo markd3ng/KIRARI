@@ -4,7 +4,14 @@ published: 2026-02-15
 description: "Building IoT devices with embedded systems"
 image: ""
 tags: [iot, embedded, hardware, diy, tutorial]
+tagLabels:
+  iot: 物联网
+  embedded: 嵌入式
+  hardware: 硬件
+  diy: DIY
+  tutorial: 教程
 category: hardware_and_diy
+categoryLabel: 硬件与DIY
 draft: false
 ---
 

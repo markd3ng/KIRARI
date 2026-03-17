@@ -128,6 +128,35 @@ mermaid: true            # 启用 Mermaid 图表
 你的内容在这里。
 ```
 
+### 标签与分类显示名
+
+标签和分类使用 slug（小写、去除首尾空格）作为 URL 标识符。你可以选择性指定与 slug 不同的显示名称：
+
+```markdown
+---
+tags: [demo, tutorial]
+tagLabels:
+  demo: "演示 Demo"
+  tutorial: "Tutorial Guide"
+category: devops
+categoryLabel: "DevOps 运维"
+---
+```
+
+**工作原理：**
+- URL 保持 `/tags/demo/`（使用 slug）
+- 页面显示 "演示 Demo"（使用 `tagLabels`）
+- 若未声明标签名，则显示原始 slug 值
+
+**冲突检测日志：**
+当多篇文章为同一 slug 声明了不同的显示名时，构建时会输出警告：
+
+```
+[DisplayName Conflict] tag "demo": existing="演示" vs new="Demo示例" (source: posts/another-post.md)
+```
+
+后声明的值会覆盖先前的值。通过此日志可发现并修复命名不一致问题。
+
 ### OG 图片
 
 - **文章页面**：通过 `/og/[slug].png` 端点使用 Satori 自动生成

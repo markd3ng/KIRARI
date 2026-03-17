@@ -128,6 +128,35 @@ mermaid: true            # Enable Mermaid diagrams
 Your content here.
 ```
 
+### Tag & Category Display Names
+
+Tags and categories use their slug (lowercase, trimmed) as URL identifiers. You can optionally specify display names that differ from the slug:
+
+```markdown
+---
+tags: [demo, tutorial]
+tagLabels:
+  demo: "演示 Demo"
+  tutorial: "Tutorial Guide"
+category: devops
+categoryLabel: "DevOps 运维"
+---
+```
+
+**How it works:**
+- URL remains `/tags/demo/` (uses slug)
+- Display shows "演示 Demo" (uses `tagLabels`)
+- If no label is declared, the original slug value is displayed
+
+**Conflict Detection:**
+When multiple posts declare different display names for the same slug, a warning is logged during build:
+
+```
+[DisplayName Conflict] tag "demo": existing="演示" vs new="Demo示例" (source: posts/another-post.md)
+```
+
+The later value overwrites the earlier one. Use this log to identify and fix naming inconsistencies.
+
 ### OG Images
 
 - **Posts**: Auto-generated via `/og/[slug].png` endpoint using Satori

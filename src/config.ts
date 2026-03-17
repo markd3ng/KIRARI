@@ -37,11 +37,6 @@ export const headConfig: HeadConfig = Config.head as HeadConfig;
 // Footer configuration
 export const footerConfig: FooterConfig = Config.footer as FooterConfig;
 
-// Tag mapping (slug -> display name)
-export const tagMapping: Record<string, string> = Config.mappings.tags;
 
-// Category mapping (slug -> display name)
-export const categoryMapping: Record<string, string> =
-	Config.mappings.categories;
 
 export const llmsConfig: LLMsConfig = Config.llms as LLMsConfig;

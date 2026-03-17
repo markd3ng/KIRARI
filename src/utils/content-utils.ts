@@ -5,6 +5,40 @@ import { getCategoryUrl } from "@utils/url-utils.ts";
 
 // Cache for all blog posts to avoid repeated getCollection calls
 let cachedPosts: CollectionEntry<"posts">[] | null = null;
+let cachedDisplayNameMappings: DisplayNameMappings | null = null;
+
+export type DisplayNameMappings = {
+	tags: Record<string, string>;
+	categories: Record<string, string>;
+};
+
+function normalizeMappingKey(value: string): string {
+	return value.trim().toLowerCase();
+}
+
+function applyDisplayMapping(
+	targetMap: Record<string, string>,
+	rawKey: string,
+	rawLabel: string,
+	context?: { type: "tag" | "category"; source: string },
+): void {
+	const key = normalizeMappingKey(rawKey);
+	const label = rawLabel.trim();
+	if (!key || !label) {
+		return;
+	}
+
+	// 冲突检测：同一 slug 已存在不同 label
+	if (targetMap[key] && targetMap[key] !== label) {
+		console.warn(
+			`[DisplayName Conflict] ${context?.type ?? "unknown"} "${key}": ` +
+				`existing="${targetMap[key]}" vs new="${label}" ` +
+				`(source: ${context?.source ?? "unknown"})`,
+		);
+	}
+
+	targetMap[key] = label;
+}
 
 async function getAllPosts(): Promise<CollectionEntry<"posts">[]> {
 	if (cachedPosts !== null) {
@@ -14,6 +48,47 @@ async function getAllPosts(): Promise<CollectionEntry<"posts">[]> {
 		return import.meta.env.PROD ? data.draft !== true : true;
 	});
 	return cachedPosts;
+}
+
+async function buildDisplayNameMappings(): Promise<DisplayNameMappings> {
+	if (cachedDisplayNameMappings !== null) {
+		return cachedDisplayNameMappings;
+	}
+
+	const allBlogPosts = await getAllPosts();
+	const mappings: DisplayNameMappings = {
+		tags: {},
+		categories: {},
+	};
+
+	for (const post of allBlogPosts) {
+		const tagLabels = post.data.tagLabels ?? {};
+		for (const [rawKey, rawLabel] of Object.entries(tagLabels)) {
+			if (typeof rawLabel !== "string") {
+				continue;
+			}
+			applyDisplayMapping(mappings.tags, rawKey, rawLabel, {
+				type: "tag",
+				source: post.id,
+			});
+		}
+
+		if (post.data.category && post.data.categoryLabel) {
+			applyDisplayMapping(
+				mappings.categories,
+				post.data.category,
+				post.data.categoryLabel,
+				{ type: "category", source: post.id },
+			);
+		}
+	}
+
+	cachedDisplayNameMappings = mappings;
+	return cachedDisplayNameMappings;
+}
+
+export async function getTaxonomyDisplayMappings(): Promise<DisplayNameMappings> {
+	return buildDisplayNameMappings();
 }
 
 // // Retrieve posts and sort them by publication date
@@ -49,7 +124,6 @@ export type PostForList = {
 export async function getSortedPostsList(): Promise<PostForList[]> {
 	const sortedFullPosts = await getRawSortedPosts();
 
-	// delete post.body
 	const sortedPostsList = sortedFullPosts.map((post) => ({
 		id: post.id,
 		data: post.data,
@@ -73,7 +147,6 @@ export async function getTagList(): Promise<Tag[]> {
 		});
 	});
 
-	// sort tags
 	const keys: string[] = Object.keys(countMap).sort((a, b) => {
 		return a.toLowerCase().localeCompare(b.toLowerCase());
 	});
@@ -119,3 +192,4 @@ export async function getCategoryList(): Promise<Category[]> {
 	}
 	return ret;
 }
+

@@ -3,8 +3,12 @@ import ArchivePanel from "@components/ArchivePanel.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { getSortedPostsList } from "@utils/content-utils";
+import {
+	getSortedPostsList,
+	getTaxonomyDisplayMappings,
+} from "@utils/content-utils";
 import { getTagName } from "@utils/url-utils";
+
 
 export async function getStaticPaths() {
 	const posts = await getSortedPostsList();
@@ -25,10 +29,13 @@ export async function getStaticPaths() {
 const { tag } = Astro.params as { tag: string };
 
 const posts = await getSortedPostsList();
+const { tags: tagDisplayMap } = await getTaxonomyDisplayMappings();
 const filteredPosts = posts.filter((p) => p.data.tags.includes(tag));
-const tagName = getTagName(tag);
+const tagName = getTagName(tag, tagDisplayMap);
+
 ---
 
 <MainGridLayout title={`${i18n(I18nKey.archive)} - ${tagName}`}>
-    <ArchivePanel sortedPosts={filteredPosts} client:only="svelte"></ArchivePanel>
+    <ArchivePanel sortedPosts={filteredPosts} tagDisplayMap={tagDisplayMap} client:only="svelte"></ArchivePanel>
+
 </MainGridLayout>

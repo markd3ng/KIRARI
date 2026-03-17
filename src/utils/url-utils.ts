@@ -1,6 +1,9 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import { categoryMapping, tagMapping } from "../config";
+
+function normalizeMappingKey(value: string): string {
+	return value.trim().toLowerCase();
+}
 
 export function pathsEqual(path1: string, path2: string) {
 	const normalizedPath1 = path1.replace(/^\/|\/$/g, "").toLowerCase();
@@ -35,16 +38,20 @@ export function getCategoryUrl(category: string | null): string {
 	return url(`/categories/${category.trim()}/`);
 }
 
-export function getTagName(tag: string): string {
-	return tagMapping[tag] || tagMapping[tag.toLowerCase()] || tag;
+export function getTagName(
+	tag: string,
+	tagMapping: Record<string, string> = {},
+): string {
+	const normalizedTag = normalizeMappingKey(tag);
+	return tagMapping[normalizedTag] || tag;
 }
 
-export function getCategoryName(category: string): string {
-	return (
-		categoryMapping[category] ||
-		categoryMapping[category.toLowerCase()] ||
-		category
-	);
+export function getCategoryName(
+	category: string,
+	categoryMapping: Record<string, string> = {},
+): string {
+	const normalizedCategory = normalizeMappingKey(category);
+	return categoryMapping[normalizedCategory] || category;
 }
 
 export function getDir(path: string): string {
@@ -54,3 +61,4 @@ export function getDir(path: string): string {
 	}
 	return path.substring(0, lastSlashIndex + 1);
 }
+

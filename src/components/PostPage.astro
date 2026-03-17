@@ -1,9 +1,13 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { getTaxonomyDisplayMappings } from "@utils/content-utils";
 import { getPostUrlBySlug } from "@utils/url-utils";
 import PostCard from "./PostCard.astro";
 
 const { page } = Astro.props;
+const { tags: tagDisplayMap, categories: categoryDisplayMap } =
+	await getTaxonomyDisplayMappings();
+
 
 // let delay = 0;
 // const interval = 50;
@@ -21,9 +25,12 @@ const { page } = Astro.props;
                 image={entry.data.image}
                 description={entry.data.description}
                 draft={entry.data.draft}
+                tagDisplayMap={tagDisplayMap}
+                categoryDisplayMap={categoryDisplayMap}
                 class:list="onload-animation"
                 style={`animation-delay: var(--content-delay);`}
         ></PostCard>
+
         <!-- style={`animation-delay: calc(var(--content-delay) + ${delay++ * interval}ms);`} -->
     ))}
 </div>

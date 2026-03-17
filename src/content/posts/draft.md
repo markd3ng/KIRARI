@@ -2,7 +2,10 @@
 title: Draft Example
 published: 2022-07-01
 tags: [Markdown, Blogging, Demo]
+tagLabels:
+  Demo: 演示
 category: Examples
+categoryLabel: 示例
 draft: true
 ---
 

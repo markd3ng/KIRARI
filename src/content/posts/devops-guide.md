@@ -4,7 +4,14 @@ published: 2026-02-17
 description: "A comprehensive guide to container orchestration"
 image: ""
 tags: [docker, kubernetes, devops, linux, tutorial]
+tagLabels:
+  docker: Docker
+  kubernetes: Kubernetes
+  devops: 运维开发
+  linux: Linux
+  tutorial: 教程
 category: devops
+categoryLabel: 运维开发
 draft: false
 ---
 

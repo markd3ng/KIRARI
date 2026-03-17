@@ -5,8 +5,12 @@ import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { getSortedPosts } from "@utils/content-utils";
+import {
+	getSortedPosts,
+	getTaxonomyDisplayMappings,
+} from "@utils/content-utils";
 import { getDir, getPostUrlBySlug } from "@utils/url-utils";
+
 import { Icon } from "astro-icon/components";
 import { licenseConfig, mermaidConfig, siteConfig } from "src/config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
@@ -25,7 +29,10 @@ export async function getStaticPaths() {
 import { render } from "astro:content";
 
 const { entry } = Astro.props;
+const { tags: tagDisplayMap, categories: categoryDisplayMap } =
+	await getTaxonomyDisplayMappings();
 const { Content, headings, remarkPluginFrontmatter } = await render(entry);
+
 
 // Generate OG image URL for this post
 const ogImageUrl = `/og/${entry.id}.png`;
@@ -105,7 +112,10 @@ const jsonLd = {
                         updated={entry.data.updated}
                         tags={entry.data.tags}
                         category={entry.data.category}
+                        tagDisplayMap={tagDisplayMap}
+                        categoryDisplayMap={categoryDisplayMap}
                 ></PostMetadata>
+
                 {!entry.data.image && <div class="border-[var(--line-divider)] border-dashed border-b-[1px] mb-5"></div>}
             </div>
 

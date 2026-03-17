@@ -12,7 +12,9 @@ const postsCollection = defineCollection({
 		description: z.string().optional().default(""),
 		image: z.string().optional().default(""),
 		tags: z.array(z.string()).optional().default([]),
+		tagLabels: z.record(z.string(), z.string()).optional().default({}),
 		category: z.string().optional().nullable().default(""),
+		categoryLabel: z.string().optional().default(""),
 		lang: z.string().optional().default(""),
 		mermaid: z.boolean().optional().default(false),
 

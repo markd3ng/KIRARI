@@ -6,6 +6,8 @@ import { i18n } from "../i18n/translation";
 import { getPostUrlBySlug, getTagName } from "../utils/url-utils";
 
 export let sortedPosts: Post[] = [];
+export let tagDisplayMap: Record<string, string> = {};
+
 const params = new URLSearchParams(window.location.search);
 
 interface Post {
@@ -32,7 +34,8 @@ function formatDate(date: Date) {
 }
 
 function formatTag(tagList: string[]) {
-	return tagList.map((t) => `#${getTagName(t)}`).join(" ");
+	return tagList.map((t) => `#${getTagName(t, tagDisplayMap)}`).join(" ");
+
 }
 
 onMount(async () => {

@@ -3,7 +3,10 @@ title: "Markdown Example (CJK)"
 published: 2023-10-01
 description: A simple example of a Markdown blog post.
 tags: [Markdown, Blogging, Demo, "CJK"]
+tagLabels:
+  Demo: 演示
 category: Examples
+categoryLabel: 示例
 draft: false
 ---
 
