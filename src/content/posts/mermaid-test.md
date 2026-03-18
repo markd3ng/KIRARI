@@ -2,6 +2,7 @@
 title: Mermaid 图表测试
 published: 2026-02-18
 description: "测试 Mermaid 图表渲染功能"
+og: ""
 tags: [demo]
 tagLabels:
   demo: 演示

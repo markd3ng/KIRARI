@@ -3,6 +3,7 @@ title: IoT Device Development with Embedded Systems
 published: 2026-02-15
 description: "Building IoT devices with embedded systems"
 image: ""
+og: ""
 tags: [iot, embedded, hardware, diy, tutorial]
 tagLabels:
   iot: 物联网
