@@ -95,14 +95,14 @@ export const Config = {
 	},
 	footer: {
 		customHtml: "", // Custom HTML rendered in footer (ICP filing, public security filing, badges, etc.)
-		customScript: "<script type="text/javascript">
+		customScript: `<script type="text/javascript">
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "vxldercjz3");
 </script>", // Custom inline JS injected in footer (analytics: Umami / Plausible / GA, etc.)
-	},
+	}`,
 	llms: {
 		enable: true,
 		sitemap: true,
