@@ -112,7 +112,15 @@ export const Config = {
           opacity: 0.25,
           blurRadius: 80
         }
-      }
+      },
+      defaultFeaturedImage: "", // Magazine 模板的默认特色图片（本地路径或 URL）
+      logo: "" // 品牌 Logo 图片（本地路径或 URL，显示在品牌名称旁）
+    },
+    externalImage: {
+      timeoutMs: 15000, // 外部图片获取超时时间
+      retry: 3, // 失败重试次数
+      retryDelayMs: 1000, // 重试间隔
+      useProxy: true // 使用 HTTP_PROXY/HTTPS_PROXY 环境变量
     }
   },
 
@@ -128,9 +136,13 @@ export const Config = {
 
 OG 说明：
 - 文章 OG URL 保持 `/og/[slug].png` 不变。
-- 当 `og.useCoverAsOg = true` 且 frontmatter 存在 `image` 时，直接输出封面并规范化到固定 OG 尺寸（默认 `1200x630`）。
-- 当 `cover.allowUpscale = false` 时，小图走 `contain + background`，避免强制放大导致失真。
-- 未命中封面直出时，使用本地 Satori + Sharp 渲染 magazine 模板。
+- **两种生成模式**：
+  - **封面直出**（`useCoverAsOg = true` 且 frontmatter 有 `image`）：直接使用文章封面并规范化到固定 OG 尺寸（默认 `1200x630`）。小图在 `cover.allowUpscale = false` 时采用 `contain + background` 策略。
+  - **Magazine 模板**（其他情况）：使用本地 Satori + Sharp 渲染可配置布局、背景和特色图片的模板。
+- **Magazine 模板图片**：
+  - `defaultFeaturedImage`：右侧显示的特色图片（完全配置驱动，与文章 `frontmatter.image` 无关）
+  - `logo`：品牌 Logo 图片，显示在品牌名称旁（32px，替代默认圆点图标）
+- **外部图片支持**：支持 CDN/URL 图片源，通过 `externalImage` 配置超时、重试和代理选项。
 
 ## 主要功能
 

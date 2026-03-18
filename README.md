@@ -112,7 +112,15 @@ export const Config = {
           opacity: 0.25,
           blurRadius: 80
         }
-      }
+      },
+      defaultFeaturedImage: "", // Default image for magazine template (local path or URL)
+      logo: "" // Brand logo image (local path or URL, displayed next to brand name)
+    },
+    externalImage: {
+      timeoutMs: 15000, // Timeout for fetching external images
+      retry: 3, // Number of retries on failure
+      retryDelayMs: 1000, // Delay between retries
+      useProxy: true // Use HTTP_PROXY/HTTPS_PROXY environment variables
     }
   },
 
@@ -128,9 +136,13 @@ export const Config = {
 
 OG notes:
 - Post OG URL remains `/og/[slug].png`.
-- If `og.useCoverAsOg = true` and frontmatter has `image`, OG will directly use cover with normalized size (`1200x630` by default).
-- Small cover images follow `contain + background` strategy when `cover.allowUpscale = false`.
-- If no cover (or cover direct output is disabled), local Satori + Sharp renders the magazine template.
+- **Two generation modes**:
+  - **Cover direct output** (`useCoverAsOg = true` + frontmatter has `image`): Uses article cover directly with normalized size (`1200x630` by default). Small images follow `contain + background` strategy when `cover.allowUpscale = false`.
+  - **Magazine template** (otherwise): Renders local Satori + Sharp template with configurable layout, background, and featured image.
+- **Magazine template images**:
+  - `defaultFeaturedImage`: Featured image shown on the right side (fully config-driven, independent of article `frontmatter.image`)
+  - `logo`: Brand logo displayed next to brand name (32px, replaces default dot indicator)
+- **External image support**: Images from CDN/URL are supported with timeout, retry, and proxy options via `externalImage` config.
 
 ## Key Features
 
