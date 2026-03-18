@@ -285,29 +285,14 @@ async function readImageBuffer(
 	}
 }
 
-function mimeByFormat(format?: string): string {
-	switch (format) {
-		case "jpeg":
-			return "image/jpeg";
-		case "png":
-			return "image/png";
-		case "webp":
-			return "image/webp";
-		case "gif":
-			return "image/gif";
-		case "svg":
-			return "image/svg+xml";
-		case "avif":
-			return "image/avif";
-		default:
-			return "image/png";
-	}
-}
+
 
 async function imageToDataUrl(imageBuffer: Buffer): Promise<string> {
-	const metadata = await sharp(imageBuffer, { animated: true }).metadata();
-	const mime = mimeByFormat(metadata.format);
-	return `data:${mime};base64,${imageBuffer.toString("base64")}`;
+	// Normalize all images to PNG for Satori compatibility.
+	// Some remote sources may return WebP/AVIF even when URL ends with .png,
+	// which can lead to image not rendering in OG output.
+	const normalizedPng = await sharp(imageBuffer, { animated: true }).png().toBuffer();
+	return `data:image/png;base64,${normalizedPng.toString("base64")}`;
 }
 
 async function tryGetFeaturedImageDataUrl(
