@@ -9,11 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Documentation note in README about using template literals (backticks) for `customScript` and `customHtml` fields in `src/constants.ts`. This prevents syntax errors when embedding HTML/JS snippets that contain double quotes.
+- Added optional `og` field to post frontmatter for per-post OG image override.
+
+### Changed
+
+- Simplified OG selection logic to: `frontmatter.og` → `og.defaultImage`.
+- Updated `README.md` and `README_CN.md` OG sections to match the new static selection model.
+
+### Removed
+
+- Removed dynamic OG image generation route `src/pages/og/[...slug].png.ts`.
+- Removed `useCoverAsOg` and other obsolete dynamic OG config options from configuration/types.
 
 ### Fixed
 
 - Clarified that analytics scripts (Google Analytics, Umami, Microsoft Clarity, etc.) should be wrapped in backticks to avoid quote conflicts with HTML attributes.
+
 
 ---
 

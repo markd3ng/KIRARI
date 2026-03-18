@@ -47,6 +47,7 @@ title: ${args[0]}
 published: ${getDate()}
 description: ''
 image: ''
+og: ''
 tags: []
 category: ''
 draft: false 

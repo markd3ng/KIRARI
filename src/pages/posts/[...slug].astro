@@ -1,6 +1,5 @@
 ---
 import path from "node:path";
-import { createHash } from "node:crypto";
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "@i18n/i18nKey";
@@ -35,12 +34,8 @@ const { tags: tagDisplayMap, categories: categoryDisplayMap } =
 const { Content, headings, remarkPluginFrontmatter } = await render(entry);
 
 
-// Generate OG image URL for this post (cache-busted when OG template config changes)
-const ogImageVersion = createHash("sha1")
-	.update(JSON.stringify(siteConfig.og?.template ?? {}))
-	.digest("hex")
-	.slice(0, 8);
-const ogImageUrl = `/og/${entry.id}.png?v=${ogImageVersion}`;
+// Resolve OG image URL: frontmatter og > site default image
+const ogImageUrl = entry.data.og?.trim() || siteConfig.og?.defaultImage || "/og/default.png";
 
 const jsonLd = {
 	"@context": "https://schema.org",
