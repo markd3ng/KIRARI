@@ -135,8 +135,8 @@ export const Config = {
 					blurRadius: 80,
 				},
 			},
-			defaultFeaturedImage: "https://myogimage.com/samples/blog-featured.png",
-			logo: "https://myogimage.com/logo.png",
+			defaultFeaturedImage: "/og/og-featured.png",
+			logo: "/og/og-logo.png",
 		},
 		externalImage: {
 			timeoutMs: 15000,
