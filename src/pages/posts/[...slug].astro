@@ -34,8 +34,8 @@ const { tags: tagDisplayMap, categories: categoryDisplayMap } =
 const { Content, headings, remarkPluginFrontmatter } = await render(entry);
 
 
-// Generate OG image URL for this post
-const ogImageUrl = `/og/${entry.id}.png`;
+// Resolve OG image URL: frontmatter og > site default image
+const ogImageUrl = entry.data.og?.trim() || siteConfig.og?.defaultImage || "/og/default.png";
 
 const jsonLd = {
 	"@context": "https://schema.org",

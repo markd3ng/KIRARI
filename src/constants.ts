@@ -106,38 +106,6 @@ export const Config = {
 	},
 	og: {
 		defaultImage: "/og/default.png",
-		width: 1200,
-		height: 630,
-		brand: "KIRARI",
-		useCoverAsOg: true,
-		cover: {
-			allowUpscale: false,
-			background: "#0f172a",
-		},
-		template: {
-			layoutStyle: "left-content",
-			accentColor: "#3b82f6",
-			background: {
-				type: "linear-gradient",
-				direction: "to bottom right",
-				colorStops: ["#fafafa", "#f4f4f5", "#e4e4e7"],
-				noise: 0.015,
-				gridOverlay: {
-					pattern: "dots",
-					color: "#d4d4d8",
-					opacity: 0.25,
-					blurRadius: 80,
-				},
-			},
-			defaultFeaturedImage: "",
-			logo: "",
-		},
-		externalImage: {
-			timeoutMs: 15000,
-			retry: 3,
-			retryDelayMs: 1000,
-			useProxy: true,
-		},
 	},
 
 };

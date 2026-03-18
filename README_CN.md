@@ -11,11 +11,11 @@
 
 # KIRARI
 
-一个基于 **Astro 6** + **Svelte 5** + **TailwindCSS 4** 构建的现代化、高性能静态博客主题。支持动态 OG 图片生成、全文搜索、流畅的页面过渡以及 LLM 文档支持。
+一个基于 **Astro 6** + **Svelte 5** + **TailwindCSS 4** 构建的现代化、高性能静态博客主题。支持可配置 OG 图片、全文搜索、流畅的页面过渡以及 LLM 文档支持。
 
 ## 特性
 
-- **动态 OG 图片** - 本地 magazine 风格 OG 生成，并支持文章封面直出（`useCoverAsOg`）
+- **可配置 OG 图片** - 支持单篇 `frontmatter.og` 自定义，未设置时回退到 `og.defaultImage`
 
 - **全文搜索** - 基于 Pagefind，支持防抖和并发请求处理
 - **Mermaid 图表** - 流程图、时序图等，客户端渲染
@@ -89,39 +89,7 @@ export const Config = {
     customScript: ""
   },
   og: {
-    defaultImage: "/og/default.png",
-    width: 1200,
-    height: 630,
-    brand: "KIRARI",
-    useCoverAsOg: true,
-    cover: {
-      allowUpscale: false,
-      background: "#0f172a"
-    },
-    template: {
-      layoutStyle: "left-content", // 或 "right-content"
-      accentColor: "#3b82f6",
-      background: {
-        type: "linear-gradient",
-        direction: "to bottom right",
-        colorStops: ["#fafafa", "#f4f4f5", "#e4e4e7"],
-        noise: 0.015,
-        gridOverlay: {
-          pattern: "dots", // "grid" | "graph-paper" | "dots"
-          color: "#d4d4d8",
-          opacity: 0.25,
-          blurRadius: 80
-        }
-      },
-      defaultFeaturedImage: "", // Magazine 模板的默认特色图片（本地路径或 URL）
-      logo: "" // 品牌 Logo 图片（本地路径或 URL，显示在品牌名称旁）
-    },
-    externalImage: {
-      timeoutMs: 15000, // 外部图片获取超时时间
-      retry: 3, // 失败重试次数
-      retryDelayMs: 1000, // 重试间隔
-      useProxy: true // 使用 HTTP_PROXY/HTTPS_PROXY 环境变量
-    }
+    defaultImage: "/og/default.png"
   },
 
   llms: {
@@ -135,14 +103,10 @@ export const Config = {
 ```
 
 OG 说明：
-- 文章 OG URL 保持 `/og/[slug].png` 不变。
-- **两种生成模式**：
-  - **封面直出**（`useCoverAsOg = true` 且 frontmatter 有 `image`）：直接使用文章封面并规范化到固定 OG 尺寸（默认 `1200x630`）。小图在 `cover.allowUpscale = false` 时采用 `contain + background` 策略。
-  - **Magazine 模板**（其他情况）：使用本地 Satori + Sharp 渲染可配置布局、背景和特色图片的模板。
-- **Magazine 模板图片**：
-  - `defaultFeaturedImage`：右侧显示的特色图片（完全配置驱动，与文章 `frontmatter.image` 无关）
-  - `logo`：品牌 Logo 图片，显示在品牌名称旁（32px，替代默认圆点图标）
-- **外部图片支持**：支持 CDN/URL 图片源，通过 `externalImage` 配置超时、重试和代理选项。
+- 文章 OG 图片不再通过动态路由生成，改为直接按元数据选择。
+- 优先级：`frontmatter.og` > `og.defaultImage`。
+- 当 `frontmatter.og` 为空时，回退到 `og.defaultImage`（例如 `/og/default.png`）。
+
 
 ## 主要功能
 
@@ -158,6 +122,7 @@ published: 2024-05-01
 updated: 2024-05-02      # 可选
 description: 简短描述    # 可选
 image: /cover.png        # 可选，横幅图片
+og: /og/custom.png       # 可选，当前文章专用 OG 图片
 tags: [标签1, 标签2]     # 可选
 category: Guides         # 可选
 draft: false             # 在生产环境隐藏
@@ -199,10 +164,8 @@ categoryLabel: "DevOps 运维"
 
 ### OG 图片
 
-- **文章页面**：统一通过 `/og/[slug].png` 提供（URL 保持不变）
-- **生成模式**：
-  - `og.useCoverAsOg = true` 且 frontmatter `image` 存在：封面直出（统一规范到 OG 固定尺寸）
-  - 否则：本地 magazine 模板渲染（Satori + Sharp）
+- **文章页面**：优先使用 `frontmatter.og`
+- **回退规则**：未设置 `frontmatter.og` 时使用 `og.defaultImage`
 - **其他页面**：使用 `og.defaultImage` 配置的默认图片
 
 
@@ -271,7 +234,7 @@ footer: {
 | 代码高亮 | Expressive Code |
 | 数学 | KaTeX |
 | 图表 | Mermaid |
-| OG 图片 | 本地 magazine 模板（Satori + Sharp）+ 可选封面直出 |
+| OG 图片 | 单篇 `frontmatter.og` + 全站 `og.defaultImage` 回退 |
 
 | 过渡动画 | View Transitions API / Swup |
 | 滚动条 | OverlayScrollbars |
@@ -298,7 +261,6 @@ KIRARI/
 │   ├── i18n/             # 翻译文件（10 种语言）
 │   ├── layouts/          # 页面布局
 │   ├── pages/            # 路由
-│   │   ├── og/[...slug].png.ts  # 动态 OG 图片
 │   │   ├── rss.xml.ts           # RSS 订阅
 │   │   └── robots.txt.ts        # Robots.txt
 │   ├── plugins/          # 自定义 rehype/remark 插件

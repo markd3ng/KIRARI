@@ -11,11 +11,11 @@
 
 # KIRARI
 
-A modern, high-performance static blog theme built with **Astro 6** + **Svelte 5** + **TailwindCSS 4**. Features dynamic OG image generation, full-text search, smooth page transitions, and LLM-ready documentation support.
+A modern, high-performance static blog theme built with **Astro 6** + **Svelte 5** + **TailwindCSS 4**. Features configurable OG images, full-text search, smooth page transitions, and LLM-ready documentation support.
 
 ## Features
 
-- **Dynamic OG Images** - Local magazine-style OG generation with optional post cover direct output (`useCoverAsOg`)
+- **Configurable OG Images** - Per-post `frontmatter.og` override with global fallback via `og.defaultImage`
 
 - **Full-text Search** - Powered by Pagefind, with debounce and concurrent request handling
 - **Mermaid Diagrams** - Flowcharts, sequence diagrams, and more with client-side rendering
@@ -89,39 +89,7 @@ export const Config = {
     customScript: ""
   },
   og: {
-    defaultImage: "/og/default.png",
-    width: 1200,
-    height: 630,
-    brand: "KIRARI",
-    useCoverAsOg: true,
-    cover: {
-      allowUpscale: false,
-      background: "#0f172a"
-    },
-    template: {
-      layoutStyle: "left-content", // or "right-content"
-      accentColor: "#3b82f6",
-      background: {
-        type: "linear-gradient",
-        direction: "to bottom right",
-        colorStops: ["#fafafa", "#f4f4f5", "#e4e4e7"],
-        noise: 0.015,
-        gridOverlay: {
-          pattern: "dots", // "grid" | "graph-paper" | "dots"
-          color: "#d4d4d8",
-          opacity: 0.25,
-          blurRadius: 80
-        }
-      },
-      defaultFeaturedImage: "", // Default image for magazine template (local path or URL)
-      logo: "" // Brand logo image (local path or URL, displayed next to brand name)
-    },
-    externalImage: {
-      timeoutMs: 15000, // Timeout for fetching external images
-      retry: 3, // Number of retries on failure
-      retryDelayMs: 1000, // Delay between retries
-      useProxy: true // Use HTTP_PROXY/HTTPS_PROXY environment variables
-    }
+    defaultImage: "/og/default.png"
   },
 
   llms: {
@@ -135,14 +103,10 @@ export const Config = {
 ```
 
 OG notes:
-- Post OG URL remains `/og/[slug].png`.
-- **Two generation modes**:
-  - **Cover direct output** (`useCoverAsOg = true` + frontmatter has `image`): Uses article cover directly with normalized size (`1200x630` by default). Small images follow `contain + background` strategy when `cover.allowUpscale = false`.
-  - **Magazine template** (otherwise): Renders local Satori + Sharp template with configurable layout, background, and featured image.
-- **Magazine template images**:
-  - `defaultFeaturedImage`: Featured image shown on the right side (fully config-driven, independent of article `frontmatter.image`)
-  - `logo`: Brand logo displayed next to brand name (32px, replaces default dot indicator)
-- **External image support**: Images from CDN/URL are supported with timeout, retry, and proxy options via `externalImage` config.
+- Post OG image is selected directly by metadata, without dynamic generation routes.
+- Priority: `frontmatter.og` > `og.defaultImage`.
+- If `frontmatter.og` is empty, `og.defaultImage` (e.g. `/og/default.png`) is used as fallback.
+
 
 ## Key Features
 
@@ -158,6 +122,7 @@ published: 2024-05-01
 updated: 2024-05-02      # Optional
 description: Short desc  # Optional
 image: /cover.png        # Optional banner image
+og: /og/custom.png       # Optional custom OG image for this post
 tags: [tag1, tag2]       # Optional
 category: Guides         # Optional
 draft: false             # Hide in production
@@ -199,10 +164,8 @@ The later value overwrites the earlier one. Use this log to identify and fix nam
 
 ### OG Images
 
-- **Posts**: Served via `/og/[slug].png` (URL remains unchanged)
-- **Generation mode**:
-  - `og.useCoverAsOg = true` + frontmatter `image`: direct cover output (size normalized to OG fixed dimensions)
-  - otherwise: local magazine template rendering (Satori + Sharp)
+- **Posts**: Prefer `frontmatter.og`
+- **Fallback**: If `frontmatter.og` is not set, use `og.defaultImage`
 - **Other pages**: Use `og.defaultImage`
 
 
@@ -271,7 +234,7 @@ Build generates:
 | Code Highlight | Expressive Code |
 | Math | KaTeX |
 | Diagrams | Mermaid |
-| OG Images | Local magazine template (Satori + Sharp) + optional cover direct output |
+| OG Images | Per-post `frontmatter.og` + global `og.defaultImage` fallback |
 
 | Transitions | View Transitions API / Swup |
 | Scrollbars | OverlayScrollbars |
@@ -298,7 +261,6 @@ KIRARI/
 │   ├── i18n/             # Translations (10 languages)
 │   ├── layouts/          # Page layouts
 │   ├── pages/            # Routes
-│   │   ├── og/[...slug].png.ts  # Dynamic OG images
 │   │   ├── rss.xml.ts           # RSS feed
 │   │   └── robots.txt.ts        # Robots.txt
 │   ├── plugins/          # Custom rehype/remark plugins
