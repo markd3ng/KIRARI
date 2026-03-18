@@ -44,6 +44,8 @@ type ResolvedTemplateConfig = {
 	layoutStyle: "left-content" | "right-content";
 	accentColor: string;
 	background: ResolvedTemplateBackground;
+	defaultFeaturedImage: string;
+	logo: string;
 };
 
 type ResolvedCoverConfig = {
@@ -309,9 +311,10 @@ async function imageToDataUrl(imageBuffer: Buffer): Promise<string> {
 }
 
 async function tryGetFeaturedImageDataUrl(
-	post: CollectionEntry<"posts">
+	post: CollectionEntry<"posts">,
+	defaultFeaturedImage?: string
 ): Promise<string | null> {
-	const source = post.data.image?.trim();
+	const source = post.data.image?.trim() || defaultFeaturedImage?.trim();
 	if (!source) return null;
 	try {
 		const imageBuffer = await readImageBuffer(source, post);
@@ -324,6 +327,20 @@ async function tryGetFeaturedImageDataUrl(
 	}
 }
 
+async function tryGetLogoImageDataUrl(
+	logoPath?: string
+): Promise<string | null> {
+	if (!logoPath?.trim()) return null;
+	try {
+		// Logo is relative to public directory or absolute URL
+		const imageBuffer = await readImageBuffer(logoPath, {} as CollectionEntry<"posts">);
+		return await imageToDataUrl(imageBuffer);
+	} catch (error) {
+		console.warn(`[og] logo image load failed: ${error instanceof Error ? error.message : "unknown error"}`);
+		return null;
+	}
+}
+
 async function generateMagazineOgPng(
 	post: CollectionEntry<"posts">,
 	width: number,
@@ -331,7 +348,8 @@ async function generateMagazineOgPng(
 	brand: string,
 	templateConfig: ResolvedTemplateConfig
 ): Promise<Buffer> {
-	const featuredImageDataUrl = await tryGetFeaturedImageDataUrl(post);
+	const featuredImageDataUrl = await tryGetFeaturedImageDataUrl(post, templateConfig.defaultFeaturedImage);
+	const logoDataUrl = await tryGetLogoImageDataUrl(templateConfig.logo);
 	const category = (post.data.category || "ARTICLE").toUpperCase();
 	const title = post.data.title;
 	const subtitle = post.data.description || "";
@@ -473,25 +491,46 @@ async function generateMagazineOgPng(
 														fontSize: "19px",
 														fontWeight: 500,
 													},
-													children: [
-														{
-															type: "div",
-															props: {
-																style: {
-																	width: "10px",
-																	height: "10px",
-																	borderRadius: "9999px",
-																	backgroundColor: templateConfig.accentColor,
+													children: logoDataUrl
+														? [
+																{
+																	type: "img",
+																	props: {
+																		src: logoDataUrl,
+																		alt: "logo",
+																		style: {
+																			width: "32px",
+																			height: "32px",
+																			objectFit: "contain",
+																		},
+																	},
 																},
-															},
-														},
-														{
-															type: "div",
-															props: {
-																children: brand,
-															},
-														},
-													],
+																{
+																	type: "div",
+																	props: {
+																		children: brand,
+																	},
+																},
+														  ]
+														: [
+																{
+																	type: "div",
+																	props: {
+																		style: {
+																			width: "10px",
+																			height: "10px",
+																			borderRadius: "9999px",
+																			backgroundColor: templateConfig.accentColor,
+																		},
+																	},
+																},
+																{
+																	type: "div",
+																	props: {
+																		children: brand,
+																	},
+																},
+														  ],
 												},
 											},
 											{
@@ -666,6 +705,8 @@ function resolveTemplateConfig(
 		layoutStyle: template?.layoutStyle || "left-content",
 		accentColor: template?.accentColor || "#2563eb",
 		background: resolvedBackground,
+		defaultFeaturedImage: template?.defaultFeaturedImage || "",
+		logo: template?.logo || "",
 	};
 }
 

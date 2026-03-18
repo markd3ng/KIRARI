@@ -129,6 +129,8 @@ export const Config = {
 					blurRadius: 80,
 				},
 			},
+			defaultFeaturedImage: "",
+			logo: "",
 		},
 		externalImage: {
 			timeoutMs: 15000,

@@ -200,6 +200,10 @@ export type OGConfig = {
 		layoutStyle?: "left-content" | "right-content";
 		accentColor?: string;
 		background?: OGBackgroundConfig;
+		/** Default featured image for magazine template (used when post has no image) */
+		defaultFeaturedImage?: string;
+		/** Logo image URL or path for magazine template */
+		logo?: string;
 	};
 	/** External image fetch options (for cover images from CDN/URL) */
 	externalImage?: {
