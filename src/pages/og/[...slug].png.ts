@@ -311,18 +311,15 @@ async function imageToDataUrl(imageBuffer: Buffer): Promise<string> {
 }
 
 async function tryGetFeaturedImageDataUrl(
-	post: CollectionEntry<"posts">,
-	defaultFeaturedImage?: string
+	imagePath?: string
 ): Promise<string | null> {
-	const source = post.data.image?.trim() || defaultFeaturedImage?.trim();
+	const source = imagePath?.trim();
 	if (!source) return null;
 	try {
-		const imageBuffer = await readImageBuffer(source, post);
+		const imageBuffer = await readImageBuffer(source, {} as CollectionEntry<"posts">);
 		return await imageToDataUrl(imageBuffer);
 	} catch (error) {
-		console.warn(
-			`[og] featured image load failed for slug=${post.id}: ${error instanceof Error ? error.message : "unknown error"}`
-		);
+		console.warn(`[og] featured image load failed: ${error instanceof Error ? error.message : "unknown error"}`);
 		return null;
 	}
 }
@@ -348,7 +345,7 @@ async function generateMagazineOgPng(
 	brand: string,
 	templateConfig: ResolvedTemplateConfig
 ): Promise<Buffer> {
-	const featuredImageDataUrl = await tryGetFeaturedImageDataUrl(post, templateConfig.defaultFeaturedImage);
+	const featuredImageDataUrl = await tryGetFeaturedImageDataUrl(templateConfig.defaultFeaturedImage);
 	const logoDataUrl = await tryGetLogoImageDataUrl(templateConfig.logo);
 	const category = (post.data.category || "ARTICLE").toUpperCase();
 	const title = post.data.title;
