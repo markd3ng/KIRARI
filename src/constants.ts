@@ -2,9 +2,9 @@ import { LinkPreset } from "./types/config";
 
 export const Config = {
 	site: {
-		url: "https://markd3ng.github.io", // Your site's URL. Used for sitemap and SEO.
+		url: "https://kirari-psi.vercel.app", // Your site's URL. Used for sitemap and SEO.
 		base: "/", // The base path of your site. Useful if you are hosting your site in a subdirectory.
-		title: "KIRARI", // The title of your site.
+		title: "KIRARI_TEST", // The title of your site.
 		subtitle: "Demo Site", // The subtitle of your site.
 		lang: "en", // Language code, e.g. 'en', 'zh_CN', 'ja', etc.
 		themeColor: {
@@ -16,9 +16,9 @@ export const Config = {
 			src: "assets/images/demo-banner.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
 			position: "center", // Equivalent to object-position, only supports 'top', 'center', 'bottom'. 'center' by default
 			credit: {
-				enable: false, // Display the credit text of the banner image
-				text: "", // Credit text to be displayed
-				url: "", // (Optional) URL link to the original artwork or artist's page
+				enable: true, // Display the credit text of the banner image
+				text: "TEST", // Credit text to be displayed
+				url: "https://google.com", // (Optional) URL link to the original artwork or artist's page
 			},
 		},
 		toc: {
@@ -95,7 +95,13 @@ export const Config = {
 	},
 	footer: {
 		customHtml: "", // Custom HTML rendered in footer (ICP filing, public security filing, badges, etc.)
-		customScript: "", // Custom inline JS injected in footer (analytics: Umami / Plausible / GA, etc.)
+		customScript: "<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "vxldercjz3");
+</script>", // Custom inline JS injected in footer (analytics: Umami / Plausible / GA, etc.)
 	},
 	llms: {
 		enable: true,
@@ -109,7 +115,7 @@ export const Config = {
 		width: 1200,
 		height: 630,
 		brand: "KIRARI",
-		useCoverAsOg: true,
+		useCoverAsOg: false,
 		cover: {
 			allowUpscale: false,
 			background: "#0f172a",
@@ -129,8 +135,8 @@ export const Config = {
 					blurRadius: 80,
 				},
 			},
-			defaultFeaturedImage: "",
-			logo: "",
+			defaultFeaturedImage: "https://myogimage.com/samples/blog-featured.png",
+			logo: "https://myogimage.com/logo.png",
 		},
 		externalImage: {
 			timeoutMs: 15000,
