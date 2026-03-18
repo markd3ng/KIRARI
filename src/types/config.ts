@@ -1,4 +1,6 @@
 import type { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants";
+import type { OGApiConfig } from "./og-config";
+
 
 export type SiteConfig = {
 	url: string;
@@ -152,4 +154,7 @@ export type OGConfig = {
 	backgroundColor?: string;
 	/** Text color for OG images */
 	textColor?: string;
+	/** External OG API configuration */
+	api?: OGApiConfig;
 };
+

@@ -111,5 +111,16 @@ export const Config = {
 		brand: "KIRARI",
 		backgroundColor: "#1a1a2e",
 		textColor: "#ffffff",
+		api: {
+			enabled: false,
+			endpoint: "https://og.saru.im/api/v1/images",
+			templateName: "blog:magazine",
+			timeoutMs: 30000,
+			retry: 3,
+			fallbackToLocal: true,
+			brand: "KIRARI",
+			defaultFeaturedImage: "",
+		},
 	},
+
 };

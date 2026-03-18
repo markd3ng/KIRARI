@@ -15,7 +15,8 @@
 
 ## 特性
 
-- **动态 OG 图片** - 使用 Satori + Sharp 为每篇文章自动生成 OG 图片
+- **动态 OG 图片** - 支持为每篇文章接入可选外部 OG API 生成，失败时自动回退到本地 Satori + Sharp
+
 - **全文搜索** - 基于 Pagefind，支持防抖和并发请求处理
 - **Mermaid 图表** - 流程图、时序图等，客户端渲染
 - **数学公式** - 使用 KaTeX 渲染 LaTeX
@@ -93,8 +94,19 @@ export const Config = {
     height: 630,
     brand: "KIRARI",
     backgroundColor: "#1a1a2e",
-    textColor: "#ffffff"
+    textColor: "#ffffff",
+    api: {
+      enabled: false,
+      endpoint: "https://og.saru.im/api/v1/images",
+      templateName: "blog:magazine",
+      timeoutMs: 30000,
+      retry: 3,
+      fallbackToLocal: true,
+      brand: "KIRARI",
+      defaultFeaturedImage: ""
+    }
   },
+
   llms: {
     enable: true,
     sitemap: true,
@@ -105,7 +117,13 @@ export const Config = {
 }
 ```
 
+OG API 说明：
+- 默认 `enabled: false`，保持本地生成模式。
+- 设置 `enabled: true` 后，请配置 `endpoint` 与 `templateName` 指向外部 OG 服务与模板。
+- `timeoutMs` + `retry` 控制请求容错；`fallbackToLocal` 控制 API 失败时是否回退本地生成。
+
 ## 主要功能
+
 
 ### 撰写文章
 
@@ -159,8 +177,15 @@ categoryLabel: "DevOps 运维"
 
 ### OG 图片
 
-- **文章页面**：通过 `/og/[slug].png` 端点使用 Satori 自动生成
+- **文章页面**：统一通过 `/og/[slug].png` 提供（URL 保持不变）
+- **生成模式**：
+  - `og.api.enabled = false`（默认）：使用本地 Satori + Sharp 生成
+  - `og.api.enabled = true`：优先调用外部 OG API（`og.api.endpoint` + `og.api.templateName`）
+- **失败策略**：
+  - `og.api.fallbackToLocal = true`（默认）：API 失败自动回退本地生成
+  - `og.api.fallbackToLocal = false`：API 失败返回 `502`
 - **其他页面**：使用 `og.defaultImage` 配置的默认图片
+
 
 ### Mermaid 图表
 
@@ -227,7 +252,8 @@ footer: {
 | 代码高亮 | Expressive Code |
 | 数学 | KaTeX |
 | 图表 | Mermaid |
-| OG 图片 | Satori + Sharp |
+| OG 图片 | 外部 OG API（可选）+ Satori + Sharp（本地回退） |
+
 | 过渡动画 | View Transitions API / Swup |
 | 滚动条 | OverlayScrollbars |
 

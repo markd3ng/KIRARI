@@ -15,7 +15,8 @@ A modern, high-performance static blog theme built with **Astro 6** + **Svelte 5
 
 ## Features
 
-- **Dynamic OG Images** - Auto-generated OG images for each post using Satori + Sharp
+- **Dynamic OG Images** - Optional external OG API generation for each post, with automatic local Satori + Sharp fallback
+
 - **Full-text Search** - Powered by Pagefind, with debounce and concurrent request handling
 - **Mermaid Diagrams** - Flowcharts, sequence diagrams, and more with client-side rendering
 - **Math Equations** - KaTeX for LaTeX rendering
@@ -93,8 +94,19 @@ export const Config = {
     height: 630,
     brand: "KIRARI",
     backgroundColor: "#1a1a2e",
-    textColor: "#ffffff"
+    textColor: "#ffffff",
+    api: {
+      enabled: false,
+      endpoint: "https://og.saru.im/api/v1/images",
+      templateName: "blog:magazine",
+      timeoutMs: 30000,
+      retry: 3,
+      fallbackToLocal: true,
+      brand: "KIRARI",
+      defaultFeaturedImage: ""
+    }
   },
+
   llms: {
     enable: true,
     sitemap: true,
@@ -105,7 +117,13 @@ export const Config = {
 }
 ```
 
+OG API notes:
+- Keep `enabled: false` to preserve local-only generation.
+- When `enabled: true`, set `endpoint` and `templateName` to your external OG service/template.
+- `timeoutMs` + `retry` control request resilience; `fallbackToLocal` controls build safety on API failure.
+
 ## Key Features
+
 
 ### Writing Posts
 
@@ -159,8 +177,15 @@ The later value overwrites the earlier one. Use this log to identify and fix nam
 
 ### OG Images
 
-- **Posts**: Auto-generated via `/og/[slug].png` endpoint using Satori
-- **Other pages**: Uses the default OG image from `og.defaultImage` config
+- **Posts**: Served via `/og/[slug].png` (URL remains unchanged)
+- **Generation mode**:
+  - `og.api.enabled = false` (default): generate locally with Satori + Sharp
+  - `og.api.enabled = true`: call external OG API first (`og.api.endpoint` + `og.api.templateName`)
+- **Failure strategy**:
+  - `og.api.fallbackToLocal = true` (default): API failure falls back to local generation
+  - `og.api.fallbackToLocal = false`: API failure returns `502`
+- **Other pages**: Use `og.defaultImage`
+
 
 ### Mermaid Diagrams
 
@@ -227,7 +252,8 @@ Build generates:
 | Code Highlight | Expressive Code |
 | Math | KaTeX |
 | Diagrams | Mermaid |
-| OG Images | Satori + Sharp |
+| OG Images | External OG API (optional) + Satori + Sharp (local fallback) |
+
 | Transitions | View Transitions API / Swup |
 | Scrollbars | OverlayScrollbars |
 

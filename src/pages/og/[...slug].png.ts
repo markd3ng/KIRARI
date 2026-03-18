@@ -1,11 +1,14 @@
 import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import satori from "satori";
 import sharp from "sharp";
 import { siteConfig } from "@/config";
+import { requestOgImageFromApi } from "@/utils/og-api";
+import { buildOgApiPayload } from "@/utils/og-payload";
 
-// Cache fonts in memory
 let fontCache: { regular: ArrayBuffer | null; bold: ArrayBuffer | null } = {
 	regular: null,
 	bold: null,
@@ -16,9 +19,10 @@ async function loadFont(weight: number): Promise<ArrayBuffer> {
 	const cached = fontCache[cacheKey];
 	if (cached) return cached;
 
-	const fontFile = weight === 700
-		? "roboto-latin-700-normal.woff"
-		: "roboto-latin-400-normal.woff";
+	const fontFile =
+		weight === 700
+			? "roboto-latin-700-normal.woff"
+			: "roboto-latin-400-normal.woff";
 
 	try {
 		const fontPath = join(
@@ -34,9 +38,10 @@ async function loadFont(weight: number): Promise<ArrayBuffer> {
 		fontCache[cacheKey] = arrayBuffer;
 		return arrayBuffer;
 	} catch {
-		const cdnUrl = weight === 700
-			? "https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-700-normal.woff"
-			: "https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-400-normal.woff";
+		const cdnUrl =
+			weight === 700
+				? "https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-700-normal.woff"
+				: "https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-400-normal.woff";
 
 		const response = await fetch(cdnUrl);
 		const arrayBuffer = await response.arrayBuffer();
@@ -45,48 +50,37 @@ async function loadFont(weight: number): Promise<ArrayBuffer> {
 	}
 }
 
-export async function GET({ params }: { params: { slug?: string } }) {
-	const slug = params.slug;
-	if (!slug) {
-		return new Response("Post not found", { status: 404 });
-	}
-
-	// Get post by slug
-	const posts = await getCollection("posts");
-	const post = posts.find((p) => p.id === slug);
-
-	if (!post) {
-		return new Response("Post not found", { status: 404 });
-	}
+async function generateLocalOgPng(
+	post: CollectionEntry<"posts">,
+	width: number,
+	height: number,
+	brand: string,
+	bgColor: string,
+	textColor: string
+): Promise<Buffer> {
 
 	const { title, description, published, tags } = post.data;
-	const date = published ? new Date(published).toLocaleDateString("en-US", {
-		year: "numeric",
-		month: "long",
-		day: "numeric",
-	}) : "";
+	const date = published
+		? new Date(published).toLocaleDateString("en-US", {
+				year: "numeric",
+				month: "long",
+				day: "numeric",
+			})
+		: "";
 
-	const ogConfig = siteConfig.og || {};
-	const width = ogConfig.width || 1200;
-	const height = ogConfig.height || 630;
-	const brand = ogConfig.brand || siteConfig.title;
-	const bgColor = ogConfig.backgroundColor || "#1a1a2e";
-	const textColor = ogConfig.textColor || "#ffffff";
-
-	// Generate SVG using satori
 	const svg = await satori(
 		{
 			type: "div",
 			props: {
-					style: {
-						width: "100%",
-						height: "100%",
-						display: "flex",
-						flexDirection: "column",
-						backgroundColor: bgColor,
-						padding: "60px",
-						fontFamily: "Roboto",
-					},
+				style: {
+					width: "100%",
+					height: "100%",
+					display: "flex",
+					flexDirection: "column",
+					backgroundColor: bgColor,
+					padding: "60px",
+					fontFamily: "Roboto",
+				},
 				children: [
 					{
 						type: "div",
@@ -107,7 +101,6 @@ export async function GET({ params }: { params: { slug?: string } }) {
 											gap: "20px",
 										},
 										children: [
-											// Brand
 											{
 												type: "div",
 												props: {
@@ -119,7 +112,6 @@ export async function GET({ params }: { params: { slug?: string } }) {
 													children: brand,
 												},
 											},
-											// Title
 											{
 												type: "div",
 												props: {
@@ -133,7 +125,6 @@ export async function GET({ params }: { params: { slug?: string } }) {
 													children: title,
 												},
 											},
-											// Description
 											description && {
 												type: "div",
 												props: {
@@ -154,7 +145,6 @@ export async function GET({ params }: { params: { slug?: string } }) {
 										].filter(Boolean),
 									},
 								},
-								// Footer with date and tags
 								{
 									type: "div",
 									props: {
@@ -165,7 +155,6 @@ export async function GET({ params }: { params: { slug?: string } }) {
 											marginTop: "40px",
 										},
 										children: [
-											// Date
 											date && {
 												type: "div",
 												props: {
@@ -177,29 +166,29 @@ export async function GET({ params }: { params: { slug?: string } }) {
 													children: date,
 												},
 											},
-											// Tags
-											tags && tags.length > 0 && {
-												type: "div",
-												props: {
-													style: {
-														display: "flex",
-														gap: "12px",
-													},
-													children: tags.slice(0, 3).map((tag: string) => ({
-														type: "div",
-														props: {
-															style: {
-																fontSize: "18px",
-																color: textColor,
-																backgroundColor: "rgba(255,255,255,0.1)",
-																padding: "8px 16px",
-																borderRadius: "20px",
-															},
-															children: tag,
+											tags &&
+												tags.length > 0 && {
+													type: "div",
+													props: {
+														style: {
+															display: "flex",
+															gap: "12px",
 														},
-													})),
+														children: tags.slice(0, 3).map((tag: string) => ({
+															type: "div",
+															props: {
+																style: {
+																	fontSize: "18px",
+																	color: textColor,
+																	backgroundColor: "rgba(255,255,255,0.1)",
+																	padding: "8px 16px",
+																	borderRadius: "20px",
+																},
+																children: tag,
+															},
+														})),
+													},
 												},
-											},
 										].filter(Boolean),
 									},
 								},
@@ -229,14 +218,89 @@ export async function GET({ params }: { params: { slug?: string } }) {
 		}
 	);
 
-	// Convert SVG to PNG
-	const png = sharp(Buffer.from(svg))
+	const pngBuffer = await sharp(Buffer.from(svg))
 		.resize(width, height)
-		.png();
+		.png()
+		.toBuffer();
 
-	const pngBuffer = await png.toBuffer();
+	return pngBuffer;
+}
 
-	return new Response(pngBuffer, {
+function buildSiteUrl(): string | undefined {
+	if (!siteConfig.url) return undefined;
+	try {
+		return new URL(siteConfig.base || "/", siteConfig.url).toString();
+	} catch {
+		return undefined;
+	}
+}
+
+export async function GET({ params }: { params: { slug?: string } }): Promise<Response> {
+
+	const slug = params.slug;
+	if (!slug) {
+		return new Response("Post not found", { status: 404 });
+	}
+
+	const posts = await getCollection("posts");
+	const post = posts.find((p) => p.id === slug);
+	if (!post) {
+		return new Response("Post not found", { status: 404 });
+	}
+
+	const ogConfig = siteConfig.og || {
+		defaultImage: "/og/default.png",
+		width: 1200,
+		height: 630,
+	};
+	const width = ogConfig.width || 1200;
+	const height = ogConfig.height || 630;
+	const brand = ogConfig.brand || siteConfig.title;
+	const bgColor = ogConfig.backgroundColor || "#1a1a2e";
+	const textColor = ogConfig.textColor || "#ffffff";
+	const apiConfig = ogConfig.api;
+	const fallbackToLocal = apiConfig?.fallbackToLocal ?? true;
+
+	if (apiConfig?.enabled) {
+		try {
+			const payload = buildOgApiPayload(post, {
+				slug,
+				siteUrl: buildSiteUrl(),
+				brand: apiConfig.brand || brand,
+				templateName: apiConfig.templateName,
+				width,
+				height,
+				defaultFeaturedImage: apiConfig.defaultFeaturedImage,
+			});
+			const apiImage = await requestOgImageFromApi(payload, apiConfig, slug);
+			return new Response(new Uint8Array(apiImage), {
+
+				headers: {
+					"Content-Type": "image/png",
+					"Cache-Control": "public, max-age=31536000, immutable",
+				},
+			});
+		} catch (error) {
+			console.warn(
+				`[og] external API failed for slug=${slug}: ${error instanceof Error ? error.message : "unknown error"}`
+			);
+			if (!fallbackToLocal) {
+				return new Response("Failed to generate OG image", { status: 502 });
+			}
+		}
+	}
+
+	const pngBuffer = await generateLocalOgPng(
+		post,
+		width,
+		height,
+		brand,
+		bgColor,
+		textColor
+	);
+
+	return new Response(new Uint8Array(pngBuffer), {
+
 		headers: {
 			"Content-Type": "image/png",
 			"Cache-Control": "public, max-age=31536000, immutable",
@@ -244,7 +308,8 @@ export async function GET({ params }: { params: { slug?: string } }) {
 	});
 }
 
-export async function getStaticPaths() {
+export async function getStaticPaths(): Promise<{ params: { slug: string } }[]> {
+
 	const posts = await getCollection("posts");
 	return posts.map((post) => ({
 		params: { slug: post.id },
