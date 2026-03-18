@@ -3,6 +3,7 @@ title: "Simple Guides for Fuwari (CJK)"
 published: 2024-04-01
 description: "How to use this blog template."
 image: "./cover.jpeg"
+og: ""
 tags: ["Fuwari", "Blogging", "Customization", "CJK"]
 tagLabels: {}
 category: Guides

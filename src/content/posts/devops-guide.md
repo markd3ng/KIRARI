@@ -3,6 +3,7 @@ title: Docker and Kubernetes Deployment Guide
 published: 2026-02-17
 description: "A comprehensive guide to container orchestration"
 image: ""
+og: ""
 tags: [docker, kubernetes, devops, linux, tutorial]
 tagLabels:
   docker: Docker

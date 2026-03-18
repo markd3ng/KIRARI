@@ -3,6 +3,7 @@ title: Caddy Reverse Proxy with Tailscale
 published: 2026-02-16
 description: "Setting up Caddy as reverse proxy for Tailscale DERP server"
 image: ""
+og: ""
 tags: [caddy, tailscale, vpn, reverse_proxy, cloudflare, docker]
 tagLabels:
   caddy: Caddy

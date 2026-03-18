@@ -2,6 +2,7 @@
 title: Include Video in the Posts
 published: 2023-08-01
 description: This post demonstrates how to include embedded video in a blog post.
+og: ""
 tags: [Example, Video]
 tagLabels:
   Example: 示例
