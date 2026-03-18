@@ -311,12 +311,13 @@ async function imageToDataUrl(imageBuffer: Buffer): Promise<string> {
 }
 
 async function tryGetFeaturedImageDataUrl(
-	imagePath?: string
+	imagePath?: string,
+	externalConfig?: ResolvedExternalImageConfig
 ): Promise<string | null> {
 	const source = imagePath?.trim();
 	if (!source) return null;
 	try {
-		const imageBuffer = await readImageBuffer(source, {} as CollectionEntry<"posts">);
+		const imageBuffer = await readImageBuffer(source, {} as CollectionEntry<"posts">, externalConfig);
 		return await imageToDataUrl(imageBuffer);
 	} catch (error) {
 		console.warn(`[og] featured image load failed: ${error instanceof Error ? error.message : "unknown error"}`);
@@ -325,12 +326,13 @@ async function tryGetFeaturedImageDataUrl(
 }
 
 async function tryGetLogoImageDataUrl(
-	logoPath?: string
+	logoPath?: string,
+	externalConfig?: ResolvedExternalImageConfig
 ): Promise<string | null> {
 	if (!logoPath?.trim()) return null;
 	try {
 		// Logo is relative to public directory or absolute URL
-		const imageBuffer = await readImageBuffer(logoPath, {} as CollectionEntry<"posts">);
+		const imageBuffer = await readImageBuffer(logoPath, {} as CollectionEntry<"posts">, externalConfig);
 		return await imageToDataUrl(imageBuffer);
 	} catch (error) {
 		console.warn(`[og] logo image load failed: ${error instanceof Error ? error.message : "unknown error"}`);
@@ -343,10 +345,11 @@ async function generateMagazineOgPng(
 	width: number,
 	height: number,
 	brand: string,
-	templateConfig: ResolvedTemplateConfig
+	templateConfig: ResolvedTemplateConfig,
+	externalImageConfig: ResolvedExternalImageConfig
 ): Promise<Buffer> {
-	const featuredImageDataUrl = await tryGetFeaturedImageDataUrl(templateConfig.defaultFeaturedImage);
-	const logoDataUrl = await tryGetLogoImageDataUrl(templateConfig.logo);
+	const featuredImageDataUrl = await tryGetFeaturedImageDataUrl(templateConfig.defaultFeaturedImage, externalImageConfig);
+	const logoDataUrl = await tryGetLogoImageDataUrl(templateConfig.logo, externalImageConfig);
 	const category = (post.data.category || "ARTICLE").toUpperCase();
 	const title = post.data.title;
 	const subtitle = post.data.description || "";
@@ -773,7 +776,7 @@ export async function GET({ params }: { params: { slug?: string } }): Promise<Re
 	}
 
 	const templateConfig = resolveTemplateConfig(ogConfig.template);
-	const pngBuffer = await generateMagazineOgPng(post, width, height, brand, templateConfig);
+	const pngBuffer = await generateMagazineOgPng(post, width, height, brand, templateConfig, externalImageConfig);
 
 	return responsePng(pngBuffer);
 }
