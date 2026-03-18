@@ -245,13 +245,30 @@ head: {
     google: "你的验证码",
     bing: "你的验证码"
   },
-  customHtml: "<!-- 外部 CSS/JS -->",
-  customScript: "// 内联 JS"
+  customHtml: "",
+  customScript: ""
 },
 footer: {
-  customHtml: "<a href='https://beian.miit.gov.cn'>ICP备案</a>"
+  customHtml: "",
+  customScript: ""
 }
 ```
+
+> **注意**：当添加 HTML/JS 代码片段（如 Google Analytics、Umami、Clarity 等分析脚本）时，请使用**模板字面量（反引号）**而非普通引号。HTML 属性内部使用双引号，会与字符串分隔符产生冲突。
+>
+> ```typescript
+> // ✅ 正确 - 使用反引号包裹多行 HTML/JS
+> customScript: `<script type="text/javascript">
+>   (function(c,l,a,r,i,t,y){
+>     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+>     t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+>     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+>   })(window, document, "clarity", "script", "YOUR_PROJECT_ID");
+> </script>`
+>
+> // ❌ 错误 - 双引号与 HTML 属性冲突
+> customScript: "<script type="text/javascript">...</script>"
+> ```
 
 ### LLM 文档
 
@@ -310,6 +327,10 @@ KIRARI/
 ├── scripts/              # 构建脚本
 └── _data/                # 数据文件（friends.json）
 ```
+
+## 更新日志
+
+参见 [CHANGELOG.md](./CHANGELOG.md) 了解版本历史。
 
 ## 致谢
 

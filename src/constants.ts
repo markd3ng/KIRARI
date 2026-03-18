@@ -101,8 +101,8 @@ export const Config = {
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "vxldercjz3");
-</script>", // Custom inline JS injected in footer (analytics: Umami / Plausible / GA, etc.)
-	}`,
+</script>`, // Custom inline JS injected in footer (analytics: Umami / Plausible / GA, etc.)
+	},
 	llms: {
 		enable: true,
 		sitemap: true,
