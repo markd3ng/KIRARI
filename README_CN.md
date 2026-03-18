@@ -15,7 +15,7 @@
 
 ## 特性
 
-- **动态 OG 图片** - 支持为每篇文章接入可选外部 OG API 生成，失败时自动回退到本地 Satori + Sharp
+- **动态 OG 图片** - 本地 magazine 风格 OG 生成，并支持文章封面直出（`useCoverAsOg`）
 
 - **全文搜索** - 基于 Pagefind，支持防抖和并发请求处理
 - **Mermaid 图表** - 流程图、时序图等，客户端渲染
@@ -93,17 +93,26 @@ export const Config = {
     width: 1200,
     height: 630,
     brand: "KIRARI",
-    backgroundColor: "#1a1a2e",
-    textColor: "#ffffff",
-    api: {
-      enabled: false,
-      endpoint: "https://og.saru.im/api/v1/images",
-      templateName: "blog:magazine",
-      timeoutMs: 30000,
-      retry: 3,
-      fallbackToLocal: true,
-      brand: "KIRARI",
-      defaultFeaturedImage: ""
+    useCoverAsOg: true,
+    cover: {
+      allowUpscale: false,
+      background: "#0f172a"
+    },
+    template: {
+      layoutStyle: "left-content", // 或 "right-content"
+      accentColor: "#3b82f6",
+      background: {
+        type: "linear-gradient",
+        direction: "to bottom right",
+        colorStops: ["#fafafa", "#f4f4f5", "#e4e4e7"],
+        noise: 0.015,
+        gridOverlay: {
+          pattern: "dots", // "grid" | "graph-paper" | "dots"
+          color: "#d4d4d8",
+          opacity: 0.25,
+          blurRadius: 80
+        }
+      }
     }
   },
 
@@ -117,10 +126,11 @@ export const Config = {
 }
 ```
 
-OG API 说明：
-- 默认 `enabled: false`，保持本地生成模式。
-- 设置 `enabled: true` 后，请配置 `endpoint` 与 `templateName` 指向外部 OG 服务与模板。
-- `timeoutMs` + `retry` 控制请求容错；`fallbackToLocal` 控制 API 失败时是否回退本地生成。
+OG 说明：
+- 文章 OG URL 保持 `/og/[slug].png` 不变。
+- 当 `og.useCoverAsOg = true` 且 frontmatter 存在 `image` 时，直接输出封面并规范化到固定 OG 尺寸（默认 `1200x630`）。
+- 当 `cover.allowUpscale = false` 时，小图走 `contain + background`，避免强制放大导致失真。
+- 未命中封面直出时，使用本地 Satori + Sharp 渲染 magazine 模板。
 
 ## 主要功能
 
@@ -179,11 +189,8 @@ categoryLabel: "DevOps 运维"
 
 - **文章页面**：统一通过 `/og/[slug].png` 提供（URL 保持不变）
 - **生成模式**：
-  - `og.api.enabled = false`（默认）：使用本地 Satori + Sharp 生成
-  - `og.api.enabled = true`：优先调用外部 OG API（`og.api.endpoint` + `og.api.templateName`）
-- **失败策略**：
-  - `og.api.fallbackToLocal = true`（默认）：API 失败自动回退本地生成
-  - `og.api.fallbackToLocal = false`：API 失败返回 `502`
+  - `og.useCoverAsOg = true` 且 frontmatter `image` 存在：封面直出（统一规范到 OG 固定尺寸）
+  - 否则：本地 magazine 模板渲染（Satori + Sharp）
 - **其他页面**：使用 `og.defaultImage` 配置的默认图片
 
 
@@ -252,7 +259,7 @@ footer: {
 | 代码高亮 | Expressive Code |
 | 数学 | KaTeX |
 | 图表 | Mermaid |
-| OG 图片 | 外部 OG API（可选）+ Satori + Sharp（本地回退） |
+| OG 图片 | 本地 magazine 模板（Satori + Sharp）+ 可选封面直出 |
 
 | 过渡动画 | View Transitions API / Swup |
 | 滚动条 | OverlayScrollbars |

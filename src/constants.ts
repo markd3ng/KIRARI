@@ -109,17 +109,26 @@ export const Config = {
 		width: 1200,
 		height: 630,
 		brand: "KIRARI",
-		backgroundColor: "#1a1a2e",
-		textColor: "#ffffff",
-		api: {
-			enabled: false,
-			endpoint: "https://og.saru.im/api/v1/images",
-			templateName: "blog:magazine",
-			timeoutMs: 30000,
-			retry: 3,
-			fallbackToLocal: true,
-			brand: "KIRARI",
-			defaultFeaturedImage: "",
+		useCoverAsOg: true,
+		cover: {
+			allowUpscale: false,
+			background: "#0f172a",
+		},
+		template: {
+			layoutStyle: "left-content",
+			accentColor: "#3b82f6",
+			background: {
+				type: "linear-gradient",
+				direction: "to bottom right",
+				colorStops: ["#fafafa", "#f4f4f5", "#e4e4e7"],
+				noise: 0.015,
+				gridOverlay: {
+					pattern: "dots",
+					color: "#d4d4d8",
+					opacity: 0.25,
+					blurRadius: 80,
+				},
+			},
 		},
 	},
 

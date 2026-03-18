@@ -1,5 +1,6 @@
 import type { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants";
-import type { OGApiConfig } from "./og-config";
+
+
 
 
 export type SiteConfig = {
@@ -141,6 +142,43 @@ export type LLMsConfig = {
 	i18n?: boolean;
 };
 
+export type OGGradientDirection =
+	| "to top"
+	| "to top right"
+	| "to right"
+	| "to bottom right"
+	| "to bottom"
+	| "to bottom left"
+	| "to left"
+	| "to top left";
+
+export type OGGridPattern = "grid" | "graph-paper" | "dots";
+
+export type OGBackgroundConfig =
+	| {
+			type: "color";
+			color: string;
+			noise?: number;
+			gridOverlay?: {
+				pattern: OGGridPattern;
+				color: string;
+				opacity?: number;
+				blurRadius?: number;
+			};
+	  }
+	| {
+			type: "linear-gradient";
+			direction: OGGradientDirection;
+			colorStops: string[];
+			noise?: number;
+			gridOverlay?: {
+				pattern: OGGridPattern;
+				color: string;
+				opacity?: number;
+				blurRadius?: number;
+			};
+	  };
+
 export type OGConfig = {
 	/** Default OG image for non-article pages, e.g. /og/default.png */
 	defaultImage: string;
@@ -150,11 +188,18 @@ export type OGConfig = {
 	height: number;
 	/** Brand name displayed on OG images */
 	brand?: string;
-	/** Background color for OG images */
-	backgroundColor?: string;
-	/** Text color for OG images */
-	textColor?: string;
-	/** External OG API configuration */
-	api?: OGApiConfig;
+	/** Reuse post cover image directly as OG when image exists */
+	useCoverAsOg?: boolean;
+	/** Options for cover direct output */
+	cover?: {
+		allowUpscale?: boolean;
+		background?: string;
+	};
+	/** Local magazine template options */
+	template?: {
+		layoutStyle?: "left-content" | "right-content";
+		accentColor?: string;
+		background?: OGBackgroundConfig;
+	};
 };
 

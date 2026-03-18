@@ -15,7 +15,7 @@ A modern, high-performance static blog theme built with **Astro 6** + **Svelte 5
 
 ## Features
 
-- **Dynamic OG Images** - Optional external OG API generation for each post, with automatic local Satori + Sharp fallback
+- **Dynamic OG Images** - Local magazine-style OG generation with optional post cover direct output (`useCoverAsOg`)
 
 - **Full-text Search** - Powered by Pagefind, with debounce and concurrent request handling
 - **Mermaid Diagrams** - Flowcharts, sequence diagrams, and more with client-side rendering
@@ -93,17 +93,26 @@ export const Config = {
     width: 1200,
     height: 630,
     brand: "KIRARI",
-    backgroundColor: "#1a1a2e",
-    textColor: "#ffffff",
-    api: {
-      enabled: false,
-      endpoint: "https://og.saru.im/api/v1/images",
-      templateName: "blog:magazine",
-      timeoutMs: 30000,
-      retry: 3,
-      fallbackToLocal: true,
-      brand: "KIRARI",
-      defaultFeaturedImage: ""
+    useCoverAsOg: true,
+    cover: {
+      allowUpscale: false,
+      background: "#0f172a"
+    },
+    template: {
+      layoutStyle: "left-content", // or "right-content"
+      accentColor: "#3b82f6",
+      background: {
+        type: "linear-gradient",
+        direction: "to bottom right",
+        colorStops: ["#fafafa", "#f4f4f5", "#e4e4e7"],
+        noise: 0.015,
+        gridOverlay: {
+          pattern: "dots", // "grid" | "graph-paper" | "dots"
+          color: "#d4d4d8",
+          opacity: 0.25,
+          blurRadius: 80
+        }
+      }
     }
   },
 
@@ -117,10 +126,11 @@ export const Config = {
 }
 ```
 
-OG API notes:
-- Keep `enabled: false` to preserve local-only generation.
-- When `enabled: true`, set `endpoint` and `templateName` to your external OG service/template.
-- `timeoutMs` + `retry` control request resilience; `fallbackToLocal` controls build safety on API failure.
+OG notes:
+- Post OG URL remains `/og/[slug].png`.
+- If `og.useCoverAsOg = true` and frontmatter has `image`, OG will directly use cover with normalized size (`1200x630` by default).
+- Small cover images follow `contain + background` strategy when `cover.allowUpscale = false`.
+- If no cover (or cover direct output is disabled), local Satori + Sharp renders the magazine template.
 
 ## Key Features
 
@@ -179,11 +189,8 @@ The later value overwrites the earlier one. Use this log to identify and fix nam
 
 - **Posts**: Served via `/og/[slug].png` (URL remains unchanged)
 - **Generation mode**:
-  - `og.api.enabled = false` (default): generate locally with Satori + Sharp
-  - `og.api.enabled = true`: call external OG API first (`og.api.endpoint` + `og.api.templateName`)
-- **Failure strategy**:
-  - `og.api.fallbackToLocal = true` (default): API failure falls back to local generation
-  - `og.api.fallbackToLocal = false`: API failure returns `502`
+  - `og.useCoverAsOg = true` + frontmatter `image`: direct cover output (size normalized to OG fixed dimensions)
+  - otherwise: local magazine template rendering (Satori + Sharp)
 - **Other pages**: Use `og.defaultImage`
 
 
@@ -252,7 +259,7 @@ Build generates:
 | Code Highlight | Expressive Code |
 | Math | KaTeX |
 | Diagrams | Mermaid |
-| OG Images | External OG API (optional) + Satori + Sharp (local fallback) |
+| OG Images | Local magazine template (Satori + Sharp) + optional cover direct output |
 
 | Transitions | View Transitions API / Swup |
 | Scrollbars | OverlayScrollbars |
