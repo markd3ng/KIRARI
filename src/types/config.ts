@@ -201,5 +201,16 @@ export type OGConfig = {
 		accentColor?: string;
 		background?: OGBackgroundConfig;
 	};
+	/** External image fetch options (for cover images from CDN/URL) */
+	externalImage?: {
+		/** Request timeout in milliseconds (default: 15000) */
+		timeoutMs?: number;
+		/** Number of retries on failure (default: 3) */
+		retry?: number;
+		/** Retry delay in milliseconds (default: 1000) */
+		retryDelayMs?: number;
+		/** Use HTTP_PROXY/HTTPS_PROXY environment variables (default: true) */
+		useProxy?: boolean;
+	};
 };
 

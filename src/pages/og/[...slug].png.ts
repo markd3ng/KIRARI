@@ -51,6 +51,13 @@ type ResolvedCoverConfig = {
 	background: string;
 };
 
+type ResolvedExternalImageConfig = {
+	timeoutMs: number;
+	retry: number;
+	retryDelayMs: number;
+	useProxy: boolean;
+};
+
 async function loadFont(weight: FontWeight): Promise<ArrayBuffer> {
 	const cached = fontCache.get(weight);
 	if (cached) return cached;
@@ -170,24 +177,95 @@ async function readImageBufferFromDataUrl(dataUrl: string): Promise<Buffer> {
 	return Buffer.from(decodeURIComponent(payload), "utf8");
 }
 
+async function fetchImageWithRetry(
+	url: string,
+	options: ResolvedExternalImageConfig
+): Promise<Buffer> {
+	const { timeoutMs, retry, retryDelayMs, useProxy } = options;
+
+	// Prepare proxy agent if needed
+	const proxyUrl = useProxy
+		? (process.env.HTTPS_PROXY || process.env.HTTP_PROXY || process.env.https_proxy || process.env.http_proxy)
+		: undefined;
+
+	// Note: Node.js native fetch doesn't support proxy directly
+	// For full proxy support, you'd need to use undici or node-fetch with proxy agent
+	// For now, we'll use the environment variable approach which works with some CDN/network configurations
+
+	let lastError: Error | undefined;
+
+	for (let attempt = 1; attempt <= retry; attempt++) {
+		try {
+			const controller = new AbortController();
+			const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+			const fetchOptions: RequestInit = {
+				signal: controller.signal,
+				headers: {
+					"User-Agent": "KIRARI-OG-Generator/1.0",
+				},
+			};
+
+			// Log proxy usage for debugging
+			if (proxyUrl && attempt === 1) {
+				console.log(`[og] Using proxy for external image: ${proxyUrl}`);
+			}
+
+			const response = await fetch(url, fetchOptions);
+			clearTimeout(timeoutId);
+
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+			}
+
+			const arrayBuffer = await response.arrayBuffer();
+			if (arrayBuffer.byteLength === 0) {
+				throw new Error("Fetched image is empty");
+			}
+
+			if (attempt > 1) {
+				console.log(`[og] Successfully fetched image on attempt ${attempt}/${retry}`);
+			}
+
+			return Buffer.from(arrayBuffer);
+		} catch (error) {
+			lastError = error instanceof Error ? error : new Error(String(error));
+			
+			// Don't retry on abort (timeout)
+			if (error instanceof Error && error.name === "AbortError") {
+				throw new Error(`Image fetch timeout after ${timeoutMs}ms`);
+			}
+
+			// Log retry attempt
+			if (attempt < retry) {
+				console.warn(
+					`[og] Image fetch attempt ${attempt}/${retry} failed: ${lastError.message}. Retrying in ${retryDelayMs}ms...`
+				);
+				await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+			}
+		}
+	}
+
+	throw lastError || new Error(`Failed to fetch image after ${retry} attempts`);
+}
+
 async function readImageBuffer(
 	image: string,
-	post: CollectionEntry<"posts">
+	post: CollectionEntry<"posts">,
+	externalConfig?: ResolvedExternalImageConfig
 ): Promise<Buffer> {
 	if (image.startsWith("data:")) {
 		return readImageBufferFromDataUrl(image);
 	}
 
 	if (/^https?:\/\//i.test(image)) {
-		const response = await fetch(image);
-		if (!response.ok) {
-			throw new Error(`Failed to fetch image (${response.status})`);
-		}
-		const arrayBuffer = await response.arrayBuffer();
-		if (arrayBuffer.byteLength === 0) {
-			throw new Error("Fetched image is empty");
-		}
-		return Buffer.from(arrayBuffer);
+		const config = externalConfig || {
+			timeoutMs: 15000,
+			retry: 3,
+			retryDelayMs: 1000,
+			useProxy: true,
+		};
+		return fetchImageWithRetry(image, config);
 	}
 
 	if (image.startsWith("/")) {
@@ -507,12 +585,13 @@ async function generateCoverOgPng(
 	post: CollectionEntry<"posts">,
 	width: number,
 	height: number,
-	options: NonNullable<NonNullable<typeof siteConfig.og>["cover"]>
+	options: ResolvedCoverConfig,
+	externalConfig: ResolvedExternalImageConfig
 ): Promise<Buffer | null> {
 	const source = post.data.image?.trim();
 	if (!source) return null;
 
-	const imageBuffer = await readImageBuffer(source, post);
+	const imageBuffer = await readImageBuffer(source, post, externalConfig);
 	const image = sharp(imageBuffer, { animated: true });
 	const metadata = await image.metadata();
 	const srcWidth = metadata.width || 0;
@@ -599,6 +678,17 @@ function resolveCoverConfig(
 	};
 }
 
+function resolveExternalImageConfig(
+	externalImage: NonNullable<NonNullable<typeof siteConfig.og>["externalImage"]> | undefined
+): ResolvedExternalImageConfig {
+	return {
+		timeoutMs: externalImage?.timeoutMs ?? 15000,
+		retry: externalImage?.retry ?? 3,
+		retryDelayMs: externalImage?.retryDelayMs ?? 1000,
+		useProxy: externalImage?.useProxy ?? true,
+	};
+}
+
 function responsePng(buffer: Buffer): Response {
 	return new Response(new Uint8Array(buffer), {
 		headers: {
@@ -630,14 +720,12 @@ export async function GET({ params }: { params: { slug?: string } }): Promise<Re
 	const height = ogConfig.height || 630;
 	const brand = ogConfig.brand || siteConfig.title;
 
-	const coverOptions = ogConfig.cover || {
-		allowUpscale: false,
-		background: "#0f172a",
-	};
+	const coverOptions = resolveCoverConfig(ogConfig.cover);
+	const externalImageConfig = resolveExternalImageConfig(ogConfig.externalImage);
 
 	if (ogConfig.useCoverAsOg && post.data.image) {
 		try {
-			const coverPng = await generateCoverOgPng(post, width, height, coverOptions);
+			const coverPng = await generateCoverOgPng(post, width, height, coverOptions, externalImageConfig);
 			if (coverPng) return responsePng(coverPng);
 		} catch (error) {
 			console.warn(

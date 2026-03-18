@@ -130,6 +130,12 @@ export const Config = {
 				},
 			},
 		},
+		externalImage: {
+			timeoutMs: 15000,
+			retry: 3,
+			retryDelayMs: 1000,
+			useProxy: true,
+		},
 	},
 
 };
