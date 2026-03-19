@@ -1,11 +1,26 @@
 import { LinkPreset } from "./types/config";
 
+// Environment variables with fallback defaults
+// Create .env.local file to override these values locally
+const env = {
+	// Site configuration
+	siteUrl: import.meta.env.PUBLIC_SITE_URL || "https://markd3ng.github.io",
+	siteTitle: import.meta.env.PUBLIC_SITE_TITLE || "KIRARI",
+	siteSubtitle: import.meta.env.PUBLIC_SITE_SUBTITLE || "Demo Site",
+	// Banner credit configuration
+	bannerCreditEnable: import.meta.env.PUBLIC_BANNER_CREDIT_ENABLE === "true" || false,
+	bannerCreditText: import.meta.env.PUBLIC_BANNER_CREDIT_TEXT || "",
+	bannerCreditUrl: import.meta.env.PUBLIC_BANNER_CREDIT_URL || "",
+	// Analytics
+	clarityProjectId: import.meta.env.PUBLIC_CLARITY_PROJECT_ID || "",
+};
+
 export const Config = {
 	site: {
-		url: "https://kirari-psi.vercel.app", // Your site's URL. Used for sitemap and SEO.
+		url: env.siteUrl, // Your site's URL. Used for sitemap and SEO.
 		base: "/", // The base path of your site. Useful if you are hosting your site in a subdirectory.
-		title: "KIRARI", // The title of your site.
-		subtitle: "Demo Site", // The subtitle of your site.
+		title: env.siteTitle, // The title of your site.
+		subtitle: env.siteSubtitle, // The subtitle of your site.
 		lang: "en", // Language code, e.g. 'en', 'zh_CN', 'ja', etc.
 		themeColor: {
 			hue: 250, // Default hue for the theme color, from 0 to 360. e.g. red: 0, teal: 200, cyan: 250, pink: 345
@@ -16,9 +31,9 @@ export const Config = {
 			src: "assets/images/demo-banner.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
 			position: "center", // Equivalent to object-position, only supports 'top', 'center', 'bottom'. 'center' by default
 			credit: {
-				enable: true, // Display the credit text of the banner image
-				text: "TEST", // Credit text to be displayed
-				url: "https://google.com", // (Optional) URL link to the original artwork or artist's page
+				enable: env.bannerCreditEnable, // Display the credit text of the banner image
+				text: env.bannerCreditText, // Credit text to be displayed
+				url: env.bannerCreditUrl, // (Optional) URL link to the original artwork or artist's page
 			},
 		},
 		toc: {
@@ -95,13 +110,15 @@ export const Config = {
 	},
 	footer: {
 		customHtml: "", // Custom HTML rendered in footer (ICP filing, public security filing, badges, etc.)
-		customScript: `<script type="text/javascript">
+		customScript: env.clarityProjectId
+			? `<script type="text/javascript">
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "vxldercjz3");
-</script>`, // Custom inline JS injected in footer (analytics: Umami / Plausible / GA, etc.)
+    })(window, document, "clarity", "script", "${env.clarityProjectId}");
+</script>`
+			: "", // Custom inline JS injected in footer (analytics: Umami / Plausible / GA, etc.)
 	},
 	llms: {
 		enable: true,
