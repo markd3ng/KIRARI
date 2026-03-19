@@ -107,6 +107,40 @@ OG 说明：
 - 优先级：`frontmatter.og` > `og.defaultImage`。
 - 当 `frontmatter.og` 为空时，回退到 `og.defaultImage`（例如 `/og/default.png`）。
 
+### 环境变量
+
+你可以通过环境变量覆盖配置值，而无需修改 `src/constants.ts`。这在以下场景很有用：
+- 不同环境使用不同配置（开发/测试/生产）
+- CI/CD 部署时无需修改代码
+- 保持测试/本地配置与生产配置分离
+
+**在项目根目录创建 `.env.local`：**
+
+```bash
+# 站点配置
+PUBLIC_SITE_URL=https://your-domain.com
+PUBLIC_SITE_TITLE=你的站点
+PUBLIC_SITE_SUBTITLE=你的标语
+
+# 横幅署名
+PUBLIC_BANNER_CREDIT_ENABLE=false
+PUBLIC_BANNER_CREDIT_TEXT=
+PUBLIC_BANNER_CREDIT_URL=
+
+# Microsoft Clarity 统计（可选）
+PUBLIC_CLARITY_PROJECT_ID=
+```
+
+**不同环境的使用方式：**
+
+| 环境 | 配置方式 |
+|------|----------|
+| 本地开发 | 创建 `.env.local`（已在 .gitignore 中） |
+| Vercel/Netlify 等 | 在控制台设置环境变量 |
+| 默认回退 | 使用 `src/constants.ts` 中的值 |
+
+> **注意**：`.env.local` 已在 `.gitignore` 中，你的本地覆盖配置不会被提交。
+
 
 ## 主要功能
 

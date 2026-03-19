@@ -107,6 +107,40 @@ OG notes:
 - Priority: `frontmatter.og` > `og.defaultImage`.
 - If `frontmatter.og` is empty, `og.defaultImage` (e.g. `/og/default.png`) is used as fallback.
 
+### Environment Variables
+
+You can override configuration values via environment variables instead of modifying `src/constants.ts`. This is useful for:
+- Different configurations per environment (dev/staging/production)
+- CI/CD deployments without code changes
+- Keeping test/local configs separate from production
+
+**Create `.env.local` in the project root:**
+
+```bash
+# Site Configuration
+PUBLIC_SITE_URL=https://your-domain.com
+PUBLIC_SITE_TITLE=Your Site
+PUBLIC_SITE_SUBTITLE=Your Tagline
+
+# Banner Credit
+PUBLIC_BANNER_CREDIT_ENABLE=false
+PUBLIC_BANNER_CREDIT_TEXT=
+PUBLIC_BANNER_CREDIT_URL=
+
+# Microsoft Clarity Analytics (optional)
+PUBLIC_CLARITY_PROJECT_ID=
+```
+
+**Usage by environment:**
+
+| Environment | How to configure |
+|-------------|------------------|
+| Local development | Create `.env.local` (gitignored) |
+| Vercel/Netlify/etc. | Set env vars in dashboard |
+| Default fallback | Values in `src/constants.ts` |
+
+> **Note**: `.env.local` is already in `.gitignore`, so your local overrides won't be committed.
+
 
 ## Key Features
 
