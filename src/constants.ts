@@ -4,7 +4,7 @@ import { LinkPreset } from "./types/config";
 // Create .env.local file to override these values locally
 const env = {
 	// Site configuration
-	siteUrl: import.meta.env.PUBLIC_SITE_URL || "https://kirari-main.vercel.app/",
+	siteUrl: import.meta.env.PUBLIC_SITE_URL || "https://kirari-main.vercel.app",
 	siteTitle: import.meta.env.PUBLIC_SITE_TITLE || "KIRARI",
 	siteSubtitle: import.meta.env.PUBLIC_SITE_SUBTITLE || "Demo Site",
 	// Banner credit configuration
