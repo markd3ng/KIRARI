@@ -1,3 +1,6 @@
+language: zh-cn
+ignore_stemmers:
+  - zh-cn
 exclude_selectors:
   - "span.katex"
   - "span.katex-display"
