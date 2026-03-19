@@ -3,7 +3,7 @@ title: Tag and Category Mapping Test
 published: 2026-02-18
 description: "Comprehensive test post for verifying tag and category mapping functionality"
 image: ""
-og: ""
+og: "/og/mapping-test.jpg"
 tags: [demo, example, tutorial, web_dev, frontend, javascript, typescript, astro, svelte, UnmappedTag]
 tagLabels:
   demo: 演示
