@@ -5,7 +5,7 @@
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/markd3ng/KIRARI)
 [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/markd3ng/KIRARI)
 [![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/markd3ng/KIRARI)
-[![Deploy to EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy/zh-CN.svg)](https://edgeone.ai/pages/new?repository=https://github.com/markd3ng/KIRARI)
+[![Deploy with EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?repository=https://github.com/markd3ng/KIRARI)
 
 </div>
 
@@ -208,13 +208,30 @@ head: {
     google: "your-verification-code",
     bing: "your-verification-code"
   },
-  customHtml: "<!-- external CSS/JS -->",
-  customScript: "// inline JS"
+  customHtml: "",
+  customScript: ""
 },
 footer: {
-  customHtml: "<a href='https://beian.miit.gov.cn'>ICP备案</a>"
+  customHtml: "",
+  customScript: ""
 }
 ```
+
+> **Note**: When adding HTML/JS snippets (e.g., analytics scripts like Google Analytics, Umami, Clarity), use **template literals (backticks)** instead of regular quotes. HTML attributes use double quotes internally, which would conflict with string delimiters.
+>
+> ```typescript
+> // ✅ Correct - use backticks for multi-line HTML/JS
+> customScript: `<script type="text/javascript">
+>   (function(c,l,a,r,i,t,y){
+>     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+>     t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+>     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+>   })(window, document, "clarity", "script", "YOUR_PROJECT_ID");
+> </script>`
+>
+> // ❌ Wrong - double quotes conflict with HTML attributes
+> customScript: "<script type="text/javascript">...</script>"
+> ```
 
 ### LLMs Documentation
 
@@ -272,6 +289,10 @@ KIRARI/
 ├── scripts/              # Build scripts
 └── _data/                # Data files (friends.json)
 ```
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for release history.
 
 ## Credits
 
