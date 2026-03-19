@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed dynamic OG image generation route `src/pages/og/[...slug].png.ts`.
 - Removed `useCoverAsOg` and other obsolete dynamic OG config options from configuration/types.
+- Removed unused component props (`draft` in `PostCard`, `size` in `ButtonTag`, `slug` in `License`) and synchronized callers.
+- Removed empty unused component `src/components/GlobalStyles.astro`.
+- Removed unused dependency `@swup/progress-plugin` and synchronized lockfile.
 
 ### Fixed
 

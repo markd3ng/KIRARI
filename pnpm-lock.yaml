@@ -53,9 +53,6 @@ importers:
       '@swup/preload-plugin':
         specifier: ^3.2.11
         version: 3.2.11(swup@4.8.3)
-      '@swup/progress-plugin':
-        specifier: ^3.2.0
-        version: 3.2.0(swup@4.8.3)
       '@tailwindcss/typography':
         specifier: ^0.5.19
         version: 0.5.19(tailwindcss@4.2.2)
@@ -1065,11 +1062,6 @@ packages:
 
   '@swup/preload-plugin@3.2.11':
     resolution: {integrity: sha512-dq50u+d8L+63/pU6dUDnypuBoF49ubjRzRJqitGem2K7wRn7xccxRSvdyeGKdA2vNvzGDAmLfwVTZdSotvvDrw==}
-    peerDependencies:
-      swup: ^4.0.0
-
-  '@swup/progress-plugin@3.2.0':
-    resolution: {integrity: sha512-Ur+D4+aee9swR6pn7JbEyGMwVP1BTcN5ygjlno7IaSQ/vMZbuJ73po1RkKlIi86p+/PZ+1kynkH4K4eMZuHKKg==}
     peerDependencies:
       swup: ^4.0.0
 
@@ -4364,11 +4356,6 @@ snapshots:
       swup: 4.8.3
 
   '@swup/preload-plugin@3.2.11(swup@4.8.3)':
-    dependencies:
-      '@swup/plugin': 4.0.0
-      swup: 4.8.3
-
-  '@swup/progress-plugin@3.2.0(swup@4.8.3)':
     dependencies:
       '@swup/plugin': 4.0.0
       swup: 4.8.3

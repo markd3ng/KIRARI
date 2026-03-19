@@ -177,7 +177,6 @@ export function GithubFileCardComponent(properties, children) {
 
         Promise.allSettled([repoFetch, contentsFetch, commitsFetch]).then(() => {
           cardEl.classList.remove("fetch-waiting");
-          console.log("[GITHUB-FILE-CARD] Loaded card for ${repo} | ${cardUuid}.");
         });
       }
       if (document.readyState === "loading") {

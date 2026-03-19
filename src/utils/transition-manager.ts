@@ -87,12 +87,8 @@ class TransitionManager {
 		this.initialized = true;
 
 		if (supportsViewTransitions) {
-			console.log("[TransitionManager] Using native View Transitions API");
 			this.setupAstroClientRouter();
 		} else {
-			console.log(
-				"[TransitionManager] View Transitions not supported, loading Swup fallback",
-			);
 			await this.setupSwupFallback();
 		}
 	}
@@ -196,7 +192,6 @@ class TransitionManager {
 			// Dispatch event for any code waiting for swup
 			document.dispatchEvent(new CustomEvent("swup:enable"));
 
-			console.log("[TransitionManager] Swup fallback initialized");
 		} catch (error) {
 			console.error("[TransitionManager] Failed to load Swup fallback:", error);
 		}

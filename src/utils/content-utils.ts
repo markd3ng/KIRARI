@@ -1,6 +1,5 @@
 import { type CollectionEntry, getCollection } from "astro:content";
-import I18nKey from "@i18n/i18nKey";
-import { i18n } from "@i18n/translation";
+import { normalizeMappingKey } from "@utils/normalize";
 import { getCategoryUrl } from "@utils/url-utils.ts";
 
 // Cache for all blog posts to avoid repeated getCollection calls
@@ -12,9 +11,7 @@ export type DisplayNameMappings = {
 	categories: Record<string, string>;
 };
 
-function normalizeMappingKey(value: string): string {
-	return value.trim().toLowerCase();
-}
+
 
 function applyDisplayMapping(
 	targetMap: Record<string, string>,

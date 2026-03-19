@@ -241,7 +241,7 @@ const bannerOffset =
 				window.pagefind = pagefind;
 
 				document.dispatchEvent(new CustomEvent('pagefindready'));
-				console.log('Pagefind loaded and initialized successfully, event dispatched.');
+				
 			} catch (error) {
 				console.error('Failed to load Pagefind:', error);
 				window.pagefind = {
@@ -249,7 +249,6 @@ const bannerOffset =
 					options: () => Promise.resolve(),
 				};
 				document.dispatchEvent(new CustomEvent('pagefindloaderror'));
-				console.log('Pagefind load error, event dispatched.');
 			}
 		}
 
@@ -436,49 +435,9 @@ import {
 import { siteConfig } from '../config';
 import { transitionManager, supportsViewTransitions } from '../utils/transition-manager';
 
-/* Preload fonts */
-// (async function() {
-// 	try {
-// 		await Promise.all([
-// 			document.fonts.load("400 1em Roboto"),
-// 			document.fonts.load("700 1em Roboto"),
-// 		]);
-// 		document.body.classList.remove("hidden");
-// 	} catch (error) {
-// 		console.log("Failed to load fonts:", error);
-// 	}
-// })();
 
-/* TODO This is a temporary solution for style flicker issue when the transition is activated */
-/* issue link: https://github.com/withastro/astro/issues/8711, the solution get from here too */
-/* update: fixed in Astro 3.2.4 */
-/*
-function disableAnimation() {
-	const css = document.createElement('style')
-	css.appendChild(
-		document.createTextNode(
-			`*{
-              -webkit-transition:none!important;
-              -moz-transition:none!important;
-              -o-transition:none!important;
-              -ms-transition:none!important;
-              transition:none!important
-              }`
-		)
-	)
-	document.head.appendChild(css)
 
-	return () => {
-		// Force restyle
-		;(() => window.getComputedStyle(document.body))()
 
-		// Wait for next tick before removing
-		setTimeout(() => {
-			document.head.removeChild(css)
-		}, 1)
-	}
-}
-*/
 
 const bannerEnabled = !!document.getElementById('banner-wrapper')
 
@@ -673,7 +632,7 @@ const stripOnloadAnimations = () => {
 window.stripOnloadAnimations = stripOnloadAnimations;
 
 function init() {
-	// disableAnimation()()		// TODO
+
 	loadTheme();
 	loadHue();
 	showBanner();
@@ -938,7 +897,7 @@ function setupTransitionHandlers() {
 
 	if (!forceSwup) {
 		// Use View Transitions (Chrome/Safari/Firefox 128+)
-		console.log('[Layout] Setting up View Transitions handlers');
+
 
 		document.addEventListener('astro:before-preparation', (event: any) => {
 			navigatingToHash = event.to?.hash || '';
@@ -947,7 +906,7 @@ function setupTransitionHandlers() {
 
 		// astro:before-swap - copy theme/styles to new document to prevent black flash
 		document.addEventListener('astro:before-swap', (event: any) => {
-			console.log('[Layout] astro:before-swap triggered');
+
 
 		// Freeze the progress bar at its current visual position before the swap.
 		// transition:persist detaches/reattaches the element, which restarts CSS
@@ -1048,19 +1007,18 @@ function setupTransitionHandlers() {
 		});
 	} else {
 		// Use Swup (browsers without View Transitions API)
-		console.log('[Layout] Using Swup fallback');
+
 
 		// Prevent Astro's ClientRouter from using View Transitions
 		// so Swup can handle navigation instead
 		document.addEventListener('astro:before-preparation', (event: any) => {
-			console.log('[Layout] Preventing Astro View Transition, using Swup instead');
 			event.preventDefault();
 		});
 
 		const setupSwupHandlers = () => {
 			if (!window.swup?.hooks) return;
 
-			console.log('[Layout] Swup handlers configured');
+
 
 			window.swup.hooks.on('visit:start', (visit: any) => {
 				navigatingToHash = visit.to?.hash || '';
@@ -1235,14 +1193,13 @@ let photoSwipeLoaded = false
 async function createPhotoSwipe() {
 	// Lazy load both PhotoSwipe library and CSS only when needed
 	if (!photoSwipeLoaded) {
-		console.log('Loading PhotoSwipe...');
+
 		const [PhotoSwipeLightbox] = await Promise.all([
 			import('photoswipe/lightbox').then(m => m.default),
 			import('photoswipe/style.css'),
 			import('photoswipe')
 		]);
 		photoSwipeLoaded = true;
-		console.log('PhotoSwipe loaded');
 
 		lightbox = new PhotoSwipeLightbox({
 			gallery: ".custom-md img, #post-cover img",
@@ -1275,11 +1232,10 @@ async function createPhotoSwipe() {
 function checkAndLoadPhotoSwipe() {
 	const hasGalleryImages = document.querySelector('.custom-md img, #post-cover img');
 	if (!lightbox && hasGalleryImages) {
-		console.log('Images found, will load PhotoSwipe');
+
 		createPhotoSwipe();
-	} else if (!hasGalleryImages) {
-		console.log('PhotoSwipe not needed (no gallery images)');
 	}
+
 }
 
 function destroyPhotoSwipe() {

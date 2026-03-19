@@ -25,6 +25,7 @@ A modern, high-performance static blog theme built with **Astro 6** + **Svelte 5
 - **Dark Mode** - System preference detection + manual toggle
 - **Smooth Transitions** - View Transitions API with Swup fallback for older browsers
 - **Security Hardened** - All external links include `rel="noopener noreferrer"`
+- **Code Hygiene** - Removed unused props/files/dependencies and reduced debug log noise (no functional behavior change)
 
 ## Quick Start
 

@@ -1,9 +1,6 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-
-function normalizeMappingKey(value: string): string {
-	return value.trim().toLowerCase();
-}
+import { normalizeMappingKey } from "@utils/normalize";
 
 export function pathsEqual(path1: string, path2: string) {
 	const normalizedPath1 = path1.replace(/^\/|\/$/g, "").toLowerCase();
