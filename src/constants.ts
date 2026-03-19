@@ -4,7 +4,7 @@ export const Config = {
 	site: {
 		url: "https://kirari-psi.vercel.app", // Your site's URL. Used for sitemap and SEO.
 		base: "/", // The base path of your site. Useful if you are hosting your site in a subdirectory.
-		title: "KIRARI_TEST", // The title of your site.
+		title: "KIRARI", // The title of your site.
 		subtitle: "Demo Site", // The subtitle of your site.
 		lang: "en", // Language code, e.g. 'en', 'zh_CN', 'ja', etc.
 		themeColor: {
