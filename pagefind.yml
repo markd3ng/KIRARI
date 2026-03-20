@@ -1,9 +1,0 @@
-language: zh-cn
-ignore_stemmers:
-  - zh-cn
-exclude_selectors:
-  - "span.katex"
-  - "span.katex-display"
-  - "[data-pagefind-ignore]"
-  - ".search-panel"
-  - "#search-panel"

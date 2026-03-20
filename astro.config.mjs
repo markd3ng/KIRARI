@@ -10,6 +10,7 @@ import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
 import indexnow from "astro-indexnow";
 import astroLLMsGenerator from "astro-llms-generate";
+import pagefind from "astro-pagefind";
 import robotsTxt from "astro-robots-txt";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeComponents from "rehype-components"; /* Render the custom directive content */
@@ -125,6 +126,7 @@ export default defineConfig({
 		indexnow({
 			key: Config.seo?.indexNowKey,
 		}),
+		pagefind(),
 		robotsTxt(),
 		sitemap({
 			customPages:
