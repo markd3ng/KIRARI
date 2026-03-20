@@ -270,10 +270,25 @@ footer: {
 
 ### LLMs Documentation
 
-Build generates:
-- `llms.txt` - Main index
-- `llms-full.txt` - Complete content
-- `llms-en.txt`, `llms-zh.txt` - Language-specific files
+Powered by `astro-llms-generate`. Build generates:
+- `llms.txt` - Main index (Markdown summary for LLMs)
+- `llms-full.txt` - Complete content in one file
+- `llms-small.txt` - Condensed version
+- `llms-en.txt`, `llms-zh.txt` - Language-specific files (when `i18n: true`)
+
+**Configuration** in `src/constants.ts`:
+
+```typescript
+llms: {
+  enable: true,        // Enable/disable generation
+  sitemap: true,       // Add llms.txt files to sitemap
+  title: "Your Site",  // Site title in llms.txt
+  description: "Your site description for LLMs",
+  i18n: true           // Generate language-specific files
+}
+```
+
+**Usage for LLMs**: AI assistants can fetch `https://yoursite.com/llms.txt` to understand your site structure and content, enabling better contextual responses about your documentation or blog.
 
 ### SEO & Indexing
 
@@ -302,6 +317,37 @@ The key file is served at `/{key}.txt` for search engine verification. To get a 
 | `astro-pagefind` | Build-time full-text search indexing |
 | `astro-llms-generate` | Generates `llms.txt` for AI/LLM consumption |
 | `@astrojs/sitemap` | XML sitemap generation |
+| `@astrojs/partytown` | Offloads third-party scripts to Web Worker |
+| `astro-mail-obfuscation` | Obfuscates mailto links to prevent email harvesting |
+| `astro-embed` | Rich embeds for YouTube, Twitter/X, etc. |
+
+### Partytown
+
+Relocates third-party scripts (analytics, ads) to a Web Worker, keeping the main thread responsive. No configuration needed—just add scripts to your `<head>` as usual.
+
+### Mail Obfuscation
+
+Automatically encodes `mailto:` links to prevent email harvesters. Usage:
+
+```markdown
+For inquiries, email [contact@example.com](mailto:contact@example.com).
+```
+
+The plugin encodes the address at build time, decoding it only when users click.
+
+### Video Embeds
+
+Use `astro-embed` for rich embeds or custom components for full-width responsive videos:
+
+```mdx
+import YouTube from "../../components/embed/YouTube.astro";
+import Bilibili from "../../components/embed/Bilibili.astro";
+
+<YouTube id="VIDEO_ID" />
+<Bilibili bvid="BV1234567890" />
+```
+
+Both components use `w-full aspect-video` for responsive 16:9 display.
 
 | Category | Technology |
 |----------|------------|
