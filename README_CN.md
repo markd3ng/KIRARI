@@ -270,10 +270,84 @@ footer: {
 
 ### LLM 文档
 
-构建时生成：
-- `llms.txt` - 主索引
-- `llms-full.txt` - 完整内容
-- `llms-en.txt`、`llms-zh.txt` - 按语言分类的文件
+Powered by `astro-llms-generate`。构建时生成：
+- `llms.txt` - 主索引（Markdown 格式供 LLM 使用）
+- `llms-full.txt` - 完整内容合并文件
+- `llms-small.txt` - 精简版本
+- `llms-en.txt`、`llms-zh.txt` - 按语言分类的文件（当 `i18n: true` 时）
+
+**配置** 在 `src/constants.ts` 中：
+
+```typescript
+llms: {
+  enable: true,        // 启用/禁用生成
+  sitemap: true,       // 将 llms.txt 文件添加到 sitemap
+  title: "你的站点",   // llms.txt 中的站点标题
+  description: "供 LLM 使用的站点描述",
+  i18n: true           // 生成按语言分类的文件
+}
+```
+
+**LLM 使用方式**：AI 助手可以获取 `https://yoursite.com/llms.txt` 来了解你的站点结构和内容，从而更好地回答关于你文档或博客的问题。
+
+### SEO 与索引
+
+主题集成了 SEO 插件：
+
+**Robots.txt** - 通过 `astro-robots-txt` 自动生成。无需手动配置；使用你配置中的 `site.url`。
+
+**IndexNow** - 即时搜索引擎索引。在 `src/constants.ts` 中配置：
+
+```typescript
+seo: {
+  indexNowKey: "your-api-key"  // 或设置 PUBLIC_INDEXNOW_KEY 环境变量
+}
+```
+
+密钥文件会部署在 `/{key}.txt` 供搜索引擎验证。获取密钥请访问 [indexnow.org](https://www.indexnow.org)。
+
+**Sitemap** - 由 `@astrojs/sitemap` 自动生成。当 `llms.sitemap: true` 时包含 LLMs 文件。
+
+## 集成的 Astro 插件
+
+| 插件 | 用途 |
+|------|------|
+| `astro-robots-txt` | 自动生成带 sitemap 引用的 `robots.txt` |
+| `astro-indexnow` | 向搜索引擎提交 URL 实现即时索引 |
+| `astro-pagefind` | 构建时全文搜索索引 |
+| `astro-llms-generate` | 生成供 AI/LLM 使用的 `llms.txt` |
+| `@astrojs/sitemap` | XML sitemap 生成 |
+| `@astrojs/partytown` | 将第三方脚本卸载到 Web Worker |
+| `astro-mail-obfuscation` | 混淆 mailto 链接防止邮箱被采集 |
+| `astro-embed` | YouTube、Twitter/X 等富媒体嵌入 |
+
+### Partytown
+
+将第三方脚本（分析、广告）迁移到 Web Worker 中执行，保持主线程响应。无需配置——只需像往常一样在 `<head>` 中添加脚本即可。
+
+### 邮箱混淆
+
+自动编码 `mailto:` 链接防止邮箱采集器。使用方式：
+
+```markdown
+如有咨询，请发邮件至 [contact@example.com](mailto:contact@example.com)。
+```
+
+插件在构建时编码邮箱地址，仅在用户点击时解码。
+
+### 视频嵌入
+
+使用 `astro-embed` 实现富媒体嵌入，或使用自定义组件实现全宽响应式视频：
+
+```mdx
+import YouTube from "../../components/embed/YouTube.astro";
+import Bilibili from "../../components/embed/Bilibili.astro";
+
+<YouTube id="VIDEO_ID" />
+<Bilibili bvid="BV1234567890" />
+```
+
+两个组件都使用 `w-full aspect-video` 实现 16:9 响应式显示。
 
 ## 技术栈
 
@@ -282,12 +356,12 @@ footer: {
 | 框架 | Astro 6.0 |
 | UI | Svelte 5 |
 | 样式 | TailwindCSS 4 |
-| 搜索 | Pagefind |
+| 搜索 | Pagefind（通过 astro-pagefind） |
 | 代码高亮 | Expressive Code |
 | 数学 | KaTeX |
 | 图表 | Mermaid |
 | OG 图片 | 单篇 `frontmatter.og` + 全站 `og.defaultImage` 回退 |
-
+| SEO | astro-robots-txt, astro-indexnow |
 | 过渡动画 | View Transitions API / Swup |
 | 滚动条 | OverlayScrollbars |
 
@@ -313,8 +387,7 @@ KIRARI/
 │   ├── i18n/             # 翻译文件（10 种语言）
 │   ├── layouts/          # 页面布局
 │   ├── pages/            # 路由
-│   │   ├── rss.xml.ts           # RSS 订阅
-│   │   └── robots.txt.ts        # Robots.txt
+│   │   └── rss.xml.ts           # RSS 订阅
 │   ├── plugins/          # 自定义 rehype/remark 插件
 │   ├── styles/           # CSS/Stylus
 │   ├── utils/            # 工具函数
