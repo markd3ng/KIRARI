@@ -1,0 +1,33 @@
+---
+title: Include Video in the Posts
+published: 2023-08-01
+description: This post demonstrates how to include embedded video in a blog post.
+og: ""
+tags: [Example, Video]
+tagLabels:
+  Example: 示例
+category: Examples
+categoryLabel: 示例
+draft: false
+---
+
+import { YouTube } from "astro-embed";
+import Bilibili from "../../components/embed/Bilibili.astro";
+
+Use components instead of hand-written iframe snippets.
+
+```mdx
+import { YouTube } from "astro-embed";
+import Bilibili from "../../components/embed/Bilibili.astro";
+
+<YouTube id="5gIf0_xpFPI" />
+<Bilibili bvid="BV1fK4y1s7Qf" />
+```
+
+## YouTube
+
+<YouTube id="5gIf0_xpFPI" />
+
+## Bilibili
+
+<Bilibili bvid="BV1fK4y1s7Qf" />

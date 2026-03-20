@@ -11,28 +11,26 @@ categoryLabel: 示例
 draft: false
 ---
 
+import { YouTube } from "astro-embed";
+import Bilibili from "../../components/embed/Bilibili.astro";
 
-Paste the source URL in a standalone line, and `astro-embed` will render it automatically.
+Use components instead of hand-written iframe snippets.
 
-```yaml
----
-title: Include Video in the Post
-published: 2023-10-19
-// ...
----
+```mdx
+import { YouTube } from "astro-embed";
+import Bilibili from "../../components/embed/Bilibili.astro";
 
-https://www.youtube.com/watch?v=5gIf0_xpFPI
+<YouTube id="5gIf0_xpFPI" />
+<Bilibili bvid="BV1fK4y1s7Qf" />
 ```
 
 ## YouTube
 
-https://www.youtube.com/watch?v=5gIf0_xpFPI
+<YouTube id="5gIf0_xpFPI" />
 
 ## Bilibili
 
-https://www.bilibili.com/video/BV1fK4y1s7Qf/
-
-
+<Bilibili bvid="BV1fK4y1s7Qf" />
 
 
 ## CJK Rendering Test
