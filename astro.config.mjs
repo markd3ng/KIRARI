@@ -9,6 +9,7 @@ import { defineConfig } from "astro/config";
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
 import astroLLMsGenerator from "astro-llms-generate";
+import robotsTxt from "astro-robots-txt";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeComponents from "rehype-components"; /* Render the custom directive content */
 import rehypeKatex from "rehype-katex";
@@ -120,6 +121,7 @@ export default defineConfig({
 			},
 		}),
 		svelte(),
+		robotsTxt(),
 		sitemap({
 			customPages:
 				Config.llms.enable && Config.llms.sitemap

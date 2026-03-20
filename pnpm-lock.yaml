@@ -71,6 +71,9 @@ importers:
       astro-llms-generate:
         specifier: https://codeload.github.com/ColdranAI/astro-llms-generate/tar.gz/aadd9412255b0bdd0b12a4216daf74ecc15b1026
         version: https://codeload.github.com/ColdranAI/astro-llms-generate/tar.gz/aadd9412255b0bdd0b12a4216daf74ecc15b1026(astro@6.0.6(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.59.0)(sass@1.80.4)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.3)(yaml@2.8.2))
+      astro-robots-txt:
+        specifier: ^1.0.0
+        version: 1.0.0
       hastscript:
         specifier: ^9.0.1
         version: 9.0.1
@@ -1424,6 +1427,9 @@ packages:
     peerDependencies:
       astro: ^5.1.6
 
+  astro-robots-txt@1.0.0:
+    resolution: {integrity: sha512-6JQSLid4gMhoWjOm85UHLkgrw0+hHIjnJVIUqxjU2D6feKlVyYukMNYjH44ZDZBK1P8hNxd33PgWlHzCASvedA==}
+
   astro@6.0.6:
     resolution: {integrity: sha512-Fg25tok0RF+ToCcfdfNdtkv7MutTfbE0Lc4UhZpQyoc8/iiTdAaNw1nHPxPD6Nfa/ql3lGAp9uOWaTTnnFY2Zg==}
     engines: {node: '>=22.12.0', npm: '>=9.6.5', pnpm: '>=7.1.0'}
@@ -1978,6 +1984,10 @@ packages:
 
   fflate@0.7.4:
     resolution: {integrity: sha512-5u2V/CDW15QM1XbbgS+0DfPxVB+jUKhWEKuuFuHncbk3tEEqzmoXL+2KyOFuKGqOnmdIy0/davWF1CkuwtibCw==}
+
+  filename-reserved-regex@3.0.0:
+    resolution: {integrity: sha512-hn4cQfU6GOT/7cFHXBqeBg2TbrMBgdD0kcjLhvSQYYwm3s4B6cjvBfb7nBALJLAXqmU5xajSa7X2NnUud/VCdw==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   flattie@1.1.1:
     resolution: {integrity: sha512-9UbaD6XdAL97+k/n+N7JwX46K/M6Zc6KcFYskrYL8wbBV/Uyk0CTAMY0VT+qiK5PM7AIc9aTWYtq65U7T+aCNQ==}
@@ -3256,6 +3266,10 @@ packages:
     resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
     hasBin: true
 
+  valid-filename@4.0.0:
+    resolution: {integrity: sha512-VEYTpTVPMgO799f2wI7zWf0x2C54bPX6NAfbZ2Z8kZn76p+3rEYCTYVYzMUcVSMvakxMQTriBf24s3+WeXJtEg==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
   vfile-location@5.0.3:
     resolution: {integrity: sha512-5yXvWDEgqeiYiBe1lbxYF7UMAIm/IcopxMHrMQDq3nvKcjPKIhZklUKL+AE7J7uApI4kwe2snsK+eI6UTj9EHg==}
 
@@ -3517,6 +3531,9 @@ packages:
 
   zimmerframe@1.1.4:
     resolution: {integrity: sha512-B58NGBEoc8Y9MWWCQGl/gq9xBCe4IiKM0a2x7GZdQKOW5Exr8S1W24J6OgM1njK8xCRGvAJIL/MxXHf6SkmQKQ==}
+
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
   zod@4.3.6:
     resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
@@ -4751,6 +4768,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  astro-robots-txt@1.0.0:
+    dependencies:
+      valid-filename: 4.0.0
+      zod: 3.25.76
+
   astro@6.0.6(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.59.0)(sass@1.80.4)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.3)(yaml@2.8.2):
     dependencies:
       '@astrojs/compiler': 3.0.1
@@ -5415,6 +5437,8 @@ snapshots:
       picomatch: 4.0.3
 
   fflate@0.7.4: {}
+
+  filename-reserved-regex@3.0.0: {}
 
   flattie@1.1.1: {}
 
@@ -7178,6 +7202,10 @@ snapshots:
 
   uuid@11.1.0: {}
 
+  valid-filename@4.0.0:
+    dependencies:
+      filename-reserved-regex: 3.0.0
+
   vfile-location@5.0.3:
     dependencies:
       '@types/unist': 3.0.3
@@ -7405,6 +7433,8 @@ snapshots:
   yoga-layout@3.2.1: {}
 
   zimmerframe@1.1.4: {}
+
+  zod@3.25.76: {}
 
   zod@4.3.6: {}
 
