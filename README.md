@@ -252,21 +252,25 @@ footer: {
 }
 ```
 
-> **Note**: When adding HTML/JS snippets (e.g., analytics scripts like Google Analytics, Umami, Clarity), use **template literals (backticks)** instead of regular quotes. HTML attributes use double quotes internally, which would conflict with string delimiters.
->
-> ```typescript
-> // ✅ Correct - use backticks for multi-line HTML/JS
-> customScript: `<script type="text/javascript">
->   (function(c,l,a,r,i,t,y){
->     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
->     t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
->     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
->   })(window, document, "clarity", "script", "YOUR_PROJECT_ID");
-> </script>`
->
-> // ❌ Wrong - double quotes conflict with HTML attributes
-> customScript: "<script type="text/javascript">...</script>"
-> ```
+**`customScript`** - Third-party scripts (analytics, ads) are automatically offloaded to a Web Worker via Partytown for better performance. Just provide the script **content** (no `<script>` tags needed):
+
+```typescript
+footer: {
+  customScript: `(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "YOUR_PROJECT_ID");`
+}
+```
+
+**`customHtml`** - For full control over HTML/script tags. Use this if you need custom attributes or don't want Partytown:
+
+```typescript
+head: {
+  customHtml: `<script type="text/javascript" src="https://example.com/script.js"></script>`
+}
+```
 
 ### LLMs Documentation
 

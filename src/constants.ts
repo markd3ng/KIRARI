@@ -134,11 +134,11 @@ export const Config = {
 			naver: "", // Naver Search Advisor verification code
 		},
 		customHtml: "", // Custom HTML injected into <head> (external CSS/JS, custom meta tags, etc.)
-		customScript: "", // Custom inline JS injected into <head> (third-party SDK, early init scripts, etc.)
+		customScript: "", // Custom JS content (no <script> tags) - auto-offloaded to Web Worker via Partytown
 	},
 	footer: {
 		customHtml: "", // Custom HTML rendered in footer (ICP filing, public security filing, badges, etc.)
-		customScript: "", // Custom inline JS injected in footer (analytics: Umami / Plausible / GA, etc.)
+		customScript: "", // Custom JS content (no <script> tags) - auto-offloaded to Web Worker via Partytown
 	},
 	analytics: {
 		clarityProjectId: env.clarityProjectId,

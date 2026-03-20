@@ -283,7 +283,7 @@ const bannerOffset =
 			<Fragment set:html={headConfig.customHtml} />
 		)}
 		{headConfig.customScript && (
-			<script is:inline set:html={headConfig.customScript} />
+			<script type="text/partytown" is:inline set:html={headConfig.customScript} />
 		)}
 		{analyticsConfig.clarityProjectId && (
 			<script type="text/partytown" is:inline define:vars={{ clarityProjectId: analyticsConfig.clarityProjectId }}>

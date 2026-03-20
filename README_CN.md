@@ -252,21 +252,25 @@ footer: {
 }
 ```
 
-> **注意**：当添加 HTML/JS 代码片段（如 Google Analytics、Umami、Clarity 等分析脚本）时，请使用**模板字面量（反引号）**而非普通引号。HTML 属性内部使用双引号，会与字符串分隔符产生冲突。
->
-> ```typescript
-> // ✅ 正确 - 使用反引号包裹多行 HTML/JS
-> customScript: `<script type="text/javascript">
->   (function(c,l,a,r,i,t,y){
->     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
->     t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
->     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
->   })(window, document, "clarity", "script", "YOUR_PROJECT_ID");
-> </script>`
->
-> // ❌ 错误 - 双引号与 HTML 属性冲突
-> customScript: "<script type="text/javascript">...</script>"
-> ```
+**`customScript`** - 第三方脚本（分析、广告）会自动通过 Partytown 卸载到 Web Worker 中执行以获得更好的性能。只需提供脚本**内容**（无需 `<script>` 标签）：
+
+```typescript
+footer: {
+  customScript: `(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "YOUR_PROJECT_ID");`
+}
+```
+
+**`customHtml`** - 用于完全控制 HTML/脚本标签。如果你需要自定义属性或不希望使用 Partytown，请使用此选项：
+
+```typescript
+head: {
+  customHtml: `<script type="text/javascript" src="https://example.com/script.js"></script>`
+}
+```
 
 ### LLM 文档
 

@@ -27,6 +27,6 @@ const currentYear = new Date().getFullYear();
         <div class="transition text-50 text-sm text-center mt-1" set:html={footerConfig.customHtml} />
     )}
     {footerConfig.customScript && (
-        <script is:inline set:html={footerConfig.customScript} />
+        <script type="text/partytown" is:inline set:html={footerConfig.customScript} />
     )}
 </div>
