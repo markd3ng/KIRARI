@@ -8,6 +8,7 @@ import { defineConfig } from "astro/config";
 // See src/utils/transition-manager.ts for the unified transition system
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
+import indexnow from "astro-indexnow";
 import astroLLMsGenerator from "astro-llms-generate";
 import robotsTxt from "astro-robots-txt";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
@@ -121,6 +122,9 @@ export default defineConfig({
 			},
 		}),
 		svelte(),
+		indexnow({
+			key: Config.seo?.indexNowKey,
+		}),
 		robotsTxt(),
 		sitemap({
 			customPages:

@@ -148,3 +148,8 @@ export type OGConfig = {
 	defaultImage: string;
 };
 
+export type SeoConfig = {
+	indexNowKey?: string;
+};
+
+

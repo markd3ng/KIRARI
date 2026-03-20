@@ -13,6 +13,8 @@ const env = {
 	bannerCreditUrl: import.meta.env.PUBLIC_BANNER_CREDIT_URL || "",
 	// Analytics
 	clarityProjectId: import.meta.env.PUBLIC_CLARITY_PROJECT_ID || "",
+	// IndexNow
+	indexNowKey: import.meta.env.PUBLIC_INDEXNOW_KEY || "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
 };
 
 export const Config = {
@@ -129,6 +131,9 @@ export const Config = {
 	},
 	og: {
 		defaultImage: "/og/default.png",
+	},
+	seo: {
+		indexNowKey: env.indexNowKey,
 	},
 
 };
