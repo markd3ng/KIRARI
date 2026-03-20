@@ -152,4 +152,10 @@ export type SeoConfig = {
 	indexNowKey?: string;
 };
 
+export type AnalyticsConfig = {
+	clarityProjectId?: string;
+};
+
+
+
 

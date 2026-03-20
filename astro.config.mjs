@@ -1,5 +1,7 @@
+import partytown from "@astrojs/partytown";
 import sitemap from "@astrojs/sitemap";
 import svelte from "@astrojs/svelte";
+
 import { pluginCollapsibleSections } from "@expressive-code/plugin-collapsible-sections";
 import { pluginLineNumbers } from "@expressive-code/plugin-line-numbers";
 import tailwindcss from "@tailwindcss/vite";
@@ -8,10 +10,13 @@ import { defineConfig } from "astro/config";
 // See src/utils/transition-manager.ts for the unified transition system
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
+import astroEmbed from "astro-embed/integration";
 import indexnow from "astro-indexnow";
 import astroLLMsGenerator from "astro-llms-generate";
+import mailObfuscation from "astro-mail-obfuscation";
 import pagefind from "astro-pagefind";
 import robotsTxt from "astro-robots-txt";
+
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeComponents from "rehype-components"; /* Render the custom directive content */
 import rehypeKatex from "rehype-katex";
@@ -123,7 +128,11 @@ export default defineConfig({
 			},
 		}),
 		svelte(),
+		partytown(),
+		mailObfuscation(),
+		astroEmbed(),
 		indexnow({
+
 			key: Config.seo?.indexNowKey,
 		}),
 		pagefind(),

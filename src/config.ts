@@ -1,8 +1,10 @@
 import { Config } from "./constants";
 import type {
+	AnalyticsConfig,
 	ExpressiveCodeConfig,
 	FooterConfig,
 	HeadConfig,
+
 	LicenseConfig,
 	LLMsConfig,
 	MermaidConfig,
@@ -37,6 +39,8 @@ export const headConfig: HeadConfig = Config.head as HeadConfig;
 // Footer configuration
 export const footerConfig: FooterConfig = Config.footer as FooterConfig;
 
-
+export const analyticsConfig: AnalyticsConfig =
+	Config.analytics as AnalyticsConfig;
 
 export const llmsConfig: LLMsConfig = Config.llms as LLMsConfig;
+

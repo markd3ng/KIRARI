@@ -112,16 +112,12 @@ export const Config = {
 	},
 	footer: {
 		customHtml: "", // Custom HTML rendered in footer (ICP filing, public security filing, badges, etc.)
-		customScript: env.clarityProjectId
-			? `<script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "${env.clarityProjectId}");
-</script>`
-			: "", // Custom inline JS injected in footer (analytics: Umami / Plausible / GA, etc.)
+		customScript: "", // Custom inline JS injected in footer (analytics: Umami / Plausible / GA, etc.)
 	},
+	analytics: {
+		clarityProjectId: env.clarityProjectId,
+	},
+
 	llms: {
 		enable: true,
 		sitemap: true,
