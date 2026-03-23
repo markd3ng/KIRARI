@@ -227,6 +227,9 @@ export default defineConfig({
 		],
 	},
 	vite: {
+		ssr: {
+			noExternal: ["tslib"],
+		},
 		plugins: [
 			tailwindcss(),
 			{
