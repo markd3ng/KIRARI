@@ -228,7 +228,12 @@ export default defineConfig({
 	},
 	vite: {
 		ssr: {
-			noExternal: ["tslib"],
+			noExternal: [
+				"tslib",
+				"@atproto/*",
+				"@emnapi/runtime",
+				"@img/sharp-wasm32",
+			],
 		},
 		plugins: [
 			tailwindcss(),
