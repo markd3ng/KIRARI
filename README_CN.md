@@ -300,15 +300,18 @@ llms: {
 
 **Robots.txt** - 通过 `astro-robots-txt` 自动生成。无需手动配置；使用你配置中的 `site.url`。
 
-**IndexNow** - 即时搜索引擎索引。在 `src/constants.ts` 中配置：
+**IndexNow** - 即时搜索引擎索引。**默认关闭**。在 `src/constants.ts` 中启用：
 
 ```typescript
 seo: {
+  indexNow: true,              // 启用 IndexNow 集成（默认：false）
   indexNowKey: "your-api-key"  // 或设置 PUBLIC_INDEXNOW_KEY 环境变量
 }
 ```
 
 密钥文件会部署在 `/{key}.txt` 供搜索引擎验证。获取密钥请访问 [indexnow.org](https://www.indexnow.org)。
+
+> **注意**：IndexNow 会在每次构建时向搜索引擎发送请求。如果不需要即时索引功能，建议保持关闭。
 
 **Sitemap** - 由 `@astrojs/sitemap` 自动生成。当 `llms.sitemap: true` 时包含 LLMs 文件。
 

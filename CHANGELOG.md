@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **IndexNow integration is now opt-in** - Set `seo.indexNow: true` in `src/constants.ts` to enable. Default is `false` to avoid unnecessary external requests and potential 403 errors.
 - Simplified OG selection logic to: `frontmatter.og` → `og.defaultImage`.
 - Updated `README.md` and `README_CN.md` OG sections to match the new static selection model.
 

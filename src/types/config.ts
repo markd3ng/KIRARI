@@ -149,6 +149,9 @@ export type OGConfig = {
 };
 
 export type SeoConfig = {
+	/** Enable IndexNow integration for instant search engine indexing. Default: false */
+	indexNow?: boolean;
+	/** IndexNow API key. Required when indexNow is enabled */
 	indexNowKey?: string;
 };
 

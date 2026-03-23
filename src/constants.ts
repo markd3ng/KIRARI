@@ -155,6 +155,7 @@ export const Config = {
 		defaultImage: "/og/default.png",
 	},
 	seo: {
+		indexNow: false, // Enable IndexNow integration for instant search engine indexing
 		indexNowKey: env.indexNowKey,
 	},
 

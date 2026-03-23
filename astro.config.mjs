@@ -134,9 +134,8 @@ export default defineConfig({
 		mailObfuscation(),
 		mdx(),
 
+		Config.seo?.indexNow &&
 		indexnow({
-
-
 			key: Config.seo?.indexNowKey,
 		}),
 		pagefind(),
