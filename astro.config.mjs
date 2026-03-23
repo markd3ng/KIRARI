@@ -12,8 +12,8 @@ import { defineConfig } from "astro/config";
 // See src/utils/transition-manager.ts for the unified transition system
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
-import astroEmbed from "astro-embed/integration";
 import indexnow from "astro-indexnow";
+
 import astroLLMsGenerator from "astro-llms-generate";
 import mailObfuscation from "astro-mail-obfuscation";
 import pagefind from "astro-pagefind";
@@ -132,8 +132,8 @@ export default defineConfig({
 		svelte(),
 		partytown(),
 		mailObfuscation(),
-		astroEmbed(),
 		mdx(),
+
 		indexnow({
 
 
@@ -227,16 +227,9 @@ export default defineConfig({
 		],
 	},
 	vite: {
-		ssr: {
-			noExternal: [
-				"tslib",
-				"@atproto/*",
-				"@emnapi/runtime",
-				"@img/sharp-wasm32",
-			],
-		},
 		plugins: [
 			tailwindcss(),
+
 			{
 				name: "block-iconify-json-imports",
 				enforce: "pre", // Run before vite:json plugin
@@ -282,7 +275,6 @@ export default defineConfig({
 			target: "esnext",
 		},
 		optimizeDeps: {
-			include: ["tslib"],
 			exclude: [
 				"@iconify-json/material-symbols",
 				"@iconify-json/fa6-brands",
