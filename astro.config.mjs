@@ -277,6 +277,7 @@ export default defineConfig({
 			target: "esnext",
 		},
 		optimizeDeps: {
+			include: ["tslib"],
 			exclude: [
 				"@iconify-json/material-symbols",
 				"@iconify-json/fa6-brands",
