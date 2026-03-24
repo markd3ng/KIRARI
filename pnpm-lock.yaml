@@ -189,6 +189,9 @@ importers:
       '@types/mdast':
         specifier: ^4.0.4
         version: 4.0.4
+      '@types/node':
+        specifier: ^25.5.0
+        version: 25.5.0
       '@types/sanitize-html':
         specifier: ^2.16.1
         version: 2.16.1
@@ -4978,7 +4981,7 @@ snapshots:
 
   '@types/sax@1.2.7':
     dependencies:
-      '@types/node': 24.12.0
+      '@types/node': 25.5.0
 
   '@types/tough-cookie@4.0.5': {}
 
