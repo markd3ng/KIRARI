@@ -7,7 +7,7 @@
  */
 
 // Feature detection
-export const supportsViewTransitions =
+export const supportsViewTransitions: boolean =
 	typeof document !== "undefined" && "startViewTransition" in document;
 
 // Unified event types that map to both Astro ClientRouter and Swup events
@@ -221,7 +221,7 @@ class TransitionManager {
 }
 
 // Singleton instance
-export const transitionManager = new TransitionManager();
+export const transitionManager: TransitionManager = new TransitionManager();
 
 // Export for type declarations
 declare global {

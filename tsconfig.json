@@ -5,12 +5,14 @@
     "strictNullChecks": true,
     "allowJs": false,
     "declaration": true,
+    "types": ["astro/client", "node"],
     "plugins": [
       {
         "name": "@astrojs/ts-plugin"
       }
     ],
     "paths": {
+
       "@components/*": ["src/components/*"],
       "@assets/*": ["src/assets/*"],
       "@constants/*": ["src/constants/*"],

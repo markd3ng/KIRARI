@@ -45,7 +45,6 @@
     "astro-expressive-code": "^0.41.7",
     "astro-icon": "^1.1.5",
     "astro-indexnow": "^1.0.1",
-
     "astro-llms-generate": "https://codeload.github.com/ColdranAI/astro-llms-generate/tar.gz/aadd9412255b0bdd0b12a4216daf74ecc15b1026",
     "astro-mail-obfuscation": "^2.3.4",
     "astro-pagefind": "^1.8.5",
@@ -85,6 +84,7 @@
     "@types/hast": "^3.0.4",
     "@types/markdown-it": "^14.1.2",
     "@types/mdast": "^4.0.4",
+    "@types/node": "^25.5.0",
     "@types/sanitize-html": "^2.16.1"
   },
   "packageManager": "pnpm@9.14.4"
