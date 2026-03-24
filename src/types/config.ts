@@ -159,6 +159,21 @@ export type AnalyticsConfig = {
 	clarityProjectId?: string;
 };
 
+export type Config = {
+	site: SiteConfig;
+	navBar: NavBarConfig;
+	profile: ProfileConfig;
+	license: LicenseConfig;
+	expressiveCode: ExpressiveCodeConfig;
+	mermaid: MermaidConfig;
+	head: HeadConfig;
+	footer: FooterConfig;
+	analytics: AnalyticsConfig;
+	llms: LLMsConfig;
+	og: OGConfig;
+	seo: SeoConfig;
+};
+
 
 
 

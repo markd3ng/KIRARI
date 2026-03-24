@@ -1,10 +1,21 @@
-import { LinkPreset } from "./types/config";
+import { LinkPreset, type Config as ConfigType } from "./types/config";
+
+type EnvConfig = {
+	siteUrl: string;
+	siteTitle: string;
+	siteSubtitle: string;
+	bannerCreditEnable: boolean;
+	bannerCreditText: string;
+	bannerCreditUrl: string;
+	clarityProjectId: string;
+	indexNowKey: string;
+};
 
 // Environment variables with fallback defaults
 // Create .env.local file to override these values locally
 // Note: Use both process.env (for astro.config.mjs / Node.js context) 
 // and import.meta.env (for Astro runtime) to ensure env vars work in all contexts
-const env = {
+const env: EnvConfig = {
 	// Site configuration
 	siteUrl:
 		(typeof process !== "undefined" && process.env?.PUBLIC_SITE_URL) ||
@@ -43,7 +54,7 @@ const env = {
 		"a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
 };
 
-export const Config = {
+export const Config: ConfigType = {
 	site: {
 		url: env.siteUrl, // Your site's URL. Used for sitemap and SEO.
 		base: "/", // The base path of your site. Useful if you are hosting your site in a subdirectory.
