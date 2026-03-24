@@ -9,10 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Integrated `astro-analytics` plugin supporting multiple analytics services:
+  - Master switch `enable` (default: `false`) to control all analytics loading
+  - Google Analytics (`googleAnalyticsId`)
+  - Umami (`umami.id`, `umami.src`)
+  - Plausible (`plausible.domain`, `plausible.src`)
+  - Microsoft Clarity (`clarityProjectId`)
+  - Fathom (`fathomSiteId`)
+  - Simple Analytics (`simpleAnalyticsDomain`)
+  - Matomo (`matomo.siteId`, `matomo.src`)
+  - Amplitude (`amplitudeApiKey`)
+- Added environment variables for all analytics services (e.g., `PUBLIC_GOOGLE_ANALYTICS_ID`, `PUBLIC_UMAMI_ID`, etc.)
 - Added optional `og` field to post frontmatter for per-post OG image override.
 
 ### Changed
 
+- Replaced manual Clarity script with `astro-analytics` components for unified analytics management.
+- Analytics scripts are now rendered directly in `<head>` instead of via Partytown for component compatibility.
 - **IndexNow integration is now opt-in** - Set `seo.indexNow: true` in `src/constants.ts` to enable. Default is `false` to avoid unnecessary external requests and potential 403 errors.
 - Simplified OG selection logic to: `frontmatter.og` → `og.defaultImage`.
 - Updated `README.md` and `README_CN.md` OG sections to match the new static selection model.

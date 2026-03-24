@@ -128,8 +128,19 @@ PUBLIC_BANNER_CREDIT_ENABLE=false
 PUBLIC_BANNER_CREDIT_TEXT=
 PUBLIC_BANNER_CREDIT_URL=
 
-# Microsoft Clarity 统计（可选）
-PUBLIC_CLARITY_PROJECT_ID=
+# 统计分析（可选 - 按需配置）
+PUBLIC_ANALYTICS_ENABLE=false      # 总开关，设为 true 启用
+PUBLIC_GOOGLE_ANALYTICS_ID=        # G-XXXXXXXXXX
+PUBLIC_UMAMI_ID=                   # Umami 网站 ID
+PUBLIC_UMAMI_SRC=                  # Umami 脚本 URL（可选）
+PUBLIC_PLAUSIBLE_DOMAIN=           # Plausible 域名
+PUBLIC_PLAUSIBLE_SRC=              # Plausible 脚本 URL（可选）
+PUBLIC_CLARITY_PROJECT_ID=         # Microsoft Clarity 项目 ID
+PUBLIC_FATHOM_SITE_ID=             # Fathom 站点 ID
+PUBLIC_SIMPLE_ANALYTICS_DOMAIN=    # Simple Analytics 域名
+PUBLIC_MATOMO_SITE_ID=             # Matomo 站点 ID
+PUBLIC_MATOMO_SRC=                 # Matomo 追踪器 URL（使用 Matomo 时必填）
+PUBLIC_AMPLITUDE_API_KEY=          # Amplitude API 密钥
 ```
 
 **不同环境的使用方式：**
@@ -294,6 +305,41 @@ llms: {
 
 **LLM 使用方式**：AI 助手可以获取 `https://yoursite.com/llms.txt` 来了解你的站点结构和内容，从而更好地回答关于你文档或博客的问题。
 
+### 统计分析
+
+通过 `astro-analytics` 集成，支持多种分析服务。在 `src/constants.ts` 中配置或通过环境变量设置：
+
+```typescript
+// src/constants.ts
+analytics: {
+  enable: true,                            // 总开关（默认：false）
+  googleAnalyticsId: "G-XXXXXXXXXX",       // Google Analytics
+  umami: { id: "your-id", src: "https://..." },  // Umami
+  plausible: { domain: "example.com" },     // Plausible
+  clarityProjectId: "your-project-id",     // Microsoft Clarity
+  fathomSiteId: "your-site-id",            // Fathom
+  simpleAnalyticsDomain: "example.com",    // Simple Analytics
+  matomo: { siteId: "1", src: "https://..." },  // Matomo
+  amplitudeApiKey: "your-api-key"          // Amplitude
+}
+```
+
+**支持的服务：**
+
+| 服务 | 配置键 | 环境变量 |
+|------|--------|----------|
+| **总开关** | `enable` | `PUBLIC_ANALYTICS_ENABLE` |
+| Google Analytics | `googleAnalyticsId` | `PUBLIC_GOOGLE_ANALYTICS_ID` |
+| Umami | `umami.id`, `umami.src` | `PUBLIC_UMAMI_ID`, `PUBLIC_UMAMI_SRC` |
+| Plausible | `plausible.domain`, `plausible.src` | `PUBLIC_PLAUSIBLE_DOMAIN`, `PUBLIC_PLAUSIBLE_SRC` |
+| Microsoft Clarity | `clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` |
+| Fathom | `fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
+| Simple Analytics | `simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
+| Matomo | `matomo.siteId`, `matomo.src` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC` |
+| Amplitude | `amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
+
+> **注意**：脚本直接渲染在 `<head>` 中（不通过 Partytown），以兼容 `astro-analytics` 组件。
+
 ### SEO 与索引
 
 主题集成了 SEO 插件：
@@ -323,6 +369,7 @@ seo: {
 | `astro-indexnow` | 向搜索引擎提交 URL 实现即时索引 |
 | `astro-pagefind` | 构建时全文搜索索引 |
 | `astro-llms-generate` | 生成供 AI/LLM 使用的 `llms.txt` |
+| `astro-analytics` | 多服务统计分析（GA、Umami、Plausible、Clarity 等） |
 | `@astrojs/sitemap` | XML sitemap 生成 |
 | `@astrojs/partytown` | 将第三方脚本卸载到 Web Worker |
 | `astro-mail-obfuscation` | 混淆 mailto 链接防止邮箱被采集 |

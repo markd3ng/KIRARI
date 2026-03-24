@@ -156,7 +156,54 @@ export type SeoConfig = {
 };
 
 export type AnalyticsConfig = {
+	/** Master switch to enable/disable all analytics. Default: false */
+	enable?: boolean;
+	/** Google Analytics measurement ID (e.g., G-XXXXXXXXXX) */
+	googleAnalyticsId?: string;
+	/** Umami analytics configuration */
+	umami?: {
+		/** Umami website ID */
+		id: string;
+		/** Umami script URL (default: https://analytics.umami.is/script.js) */
+		src?: string;
+	};
+	/** Plausible analytics configuration */
+	plausible?: {
+		/** Domain to track */
+		domain: string;
+		/** Plausible script URL (default: https://plausible.io/js/script.js) */
+		src?: string;
+	};
+	/** Microsoft Clarity project ID */
 	clarityProjectId?: string;
+	/** Fathom analytics site ID */
+	fathomSiteId?: string;
+	/** Simple Analytics domain */
+	simpleAnalyticsDomain?: string;
+	/** Matomo analytics configuration */
+	matomo?: {
+		/** Matomo site ID */
+		siteId: string;
+		/** Matomo tracker URL */
+		src: string;
+	};
+	/** Amplitude analytics API key */
+	amplitudeApiKey?: string;
+};
+
+export type Config = {
+	site: SiteConfig;
+	navBar: NavBarConfig;
+	profile: ProfileConfig;
+	license: LicenseConfig;
+	expressiveCode: ExpressiveCodeConfig;
+	mermaid: MermaidConfig;
+	head: HeadConfig;
+	footer: FooterConfig;
+	analytics: AnalyticsConfig;
+	llms: LLMsConfig;
+	og: OGConfig;
+	seo: SeoConfig;
 };
 
 export type Config = {
