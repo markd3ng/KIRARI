@@ -128,8 +128,19 @@ PUBLIC_BANNER_CREDIT_ENABLE=false
 PUBLIC_BANNER_CREDIT_TEXT=
 PUBLIC_BANNER_CREDIT_URL=
 
-# Microsoft Clarity Analytics (optional)
-PUBLIC_CLARITY_PROJECT_ID=
+# Analytics (optional - configure services you need)
+PUBLIC_ANALYTICS_ENABLE=false      # Master switch, set to true to enable
+PUBLIC_GOOGLE_ANALYTICS_ID=        # G-XXXXXXXXXX
+PUBLIC_UMAMI_ID=                   # Umami website ID
+PUBLIC_UMAMI_SRC=                  # Umami script URL (optional)
+PUBLIC_PLAUSIBLE_DOMAIN=           # Domain for Plausible
+PUBLIC_PLAUSIBLE_SRC=              # Plausible script URL (optional)
+PUBLIC_CLARITY_PROJECT_ID=         # Microsoft Clarity project ID
+PUBLIC_FATHOM_SITE_ID=             # Fathom site ID
+PUBLIC_SIMPLE_ANALYTICS_DOMAIN=    # Simple Analytics domain
+PUBLIC_MATOMO_SITE_ID=             # Matomo site ID
+PUBLIC_MATOMO_SRC=                 # Matomo tracker URL (required if using Matomo)
+PUBLIC_AMPLITUDE_API_KEY=          # Amplitude API key
 ```
 
 **Usage by environment:**
@@ -294,6 +305,41 @@ llms: {
 
 **Usage for LLMs**: AI assistants can fetch `https://yoursite.com/llms.txt` to understand your site structure and content, enabling better contextual responses about your documentation or blog.
 
+### Analytics
+
+Integrated via `astro-analytics`, supporting multiple analytics services. Configure in `src/constants.ts` or via environment variables:
+
+```typescript
+// src/constants.ts
+analytics: {
+  enable: true,                            // Master switch (default: false)
+  googleAnalyticsId: "G-XXXXXXXXXX",       // Google Analytics
+  umami: { id: "your-id", src: "https://..." },  // Umami
+  plausible: { domain: "example.com" },     // Plausible
+  clarityProjectId: "your-project-id",     // Microsoft Clarity
+  fathomSiteId: "your-site-id",            // Fathom
+  simpleAnalyticsDomain: "example.com",    // Simple Analytics
+  matomo: { siteId: "1", src: "https://..." },  // Matomo
+  amplitudeApiKey: "your-api-key"          // Amplitude
+}
+```
+
+**Supported Services:**
+
+| Service | Config Key | Env Variable |
+|---------|-----------|--------------|
+| **Master Switch** | `enable` | `PUBLIC_ANALYTICS_ENABLE` |
+| Google Analytics | `googleAnalyticsId` | `PUBLIC_GOOGLE_ANALYTICS_ID` |
+| Umami | `umami.id`, `umami.src` | `PUBLIC_UMAMI_ID`, `PUBLIC_UMAMI_SRC` |
+| Plausible | `plausible.domain`, `plausible.src` | `PUBLIC_PLAUSIBLE_DOMAIN`, `PUBLIC_PLAUSIBLE_SRC` |
+| Microsoft Clarity | `clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` |
+| Fathom | `fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
+| Simple Analytics | `simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
+| Matomo | `matomo.siteId`, `matomo.src` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC` |
+| Amplitude | `amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
+
+> **Note**: Scripts are rendered directly in `<head>` (not via Partytown) for compatibility with `astro-analytics` components.
+
 ### SEO & Indexing
 
 The theme includes integrated SEO plugins:
@@ -323,6 +369,7 @@ The key file is served at `/{key}.txt` for search engine verification. To get a 
 | `astro-indexnow` | Submits URLs to search engines for instant indexing |
 | `astro-pagefind` | Build-time full-text search indexing |
 | `astro-llms-generate` | Generates `llms.txt` for AI/LLM consumption |
+| `astro-analytics` | Multi-service analytics (GA, Umami, Plausible, Clarity, etc.) |
 | `@astrojs/sitemap` | XML sitemap generation |
 | `@astrojs/partytown` | Offloads third-party scripts to Web Worker |
 | `astro-mail-obfuscation` | Obfuscates mailto links to prevent email harvesting |

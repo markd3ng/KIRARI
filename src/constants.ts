@@ -7,7 +7,20 @@ type EnvConfig = {
 	bannerCreditEnable: boolean;
 	bannerCreditText: string;
 	bannerCreditUrl: string;
+	// Analytics
+	analyticsEnable: boolean;
+	googleAnalyticsId: string;
+	umamiId: string;
+	umamiSrc: string;
+	plausibleDomain: string;
+	plausibleSrc: string;
 	clarityProjectId: string;
+	fathomSiteId: string;
+	simpleAnalyticsDomain: string;
+	matomoSiteId: string;
+	matomoSrc: string;
+	amplitudeApiKey: string;
+	// SEO
 	indexNowKey: string;
 };
 
@@ -43,9 +56,53 @@ const env: EnvConfig = {
 		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_BANNER_CREDIT_URL) ||
 		"",
 	// Analytics
+	analyticsEnable:
+		(typeof process !== "undefined" && process.env?.PUBLIC_ANALYTICS_ENABLE === "true") ||
+		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_ANALYTICS_ENABLE === "true") ||
+		false,
+	googleAnalyticsId:
+		(typeof process !== "undefined" && process.env?.PUBLIC_GOOGLE_ANALYTICS_ID) ||
+		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_GOOGLE_ANALYTICS_ID) ||
+		"",
+	umamiId:
+		(typeof process !== "undefined" && process.env?.PUBLIC_UMAMI_ID) ||
+		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_UMAMI_ID) ||
+		"",
+	umamiSrc:
+		(typeof process !== "undefined" && process.env?.PUBLIC_UMAMI_SRC) ||
+		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_UMAMI_SRC) ||
+		"",
+	plausibleDomain:
+		(typeof process !== "undefined" && process.env?.PUBLIC_PLAUSIBLE_DOMAIN) ||
+		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_PLAUSIBLE_DOMAIN) ||
+		"",
+	plausibleSrc:
+		(typeof process !== "undefined" && process.env?.PUBLIC_PLAUSIBLE_SRC) ||
+		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_PLAUSIBLE_SRC) ||
+		"",
 	clarityProjectId:
 		(typeof process !== "undefined" && process.env?.PUBLIC_CLARITY_PROJECT_ID) ||
 		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_CLARITY_PROJECT_ID) ||
+		"",
+	fathomSiteId:
+		(typeof process !== "undefined" && process.env?.PUBLIC_FATHOM_SITE_ID) ||
+		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_FATHOM_SITE_ID) ||
+		"",
+	simpleAnalyticsDomain:
+		(typeof process !== "undefined" && process.env?.PUBLIC_SIMPLE_ANALYTICS_DOMAIN) ||
+		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_SIMPLE_ANALYTICS_DOMAIN) ||
+		"",
+	matomoSiteId:
+		(typeof process !== "undefined" && process.env?.PUBLIC_MATOMO_SITE_ID) ||
+		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_MATOMO_SITE_ID) ||
+		"",
+	matomoSrc:
+		(typeof process !== "undefined" && process.env?.PUBLIC_MATOMO_SRC) ||
+		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_MATOMO_SRC) ||
+		"",
+	amplitudeApiKey:
+		(typeof process !== "undefined" && process.env?.PUBLIC_AMPLITUDE_API_KEY) ||
+		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_AMPLITUDE_API_KEY) ||
 		"",
 	// IndexNow
 	indexNowKey:
@@ -152,7 +209,31 @@ export const Config: ConfigType = {
 		customScript: "", // Custom JS content (no <script> tags) - auto-offloaded to Web Worker via Partytown
 	},
 	analytics: {
+		enable: env.analyticsEnable,
+		googleAnalyticsId: env.googleAnalyticsId,
+		umami: env.umamiId
+			? {
+					id: env.umamiId,
+					src: env.umamiSrc || undefined,
+				}
+			: undefined,
+		plausible: env.plausibleDomain
+			? {
+					domain: env.plausibleDomain,
+					src: env.plausibleSrc || undefined,
+				}
+			: undefined,
 		clarityProjectId: env.clarityProjectId,
+		fathomSiteId: env.fathomSiteId,
+		simpleAnalyticsDomain: env.simpleAnalyticsDomain,
+		matomo:
+			env.matomoSiteId && env.matomoSrc
+				? {
+						siteId: env.matomoSiteId,
+						src: env.matomoSrc,
+					}
+				: undefined,
+		amplitudeApiKey: env.amplitudeApiKey,
 	},
 
 	llms: {
