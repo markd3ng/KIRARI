@@ -338,7 +338,7 @@ analytics: {
 | Matomo | `matomo.siteId`, `matomo.src` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC` |
 | Amplitude | `amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
 
-> **注意**：脚本直接渲染在 `<head>` 中（不通过 Partytown），以兼容 `astro-analytics` 组件。
+> **注意**：脚本直接渲染在 `<head>` 中。Microsoft Clarity 使用手动脚本（非 astro-analytics 组件）。
 
 ### SEO 与索引
 

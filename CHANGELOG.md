@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Replaced manual Clarity script with `astro-analytics` components for unified analytics management.
+- Replaced manual Clarity script with inline script (still controlled by `enable` switch). Other services use `astro-analytics` components.
 - Analytics scripts are now rendered directly in `<head>` instead of via Partytown for component compatibility.
 - **IndexNow integration is now opt-in** - Set `seo.indexNow: true` in `src/constants.ts` to enable. Default is `false` to avoid unnecessary external requests and potential 403 errors.
 - Simplified OG selection logic to: `frontmatter.og` → `og.defaultImage`.

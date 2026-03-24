@@ -338,7 +338,9 @@ analytics: {
 | Matomo | `matomo.siteId`, `matomo.src` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC` |
 | Amplitude | `amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
 
-> **Note**: Scripts are rendered directly in `<head>` (not via Partytown) for compatibility with `astro-analytics` components.
+> **Note**: Scripts are rendered directly in `<head>`. Microsoft Clarity uses a manual script (not via astro-analytics component).
+
+### SEO & Indexing
 
 ### SEO & Indexing
 
