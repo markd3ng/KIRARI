@@ -68,6 +68,9 @@ importers:
       astro:
         specifier: 6.0.7
         version: 6.0.7(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.59.0)(sass@1.80.4)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.3)(yaml@2.8.2)
+      astro-analytics:
+        specifier: github:Destiner/astro-analytics
+        version: https://codeload.github.com/Destiner/astro-analytics/tar.gz/b05312d8522950840d22c9087ac9cbb420d16bc1
       astro-expressive-code:
         specifier: ^0.41.7
         version: 0.41.7(astro@6.0.7(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.59.0)(sass@1.80.4)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.3)(yaml@2.8.2))
@@ -1486,6 +1489,10 @@ packages:
   astring@1.9.0:
     resolution: {integrity: sha512-LElXdjswlqjWrPpJFg1Fx4wpkOCxj1TDHlSV4PlaRxHGWko024xICaa97ZkMfs6DRKlCguiAI+rbXv5GWwXIkg==}
     hasBin: true
+
+  astro-analytics@https://codeload.github.com/Destiner/astro-analytics/tar.gz/b05312d8522950840d22c9087ac9cbb420d16bc1:
+    resolution: {tarball: https://codeload.github.com/Destiner/astro-analytics/tar.gz/b05312d8522950840d22c9087ac9cbb420d16bc1}
+    version: 2.7.0
 
   astro-expressive-code@0.41.7:
     resolution: {integrity: sha512-hUpogGc6DdAd+I7pPXsctyYPRBJDK7Q7d06s4cyP0Vz3OcbziP3FNzN0jZci1BpCvLn9675DvS7B9ctKKX64JQ==}
@@ -5100,6 +5107,8 @@ snapshots:
   array-iterate@2.0.1: {}
 
   astring@1.9.0: {}
+
+  astro-analytics@https://codeload.github.com/Destiner/astro-analytics/tar.gz/b05312d8522950840d22c9087ac9cbb420d16bc1: {}
 
   astro-expressive-code@0.41.7(astro@6.0.7(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.59.0)(sass@1.80.4)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.3)(yaml@2.8.2)):
     dependencies:
