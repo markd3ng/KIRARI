@@ -1,63 +1,9 @@
-import { getEnvBoolean, getEnvString, getEnvStringFromKeys } from "./utils/env";
 import { LinkPreset, type Config as ConfigType } from "./types/config";
+import { loadEnvConfig } from "./utils/config-loader";
 
-type EnvConfig = {
-	siteUrl: string;
-	siteTitle: string;
-	siteSubtitle: string;
-	bannerCreditEnable: boolean;
-	bannerCreditText: string;
-	bannerCreditUrl: string;
-	// Analytics
-	analyticsEnable: boolean;
-	googleAnalyticsId: string;
-	umamiId: string;
-	umamiSrc: string;
-	plausibleDomain: string;
-	plausibleSrc: string;
-	clarityProjectId: string;
-	fathomSiteId: string;
-	simpleAnalyticsDomain: string;
-	matomoSiteId: string;
-	matomoSrc: string;
-	amplitudeApiKey: string;
-	// SEO
-	indexNowKey: string;
-};
+const env = loadEnvConfig();
 
-// Environment variables with fallback defaults
-// Create .env.local file to override these values locally
-const env: EnvConfig = {
-	// Site configuration
-	siteUrl: getEnvString("PUBLIC_SITE_URL", "https://kirari-main.vercel.app"),
-	siteTitle: getEnvString("PUBLIC_SITE_TITLE", "KIRARI"),
-	siteSubtitle: getEnvString("PUBLIC_SITE_SUBTITLE", "Demo Site"),
-	// Banner credit configuration
-	bannerCreditEnable: getEnvBoolean("PUBLIC_BANNER_CREDIT_ENABLE", false),
-	bannerCreditText: getEnvString("PUBLIC_BANNER_CREDIT_TEXT"),
-	bannerCreditUrl: getEnvString("PUBLIC_BANNER_CREDIT_URL"),
-	// Analytics
-	analyticsEnable: getEnvBoolean("PUBLIC_ANALYTICS_ENABLE", false),
-	googleAnalyticsId: getEnvString("PUBLIC_GOOGLE_ANALYTICS_ID"),
-	umamiId: getEnvString("PUBLIC_UMAMI_ID"),
-	umamiSrc: getEnvString("PUBLIC_UMAMI_SRC"),
-	plausibleDomain: getEnvString("PUBLIC_PLAUSIBLE_DOMAIN"),
-	plausibleSrc: getEnvString("PUBLIC_PLAUSIBLE_SRC"),
-	clarityProjectId: getEnvStringFromKeys(
-		["PUBLIC_CLARITY_PROJECT_ID", "PUBLIC_CLARITY_ID"],
-		"",
-	),
-	fathomSiteId: getEnvString("PUBLIC_FATHOM_SITE_ID"),
-	simpleAnalyticsDomain: getEnvString("PUBLIC_SIMPLE_ANALYTICS_DOMAIN"),
-	matomoSiteId: getEnvString("PUBLIC_MATOMO_SITE_ID"),
-	matomoSrc: getEnvString("PUBLIC_MATOMO_SRC"),
-	amplitudeApiKey: getEnvString("PUBLIC_AMPLITUDE_API_KEY"),
-	// IndexNow
-	indexNowKey: getEnvString(
-		"PUBLIC_INDEXNOW_KEY",
-		"a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
-	),
-};
+
 
 
 export const Config: ConfigType = {
@@ -196,7 +142,7 @@ export const Config: ConfigType = {
 		defaultImage: "/og/default.png",
 	},
 	seo: {
-		indexNow: false, // Enable IndexNow integration for instant search engine indexing
+		indexNow: env.indexNowEnable, // Enable IndexNow integration for instant search engine indexing
 		indexNowKey: env.indexNowKey,
 	},
 

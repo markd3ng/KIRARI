@@ -1,0 +1,37 @@
+# Optional TOML configuration for KIRARI.
+# Priority: Environment Variables > kirari.config.toml > src/constants.ts defaults.
+# Keep secrets in environment variables, not in this file.
+
+[site]
+# url = "https://your-domain.com"
+# title = "KIRARI"
+# subtitle = "Demo Site"
+
+[site.banner.credit]
+# enable = false
+# text = ""
+# url = ""
+
+[analytics]
+# enable = false
+# googleAnalyticsId = ""
+# clarityProjectId = ""
+# fathomSiteId = ""
+# simpleAnalyticsDomain = ""
+# amplitudeApiKey = ""
+
+[analytics.umami]
+# id = ""
+# src = ""
+
+[analytics.plausible]
+# domain = ""
+# src = ""
+
+[analytics.matomo]
+# siteId = ""
+# src = ""
+
+[seo]
+# indexNow = false
+# indexNowKey = ""

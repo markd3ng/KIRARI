@@ -50,7 +50,10 @@ pnpm preview
 ## Configuration
 
 All settings are centralized in **`src/constants.ts`**.
-Environment reads are unified in **`src/utils/env.ts`** (`getEnvString`, `getEnvBoolean`, `getEnvStringFromKeys`) with fallback priority: `process.env` → `import.meta.env` → default value.
+Optional readable TOML config is supported via **`kirari.config.toml`** (Hugo-style).
+The final priority is: **Environment Variables** → **`kirari.config.toml`** → **`src/constants.ts` defaults**.
+Environment readers are unified in **`src/utils/env.ts`** (`getEnvString`, `getEnvBoolean`, `getEnvStringFromKeys`) with source fallback: `process.env` → `import.meta.env`.
+
 
 
 
@@ -147,11 +150,41 @@ PUBLIC_MATOMO_SRC=                 # Matomo tracker URL (required if using Matom
 PUBLIC_AMPLITUDE_API_KEY=          # Amplitude API key
 
 # SEO / IndexNow
+PUBLIC_INDEXNOW_ENABLE=false
 PUBLIC_INDEXNOW_KEY=
+
 ```
 
 
+
+### Optional TOML Configuration (`kirari.config.toml`)
+
+If you prefer Hugo-style readability, edit root `kirari.config.toml`.
+Only non-sensitive values should be stored there.
+
+```toml
+[site]
+url = "https://your-domain.com"
+title = "Your Site"
+subtitle = "Your Tagline"
+
+[analytics]
+enable = true
+googleAnalyticsId = "G-XXXXXXXXXX"
+clarityProjectId = "xxxxxxxx"
+
+[analytics.umami]
+id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+[seo]
+indexNow = false
+indexNowKey = "your-indexnow-key"
+```
+
+> Environment variables always override TOML values.
+
 **Usage by environment:**
+
 
 | Environment | How to configure |
 |-------------|------------------|
@@ -371,11 +404,14 @@ The theme includes integrated SEO plugins:
 ```typescript
 seo: {
   indexNow: true,              // Enable IndexNow integration (default: false)
-  indexNowKey: "your-api-key"  // Or set PUBLIC_INDEXNOW_KEY env var
+  indexNowKey: "your-api-key" // Or set PUBLIC_INDEXNOW_KEY env var
 }
+
 ```
 
 The key file is served at `/{key}.txt` for search engine verification. To get a key, visit [indexnow.org](https://www.indexnow.org).
+You can also use env overrides: `PUBLIC_INDEXNOW_ENABLE=true` and `PUBLIC_INDEXNOW_KEY=...`.
+
 
 > **Note**: IndexNow sends requests to search engines on every build. Keep it disabled if you don't need instant indexing.
 
@@ -453,7 +489,9 @@ Both components use `w-full aspect-video` for responsive 16:9 display.
 
 ```
 KIRARI/
+├── kirari.config.toml    # Optional readable TOML config
 ├── src/
+
 │   ├── components/       # UI components
 │   ├── content/posts/    # Blog posts (Markdown)
 │   ├── content/spec/     # Static pages content
