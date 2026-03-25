@@ -1,3 +1,4 @@
+import { getEnvBoolean, getEnvString, getEnvStringFromKeys } from "./utils/env";
 import { LinkPreset, type Config as ConfigType } from "./types/config";
 
 type EnvConfig = {
@@ -26,90 +27,38 @@ type EnvConfig = {
 
 // Environment variables with fallback defaults
 // Create .env.local file to override these values locally
-// Note: Use both process.env (for astro.config.mjs / Node.js context) 
-// and import.meta.env (for Astro runtime) to ensure env vars work in all contexts
 const env: EnvConfig = {
 	// Site configuration
-	siteUrl:
-		(typeof process !== "undefined" && process.env?.PUBLIC_SITE_URL) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_SITE_URL) ||
-		"https://kirari-main.vercel.app",
-	siteTitle:
-		(typeof process !== "undefined" && process.env?.PUBLIC_SITE_TITLE) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_SITE_TITLE) ||
-		"KIRARI",
-	siteSubtitle:
-		(typeof process !== "undefined" && process.env?.PUBLIC_SITE_SUBTITLE) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_SITE_SUBTITLE) ||
-		"Demo Site",
+	siteUrl: getEnvString("PUBLIC_SITE_URL", "https://kirari-main.vercel.app"),
+	siteTitle: getEnvString("PUBLIC_SITE_TITLE", "KIRARI"),
+	siteSubtitle: getEnvString("PUBLIC_SITE_SUBTITLE", "Demo Site"),
 	// Banner credit configuration
-	bannerCreditEnable:
-		(typeof process !== "undefined" && process.env?.PUBLIC_BANNER_CREDIT_ENABLE === "true") ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_BANNER_CREDIT_ENABLE === "true") ||
-		false,
-	bannerCreditText:
-		(typeof process !== "undefined" && process.env?.PUBLIC_BANNER_CREDIT_TEXT) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_BANNER_CREDIT_TEXT) ||
-		"",
-	bannerCreditUrl:
-		(typeof process !== "undefined" && process.env?.PUBLIC_BANNER_CREDIT_URL) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_BANNER_CREDIT_URL) ||
-		"",
+	bannerCreditEnable: getEnvBoolean("PUBLIC_BANNER_CREDIT_ENABLE", false),
+	bannerCreditText: getEnvString("PUBLIC_BANNER_CREDIT_TEXT"),
+	bannerCreditUrl: getEnvString("PUBLIC_BANNER_CREDIT_URL"),
 	// Analytics
-	analyticsEnable:
-		(typeof process !== "undefined" && process.env?.PUBLIC_ANALYTICS_ENABLE === "true") ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_ANALYTICS_ENABLE === "true") ||
-		false,
-	googleAnalyticsId:
-		(typeof process !== "undefined" && process.env?.PUBLIC_GOOGLE_ANALYTICS_ID) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_GOOGLE_ANALYTICS_ID) ||
+	analyticsEnable: getEnvBoolean("PUBLIC_ANALYTICS_ENABLE", false),
+	googleAnalyticsId: getEnvString("PUBLIC_GOOGLE_ANALYTICS_ID"),
+	umamiId: getEnvString("PUBLIC_UMAMI_ID"),
+	umamiSrc: getEnvString("PUBLIC_UMAMI_SRC"),
+	plausibleDomain: getEnvString("PUBLIC_PLAUSIBLE_DOMAIN"),
+	plausibleSrc: getEnvString("PUBLIC_PLAUSIBLE_SRC"),
+	clarityProjectId: getEnvStringFromKeys(
+		["PUBLIC_CLARITY_PROJECT_ID", "PUBLIC_CLARITY_ID"],
 		"",
-	umamiId:
-		(typeof process !== "undefined" && process.env?.PUBLIC_UMAMI_ID) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_UMAMI_ID) ||
-		"",
-	umamiSrc:
-		(typeof process !== "undefined" && process.env?.PUBLIC_UMAMI_SRC) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_UMAMI_SRC) ||
-		"",
-	plausibleDomain:
-		(typeof process !== "undefined" && process.env?.PUBLIC_PLAUSIBLE_DOMAIN) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_PLAUSIBLE_DOMAIN) ||
-		"",
-	plausibleSrc:
-		(typeof process !== "undefined" && process.env?.PUBLIC_PLAUSIBLE_SRC) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_PLAUSIBLE_SRC) ||
-		"",
-	clarityProjectId:
-		(typeof process !== "undefined" && process.env?.PUBLIC_CLARITY_PROJECT_ID) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_CLARITY_PROJECT_ID) ||
-		"",
-	fathomSiteId:
-		(typeof process !== "undefined" && process.env?.PUBLIC_FATHOM_SITE_ID) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_FATHOM_SITE_ID) ||
-		"",
-	simpleAnalyticsDomain:
-		(typeof process !== "undefined" && process.env?.PUBLIC_SIMPLE_ANALYTICS_DOMAIN) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_SIMPLE_ANALYTICS_DOMAIN) ||
-		"",
-	matomoSiteId:
-		(typeof process !== "undefined" && process.env?.PUBLIC_MATOMO_SITE_ID) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_MATOMO_SITE_ID) ||
-		"",
-	matomoSrc:
-		(typeof process !== "undefined" && process.env?.PUBLIC_MATOMO_SRC) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_MATOMO_SRC) ||
-		"",
-	amplitudeApiKey:
-		(typeof process !== "undefined" && process.env?.PUBLIC_AMPLITUDE_API_KEY) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_AMPLITUDE_API_KEY) ||
-		"",
+	),
+	fathomSiteId: getEnvString("PUBLIC_FATHOM_SITE_ID"),
+	simpleAnalyticsDomain: getEnvString("PUBLIC_SIMPLE_ANALYTICS_DOMAIN"),
+	matomoSiteId: getEnvString("PUBLIC_MATOMO_SITE_ID"),
+	matomoSrc: getEnvString("PUBLIC_MATOMO_SRC"),
+	amplitudeApiKey: getEnvString("PUBLIC_AMPLITUDE_API_KEY"),
 	// IndexNow
-	indexNowKey:
-		(typeof process !== "undefined" && process.env?.PUBLIC_INDEXNOW_KEY) ||
-		(typeof import.meta !== "undefined" && import.meta.env?.PUBLIC_INDEXNOW_KEY) ||
+	indexNowKey: getEnvString(
+		"PUBLIC_INDEXNOW_KEY",
 		"a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+	),
 };
+
 
 export const Config: ConfigType = {
 	site: {

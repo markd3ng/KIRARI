@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Amplitude (`amplitudeApiKey`)
 - Added environment variables for all analytics services (e.g., `PUBLIC_GOOGLE_ANALYTICS_ID`, `PUBLIC_UMAMI_ID`, etc.)
 - Added optional `og` field to post frontmatter for per-post OG image override.
+- Added `src/utils/env.ts` with unified env readers: `getEnvString`, `getEnvBoolean`, and `getEnvStringFromKeys`.
+- Added backward-compatible analytics env alias: `PUBLIC_CLARITY_ID` (with `PUBLIC_CLARITY_PROJECT_ID` as preferred key).
+
 
 ### Changed
 
@@ -29,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **IndexNow integration is now opt-in** - Set `seo.indexNow: true` in `src/constants.ts` to enable. Default is `false` to avoid unnecessary external requests and potential 403 errors.
 - Simplified OG selection logic to: `frontmatter.og` → `og.defaultImage`.
 - Updated `README.md` and `README_CN.md` OG sections to match the new static selection model.
+- Refactored `src/constants.ts` to use shared env helper functions, reducing duplicated env fallback logic.
+- Analytics scripts now require both `analytics.enable` and production runtime (`import.meta.env.PROD`) before loading.
+- Updated `.env.example`, `README.md`, and `README_CN.md` to document env priority, analytics production guard, and Clarity alias compatibility.
+
 
 ### Removed
 
@@ -41,3 +48,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Clarified that analytics scripts (Google Analytics, Umami, Microsoft Clarity, etc.) should be wrapped in backticks to avoid quote conflicts with HTML attributes.
+- Removed duplicated `Config` type declarations in `src/types/config.ts` to keep a single source of type truth.
+
