@@ -206,35 +206,6 @@ export type Config = {
 	seo: SeoConfig;
 };
 
-export type Config = {
-	site: SiteConfig;
-	navBar: NavBarConfig;
-	profile: ProfileConfig;
-	license: LicenseConfig;
-	expressiveCode: ExpressiveCodeConfig;
-	mermaid: MermaidConfig;
-	head: HeadConfig;
-	footer: FooterConfig;
-	analytics: AnalyticsConfig;
-	llms: LLMsConfig;
-	og: OGConfig;
-	seo: SeoConfig;
-};
-
-export type Config = {
-	site: SiteConfig;
-	navBar: NavBarConfig;
-	profile: ProfileConfig;
-	license: LicenseConfig;
-	expressiveCode: ExpressiveCodeConfig;
-	mermaid: MermaidConfig;
-	head: HeadConfig;
-	footer: FooterConfig;
-	analytics: AnalyticsConfig;
-	llms: LLMsConfig;
-	og: OGConfig;
-	seo: SeoConfig;
-};
 
 
 

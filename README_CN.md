@@ -49,7 +49,10 @@ pnpm preview
 
 ## 配置
 
-所有设置集中在 **`src/constants.ts`** 中：
+所有设置集中在 **`src/constants.ts`** 中。
+环境变量读取统一在 **`src/utils/env.ts`**（`getEnvString`、`getEnvBoolean`、`getEnvStringFromKeys`），回退优先级为：`process.env` → `import.meta.env` → 默认值。
+
+
 
 ```typescript
 export const Config = {
@@ -135,13 +138,18 @@ PUBLIC_UMAMI_ID=                   # Umami 网站 ID
 PUBLIC_UMAMI_SRC=                  # Umami 脚本 URL（可选）
 PUBLIC_PLAUSIBLE_DOMAIN=           # Plausible 域名
 PUBLIC_PLAUSIBLE_SRC=              # Plausible 脚本 URL（可选）
-PUBLIC_CLARITY_PROJECT_ID=         # Microsoft Clarity 项目 ID
+PUBLIC_CLARITY_PROJECT_ID=         # Microsoft Clarity 项目 ID（推荐）
+PUBLIC_CLARITY_ID=                 # 向后兼容别名
 PUBLIC_FATHOM_SITE_ID=             # Fathom 站点 ID
 PUBLIC_SIMPLE_ANALYTICS_DOMAIN=    # Simple Analytics 域名
 PUBLIC_MATOMO_SITE_ID=             # Matomo 站点 ID
 PUBLIC_MATOMO_SRC=                 # Matomo 追踪器 URL（使用 Matomo 时必填）
 PUBLIC_AMPLITUDE_API_KEY=          # Amplitude API 密钥
+
+# SEO / IndexNow
+PUBLIC_INDEXNOW_KEY=
 ```
+
 
 **不同环境的使用方式：**
 
@@ -307,7 +315,13 @@ llms: {
 
 ### 统计分析
 
-通过 `astro-analytics` 集成，支持多种分析服务。在 `src/constants.ts` 中配置或通过环境变量设置：
+通过 `astro-analytics` 集成，支持多种分析服务。在 `src/constants.ts` 中配置或通过环境变量设置。
+
+分析脚本仅在同时满足以下条件时加载：
+1. `analytics.enable`（或 `PUBLIC_ANALYTICS_ENABLE`）为 `true`
+2. 当前为生产环境（`import.meta.env.PROD`）
+
+
 
 ```typescript
 // src/constants.ts
@@ -332,13 +346,17 @@ analytics: {
 | Google Analytics | `googleAnalyticsId` | `PUBLIC_GOOGLE_ANALYTICS_ID` |
 | Umami | `umami.id`, `umami.src` | `PUBLIC_UMAMI_ID`, `PUBLIC_UMAMI_SRC` |
 | Plausible | `plausible.domain`, `plausible.src` | `PUBLIC_PLAUSIBLE_DOMAIN`, `PUBLIC_PLAUSIBLE_SRC` |
-| Microsoft Clarity | `clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` |
+| Microsoft Clarity | `clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID`（推荐）, `PUBLIC_CLARITY_ID`（别名） |
+
 | Fathom | `fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
 | Simple Analytics | `simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
 | Matomo | `matomo.siteId`, `matomo.src` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC` |
 | Amplitude | `amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
 
-> **注意**：脚本直接渲染在 `<head>` 中（不通过 Partytown），以兼容 `astro-analytics` 组件。
+> **注意**：脚本直接渲染在 `<head>` 中。Microsoft Clarity 使用手动脚本（非 astro-analytics 组件）。
+>
+> **兼容说明**：`PUBLIC_CLARITY_PROJECT_ID` 优先级更高；`PUBLIC_CLARITY_ID` 作为向后兼容别名保留。
+
 
 ### SEO 与索引
 
@@ -444,9 +462,10 @@ KIRARI/
 │   │   └── rss.xml.ts           # RSS 订阅
 │   ├── plugins/          # 自定义 rehype/remark 插件
 │   ├── styles/           # CSS/Stylus
-│   ├── utils/            # 工具函数
+│   ├── utils/            # 工具函数（含环境变量读取工具）
 │   ├── constants.ts      # 主配置文件
-│   └── config.ts         # 类型导出（请勿编辑）
+│   └── config.ts         # 配置模块导出
+
 ├── public/               # 静态资源
 ├── scripts/              # 构建脚本
 └── _data/                # 数据文件（friends.json）

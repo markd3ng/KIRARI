@@ -49,7 +49,10 @@ pnpm preview
 
 ## Configuration
 
-All settings are centralized in **`src/constants.ts`**:
+All settings are centralized in **`src/constants.ts`**.
+Environment reads are unified in **`src/utils/env.ts`** (`getEnvString`, `getEnvBoolean`, `getEnvStringFromKeys`) with fallback priority: `process.env` → `import.meta.env` → default value.
+
+
 
 ```typescript
 export const Config = {
@@ -135,13 +138,18 @@ PUBLIC_UMAMI_ID=                   # Umami website ID
 PUBLIC_UMAMI_SRC=                  # Umami script URL (optional)
 PUBLIC_PLAUSIBLE_DOMAIN=           # Domain for Plausible
 PUBLIC_PLAUSIBLE_SRC=              # Plausible script URL (optional)
-PUBLIC_CLARITY_PROJECT_ID=         # Microsoft Clarity project ID
+PUBLIC_CLARITY_PROJECT_ID=         # Microsoft Clarity project ID (preferred)
+PUBLIC_CLARITY_ID=                 # Backward-compatible alias
 PUBLIC_FATHOM_SITE_ID=             # Fathom site ID
 PUBLIC_SIMPLE_ANALYTICS_DOMAIN=    # Simple Analytics domain
 PUBLIC_MATOMO_SITE_ID=             # Matomo site ID
 PUBLIC_MATOMO_SRC=                 # Matomo tracker URL (required if using Matomo)
 PUBLIC_AMPLITUDE_API_KEY=          # Amplitude API key
+
+# SEO / IndexNow
+PUBLIC_INDEXNOW_KEY=
 ```
+
 
 **Usage by environment:**
 
@@ -307,7 +315,13 @@ llms: {
 
 ### Analytics
 
-Integrated via `astro-analytics`, supporting multiple analytics services. Configure in `src/constants.ts` or via environment variables:
+Integrated via `astro-analytics`, supporting multiple analytics services. Configure in `src/constants.ts` or via environment variables.
+
+Analytics are loaded only when both conditions are met:
+1. `analytics.enable` (or `PUBLIC_ANALYTICS_ENABLE`) is `true`
+2. Build/runtime is production (`import.meta.env.PROD`)
+
+
 
 ```typescript
 // src/constants.ts
@@ -332,13 +346,19 @@ analytics: {
 | Google Analytics | `googleAnalyticsId` | `PUBLIC_GOOGLE_ANALYTICS_ID` |
 | Umami | `umami.id`, `umami.src` | `PUBLIC_UMAMI_ID`, `PUBLIC_UMAMI_SRC` |
 | Plausible | `plausible.domain`, `plausible.src` | `PUBLIC_PLAUSIBLE_DOMAIN`, `PUBLIC_PLAUSIBLE_SRC` |
-| Microsoft Clarity | `clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` |
+| Microsoft Clarity | `clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` (preferred), `PUBLIC_CLARITY_ID` (alias) |
+
 | Fathom | `fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
 | Simple Analytics | `simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
 | Matomo | `matomo.siteId`, `matomo.src` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC` |
 | Amplitude | `amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
 
-> **Note**: Scripts are rendered directly in `<head>` (not via Partytown) for compatibility with `astro-analytics` components.
+> **Note**: Scripts are rendered directly in `<head>`. Microsoft Clarity uses a manual script (not via astro-analytics component).
+>
+> **Compatibility**: `PUBLIC_CLARITY_PROJECT_ID` has higher priority; `PUBLIC_CLARITY_ID` is kept as a backward-compatible alias.
+
+
+### SEO & Indexing
 
 ### SEO & Indexing
 
@@ -443,9 +463,10 @@ KIRARI/
 │   │   └── rss.xml.ts           # RSS feed
 │   ├── plugins/          # Custom rehype/remark plugins
 │   ├── styles/           # CSS/Stylus
-│   ├── utils/            # Helper functions
+│   ├── utils/            # Helper functions (including env utilities)
 │   ├── constants.ts      # Main configuration
-│   └── config.ts         # Type exports (do not edit)
+│   └── config.ts         # Exported config modules
+
 ├── public/               # Static assets
 ├── scripts/              # Build scripts
 └── _data/                # Data files (friends.json)
