@@ -50,7 +50,10 @@ pnpm preview
 ## 配置
 
 所有设置集中在 **`src/constants.ts`** 中。
-环境变量读取统一在 **`src/utils/env.ts`**（`getEnvString`、`getEnvBoolean`、`getEnvStringFromKeys`），回退优先级为：`process.env` → `import.meta.env` → 默认值。
+支持可选 Hugo 风格 TOML 配置：**`kirari.config.toml`**（更高可读性）。
+最终优先级为：**环境变量** → **`kirari.config.toml`** → **`src/constants.ts` 默认值**。
+环境变量读取统一在 **`src/utils/env.ts`**（`getEnvString`、`getEnvBoolean`、`getEnvStringFromKeys`），来源回退为：`process.env` → `import.meta.env`。
+
 
 
 
@@ -147,11 +150,41 @@ PUBLIC_MATOMO_SRC=                 # Matomo 追踪器 URL（使用 Matomo 时必
 PUBLIC_AMPLITUDE_API_KEY=          # Amplitude API 密钥
 
 # SEO / IndexNow
+PUBLIC_INDEXNOW_ENABLE=false
 PUBLIC_INDEXNOW_KEY=
+
 ```
 
 
+
+### 可选 TOML 配置（`kirari.config.toml`）
+
+如果你更偏好 Hugo 风格的可读配置，可编辑项目根目录 `kirari.config.toml`。
+建议仅放置非敏感配置。
+
+```toml
+[site]
+url = "https://your-domain.com"
+title = "你的站点"
+subtitle = "你的标语"
+
+[analytics]
+enable = true
+googleAnalyticsId = "G-XXXXXXXXXX"
+clarityProjectId = "xxxxxxxx"
+
+[analytics.umami]
+id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+[seo]
+indexNow = false
+indexNowKey = "your-indexnow-key"
+```
+
+> 环境变量始终覆盖 TOML 配置。
+
 **不同环境的使用方式：**
+
 
 | 环境 | 配置方式 |
 |------|----------|
@@ -374,6 +407,8 @@ seo: {
 ```
 
 密钥文件会部署在 `/{key}.txt` 供搜索引擎验证。获取密钥请访问 [indexnow.org](https://www.indexnow.org)。
+也可以通过环境变量覆盖：`PUBLIC_INDEXNOW_ENABLE=true` 与 `PUBLIC_INDEXNOW_KEY=...`。
+
 
 > **注意**：IndexNow 会在每次构建时向搜索引擎发送请求。如果不需要即时索引功能，建议保持关闭。
 
@@ -452,7 +487,9 @@ import Bilibili from "../../components/embed/Bilibili.astro";
 
 ```
 KIRARI/
+├── kirari.config.toml    # 可选 TOML 可读配置
 ├── src/
+
 │   ├── components/       # UI 组件
 │   ├── content/posts/    # 博客文章（Markdown）
 │   ├── content/spec/     # 静态页面内容
