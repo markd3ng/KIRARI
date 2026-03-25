@@ -71,6 +71,7 @@
     "sanitize-html": "^2.17.2",
     "satori": "^0.26.0",
     "sharp": "^0.34.5",
+    "smol-toml": "^1.6.1",
     "stylus": "^0.64.0",
     "svelte": "^5.54.0",
     "swup": "^4.8.3",

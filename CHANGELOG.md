@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added optional `og` field to post frontmatter for per-post OG image override.
 - Added `src/utils/env.ts` with unified env readers: `getEnvString`, `getEnvBoolean`, and `getEnvStringFromKeys`.
 - Added backward-compatible analytics env alias: `PUBLIC_CLARITY_ID` (with `PUBLIC_CLARITY_PROJECT_ID` as preferred key).
+- Added optional Hugo-style TOML config file support via root `kirari.config.toml`.
+- Added `src/utils/config-loader.ts` to resolve config by priority: env > TOML > defaults.
+- Added `PUBLIC_INDEXNOW_ENABLE` env override for `seo.indexNow`.
+
 
 
 ### Changed
@@ -32,7 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **IndexNow integration is now opt-in** - Set `seo.indexNow: true` in `src/constants.ts` to enable. Default is `false` to avoid unnecessary external requests and potential 403 errors.
 - Simplified OG selection logic to: `frontmatter.og` → `og.defaultImage`.
 - Updated `README.md` and `README_CN.md` OG sections to match the new static selection model.
-- Refactored `src/constants.ts` to use shared env helper functions, reducing duplicated env fallback logic.
+- Refactored `src/constants.ts` to load resolved config from `src/utils/config-loader.ts`, supporting optional TOML overrides.
+
 - Analytics scripts now require both `analytics.enable` and production runtime (`import.meta.env.PROD`) before loading.
 - Updated `.env.example`, `README.md`, and `README_CN.md` to document env priority, analytics production guard, and Clarity alias compatibility.
 
