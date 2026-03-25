@@ -116,7 +116,10 @@ const bannerOffsetByPosition = {
 };
 const bannerOffset =
 	bannerOffsetByPosition[siteConfig.banner.position || "center"];
+
+const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 ---
+
 
 <!DOCTYPE html>
 <html lang={siteLang} class="bg-[var(--page-bg)] transition text-[14px] md:text-[16px]"
@@ -294,17 +297,17 @@ const bannerOffset =
 		{headConfig.customScript && (
 			<script type="text/partytown" is:inline set:html={headConfig.customScript} />
 		)}
-		{/* Analytics - only loaded when enable is true */}
-		{analyticsConfig.enable && analyticsConfig.googleAnalyticsId && (
+		{/* Analytics - only loaded in production when enable is true */}
+		{shouldLoadAnalytics && analyticsConfig.googleAnalyticsId && (
 			<GoogleAnalytics id={analyticsConfig.googleAnalyticsId} />
 		)}
-		{analyticsConfig.enable && analyticsConfig.umami && (
+		{shouldLoadAnalytics && analyticsConfig.umami && (
 			<Umami id={analyticsConfig.umami.id} src={analyticsConfig.umami.src} />
 		)}
-		{analyticsConfig.enable && analyticsConfig.plausible && (
+		{shouldLoadAnalytics && analyticsConfig.plausible && (
 			<Plausible domain={analyticsConfig.plausible.domain} src={analyticsConfig.plausible.src} />
 		)}
-		{analyticsConfig.enable && analyticsConfig.clarityProjectId && (
+		{shouldLoadAnalytics && analyticsConfig.clarityProjectId && (
 			<script is:inline define:vars={{ clarityProjectId: analyticsConfig.clarityProjectId }}>
 				(function(c,l,a,r,i,t,y){
 					c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -313,18 +316,19 @@ const bannerOffset =
 				})(window, document, "clarity", "script", clarityProjectId);
 			</script>
 		)}
-		{analyticsConfig.enable && analyticsConfig.fathomSiteId && (
+		{shouldLoadAnalytics && analyticsConfig.fathomSiteId && (
 			<Fathom id={analyticsConfig.fathomSiteId} />
 		)}
-		{analyticsConfig.enable && analyticsConfig.simpleAnalyticsDomain && (
+		{shouldLoadAnalytics && analyticsConfig.simpleAnalyticsDomain && (
 			<SimpleAnalytics domain={analyticsConfig.simpleAnalyticsDomain} />
 		)}
-		{analyticsConfig.enable && analyticsConfig.matomo && (
+		{shouldLoadAnalytics && analyticsConfig.matomo && (
 			<Matomo siteId={analyticsConfig.matomo.siteId} src={analyticsConfig.matomo.src} />
 		)}
-		{analyticsConfig.enable && analyticsConfig.amplitudeApiKey && (
+		{shouldLoadAnalytics && analyticsConfig.amplitudeApiKey && (
 			<Amplitude apiKey={analyticsConfig.amplitudeApiKey} />
 		)}
+
 
 		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
 
