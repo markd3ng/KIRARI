@@ -5,7 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Improved accessibility semantics for key interactive components:
+  - Refactored `ButtonLink` to avoid nested interactive elements.
+  - Updated `Pagination` with proper navigation semantics and non-clickable disabled states.
+  - Added ARIA state/controls wiring for widget expand actions and navbar panels.
+  - Synchronized search panel trigger `aria-expanded` state with actual panel visibility.
+
+### Changed
+
+- Optimized hero banner image delivery for better mobile LCP:
+  - Extended `ImageWrapper` to support `loading`, `decoding`, `fetchpriority`, and `sizes`.
+  - Prioritized homepage banner with eager/high-priority loading strategy.
+  - Removed initial banner hidden/scale state that could delay LCP visibility.
+- Reduced main-thread contention and CLS risk during first render:
+  - Deferred Pagefind initialization to idle time with fallback scheduling.
+  - Removed unnecessary `#top-row` height transition in banner layout.
+- Removed Partytown script wrapping for custom head/footer scripts to avoid deprecated sandbox warnings in Lighthouse best-practices audits.
+
 ## [0.2.0] - 2026-03-26
+
 
 ### Added
 
