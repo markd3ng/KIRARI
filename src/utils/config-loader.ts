@@ -37,100 +37,177 @@ export type EnvConfig = {
  * 
  * All fields are typed as `unknown` to allow runtime validation
  * 所有字段都使用 `unknown` 类型以支持运行时验证
+ * 
+ * This type mirrors the structure of kirari.config.toml
+ * 此类型镜像 kirari.config.toml 的结构
  */
 type TomlConfig = {
+	/** Site configuration / 站点配置 */
 	site?: {
+		/** Site URL (e.g., "https://example.com") / 站点 URL */
 		url?: unknown;
+		/** Site title / 站点标题 */
 		title?: unknown;
+		/** Site subtitle / 站点副标题 */
 		subtitle?: unknown;
+		/** Base path (e.g., "/" or "/blog") / 基础路径 */
 		base?: unknown;
+		/** Language code (e.g., "en", "zh_CN") / 语言代码 */
 		lang?: unknown;
+		/** Theme color configuration / 主题颜色配置 */
 		themeColor?: {
+			/** Hue value (0-360) / 色相值 */
 			hue?: unknown;
+			/** Fixed theme color (hide picker) / 固定主题色（隐藏选择器） */
 			fixed?: unknown;
 		};
+		/** Banner configuration / 横幅配置 */
 		banner?: {
+			/** Enable banner / 启用横幅 */
 			enable?: unknown;
+			/** Banner image source path / 横幅图片路径 */
 			src?: unknown;
+			/** Banner position ("top", "center", "bottom") / 横幅位置 */
 			position?: unknown;
+			/** Banner credit configuration / 横幅版权信息配置 */
 			credit?: {
+				/** Enable credit display / 启用版权显示 */
 				enable?: unknown;
+				/** Credit text / 版权文字 */
 				text?: unknown;
+				/** Credit link URL / 版权链接 URL */
 				url?: unknown;
 			};
 		};
+		/** Table of contents configuration / 目录配置 */
 		toc?: {
+			/** Enable TOC / 启用目录 */
 			enable?: unknown;
+			/** TOC depth (1-3) / 目录深度 */
 			depth?: unknown;
 		};
+		/** Favicon array / 图标数组 */
 		favicon?: unknown; // Array type, will be validated at runtime
 	};
+	/** Navigation bar configuration / 导航栏配置 */
 	navBar?: {
+		/** Navigation links (presets or custom) / 导航链接（预设或自定义） */
 		links?: unknown; // Array type, will be validated at runtime
 	};
+	/** Profile configuration / 个人资料配置 */
 	profile?: {
+		/** Avatar image path / 头像路径 */
 		avatar?: unknown;
+		/** Profile name / 名称 */
 		name?: unknown;
+		/** Profile bio / 简介 */
 		bio?: unknown;
+		/** Profile links / 个人链接 */
 		links?: unknown; // Array type, will be validated at runtime
 	};
+	/** License configuration / 许可证配置 */
 	license?: {
+		/** Enable license display / 启用许可证显示 */
 		enable?: unknown;
+		/** License name / 许可证名称 */
 		name?: unknown;
+		/** License URL / 许可证链接 */
 		url?: unknown;
 	};
+	/** ExpressiveCode configuration / ExpressiveCode 配置 */
 	expressiveCode?: {
+		/** Code themes array / 代码主题数组 */
 		themes?: unknown; // Array type, will be validated at runtime
 	};
+	/** Mermaid configuration / Mermaid 配置 */
 	mermaid?: {
+		/** Enable Mermaid diagrams / 启用 Mermaid 图表 */
 		enable?: unknown;
 	};
+	/** Head configuration / 头部配置 */
 	head?: {
+		/** Search engine verification codes / 搜索引擎验证码 */
 		verification?: {
+			/** Google Search Console / Google 搜索控制台 */
 			google?: unknown;
+			/** Bing Webmaster Tools / Bing 网站管理员工具 */
 			bing?: unknown;
+			/** Yandex Webmaster / Yandex 网站管理员 */
 			yandex?: unknown;
+			/** Naver Search Advisor / Naver 搜索顾问 */
 			naver?: unknown;
 		};
+		/** Custom HTML in <head> / 头部自定义 HTML */
 		customHtml?: unknown;
+		/** Custom JavaScript in <head> / 头部自定义 JavaScript */
 		customScript?: unknown;
 	};
+	/** Footer configuration / 页脚配置 */
 	footer?: {
+		/** Custom HTML in footer / 页脚自定义 HTML */
 		customHtml?: unknown;
+		/** Custom JavaScript in footer / 页脚自定义 JavaScript */
 		customScript?: unknown;
 	};
+	/** Analytics configuration / 分析配置 */
 	analytics?: {
+		/** Enable analytics / 启用分析 */
 		enable?: unknown;
+		/** Google Analytics ID / Google Analytics ID */
 		googleAnalyticsId?: unknown;
+		/** Microsoft Clarity project ID / Microsoft Clarity 项目 ID */
 		clarityProjectId?: unknown;
+		/** Fathom site ID / Fathom 站点 ID */
 		fathomSiteId?: unknown;
+		/** Simple Analytics domain / Simple Analytics 域名 */
 		simpleAnalyticsDomain?: unknown;
+		/** Amplitude API key / Amplitude API 密钥 */
 		amplitudeApiKey?: unknown;
+		/** Umami analytics / Umami 分析 */
 		umami?: {
+			/** Website ID / 网站 ID */
 			id?: unknown;
+			/** Script URL / 脚本 URL */
 			src?: unknown;
 		};
+		/** Plausible analytics / Plausible 分析 */
 		plausible?: {
+			/** Domain / 域名 */
 			domain?: unknown;
+			/** Script URL / 脚本 URL */
 			src?: unknown;
 		};
+		/** Matomo analytics / Matomo 分析 */
 		matomo?: {
+			/** Site ID / 站点 ID */
 			siteId?: unknown;
+			/** Tracker URL / 跟踪器 URL */
 			src?: unknown;
 		};
 	};
+	/** LLMs.txt configuration / LLMs.txt 配置 */
 	llms?: {
+		/** Enable LLMs.txt generation / 启用 LLMs.txt 生成 */
 		enable?: unknown;
+		/** Enable sitemap / 启用站点地图 */
 		sitemap?: unknown;
+		/** Document title / 文档标题 */
 		title?: unknown;
+		/** Document description / 文档描述 */
 		description?: unknown;
+		/** Enable i18n support / 启用国际化支持 */
 		i18n?: unknown;
 	};
+	/** Open Graph configuration / Open Graph 配置 */
 	og?: {
+		/** Default OG image path / 默认 OG 图片路径 */
 		defaultImage?: unknown;
 	};
+	/** SEO configuration / SEO 配置 */
 	seo?: {
+		/** Enable IndexNow / 启用 IndexNow */
 		indexNow?: unknown;
+		/** IndexNow API key / IndexNow API 密钥 */
 		indexNowKey?: unknown;
 	};
 };
@@ -280,11 +357,42 @@ const DEFAULT_ENV_CONFIG: EnvConfig = {
 	indexNowKey: DEFAULT_CONFIG.seo.indexNowKey || "",
 };
 
+/**
+ * Load TOML configuration file content using Vite's import.meta.glob
+ * 使用 Vite 的 import.meta.glob 加载 TOML 配置文件内容
+ * 
+ * The file is loaded eagerly at build time as raw string.
+ * 文件在构建时以原始字符串形式急切加载。
+ */
 const tomlModules = import.meta.glob("../../kirari.config.toml", {
 	eager: true,
 	query: "?raw",
 	import: "default",
 }) as Record<string, string>;
+
+/**
+ * Load and parse TOML configuration file
+ * 加载并解析 TOML 配置文件
+ * 
+ * Reads kirari.config.toml from the project root and parses it into a TomlConfig object.
+ * 从项目根目录读取 kirari.config.toml 并解析为 TomlConfig 对象。
+ * 
+ * @returns Parsed TOML configuration or empty object on error
+ */
+const loadTomlConfig = (): TomlConfig => {
+	const raw = Object.values(tomlModules)[0];
+	if (!raw) return {};
+
+	try {
+		const parsed = parse(raw);
+		return typeof parsed === "object" && parsed !== null
+			? (parsed as TomlConfig)
+			: {};
+	} catch (error) {
+		console.warn("[config-loader] Failed to parse kirari.config.toml, fallback to defaults.", error);
+		return {};
+	}
+};
 
 /**
  * Type guard for string values
@@ -507,21 +615,6 @@ const validateFavicons = (favicons: unknown): Array<{ src: string; theme?: "ligh
 	}
 	
 	return result;
-};
-
-const loadTomlConfig = (): TomlConfig => {
-	const raw = Object.values(tomlModules)[0];
-	if (!raw) return {};
-
-	try {
-		const parsed = parse(raw);
-		return typeof parsed === "object" && parsed !== null
-			? (parsed as TomlConfig)
-			: {};
-	} catch (error) {
-		console.warn("[config-loader] Failed to parse kirari.config.toml, fallback to defaults.", error);
-		return {};
-	}
 };
 
 /**
