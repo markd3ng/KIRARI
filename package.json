@@ -41,6 +41,7 @@
     "@swup/preload-plugin": "^3.2.11",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.2",
+    "@vercel/speed-insights": "^2.0.0",
     "astro": "6.0.8",
     "astro-analytics": "github:markd3ng/astro-analytics",
     "astro-expressive-code": "^0.41.7",
