@@ -49,150 +49,180 @@ pnpm preview
 
 ## Configuration
 
-All settings are centralized in **`src/constants.ts`**.
-Optional readable TOML config is supported via **`kirari.config.toml`** (Hugo-style).
-The final priority is: **Environment Variables** → **`kirari.config.toml`** → **`src/constants.ts` defaults**.
-Environment readers are unified in **`src/utils/env.ts`** (`getEnvString`, `getEnvBoolean`, `getEnvStringFromKeys`) with source fallback: `process.env` → `import.meta.env`.
+All settings are configured via **`kirari.config.toml`** (Hugo-style, recommended).
 
+Configuration priority: **Environment Variables** → **`kirari.config.toml`** → **Default values**
 
+### Quick Start
 
-
-```typescript
-export const Config = {
-  site: {
-    url: "https://your-domain.com",
-    title: "Your Site",
-    subtitle: "Your Tagline",
-    lang: "en",
-    themeColor: { hue: 250, fixed: false },
-    banner: {
-      enable: true,
-      src: "assets/images/banner.png",
-      position: "center", // 'top' | 'center' | 'bottom'
-      credit: { enable: false, text: "", url: "" }
-    },
-    toc: { enable: true, depth: 3 },
-  },
-  profile: {
-    avatar: "assets/images/avatar.png",
-    name: "Your Name",
-    bio: "Your bio",
-    links: [
-      { name: "GitHub", icon: "fa6-brands:github", url: "https://github.com/you" }
-    ]
-  },
-  license: {
-    enable: true,
-    name: "CC BY-NC-SA 4.0",
-    url: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
-  },
-  head: {
-    verification: { google: "", bing: "", yandex: "", naver: "" },
-    customHtml: "",
-    customScript: ""
-  },
-  footer: {
-    customHtml: "",
-    customScript: ""
-  },
-  og: {
-    defaultImage: "/og/default.png"
-  },
-
-  llms: {
-    enable: true,
-    sitemap: true,
-    title: "Your Site",
-    description: "Your site description",
-    i18n: true
-  }
-}
-```
-
-OG notes:
-- Post OG image is selected directly by metadata, without dynamic generation routes.
-- Priority: `frontmatter.og` > `og.defaultImage`.
-- If `frontmatter.og` is empty, `og.defaultImage` (e.g. `/og/default.png`) is used as fallback.
-
-### Environment Variables
-
-You can override configuration values via environment variables instead of modifying `src/constants.ts`. This is useful for:
-- Different configurations per environment (dev/staging/production)
-- CI/CD deployments without code changes
-- Keeping test/local configs separate from production
-
-**Create `.env.local` in the project root:**
-
-```bash
-# Site Configuration
-PUBLIC_SITE_URL=https://your-domain.com
-PUBLIC_SITE_TITLE=Your Site
-PUBLIC_SITE_SUBTITLE=Your Tagline
-
-# Banner Credit
-PUBLIC_BANNER_CREDIT_ENABLE=false
-PUBLIC_BANNER_CREDIT_TEXT=
-PUBLIC_BANNER_CREDIT_URL=
-
-# Analytics (optional - configure services you need)
-PUBLIC_ANALYTICS_ENABLE=false      # Master switch, set to true to enable
-PUBLIC_GOOGLE_ANALYTICS_ID=        # G-XXXXXXXXXX
-PUBLIC_UMAMI_ID=                   # Umami website ID
-PUBLIC_UMAMI_SRC=                  # Umami script URL (optional)
-PUBLIC_PLAUSIBLE_DOMAIN=           # Domain for Plausible
-PUBLIC_PLAUSIBLE_SRC=              # Plausible script URL (optional)
-PUBLIC_CLARITY_PROJECT_ID=         # Microsoft Clarity project ID (preferred)
-PUBLIC_CLARITY_ID=                 # Backward-compatible alias
-PUBLIC_FATHOM_SITE_ID=             # Fathom site ID
-PUBLIC_SIMPLE_ANALYTICS_DOMAIN=    # Simple Analytics domain
-PUBLIC_MATOMO_SITE_ID=             # Matomo site ID
-PUBLIC_MATOMO_SRC=                 # Matomo tracker URL (required if using Matomo)
-PUBLIC_AMPLITUDE_API_KEY=          # Amplitude API key
-
-# SEO / IndexNow
-PUBLIC_INDEXNOW_ENABLE=false
-PUBLIC_INDEXNOW_KEY=
-
-```
-
-
-
-### Optional TOML Configuration (`kirari.config.toml`)
-
-If you prefer Hugo-style readability, edit root `kirari.config.toml`.
-Only non-sensitive values should be stored there.
+Edit `kirari.config.toml` in the project root:
 
 ```toml
 [site]
 url = "https://your-domain.com"
 title = "Your Site"
 subtitle = "Your Tagline"
+lang = "en"                    # en, zh_CN, zh_TW, ja, ko, es, th, vi, tr, id
+base = "/"                     # Base path (e.g., "/blog" for subdirectory)
 
-[analytics]
+[site.themeColor]
+hue = 250                      # 0-360 (red: 0, teal: 200, cyan: 250, pink: 345)
+fixed = false                  # Hide theme color picker
+
+[site.banner]
 enable = true
-googleAnalyticsId = "G-XXXXXXXXXX"
-clarityProjectId = "xxxxxxxx"
+src = "assets/images/banner.png"
+position = "center"            # 'top', 'center', 'bottom'
 
-[analytics.umami]
-id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+[site.banner.credit]
+enable = false
+text = ""
+url = ""
+
+[site.toc]
+enable = true                  # Display table of contents
+depth = 3                      # Maximum heading depth (1-3)
+
+[[site.favicon]]
+src = "/favicon/icon.png"
+theme = "light"                # Optional: 'light' or 'dark'
+sizes = "32x32"                # Optional: favicon size
+
+[profile]
+avatar = "assets/images/avatar.png"
+name = "Your Name"
+bio = "Your bio"
+
+[[profile.links]]
+name = "GitHub"
+icon = "fa6-brands:github"     # Visit https://icones.js.org/ for icon codes
+url = "https://github.com/you"
+
+[license]
+enable = true
+name = "CC BY-NC-SA 4.0"
+url = "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+
+[head.verification]
+google = ""                    # Google Search Console verification code
+bing = ""                      # Bing Webmaster Tools verification code
+
+[og]
+defaultImage = "/og/default.png"
+
+[llms]
+enable = true
+sitemap = true
+title = "Your Site"
+description = "Your site description"
+i18n = true
 
 [seo]
-indexNow = false
-indexNowKey = "your-indexnow-key"
+indexNow = false               # Enable IndexNow for instant search engine indexing
+indexNowKey = ""               # IndexNow API key
 ```
 
-> Environment variables always override TOML values.
+### Navigation Bar
 
-**Usage by environment:**
+Configure navigation links (supports presets and custom links):
 
+```toml
+[[navBar.links]]
+preset = "Home"                # Presets: Home, Archive, About, Friends
 
-| Environment | How to configure |
-|-------------|------------------|
-| Local development | Create `.env.local` (gitignored) |
-| Vercel/Netlify/etc. | Set env vars in dashboard |
-| Default fallback | Values in `src/constants.ts` |
+[[navBar.links]]
+preset = "Archive"
 
-> **Note**: `.env.local` is already in `.gitignore`, so your local overrides won't be committed.
+[[navBar.links]]
+name = "GitHub"                # Custom link
+url = "https://github.com/you"
+external = true                # Open in new tab with external icon
+```
+
+### Analytics
+
+Configure analytics services:
+
+```toml
+[analytics]
+enable = true                  # Master switch (default: false)
+googleAnalyticsId = "G-XXXXXXXXXX"
+clarityProjectId = "your-project-id"
+fathomSiteId = "your-site-id"
+simpleAnalyticsDomain = "example.com"
+amplitudeApiKey = "your-api-key"
+
+[analytics.umami]
+id = "your-website-id"
+src = "https://analytics.umami.is/script.js"
+
+[analytics.plausible]
+domain = "example.com"
+src = "https://plausible.io/js/script.js"
+
+[analytics.matomo]
+siteId = "1"
+src = "https://matomo.example.com/piwik.js"
+```
+
+**Analytics services table:**
+
+| Service | Configuration |
+|---------|--------------|
+| Google Analytics | `googleAnalyticsId` |
+| Umami | `umami.id`, `umami.src` (optional) |
+| Plausible | `plausible.domain`, `plausible.src` (optional) |
+| Microsoft Clarity | `clarityProjectId` |
+| Fathom | `fathomSiteId` |
+| Simple Analytics | `simpleAnalyticsDomain` |
+| Matomo | `matomo.siteId`, `matomo.src` |
+| Amplitude | `amplitudeApiKey` |
+
+Analytics load only when both conditions are met:
+1. `analytics.enable = true`
+2. Production build (`import.meta.env.PROD`)
+
+### Environment Variables (Sensitive Data Only)
+
+For sensitive data (API keys, analytics IDs), use environment variables instead of TOML:
+
+**Create `.env.local` in project root:**
+
+```bash
+# Analytics (recommended for production)
+PUBLIC_ANALYTICS_ENABLE=true
+PUBLIC_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
+PUBLIC_UMAMI_ID=your-website-id
+PUBLIC_UMAMI_SRC=https://analytics.umami.is/script.js
+PUBLIC_PLAUSIBLE_DOMAIN=example.com
+PUBLIC_CLARITY_PROJECT_ID=your-project-id
+PUBLIC_FATHOM_SITE_ID=your-site-id
+PUBLIC_SIMPLE_ANALYTICS_DOMAIN=example.com
+PUBLIC_MATOMO_SITE_ID=1
+PUBLIC_MATOMO_SRC=https://matomo.example.com/piwik.js
+PUBLIC_AMPLITUDE_API_KEY=your-api-key
+
+# SEO
+PUBLIC_INDEXNOW_ENABLE=false
+PUBLIC_INDEXNOW_KEY=your-indexnow-key
+
+# Search Engine Verification (sensitive)
+PUBLIC_GOOGLE_VERIFICATION=your-verification-code
+PUBLIC_BING_VERIFICATION=your-verification-code
+```
+
+**Priority:** Environment variables override TOML values.
+
+> **Note**: `.env.local` is already in `.gitignore`, so your sensitive data won't be committed.
+
+### Deployment Configuration
+
+| Environment | Configuration Method |
+|-------------|---------------------|
+| Local development | Edit `kirari.config.toml` directly |
+| Production (non-sensitive) | Edit `kirari.config.toml` and commit |
+| Production (sensitive) | Set environment variables in Vercel/Netlify dashboard |
+| Default fallback | Values in `src/utils/config-loader.ts` |
 
 
 ## Key Features

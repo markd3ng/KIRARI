@@ -49,150 +49,180 @@ pnpm preview
 
 ## 配置
 
-所有设置集中在 **`src/constants.ts`** 中。
-支持可选 Hugo 风格 TOML 配置：**`kirari.config.toml`**（更高可读性）。
-最终优先级为：**环境变量** → **`kirari.config.toml`** → **`src/constants.ts` 默认值**。
-环境变量读取统一在 **`src/utils/env.ts`**（`getEnvString`、`getEnvBoolean`、`getEnvStringFromKeys`），来源回退为：`process.env` → `import.meta.env`。
+所有设置通过 **`kirari.config.toml`** 配置（Hugo 风格，推荐）。
 
+配置优先级：**环境变量** → **`kirari.config.toml`** → **默认值**
 
+### 快速开始
 
-
-```typescript
-export const Config = {
-  site: {
-    url: "https://your-domain.com",
-    title: "你的站点",
-    subtitle: "你的标语",
-    lang: "zh_CN",
-    themeColor: { hue: 250, fixed: false },
-    banner: {
-      enable: true,
-      src: "assets/images/banner.png",
-      position: "center", // 'top' | 'center' | 'bottom'
-      credit: { enable: false, text: "", url: "" }
-    },
-    toc: { enable: true, depth: 3 },
-  },
-  profile: {
-    avatar: "assets/images/avatar.png",
-    name: "你的名字",
-    bio: "你的简介",
-    links: [
-      { name: "GitHub", icon: "fa6-brands:github", url: "https://github.com/you" }
-    ]
-  },
-  license: {
-    enable: true,
-    name: "CC BY-NC-SA 4.0",
-    url: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
-  },
-  head: {
-    verification: { google: "", bing: "", yandex: "", naver: "" },
-    customHtml: "",
-    customScript: ""
-  },
-  footer: {
-    customHtml: "",
-    customScript: ""
-  },
-  og: {
-    defaultImage: "/og/default.png"
-  },
-
-  llms: {
-    enable: true,
-    sitemap: true,
-    title: "你的站点",
-    description: "站点描述",
-    i18n: true
-  }
-}
-```
-
-OG 说明：
-- 文章 OG 图片不再通过动态路由生成，改为直接按元数据选择。
-- 优先级：`frontmatter.og` > `og.defaultImage`。
-- 当 `frontmatter.og` 为空时，回退到 `og.defaultImage`（例如 `/og/default.png`）。
-
-### 环境变量
-
-你可以通过环境变量覆盖配置值，而无需修改 `src/constants.ts`。这在以下场景很有用：
-- 不同环境使用不同配置（开发/测试/生产）
-- CI/CD 部署时无需修改代码
-- 保持测试/本地配置与生产配置分离
-
-**在项目根目录创建 `.env.local`：**
-
-```bash
-# 站点配置
-PUBLIC_SITE_URL=https://your-domain.com
-PUBLIC_SITE_TITLE=你的站点
-PUBLIC_SITE_SUBTITLE=你的标语
-
-# 横幅署名
-PUBLIC_BANNER_CREDIT_ENABLE=false
-PUBLIC_BANNER_CREDIT_TEXT=
-PUBLIC_BANNER_CREDIT_URL=
-
-# 统计分析（可选 - 按需配置）
-PUBLIC_ANALYTICS_ENABLE=false      # 总开关，设为 true 启用
-PUBLIC_GOOGLE_ANALYTICS_ID=        # G-XXXXXXXXXX
-PUBLIC_UMAMI_ID=                   # Umami 网站 ID
-PUBLIC_UMAMI_SRC=                  # Umami 脚本 URL（可选）
-PUBLIC_PLAUSIBLE_DOMAIN=           # Plausible 域名
-PUBLIC_PLAUSIBLE_SRC=              # Plausible 脚本 URL（可选）
-PUBLIC_CLARITY_PROJECT_ID=         # Microsoft Clarity 项目 ID（推荐）
-PUBLIC_CLARITY_ID=                 # 向后兼容别名
-PUBLIC_FATHOM_SITE_ID=             # Fathom 站点 ID
-PUBLIC_SIMPLE_ANALYTICS_DOMAIN=    # Simple Analytics 域名
-PUBLIC_MATOMO_SITE_ID=             # Matomo 站点 ID
-PUBLIC_MATOMO_SRC=                 # Matomo 追踪器 URL（使用 Matomo 时必填）
-PUBLIC_AMPLITUDE_API_KEY=          # Amplitude API 密钥
-
-# SEO / IndexNow
-PUBLIC_INDEXNOW_ENABLE=false
-PUBLIC_INDEXNOW_KEY=
-
-```
-
-
-
-### 可选 TOML 配置（`kirari.config.toml`）
-
-如果你更偏好 Hugo 风格的可读配置，可编辑项目根目录 `kirari.config.toml`。
-建议仅放置非敏感配置。
+编辑项目根目录的 `kirari.config.toml`：
 
 ```toml
 [site]
 url = "https://your-domain.com"
 title = "你的站点"
 subtitle = "你的标语"
+lang = "zh_CN"                 # en, zh_CN, zh_TW, ja, ko, es, th, vi, tr, id
+base = "/"                     # 基础路径（例如子目录用 "/blog"）
 
-[analytics]
+[site.themeColor]
+hue = 250                      # 0-360（红色: 0, 青色: 200, 天蓝: 250, 粉色: 345）
+fixed = false                  # 隐藏主题色选择器
+
+[site.banner]
 enable = true
-googleAnalyticsId = "G-XXXXXXXXXX"
-clarityProjectId = "xxxxxxxx"
+src = "assets/images/banner.png"
+position = "center"            # 'top', 'center', 'bottom'
 
-[analytics.umami]
-id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+[site.banner.credit]
+enable = false
+text = ""
+url = ""
+
+[site.toc]
+enable = true                  # 显示目录
+depth = 3                      # 最大标题深度 (1-3)
+
+[[site.favicon]]
+src = "/favicon/icon.png"
+theme = "light"                # 可选: 'light' 或 'dark'
+sizes = "32x32"                # 可选: favicon 尺寸
+
+[profile]
+avatar = "assets/images/avatar.png"
+name = "你的名字"
+bio = "你的简介"
+
+[[profile.links]]
+name = "GitHub"
+icon = "fa6-brands:github"     # 访问 https://icones.js.org/ 查看图标代码
+url = "https://github.com/you"
+
+[license]
+enable = true
+name = "CC BY-NC-SA 4.0"
+url = "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+
+[head.verification]
+google = ""                    # Google 搜索控制台验证码
+bing = ""                      # Bing 网站管理员工具验证码
+
+[og]
+defaultImage = "/og/default.png"
+
+[llms]
+enable = true
+sitemap = true
+title = "你的站点"
+description = "站点描述"
+i18n = true
 
 [seo]
-indexNow = false
-indexNowKey = "your-indexnow-key"
+indexNow = false               # 启用 IndexNow 即时搜索引擎索引
+indexNowKey = ""               # IndexNow API 密钥
 ```
 
-> 环境变量始终覆盖 TOML 配置。
+### 导航栏
 
-**不同环境的使用方式：**
+配置导航链接（支持预设和自定义链接）：
 
+```toml
+[[navBar.links]]
+preset = "Home"                # 预设: Home, Archive, About, Friends
+
+[[navBar.links]]
+preset = "Archive"
+
+[[navBar.links]]
+name = "GitHub"                # 自定义链接
+url = "https://github.com/you"
+external = true                # 新标签页打开，显示外链图标
+```
+
+### 统计分析
+
+配置分析服务：
+
+```toml
+[analytics]
+enable = true                  # 总开关（默认: false）
+googleAnalyticsId = "G-XXXXXXXXXX"
+clarityProjectId = "your-project-id"
+fathomSiteId = "your-site-id"
+simpleAnalyticsDomain = "example.com"
+amplitudeApiKey = "your-api-key"
+
+[analytics.umami]
+id = "your-website-id"
+src = "https://analytics.umami.is/script.js"
+
+[analytics.plausible]
+domain = "example.com"
+src = "https://plausible.io/js/script.js"
+
+[analytics.matomo]
+siteId = "1"
+src = "https://matomo.example.com/piwik.js"
+```
+
+**分析服务表格：**
+
+| 服务 | 配置 |
+|------|------|
+| Google Analytics | `googleAnalyticsId` |
+| Umami | `umami.id`, `umami.src`（可选）|
+| Plausible | `plausible.domain`, `plausible.src`（可选）|
+| Microsoft Clarity | `clarityProjectId` |
+| Fathom | `fathomSiteId` |
+| Simple Analytics | `simpleAnalyticsDomain` |
+| Matomo | `matomo.siteId`, `matomo.src` |
+| Amplitude | `amplitudeApiKey` |
+
+分析脚本仅在同时满足以下条件时加载：
+1. `analytics.enable = true`
+2. 生产环境构建（`import.meta.env.PROD`）
+
+### 环境变量（仅敏感数据）
+
+对于敏感数据（API 密钥、分析 ID），建议使用环境变量而非 TOML：
+
+**在项目根目录创建 `.env.local`：**
+
+```bash
+# 统计分析（生产环境推荐）
+PUBLIC_ANALYTICS_ENABLE=true
+PUBLIC_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
+PUBLIC_UMAMI_ID=your-website-id
+PUBLIC_UMAMI_SRC=https://analytics.umami.is/script.js
+PUBLIC_PLAUSIBLE_DOMAIN=example.com
+PUBLIC_CLARITY_PROJECT_ID=your-project-id
+PUBLIC_FATHOM_SITE_ID=your-site-id
+PUBLIC_SIMPLE_ANALYTICS_DOMAIN=example.com
+PUBLIC_MATOMO_SITE_ID=1
+PUBLIC_MATOMO_SRC=https://matomo.example.com/piwik.js
+PUBLIC_AMPLITUDE_API_KEY=your-api-key
+
+# SEO
+PUBLIC_INDEXNOW_ENABLE=false
+PUBLIC_INDEXNOW_KEY=your-indexnow-key
+
+# 搜索引擎验证（敏感）
+PUBLIC_GOOGLE_VERIFICATION=your-verification-code
+PUBLIC_BING_VERIFICATION=your-verification-code
+```
+
+**优先级：** 环境变量覆盖 TOML 配置。
+
+> **注意**：`.env.local` 已在 `.gitignore` 中，你的敏感数据不会被提交。
+
+### 部署配置
 
 | 环境 | 配置方式 |
 |------|----------|
-| 本地开发 | 创建 `.env.local`（已在 .gitignore 中） |
-| Vercel/Netlify 等 | 在控制台设置环境变量 |
-| 默认回退 | 使用 `src/constants.ts` 中的值 |
-
-> **注意**：`.env.local` 已在 `.gitignore` 中，你的本地覆盖配置不会被提交。
+| 本地开发 | 直接编辑 `kirari.config.toml` |
+| 生产环境（非敏感）| 编辑 `kirari.config.toml` 并提交 |
+| 生产环境（敏感）| 在 Vercel/Netlify 控制台设置环境变量 |
+| 默认回退 | 使用 `src/utils/config-loader.ts` 中的值 |
 
 
 ## 主要功能
