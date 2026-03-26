@@ -317,14 +317,16 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 			</script>
 		)}
 		{shouldLoadAnalytics && analyticsConfig.fathomSiteId && (
-			<Fathom id={analyticsConfig.fathomSiteId} />
+			<Fathom site={analyticsConfig.fathomSiteId} />
 		)}
+
 		{shouldLoadAnalytics && analyticsConfig.simpleAnalyticsDomain && (
 			<SimpleAnalytics domain={analyticsConfig.simpleAnalyticsDomain} />
 		)}
 		{shouldLoadAnalytics && analyticsConfig.matomo && (
-			<Matomo siteId={analyticsConfig.matomo.siteId} src={analyticsConfig.matomo.src} />
+			<Matomo id={analyticsConfig.matomo.siteId} url={analyticsConfig.matomo.src} />
 		)}
+
 		{shouldLoadAnalytics && analyticsConfig.amplitudeApiKey && (
 			<Amplitude apiKey={analyticsConfig.amplitudeApiKey} />
 		)}
