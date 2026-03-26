@@ -667,11 +667,11 @@ const stripOnloadAnimations = () => {
 		if (!(el instanceof HTMLElement)) return;
 		el.addEventListener('animationend', finalize, { once: true });
 
-		const computed = window.getComputedStyle(el);
-		if (computed.animationDuration === '0s' || computed.animationName === 'none') {
+		if (el.getAnimations().length === 0) {
 			finalize();
 		}
 	});
+
 };
 
 window.stripOnloadAnimations = stripOnloadAnimations;
@@ -764,9 +764,13 @@ function onTransitionStart() {
 	if (bar) {
 		bar.classList.remove('is-loading', 'is-finishing', 'is-done');
 		bar.style.width = '0';
-		void bar.offsetWidth; // force reflow to restart animation
+		bar.style.animation = 'none';
 		bar.classList.add('is-loading');
+		requestAnimationFrame(() => {
+			bar.style.removeProperty('animation');
+		});
 	}
+
 
 	// Remove the delay for the first time page load
 	document.documentElement.style.setProperty('--content-delay', '0ms');
@@ -957,12 +961,19 @@ function setupTransitionHandlers() {
 		// transition:persist detaches/reattaches the element, which restarts CSS
 		// animations. By capturing the computed width and setting it as an inline
 		// style with animation:none, the bar stays at the correct position.
-		const bar = document.getElementById('swup-progress-bar');
-		if (bar && bar.classList.contains('is-loading')) {
-			bar.style.width = getComputedStyle(bar).width;
-			bar.style.animation = 'none';
-			bar.style.opacity = '1';
-		}
+	const bar = document.getElementById('swup-progress-bar');
+	if (bar && bar.classList.contains('is-loading')) {
+		const activeAnimation = bar.getAnimations()[0];
+		const timing = activeAnimation?.effect?.getComputedTiming();
+		const progress = typeof timing?.progress === 'number' ? timing.progress : null;
+		const frozenWidth = progress !== null
+			? `${Math.max(0, Math.min(95, progress * 95))}%`
+			: '60%';
+		bar.style.width = frozenWidth;
+		bar.style.animation = 'none';
+		bar.style.opacity = '1';
+	}
+
 
 		const newDoc = event.newDocument;
 		if (newDoc && newDoc.documentElement) {
