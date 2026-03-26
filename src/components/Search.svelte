@@ -55,9 +55,18 @@ const fakeResult: SearchResult[] = [
 	},
 ];
 
+const setSearchExpanded = (expanded: boolean): void => {
+	const trigger = document.getElementById("search-switch");
+	if (trigger) {
+		trigger.setAttribute("aria-expanded", String(expanded));
+	}
+};
+
 const togglePanel = () => {
 	const panel = document.getElementById("search-panel");
-	panel?.classList.toggle("float-panel-closed");
+	if (!panel) return;
+	panel.classList.toggle("float-panel-closed");
+	setSearchExpanded(!panel.classList.contains("float-panel-closed"));
 };
 
 const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
@@ -69,6 +78,7 @@ const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
 	} else {
 		panel.classList.add("float-panel-closed");
 	}
+	setSearchExpanded(show);
 };
 
 const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
@@ -103,7 +113,6 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 			searchResults = fakeResult;
 		} else {
 			searchResults = [];
-			console.error("Pagefind is not available in production environment.");
 		}
 
 		// Final check before updating results
@@ -183,6 +192,7 @@ onMount(() => {
 	}
 
 	if (mobileButton) {
+		setSearchExpanded(false);
 		mobileButton.onclick = togglePanel;
 	}
 });

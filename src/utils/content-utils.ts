@@ -139,7 +139,7 @@ export async function getTagList(): Promise<Tag[]> {
 	const countMap: { [key: string]: number } = {};
 	allBlogPosts.forEach((post: { data: { tags: string[] } }) => {
 		post.data.tags.forEach((tag: string) => {
-			const normalizedKey = tag.trim().toLowerCase();
+			const normalizedKey = normalizeMappingKey(tag);
 			if (!countMap[normalizedKey]) countMap[normalizedKey] = 0;
 			countMap[normalizedKey]++;
 		});
@@ -168,10 +168,7 @@ export async function getCategoryList(): Promise<Category[]> {
 			return;
 		}
 
-		const normalizedKey =
-			typeof post.data.category === "string"
-				? post.data.category.trim().toLowerCase()
-				: String(post.data.category).trim().toLowerCase();
+		const normalizedKey = normalizeMappingKey(String(post.data.category));
 
 		count[normalizedKey] = count[normalizedKey] ? count[normalizedKey] + 1 : 1;
 	});

@@ -51,21 +51,31 @@ const getPageUrl = (p: number) => {
 };
 ---
 
-<div class:list={[className, "flex flex-row gap-3 justify-center"]} style={style}>
-    <a href={page.url.prev || ""} aria-label={page.url.prev ? "Previous Page" : null}
-       class:list={["btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11",
-           {"disabled": page.url.prev == undefined}
-       ]}
-    >
-        <Icon name="material-symbols:chevron-left-rounded" class="text-[1.75rem]"></Icon>
-    </a>
+<nav class:list={[className, "flex flex-row gap-3 justify-center"]} style={style} aria-label="Pagination">
+    {page.url.prev ? (
+        <a
+            href={page.url.prev}
+            aria-label="Previous page"
+            class="btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11"
+        >
+            <Icon name="material-symbols:chevron-left-rounded" class="text-[1.75rem]"></Icon>
+        </a>
+    ) : (
+        <span
+            aria-hidden="true"
+            class="btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11 disabled"
+        >
+            <Icon name="material-symbols:chevron-left-rounded" class="text-[1.75rem]"></Icon>
+        </span>
+    )}
     <div class="bg-[var(--card-bg)] flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold">
         {pages.map((p) => {
             if (p == HIDDEN)
-                return <Icon name="material-symbols:more-horiz" class="mx-1"/>;
+                return <Icon name="material-symbols:more-horiz" class="mx-1" aria-hidden="true"/>;
             if (p == page.currentPage)
                 return <div class="h-11 w-11 rounded-lg bg-[var(--primary)] flex items-center justify-center
                     font-bold text-white dark:text-black/70"
+                    aria-current="page"
                 >
                     {p}
                 </div>
@@ -74,11 +84,20 @@ const getPageUrl = (p: number) => {
             >{p}</a>
         })}
     </div>
-    <a href={page.url.next || ""} aria-label={page.url.next ? "Next Page" : null}
-       class:list={["btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11",
-           {"disabled": page.url.next == undefined}
-       ]}
-    >
-        <Icon name="material-symbols:chevron-right-rounded" class="text-[1.75rem]"></Icon>
-    </a>
-</div>
+    {page.url.next ? (
+        <a
+            href={page.url.next}
+            aria-label="Next page"
+            class="btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11"
+        >
+            <Icon name="material-symbols:chevron-right-rounded" class="text-[1.75rem]"></Icon>
+        </a>
+    ) : (
+        <span
+            aria-hidden="true"
+            class="btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11 disabled"
+        >
+            <Icon name="material-symbols:chevron-right-rounded" class="text-[1.75rem]"></Icon>
+        </span>
+    )}
+</nav>

@@ -27,6 +27,13 @@ A modern, high-performance static blog theme built with **Astro 6** + **Svelte 5
 - **Security Hardened** - All external links include `rel="noopener noreferrer"`
 - **Code Hygiene** - Removed unused props/files/dependencies and reduced debug log noise (no functional behavior change)
 
+### Maintenance Notes (Unreleased)
+
+- Internal cleanup only: no configuration item changes and no feature behavior changes.
+- Taxonomy normalization is unified through shared utilities for tag/category slug matching consistency.
+- Suggested regression checks: `/tags/[tag]`, `/categories/[category]`, search panel behavior, and page transitions (View Transitions + Swup fallback).
+
+
 ## Quick Start
 
 ```bash

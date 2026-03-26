@@ -115,7 +115,6 @@ export function GithubFileCardComponent(properties, children) {
         const fileSizeEl = document.getElementById('${cardUuid}-filesize');
         const updatedEl = document.getElementById('${cardUuid}-updated');
         if (!cardEl || !avatarEl || !fileTypeEl || !fileSizeEl || !updatedEl) {
-          console.warn("[GITHUB-FILE-CARD] Missing card elements for ${repo} | ${cardUuid}.");
           return;
         }
 
@@ -150,9 +149,7 @@ export function GithubFileCardComponent(properties, children) {
             avatarEl.style.backgroundImage = 'url(' + avatarUrl + ')';
             avatarEl.style.backgroundColor = 'transparent';
           })
-          .catch(() => {
-            console.warn("[GITHUB-FILE-CARD] (Error) Loading avatar for ${repo} | ${cardUuid}.");
-          });
+          .catch(() => {});
 
         const contentsFetch = fetch('${contentsUrl}', { referrerPolicy: "no-referrer" })
           .then(response => response.json())
@@ -161,7 +158,6 @@ export function GithubFileCardComponent(properties, children) {
           })
           .catch(() => {
             fileSizeEl.innerText = "unknown";
-            console.warn("[GITHUB-FILE-CARD] (Error) Loading file size for ${repo} | ${cardUuid}.");
           });
 
         const commitsFetch = fetch('${commitsUrl}', { referrerPolicy: "no-referrer" })
@@ -172,7 +168,6 @@ export function GithubFileCardComponent(properties, children) {
           })
           .catch(() => {
             updatedEl.innerText = "unknown";
-            console.warn("[GITHUB-FILE-CARD] (Error) Loading commit date for ${repo} | ${cardUuid}.");
           });
 
         Promise.allSettled([repoFetch, contentsFetch, commitsFetch]).then(() => {

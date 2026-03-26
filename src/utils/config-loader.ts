@@ -1,6 +1,6 @@
 import { parse } from "smol-toml";
 import { getEnvBoolean, getEnvString, getEnvStringFromKeys } from "./env";
-import { LinkPreset, type Config } from "../types/config";
+import { LinkPreset, type Config, type LinkPresetType, type NavBarLink } from "../types/config";
 
 /**
  * Legacy EnvConfig type for backward compatibility
@@ -477,22 +477,22 @@ const getStringArray = (value: unknown, fallback: string[]): string[] => {
  */
 const validateNavBarLinks = (
 	links: unknown,
-	fallback: Array<{ name: string; url: string; external?: boolean } | number>
-): Array<{ name: string; url: string; external?: boolean } | number> => {
+	fallback: Array<NavBarLink | LinkPresetType>
+): Array<NavBarLink | LinkPresetType> => {
 	if (!Array.isArray(links) || links.length === 0) return fallback;
 	
-	const result: Array<{ name: string; url: string; external?: boolean } | number> = [];
+	const result: Array<NavBarLink | LinkPresetType> = [];
 	
 	for (const link of links) {
 		if (typeof link !== "object" || link === null) continue;
 		
 		// Preset link: { preset: "Home" | "Archive" | "About" | "Friends" }
 		if ("preset" in link && typeof link.preset === "string") {
-			const presetMap: Record<string, number> = {
-				"Home": 0,
-				"Archive": 1,
-				"About": 2,
-				"Friends": 3,
+			const presetMap: Record<string, LinkPresetType> = {
+				"Home": LinkPreset.Home,
+				"Archive": LinkPreset.Archive,
+				"About": LinkPreset.About,
+				"Friends": LinkPreset.Friends,
 			};
 			
 			const presetValue = presetMap[link.preset];
@@ -736,11 +736,11 @@ export const loadConfig = (): Config => {
 			amplitudeApiKey: getString(analytics?.amplitudeApiKey, DEFAULT_CONFIG.analytics.amplitudeApiKey || ""),
 			umami: analytics?.umami?.id ? {
 				id: getString(analytics.umami.id, ""),
-				src: getString(analytics.umami.src, undefined),
+				src: getString(analytics.umami.src, ""),
 			} : DEFAULT_CONFIG.analytics.umami,
 			plausible: analytics?.plausible?.domain ? {
 				domain: getString(analytics.plausible.domain, ""),
-				src: getString(analytics.plausible.src, undefined),
+				src: getString(analytics.plausible.src, ""),
 			} : DEFAULT_CONFIG.analytics.plausible,
 			matomo: analytics?.matomo?.siteId && analytics?.matomo?.src ? {
 				siteId: getString(analytics.matomo.siteId, ""),
