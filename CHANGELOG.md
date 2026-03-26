@@ -68,6 +68,98 @@ If you were using environment variables for non-sensitive data:
 
 ## [0.1.0] - 2026-03-25
 
+### Fixed
+
+- Improved accessibility semantics for key interactive components:
+  - Refactored `ButtonLink` to avoid nested interactive elements.
+  - Updated `Pagination` with proper navigation semantics and non-clickable disabled states.
+  - Added ARIA state/controls wiring for widget expand actions and navbar panels.
+  - Synchronized search panel trigger `aria-expanded` state with actual panel visibility.
+
+### Changed
+
+- Optimized hero banner image delivery for better mobile LCP:
+  - Extended `ImageWrapper` to support `loading`, `decoding`, `fetchpriority`, and `sizes`.
+  - Prioritized homepage banner with eager/high-priority loading strategy.
+  - Removed initial banner hidden/scale state that could delay LCP visibility.
+- Reduced main-thread contention and CLS risk during first render:
+  - Deferred Pagefind initialization to idle time with fallback scheduling.
+  - Removed unnecessary `#top-row` height transition in banner layout.
+- Removed Partytown script wrapping for custom head/footer scripts to avoid deprecated sandbox warnings in Lighthouse best-practices audits.
+- Unified taxonomy slug normalization by reusing `normalizeMappingKey` in tags/categories routes and content utility paths.
+- Reduced non-critical console noise in UI/plugin runtime paths (kept critical error logging for transition/search failures).
+
+### Notes
+
+- No functional behavior or configuration schema changes in this cleanup round.
+- Risk focus: taxonomy slug normalization consistency (`tag`/`category` matching and `uncategorized` handling).
+- Regression checklist: verify `/tags/[tag]`, `/categories/[category]`, search panel, and page transitions in both View Transition and Swup fallback modes.
+
+
+## [0.2.0] - 2026-03-26
+
+
+### Added
+
+- **Full TOML Configuration Support**: All configuration fields can now be set via `kirari.config.toml`
+  - Complete `site` module (url, title, subtitle, base, lang, themeColor, banner, toc, favicon)
+  - Complete `profile` module (avatar, name, bio, links)
+  - Complete `navBar` module with preset and custom link support
+  - Complete `license`, `expressiveCode`, `mermaid`, `head`, `footer` modules
+  - Complete `llms` and `og` modules
+  - Enhanced `analytics` and `seo` module coverage
+- **Type Guards and Validators**: Runtime validation for all configuration fields
+  - `getNumber()`: Validates numeric fields (hue, toc depth)
+  - `getStringArray()`: Validates string arrays (expressiveCode themes)
+  - `validateNavBarLinks()`: Validates navigation links with preset support
+  - `validateProfileLinks()`: Validates profile social links
+  - `validateFavicons()`: Validates favicon configurations
+- **Comprehensive JSDoc Comments**: All configuration files now have bilingual documentation
+  - `src/utils/env.ts`: Environment variable reader functions
+  - `src/utils/config-loader.ts`: Configuration loading and validation logic
+  - `TomlConfig` type: Field-level documentation for all TOML options
+
+### Changed
+
+- **Configuration Priority**: TOML is now the primary configuration method
+  - Old priority: `src/constants.ts` hardcoded values → limited TOML support
+  - New priority: Environment Variables → `kirari.config.toml` → Default values
+- **`src/constants.ts` Refactored**: Now loads configuration via `loadConfig()` instead of hardcoding
+  - Removed all inline configuration values
+  - Configuration now fully controlled by TOML file
+  - Reduced from ~150 lines to ~16 lines
+- **Documentation Overhaul**: README and README_CN completely rewritten
+  - TOML configuration is now the recommended approach
+  - Environment variables are now only recommended for sensitive data
+  - Added comprehensive TOML examples with all fields
+- **TOML Example Enhanced**: `kirari.config.toml` now includes:
+  - All configuration fields with examples
+  - Bilingual (English/Chinese) comments for every field
+  - Type annotations and usage guidelines
+  - Array field examples (navBar.links, profile.links, favicon)
+
+### Migration Guide
+
+**From v0.1.0 to v0.2.0:**
+
+If you were using `src/constants.ts` for configuration:
+
+1. Copy your configuration values to `kirari.config.toml`
+2. See the updated `kirari.config.toml` for field names and structure
+3. Environment variables still work with the same names
+
+If you were using environment variables for non-sensitive data:
+
+1. Consider moving non-sensitive config to `kirari.config.toml` for better readability
+2. Keep sensitive data (analytics IDs, API keys) in environment variables
+3. Both approaches work - choose based on your deployment needs
+
+**No breaking changes**: All existing environment variables and TOML configurations continue to work.
+
+---
+
+## [0.1.0] - 2026-03-25
+
 ### Added
 
 - Integrated `astro-analytics` plugin supporting multiple analytics services:

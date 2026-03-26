@@ -295,7 +295,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 			<Fragment set:html={headConfig.customHtml} />
 		)}
 		{headConfig.customScript && (
-			<script type="text/partytown" is:inline set:html={headConfig.customScript} />
+			<script is:inline set:html={headConfig.customScript} />
 		)}
 		{/* Analytics - only loaded in production when enable is true */}
 		{shouldLoadAnalytics && analyticsConfig.googleAnalyticsId && (
@@ -317,14 +317,16 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 			</script>
 		)}
 		{shouldLoadAnalytics && analyticsConfig.fathomSiteId && (
-			<Fathom id={analyticsConfig.fathomSiteId} />
+			<Fathom site={analyticsConfig.fathomSiteId} />
 		)}
+
 		{shouldLoadAnalytics && analyticsConfig.simpleAnalyticsDomain && (
 			<SimpleAnalytics domain={analyticsConfig.simpleAnalyticsDomain} />
 		)}
 		{shouldLoadAnalytics && analyticsConfig.matomo && (
-			<Matomo siteId={analyticsConfig.matomo.siteId} src={analyticsConfig.matomo.src} />
+			<Matomo id={analyticsConfig.matomo.siteId} url={analyticsConfig.matomo.src} />
 		)}
+
 		{shouldLoadAnalytics && analyticsConfig.amplitudeApiKey && (
 			<Amplitude apiKey={analyticsConfig.amplitudeApiKey} />
 		)}
@@ -447,7 +449,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 	@apply translate-y-[var(--banner-height-extend)];
 }
 .enable-banner #top-row {
-	@apply h-[calc(var(--banner-height-home)_-_4.5rem)] transition-all duration-300;
+	@apply h-[calc(var(--banner-height-home)_-_4.5rem)];
 }
 .enable-banner.is-home #sidebar-sticky {
 	@apply top-[calc(1rem_-_var(--banner-height-extend))];
@@ -506,13 +508,11 @@ setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-sw
 
 
 function loadTheme() {
-	// console.error('loadTheme CALLED! Stack:', new Error().stack);
 	const theme = getStoredTheme()
 	setTheme(theme)
 }
 
 function loadHue() {
-	// console.error('loadHue CALLED! Stack:', new Error().stack);
 	setHue(getHue())
 }
 
