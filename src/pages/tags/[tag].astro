@@ -7,6 +7,7 @@ import {
 	getSortedPostsList,
 	getTaxonomyDisplayMappings,
 } from "@utils/content-utils";
+import { normalizeMappingKey } from "@utils/normalize";
 import { getTagName } from "@utils/url-utils";
 
 
@@ -15,7 +16,7 @@ export async function getStaticPaths() {
 	const allTags = new Set<string>();
 	posts.forEach((post) => {
 		post.data.tags.forEach((tag) => {
-			allTags.add(tag.trim().toLowerCase());
+			allTags.add(normalizeMappingKey(tag));
 		});
 	});
 
@@ -30,9 +31,9 @@ const { tag } = Astro.params as { tag: string };
 
 const posts = await getSortedPostsList();
 const { tags: tagDisplayMap } = await getTaxonomyDisplayMappings();
-const normalizedTag = tag.toLowerCase();
+const normalizedTag = normalizeMappingKey(tag);
 const filteredPosts = posts.filter((p) =>
-	p.data.tags.some((t) => t.trim().toLowerCase() === normalizedTag)
+	p.data.tags.some((t) => normalizeMappingKey(t) === normalizedTag)
 );
 const tagName = getTagName(tag, tagDisplayMap);
 

@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Deferred Pagefind initialization to idle time with fallback scheduling.
   - Removed unnecessary `#top-row` height transition in banner layout.
 - Removed Partytown script wrapping for custom head/footer scripts to avoid deprecated sandbox warnings in Lighthouse best-practices audits.
+- Unified taxonomy slug normalization by reusing `normalizeMappingKey` in tags/categories routes and content utility paths.
+- Reduced non-critical console noise in UI/plugin runtime paths (kept critical error logging for transition/search failures).
+
+### Notes
+
+- No functional behavior or configuration schema changes in this cleanup round.
+- Risk focus: taxonomy slug normalization consistency (`tag`/`category` matching and `uncategorized` handling).
+- Regression checklist: verify `/tags/[tag]`, `/categories/[category]`, search panel, and page transitions in both View Transition and Swup fallback modes.
+
 
 ## [0.2.0] - 2026-03-26
 

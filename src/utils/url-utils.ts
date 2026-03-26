@@ -22,17 +22,17 @@ export function getPostUrlBySlug(slug: string): string {
 }
 
 export function getTagUrl(tag: string): string {
-	return url(`/tags/${tag.trim().toLowerCase()}/`);
+	return url(`/tags/${normalizeMappingKey(tag)}/`);
 }
 
 export function getCategoryUrl(category: string | null): string {
 	if (
 		!category ||
-		category.trim() === "" ||
-		category.trim().toLowerCase() === i18n(I18nKey.uncategorized).toLowerCase()
+		normalizeMappingKey(category) === "" ||
+		normalizeMappingKey(category) === normalizeMappingKey(i18n(I18nKey.uncategorized))
 	)
 		return url("/categories/uncategorized/");
-	return url(`/categories/${category.trim().toLowerCase()}/`);
+	return url(`/categories/${normalizeMappingKey(category)}/`);
 }
 
 export function getTagName(
