@@ -31,7 +31,7 @@ const themeIcons = [
     <div class:list={[
         className,
         "card-base !overflow-visible max-w-[var(--page-width)] h-[4.5rem] !rounded-t-none mx-auto flex items-center justify-between px-4"]}>
-        <a href={url('/')} class="btn-plain scale-animation rounded-lg h-[3.25rem] px-5 font-bold active:scale-95">
+        <a href={url('/')} aria-label="Home" class="btn-plain scale-animation rounded-lg h-[3.25rem] px-5 font-bold active:scale-95">
             <div class="flex flex-row text-[var(--primary)] items-center text-md">
                 <Icon name="material-symbols:home-outline-rounded" class="text-[1.75rem] mb-1 mr-2" />
                 {siteConfig.title}
@@ -39,7 +39,8 @@ const themeIcons = [
         </a>
         <div class="hidden md:flex">
             {links.map((l) => {
-                return <a aria-label={l.name} href={l.external ? l.url : url(l.url)} target={l.external ? "_blank" : null}
+                return <a href={l.external ? l.url : url(l.url)} target={l.external ? "_blank" : null}
+                          aria-label={l.name}
                           class="btn-plain scale-animation rounded-lg h-11 font-bold px-5 active:scale-95"
                 >
                     <div class="flex items-center">
@@ -56,27 +57,27 @@ const themeIcons = [
                 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
             ">
                 <Icon name="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30" />
-                <input id="search-input-desktop" placeholder="Search"
+                <input id="search-input-desktop" placeholder="Search" aria-label="Search"
                     class="transition-all pl-10 text-sm bg-transparent outline-0
                     h-full w-40 active:w-60 focus:w-60 text-black/50 dark:text-white/50"
                 />
             </div>
 
             <!-- Search toggle button for mobile - instant display -->
-            <button aria-label="Search Panel" id="search-switch"
+            <button type="button" aria-label="Search panel" id="search-switch" aria-controls="search-panel" aria-expanded="false" aria-haspopup="dialog"
                 class="btn-plain scale-animation lg:!hidden rounded-lg w-11 h-11 active:scale-90">
                 <Icon name="material-symbols:search" class="text-[1.25rem]" />
             </button>
 
             <Search client:idle></Search>
             {!siteConfig.themeColor.fixed && (
-                    <button aria-label="Display Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
+                    <button type="button" aria-label="Display settings" aria-controls="display-setting" aria-expanded="false" aria-haspopup="dialog" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
                         <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
                     </button>
             )}
             <!-- z-50 make the panel higher than other float panels -->
             <div class="relative z-50" id="theme-switch-wrapper">
-                <button aria-label="Light/Dark Mode" class="relative btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="scheme-switch">
+                <button type="button" aria-label="Light or dark mode" aria-controls="light-dark-panel" aria-haspopup="menu" class="relative btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="scheme-switch">
                     {themeIcons.map(({ mode, icon }) => (
                         <div class={`absolute theme-icon-${mode}`}>
                             <Icon name={icon} class="text-[1.25rem]" />
@@ -85,7 +86,7 @@ const themeIcons = [
                 </button>
                 <LightDarkSwitch client:idle></LightDarkSwitch>
             </div>
-            <button aria-label="Menu" name="Nav Menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
+            <button type="button" aria-label="Menu" name="Nav Menu" aria-controls="nav-menu-panel" aria-expanded="false" aria-haspopup="menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
                 <Icon name="material-symbols:menu-rounded" class="text-[1.25rem]"></Icon>
             </button>
         </div>
@@ -95,27 +96,26 @@ const themeIcons = [
 </div>
 
 <script>
+function setExpandedState(button: HTMLElement | null, panel: HTMLElement | null) {
+	if (!button || !panel) return;
+	button.setAttribute("aria-expanded", String(!panel.classList.contains("float-panel-closed")));
+}
+
+function bindPanelToggle(buttonId: string, panelId: string) {
+	const button = document.getElementById(buttonId);
+	const panel = document.getElementById(panelId);
+	if (!button || !panel) return;
+
+	setExpandedState(button, panel);
+	button.onclick = function () {
+		panel.classList.toggle("float-panel-closed");
+		setExpandedState(button, panel);
+	};
+}
 
 function loadButtonScript() {
-    let settingBtn = document.getElementById("display-settings-switch");
-    if (settingBtn) {
-        settingBtn.onclick = function () {
-            let settingPanel = document.getElementById("display-setting");
-            if (settingPanel) {
-                settingPanel.classList.toggle("float-panel-closed");
-            }
-        };
-    }
-
-    let menuBtn = document.getElementById("nav-menu-switch");
-    if (menuBtn) {
-        menuBtn.onclick = function () {
-            let menuPanel = document.getElementById("nav-menu-panel");
-            if (menuPanel) {
-                menuPanel.classList.toggle("float-panel-closed");
-            }
-        };
-    }
+	bindPanelToggle("display-settings-switch", "display-setting");
+	bindPanelToggle("nav-menu-switch", "nav-menu-panel");
 }
 
 // Make function globally accessible for re-initialization after page transitions
