@@ -42,7 +42,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "6.0.8",
-    "astro-analytics": "https://github.com/markd3ng/astro-analytics.git",
+    "astro-analytics": "github:markd3ng/astro-analytics",
     "astro-expressive-code": "^0.41.7",
     "astro-icon": "^1.1.5",
     "astro-indexnow": "^1.0.1",

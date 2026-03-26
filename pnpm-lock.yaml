@@ -69,8 +69,8 @@ importers:
         specifier: 6.0.8
         version: 6.0.8(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.60.0)(sass@1.80.4)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.3)(yaml@2.8.2)
       astro-analytics:
-        specifier: https://github.com/markd3ng/astro-analytics.git
-        version: git+https://git@github.com:markd3ng/astro-analytics.git#e68250f70927131d142f5010be86cbfd3653b359
+        specifier: github:markd3ng/astro-analytics
+        version: https://codeload.github.com/markd3ng/astro-analytics/tar.gz/e68250f70927131d142f5010be86cbfd3653b359
       astro-expressive-code:
         specifier: ^0.41.7
         version: 0.41.7(astro@6.0.8(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.60.0)(sass@1.80.4)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.3)(yaml@2.8.2))
@@ -1493,8 +1493,8 @@ packages:
     resolution: {integrity: sha512-LElXdjswlqjWrPpJFg1Fx4wpkOCxj1TDHlSV4PlaRxHGWko024xICaa97ZkMfs6DRKlCguiAI+rbXv5GWwXIkg==}
     hasBin: true
 
-  astro-analytics@git+https://git@github.com:markd3ng/astro-analytics.git#e68250f70927131d142f5010be86cbfd3653b359:
-    resolution: {commit: e68250f70927131d142f5010be86cbfd3653b359, repo: git@github.com:markd3ng/astro-analytics.git, type: git}
+  astro-analytics@https://codeload.github.com/markd3ng/astro-analytics/tar.gz/e68250f70927131d142f5010be86cbfd3653b359:
+    resolution: {tarball: https://codeload.github.com/markd3ng/astro-analytics/tar.gz/e68250f70927131d142f5010be86cbfd3653b359}
     version: 2.7.0
 
   astro-expressive-code@0.41.7:
@@ -5111,7 +5111,7 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro-analytics@git+https://git@github.com:markd3ng/astro-analytics.git#e68250f70927131d142f5010be86cbfd3653b359: {}
+  astro-analytics@https://codeload.github.com/markd3ng/astro-analytics/tar.gz/e68250f70927131d142f5010be86cbfd3653b359: {}
 
   astro-expressive-code@0.41.7(astro@6.0.8(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.60.0)(sass@1.80.4)(stylus@0.64.0)(terser@5.43.1)(typescript@5.9.3)(yaml@2.8.2)):
     dependencies:
