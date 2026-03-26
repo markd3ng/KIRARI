@@ -24,18 +24,73 @@ export type EnvConfig = {
 	indexNowKey: string;
 };
 
+/**
+ * TOML configuration type definition
+ * TOML 配置类型定义
+ * 
+ * All fields are typed as `unknown` to allow runtime validation
+ * 所有字段都使用 `unknown` 类型以支持运行时验证
+ */
 type TomlConfig = {
 	site?: {
 		url?: unknown;
 		title?: unknown;
 		subtitle?: unknown;
+		base?: unknown;
+		lang?: unknown;
+		themeColor?: {
+			hue?: unknown;
+			fixed?: unknown;
+		};
 		banner?: {
+			enable?: unknown;
+			src?: unknown;
+			position?: unknown;
 			credit?: {
 				enable?: unknown;
 				text?: unknown;
 				url?: unknown;
 			};
 		};
+		toc?: {
+			enable?: unknown;
+			depth?: unknown;
+		};
+		favicon?: unknown; // Array type, will be validated at runtime
+	};
+	navBar?: {
+		links?: unknown; // Array type, will be validated at runtime
+	};
+	profile?: {
+		avatar?: unknown;
+		name?: unknown;
+		bio?: unknown;
+		links?: unknown; // Array type, will be validated at runtime
+	};
+	license?: {
+		enable?: unknown;
+		name?: unknown;
+		url?: unknown;
+	};
+	expressiveCode?: {
+		themes?: unknown; // Array type, will be validated at runtime
+	};
+	mermaid?: {
+		enable?: unknown;
+	};
+	head?: {
+		verification?: {
+			google?: unknown;
+			bing?: unknown;
+			yandex?: unknown;
+			naver?: unknown;
+		};
+		customHtml?: unknown;
+		customScript?: unknown;
+	};
+	footer?: {
+		customHtml?: unknown;
+		customScript?: unknown;
 	};
 	analytics?: {
 		enable?: unknown;
@@ -56,6 +111,16 @@ type TomlConfig = {
 			siteId?: unknown;
 			src?: unknown;
 		};
+	};
+	llms?: {
+		enable?: unknown;
+		sitemap?: unknown;
+		title?: unknown;
+		description?: unknown;
+		i18n?: unknown;
+	};
+	og?: {
+		defaultImage?: unknown;
 	};
 	seo?: {
 		indexNow?: unknown;
