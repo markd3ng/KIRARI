@@ -1,37 +1,452 @@
-# Optional TOML configuration for KIRARI.
-# Priority: Environment Variables > kirari.config.toml > src/constants.ts defaults.
-# Keep secrets in environment variables, not in this file.
+# =============================================================================
+# KIRARI Configuration File / KIRARI 配置文件
+# =============================================================================
+# 
+# Priority / 优先级: 
+#   Environment Variables > kirari.config.toml > src/constants.ts defaults
+#   环境变量 > kirari.config.toml > src/constants.ts 默认值
+# 
+# Guidelines / 使用建议:
+#   - Non-sensitive values go here / 非敏感配置项写在这里
+#   - Secrets (API keys) should use environment variables / 敏感信息（API 密钥等）请使用环境变量
+#   - Commented fields show default values / 被注释的字段展示的是默认值
+#   - Uncomment and modify as needed / 按需取消注释并修改
+# 
+# =============================================================================
 
+# -----------------------------------------------------------------------------
+# Site Configuration / 站点配置
+# -----------------------------------------------------------------------------
 [site]
+# Site URL, used for sitemap and SEO / 站点 URL，用于站点地图和 SEO
+# Type: string / 类型: 字符串
+# Example / 示例: "https://your-domain.com"
 # url = "https://your-domain.com"
+
+# Site title / 站点标题
+# Type: string / 类型: 字符串
 # title = "KIRARI"
+
+# Site subtitle / 站点副标题
+# Type: string / 类型: 字符串
 # subtitle = "Demo Site"
 
+# Base path for subdirectory hosting / 子目录部署的基础路径
+# Type: string / 类型: 字符串
+# Example / 示例: "/blog" for https://your-domain.com/blog
+# base = "/"
+
+# Language code / 语言代码
+# Type: string / 类型: 字符串
+# Options / 可选值: en, zh_CN, zh_TW, ja, ko, es, th, vi, tr, id
+# lang = "en"
+
+# Theme color configuration / 主题色配置
+[site.themeColor]
+# Hue value for theme color (0-360) / 主题色色相值（0-360）
+# Type: number / 类型: 数字
+# Examples / 示例: red=0, teal=200, cyan=250, pink=345
+# hue = 250
+
+# Hide theme color picker from visitors / 对访客隐藏主题色选择器
+# Type: boolean / 类型: 布尔值
+# fixed = false
+
+# Banner configuration / 横幅配置
+[site.banner]
+# Enable banner image display / 启用横幅图片显示
+# Type: boolean / 类型: 布尔值
+# enable = true
+
+# Banner image path / 横幅图片路径
+# Type: string / 类型: 字符串
+# Note: Relative to /src directory, or /public if starts with '/'
+# 注意: 相对于 /src 目录，若以 '/' 开头则相对于 /public 目录
+# src = "assets/images/demo-banner.png"
+
+# Image position (CSS object-position) / 图片位置（对应 CSS object-position）
+# Type: string / 类型: 字符串
+# Options / 可选值: 'top', 'center', 'bottom'
+# position = "center"
+
+# Banner credit configuration / 横幅署名配置
 [site.banner.credit]
+# Display credit text for banner image / 显示横幅图片的署名文字
+# Type: boolean / 类型: 布尔值
 # enable = false
+
+# Credit text to display / 要显示的署名文字
+# Type: string / 类型: 字符串
 # text = ""
+
+# Credit link URL (optional) / 署名链接 URL（可选）
+# Type: string / 类型: 字符串
+# Example / 示例: Link to original artwork or artist's page
 # url = ""
 
+# Table of contents configuration / 目录配置
+[site.toc]
+# Enable table of contents on posts / 在文章页面启用目录
+# Type: boolean / 类型: 布尔值
+# enable = true
+
+# Maximum heading depth to show in TOC / 目录显示的最大标题深度
+# Type: number / 类型: 数字
+# Options / 可选值: 1, 2, 3
+# depth = 3
+
+# Favicon configuration / Favicon 配置
+# Note: Leave empty array to use default favicon / 注意: 留空数组使用默认 favicon
+# Each entry is a favicon definition / 每个条目定义一个 favicon
+[[site.favicon]]
+# Favicon path, relative to /public directory / Favicon 路径，相对于 /public 目录
+# Type: string / 类型: 字符串
+# src = "/favicon/icon.png"
+
+# Theme variant (optional) / 主题变体（可选）
+# Type: string / 类型: 字符串
+# Options / 可选值: 'light', 'dark'
+# theme = "light"
+
+# Size (optional) / 尺寸（可选）
+# Type: string / 类型: 字符串
+# sizes = "32x32"
+
+# Additional favicon example / 额外的 favicon 示例
+# [[site.favicon]]
+# src = "/favicon/icon-dark.png"
+# theme = "dark"
+# sizes = "32x32"
+
+# -----------------------------------------------------------------------------
+# Navigation Bar Configuration / 导航栏配置
+# -----------------------------------------------------------------------------
+# Each entry can be either a preset or a custom link
+# 每个条目可以是预设链接或自定义链接
+# 
+# Presets available / 可用预设:
+#   - Home / 首页
+#   - Archive / 归档
+#   - About / 关于
+#   - Friends / 友链
+#
+# Custom links support: name, url, external (optional)
+# 自定义链接支持: name（名称）, url（链接）, external（可选，是否外链）
+
+# Preset link example / 预设链接示例
+[[navBar.links]]
+preset = "Home"
+
+[[navBar.links]]
+preset = "Archive"
+
+[[navBar.links]]
+preset = "About"
+
+[[navBar.links]]
+preset = "Friends"
+
+# Custom link example / 自定义链接示例
+# [[navBar.links]]
+# name = "GitHub"
+# url = "https://github.com/saicaca/fuwari"
+# external = true  # Open in new tab / 在新标签页打开
+
+# -----------------------------------------------------------------------------
+# Profile Configuration / 个人资料配置
+# -----------------------------------------------------------------------------
+[profile]
+# Avatar image path / 头像图片路径
+# Type: string / 类型: 字符串
+# Note: Relative to /src directory, or /public if starts with '/'
+# 注意: 相对于 /src 目录，若以 '/' 开头则相对于 /public 目录
+# avatar = "assets/images/demo-avatar.png"
+
+# Display name / 显示名称
+# Type: string / 类型: 字符串
+# name = "Lorem Ipsum"
+
+# Bio text / 个人简介
+# Type: string / 类型: 字符串
+# bio = "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+
+# Profile links / 个人链接
+# Each link has: name, icon, url
+# 每个链接包含: name（名称）, icon（图标）, url（链接）
+# 
+# Icon format / 图标格式: "icon-set:icon-name"
+# Visit https://icones.js.org/ for available icons
+# 访问 https://icones.js.org/ 查看可用图标
+# You may need to install icon set: pnpm add @iconify-json/<icon-set-name>
+# 可能需要安装图标集: pnpm add @iconify-json/<图标集名称>
+
+[[profile.links]]
+name = "Twitter"
+icon = "fa6-brands:twitter"
+url = "https://twitter.com"
+
+[[profile.links]]
+name = "Steam"
+icon = "fa6-brands:steam"
+url = "https://store.steampowered.com"
+
+[[profile.links]]
+name = "GitHub"
+icon = "fa6-brands:github"
+url = "https://github.com/saicaca/fuwari"
+
+# -----------------------------------------------------------------------------
+# License Configuration / 许可证配置
+# -----------------------------------------------------------------------------
+[license]
+# Enable license display on posts / 在文章页面启用许可证显示
+# Type: boolean / 类型: 布尔值
+# enable = true
+
+# License name / 许可证名称
+# Type: string / 类型: 字符串
+# name = "CC BY-NC-SA 4.0"
+
+# License URL / 许可证链接
+# Type: string / 类型: 字符串
+# url = "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+
+# -----------------------------------------------------------------------------
+# Code Highlighting Configuration / 代码高亮配置
+# -----------------------------------------------------------------------------
+[expressiveCode]
+# Syntax highlighting themes / 语法高亮主题
+# Type: array of strings / 类型: 字符串数组
+# Note: First theme is default, second is for dimmed code blocks
+# 注意: 第一个主题为默认主题，第二个用于暗淡代码块
+# themes = ["github-dark", "github-dark-dimmed"]
+
+# -----------------------------------------------------------------------------
+# Mermaid Diagrams Configuration / Mermaid 图表配置
+# -----------------------------------------------------------------------------
+[mermaid]
+# Enable Mermaid diagram rendering / 启用 Mermaid 图表渲染
+# Type: boolean / 类型: 布尔值
+# Note: Requires `mermaid: true` in post frontmatter to render diagrams
+# 注意: 需在文章 frontmatter 中设置 `mermaid: true` 才能渲染图表
+# enable = true
+
+# -----------------------------------------------------------------------------
+# Head Configuration / Head 配置
+# -----------------------------------------------------------------------------
+# Custom content injected into <head> section
+# 注入到 <head> 部分的自定义内容
+
+[head.verification]
+# Search engine verification codes / 搜索引擎验证码
+# These are used for search console ownership verification
+# 用于搜索引擎站长平台的所有权验证
+# 
+# Google Search Console verification code / Google Search Console 验证码
+# Type: string / 类型: 字符串
+# google = ""
+
+# Bing Webmaster Tools verification code / Bing Webmaster Tools 验证码
+# Type: string / 类型: 字符串
+# bing = ""
+
+# Yandex Webmaster verification code / Yandex Webmaster 验证码
+# Type: string / 类型: 字符串
+# yandex = ""
+
+# Naver Search Advisor verification code / Naver Search Advisor 验证码
+# Type: string / 类型: 字符串
+# naver = ""
+
+[head]
+# Custom HTML injected into <head> / 注入到 <head> 的自定义 HTML
+# Type: string / 类型: 字符串
+# Use this for external CSS/JS, custom meta tags, etc.
+# 用于外部 CSS/JS、自定义 meta 标签等
+# Example / 示例: 
+#   customHtml = '<script type="text/javascript" src="https://example.com/script.js"></script>'
+# customHtml = ""
+
+# Custom JavaScript content (no <script> tags needed) / 自定义 JavaScript 内容（无需 <script> 标签）
+# Type: string / 类型: 字符串
+# Note: Auto-offloaded to Web Worker via Partytown for better performance
+# 注意: 自动通过 Partytown 卸载到 Web Worker 以获得更好性能
+# Example / 示例:
+#   customScript = `(function(c,l,a,r,i,t,y){
+#     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+#     t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+#     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+#   })(window, document, "clarity", "script", "YOUR_PROJECT_ID");`
+# customScript = ""
+
+# -----------------------------------------------------------------------------
+# Footer Configuration / Footer 配置
+# -----------------------------------------------------------------------------
+[footer]
+# Custom HTML rendered in footer / 在 footer 渲染的自定义 HTML
+# Type: string / 类型: 字符串
+# Use this for ICP filing, public security filing, badges, etc.
+# 用于 ICP 备案、公安备案、徽章等
+# Example / 示例:
+#   customHtml = '<a href="https://beian.miit.gov.cn/">京ICP备xxxxxxxx号</a>'
+# customHtml = ""
+
+# Custom JavaScript content (no <script> tags needed) / 自定义 JavaScript 内容（无需 <script> 标签）
+# Type: string / 类型: 字符串
+# Note: Auto-offloaded to Web Worker via Partytown for better performance
+# 注意: 自动通过 Partytown 卸载到 Web Worker 以获得更好性能
+# customScript = ""
+
+# -----------------------------------------------------------------------------
+# Analytics Configuration / 统计分析配置
+# -----------------------------------------------------------------------------
+# Note: Analytics scripts only load when:
+# 注意: 统计脚本仅在以下条件同时满足时加载:
+#   1. analytics.enable is true / analytics.enable 为 true
+#   2. Build/runtime is production (import.meta.env.PROD) / 构建或运行时为生产环境
+#
+# Environment variables are recommended for analytics IDs for security
+# 建议通过环境变量设置分析服务 ID 以保证安全
+# See README.md for supported environment variables
+# 查看 README.md 了解支持的环境变量
+
 [analytics]
+# Master switch for all analytics / 所有统计服务的总开关
+# Type: boolean / 类型: 布尔值
 # enable = false
+
+# Google Analytics measurement ID / Google Analytics 衡量 ID
+# Type: string / 类型: 字符串
+# Example / 示例: "G-XXXXXXXXXX"
 # googleAnalyticsId = ""
+
+# Microsoft Clarity project ID / Microsoft Clarity 项目 ID
+# Type: string / 类型: 字符串
 # clarityProjectId = ""
+
+# Fathom Analytics site ID / Fathom Analytics 站点 ID
+# Type: string / 类型: 字符串
 # fathomSiteId = ""
+
+# Simple Analytics domain / Simple Analytics 域名
+# Type: string / 类型: 字符串
 # simpleAnalyticsDomain = ""
+
+# Amplitude API key / Amplitude API 密钥
+# Type: string / 类型: 字符串
 # amplitudeApiKey = ""
 
+# Umami Analytics configuration / Umami Analytics 配置
 [analytics.umami]
+# Umami website ID / Umami 网站 ID
+# Type: string / 类型: 字符串
 # id = ""
+
+# Umami script URL (optional) / Umami 脚本 URL（可选）
+# Type: string / 类型: 字符串
+# Note: Default is https://analytics.umami.is/script.js
+# 注意: 默认为 https://analytics.umami.is/script.js
 # src = ""
 
+# Plausible Analytics configuration / Plausible Analytics 配置
 [analytics.plausible]
+# Domain to track / 要追踪的域名
+# Type: string / 类型: 字符串
 # domain = ""
+
+# Plausible script URL (optional) / Plausible 脚本 URL（可选）
+# Type: string / 类型: 字符串
+# Note: Default is https://plausible.io/js/script.js
+# 注意: 默认为 https://plausible.io/js/script.js
 # src = ""
 
+# Matomo Analytics configuration / Matomo Analytics 配置
 [analytics.matomo]
+# Matomo site ID / Matomo 站点 ID
+# Type: string / 类型: 字符串
 # siteId = ""
+
+# Matomo tracker URL (required if using Matomo) / Matomo 追踪器 URL（使用 Matomo 时必填）
+# Type: string / 类型: 字符串
+# Example / 示例: "https://your-matomo-domain.com/matomo.js"
 # src = ""
 
+# -----------------------------------------------------------------------------
+# LLMs Documentation Configuration / LLM 文档配置
+# -----------------------------------------------------------------------------
+# Generate llms.txt files for AI/LLM consumption
+# 生成供 AI/LLM 使用的 llms.txt 文件
+# 
+# Generated files / 生成的文件:
+#   - llms.txt: Main index (Markdown summary for LLMs)
+#   - llms-full.txt: Complete content in one file
+#   - llms-small.txt: Condensed version
+#   - llms-en.txt, llms-zh.txt: Language-specific files (when i18n: true)
+
+[llms]
+# Enable llms.txt generation / 启用 llms.txt 生成
+# Type: boolean / 类型: 布尔值
+# enable = true
+
+# Add llms.txt files to sitemap / 将 llms.txt 文件添加到站点地图
+# Type: boolean / 类型: 布尔值
+# sitemap = true
+
+# Site title in llms.txt / llms.txt 中的站点标题
+# Type: string / 类型: 字符串
+# title = "KIRARI"
+
+# Site description for LLMs / 供 LLM 使用的站点描述
+# Type: string / 类型: 字符串
+# description = "Documentation for KIRARI"
+
+# Generate language-specific files / 生成按语言分类的文件
+# Type: boolean / 类型: 布尔值
+# Note: Requires multi-language setup
+# 注意: 需要多语言配置
+# i18n = true
+
+# -----------------------------------------------------------------------------
+# OG Image Configuration / OG 图片配置
+# -----------------------------------------------------------------------------
+[og]
+# Default OG image path / 默认 OG 图片路径
+# Type: string / 类型: 字符串
+# Note: Used as fallback when frontmatter.og is not set
+# 注意: 当未设置 frontmatter.og 时使用此默认图片
+# 
+# Priority / 优先级: frontmatter.og > og.defaultImage
+# Example / 示例: "/og/default.png"
+# defaultImage = "/og/default.png"
+
+# -----------------------------------------------------------------------------
+# SEO Configuration / SEO 配置
+# -----------------------------------------------------------------------------
 [seo]
+# Enable IndexNow integration for instant search engine indexing
+# 启用 IndexNow 集成实现即时搜索引擎索引
+# Type: boolean / 类型: 布尔值
+# Note: IndexNow sends requests to search engines on every build
+# 注意: IndexNow 在每次构建时向搜索引擎发送请求
+# Warning: Keep disabled if you don't need instant indexing
+# 警告: 如不需要即时索引功能，建议保持关闭
 # indexNow = false
+
+# IndexNow API key / IndexNow API 密钥
+# Type: string / 类型: 字符串
+# Note: The key file is served at /{key}.txt for verification
+# 注意: 密钥文件部署在 /{key}.txt 供搜索引擎验证
+# Get your key at https://www.indexnow.org
+# 在 https://www.indexnow.org 获取你的密钥
 # indexNowKey = ""
+
+# =============================================================================
+# END OF CONFIGURATION / 配置结束
+# =============================================================================
+# 
+# For more information, see:
+# 更多信息请参考:
+#   - README.md (English)
+#   - README_CN.md (中文)
+# 
+# =============================================================================
