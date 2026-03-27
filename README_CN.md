@@ -32,6 +32,10 @@
 - 本轮仅做内部清理：不涉及配置项变更，也不改变功能行为。
 - 标签/分类 slug 规范化已统一到共享工具函数，减少匹配逻辑分叉。
 - 建议回归点：`/tags/[tag]`、`/categories/[category]`、搜索面板行为、页面过渡（View Transitions 与 Swup 降级）。
+- CLS 优化改造采用分支闸门流程（`test -> dev -> main`），每阶段需通过：`pnpm type-check`、`pnpm check`、`pnpm build` 与部署后验证。
+- Banner CLS 治理聚焦 `#banner-wrapper`：增加稳定高度兜底、收敛为 `transform/opacity` 过渡、并在移动端视口高度轻微变化时避免重复重算偏移。
+- 晋级规则：提交 `4663fe96997af868c1f0d1709a78b3647aef5f50`（Speed Insights 集成）不得进入 `dev`/`main`。
+
 
 
 ## 快速开始
