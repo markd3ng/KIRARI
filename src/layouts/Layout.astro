@@ -1111,8 +1111,7 @@ function setupTransitionHandlers() {
 
 				if (navigatingToHash) {
 					setTimeout(scrollToHash, 300);
-					setTimeout(scrollToHash, 800);
-					setTimeout(scrollToHash, 1500);
+					setTimeout(scrollToHash, 900);
 				}
 
 				navigatingToHash = '';
@@ -1219,20 +1218,39 @@ function scrollFunction() {
 window.onscroll = scrollFunction
 
 let resizeTicking = false
+let lastBannerViewportWidth = window.innerWidth
+let lastBannerViewportHeight = window.innerHeight
+let lastOrientation = window.innerWidth >= window.innerHeight ? 'landscape' : 'portrait'
 window.onresize = () => {
 	if (!resizeTicking) {
 		window.requestAnimationFrame(() => {
+			const nextHeight = window.innerHeight
+			const nextWidth = window.innerWidth
+			const widthDelta = Math.abs(nextWidth - lastBannerViewportWidth)
+			const heightDelta = Math.abs(nextHeight - lastBannerViewportHeight)
+			const nextOrientation = nextWidth >= nextHeight ? 'landscape' : 'portrait'
+			const orientationChanged = nextOrientation !== lastOrientation
+
 			// Update cached viewport dimensions
-			viewportHeight = window.innerHeight
-			viewportWidth = window.innerWidth
+			viewportHeight = nextHeight
+			viewportWidth = nextWidth
 
 			// Recalculate thresholds with new viewport dimensions
 			updateThresholds()
 
-			// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
-			let offset = Math.floor(viewportHeight * (BANNER_HEIGHT_EXTEND / 100));
-			offset = offset - offset % 4;
-			document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
+			// Ignore mobile browser UI chrome collapse/expand (height-only minor resize)
+			// to avoid shifting banner translate and causing CLS spikes.
+			const shouldRecalculateBannerOffset =
+				orientationChanged || widthDelta >= 32 || heightDelta >= 180
+
+			if (shouldRecalculateBannerOffset) {
+				let offset = Math.floor(viewportHeight * (BANNER_HEIGHT_EXTEND / 100));
+				offset = offset - offset % 4;
+				document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
+				lastBannerViewportWidth = nextWidth
+				lastBannerViewportHeight = nextHeight
+				lastOrientation = nextOrientation
+			}
 
 			resizeTicking = false
 		})
