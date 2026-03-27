@@ -32,6 +32,10 @@ A modern, high-performance static blog theme built with **Astro 6** + **Svelte 5
 - Internal cleanup only: no configuration item changes and no feature behavior changes.
 - Taxonomy normalization is unified through shared utilities for tag/category slug matching consistency.
 - Suggested regression checks: `/tags/[tag]`, `/categories/[category]`, search panel behavior, and page transitions (View Transitions + Swup fallback).
+- CLS optimization workflow is now staged by branch gates (`test -> dev -> main`) with required checks: `pnpm type-check`, `pnpm check`, `pnpm build`, and post-deploy verification.
+- Banner CLS hardening focuses on `#banner-wrapper`: stable height fallback, transform-only transition scope, and resize recalculation guards for mobile viewport chrome changes.
+- Release gate rule: do not promote commit `4663fe96997af868c1f0d1709a78b3647aef5f50` (Speed Insights integration) into `dev`/`main`.
+
 
 
 ## Quick Start

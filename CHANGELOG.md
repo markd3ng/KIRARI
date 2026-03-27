@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- CLS hardening for banner rendering and transition behavior:
+  - Limited `#banner-wrapper`/navbar transition properties to `transform` and `opacity` to avoid layout-affecting animations.
+  - Added stable `min-height` fallback for banner wrapper to reduce first-paint layout movement risk.
+  - Reduced hash-scroll retries during transitions (from 3 attempts to 2) to lower forced-scroll jitter.
+  - Added resize guard for `--banner-height-extend` recalculation so mobile browser chrome expand/collapse (height-only minor resize) does not repeatedly shift banner position.
+
+### Notes
+
+- Performance verification was executed with local Lighthouse JSON artifacts under `artifacts/psi/` because PSI API quota was exhausted in the current environment.
+- Branch promotion policy for this round requires excluding commit `4663fe96997af868c1f0d1709a78b3647aef5f50` (Vercel Speed Insights integration) from `dev` and `main`.
+
+
 ## [0.2.0] - 2026-03-26
 
 ### Added
