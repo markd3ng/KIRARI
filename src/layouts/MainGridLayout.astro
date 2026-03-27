@@ -11,6 +11,7 @@ import { siteConfig } from "../config";
 import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_EXTEND,
+	BANNER_HEIGHT_HOME,
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
 } from "../constants/constants";
 import Layout from "./Layout.astro";
@@ -68,18 +69,18 @@ const mainPanelTop = siteConfig.banner.enable
 
 <!-- Navbar -->
 <slot slot="head" name="head"></slot>
-<div id="top-row" class="z-50 pointer-events-none relative transition-all duration-700 max-w-[var(--page-width)] px-0 md:px-4 mx-auto" transition:name="navbar" transition:persist>
-    <div id="navbar-wrapper" class="pointer-events-auto sticky top-0 transition-all">
+<div id="top-row" class="z-50 pointer-events-none relative transition-[opacity,transform] duration-700 max-w-[var(--page-width)] px-0 md:px-4 mx-auto" transition:name="navbar" transition:persist>
+    <div id="navbar-wrapper" class="pointer-events-auto sticky top-0 transition-[opacity,transform]">
         <Navbar></Navbar>
     </div>
 </div>
 
 <!-- Banner -->
-{siteConfig.banner.enable && <div id="banner-wrapper" class={`absolute z-10 w-full transition duration-700 overflow-hidden`} style={`top: -${BANNER_HEIGHT_EXTEND}vh`} transition:name="banner" transition:persist>
+{siteConfig.banner.enable && <div id="banner-wrapper" class={`absolute z-10 w-full transition-[transform,opacity] duration-700 overflow-hidden`} style={`top: -${BANNER_HEIGHT_EXTEND}vh; min-height: calc(${BANNER_HEIGHT_HOME}vh + ${BANNER_HEIGHT_EXTEND}vh);`} transition:name="banner" transition:persist>
     <ImageWrapper
         id="banner"
         alt="Banner image of the blog"
-        class:list={["object-cover h-full transition duration-700"]}
+        class:list={["object-cover h-full transition-[transform,opacity] duration-700"]}
         src={siteConfig.banner.src}
 
         position={siteConfig.banner.position}
