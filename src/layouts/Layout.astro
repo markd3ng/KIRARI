@@ -439,6 +439,8 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 }
 .enable-banner #banner-wrapper {
 	@apply h-[var(--banner-height-home)];
+	min-height: calc(var(--banner-height-home) + var(--banner-height-extend, 0px));
+	contain: paint;
 }
 
 .enable-banner.is-home #banner {
