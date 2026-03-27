@@ -42,12 +42,30 @@ html.is-animating .transition-swup-fade {
     }
 }
 
-/* Main components */
+/* Fade-in without transform - for CLS-sensitive elements */
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Main components - use fade-in without transform to prevent CLS */
 .onload-animation {
     opacity: 0;
-    animation: 200ms ease-out fade-in-up;
+    animation: 200ms ease-out fade-in;
     animation-fill-mode: forwards;
 }
+
+/* Sidebar and its children need special handling for CLS */
+#sidebar,
+#sidebar .onload-animation {
+    animation: 200ms ease-out fade-in;
+    animation-fill-mode: forwards;
+}
+
 #navbar {
     animation-delay: 0ms
 }
