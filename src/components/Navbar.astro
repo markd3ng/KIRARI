@@ -105,6 +105,8 @@ function bindPanelToggle(buttonId: string, panelId: string) {
 	const button = document.getElementById(buttonId);
 	const panel = document.getElementById(panelId);
 	if (!button || !panel) return;
+	if ((button as HTMLElement).dataset.boundPanelId === panelId) return;
+	(button as HTMLElement).dataset.boundPanelId = panelId;
 
 	setExpandedState(button, panel);
 	button.onclick = function () {

@@ -85,23 +85,23 @@ html.is-animating .transition-swup-fade {
    Micro-interactions for Enhanced UX
    ============================================================ */
 
-/* Smooth transitions for interactive elements */
-a, button, .clickable {
+/* Smooth transitions for primary interactive controls */
+.btn-plain, .btn-card, .btn-regular, .clickable {
     transition: opacity 150ms ease-out, transform 150ms ease-out;
 }
 
 /* Subtle hover feedback */
-a:hover, button:hover {
+.btn-plain:hover, .btn-card:hover, .btn-regular:hover, .clickable:hover {
     opacity: 0.8;
 }
 
 /* Active state feedback */
-a:active, button:active {
+.btn-plain:active, .btn-card:active, .btn-regular:active, .clickable:active {
     transform: scale(0.98);
 }
 
 /* Focus states for accessibility */
-a:focus-visible, button:focus-visible {
+.btn-plain:focus-visible, .btn-card:focus-visible, .btn-regular:focus-visible, .clickable:focus-visible {
     outline: 2px solid oklch(0.7 0.15 var(--hue));
     outline-offset: 2px;
     border-radius: 2px;
@@ -304,8 +304,8 @@ a:focus-visible, button:focus-visible {
     }
 
     /* Disable micro-interactions */
-    a, button, .clickable,
-    .card, .panel, .btn-card, .card-base {
+    .btn-plain, .btn-card, .btn-regular, .clickable,
+    .card, .panel, .card-base {
         transition-duration: 0ms;
     }
 
@@ -316,7 +316,7 @@ a:focus-visible, button:focus-visible {
     }
 
     /* Keep only essential focus indicators */
-    a:focus-visible, button:focus-visible {
+    .btn-plain:focus-visible, .btn-card:focus-visible, .btn-regular:focus-visible, .clickable:focus-visible {
         transition: none;
     }
 }

@@ -490,23 +490,23 @@ import { transitionManager, supportsViewTransitions } from '../utils/transition-
 
 const bannerEnabled = !!document.getElementById('banner-wrapper')
 
-function setClickOutsideToClose(panel: string, ignores: string[]) {
-	document.addEventListener("click", event => {
-		let panelDom = document.getElementById(panel);
-		let tDom = event.target;
-		if (!(tDom instanceof Node)) return;		// Ensure the event target is an HTML Node
-		for (let ig of ignores) {
-			let ie = document.getElementById(ig)
-			if (ie == tDom || (ie?.contains(tDom))) {
-				return;
-			}
+const clickOutsideConfigs = [
+	{ panel: "display-setting", ignores: ["display-setting", "display-settings-switch"] },
+	{ panel: "nav-menu-panel", ignores: ["nav-menu-panel", "nav-menu-switch"] },
+	{ panel: "search-panel", ignores: ["search-panel", "search-bar", "search-switch"] },
+] as const;
+
+document.addEventListener("click", (event) => {
+	const target = event.target;
+	if (!(target instanceof Element)) return;
+
+	for (const config of clickOutsideConfigs) {
+		if (config.ignores.some((id) => target.closest(`#${id}`))) {
+			continue;
 		}
-		panelDom!.classList.add("float-panel-closed");
-	});
-}
-setClickOutsideToClose("display-setting", ["display-setting", "display-settings-switch"])
-setClickOutsideToClose("nav-menu-panel", ["nav-menu-panel", "nav-menu-switch"])
-setClickOutsideToClose("search-panel", ["search-panel", "search-bar", "search-switch"])
+		document.getElementById(config.panel)?.classList.add("float-panel-closed");
+	}
+});
 
 
 function loadTheme() {
@@ -561,22 +561,28 @@ function scrollToHash() {
 function initCustomScrollbar() {
 	const bodyElement = document.querySelector('body');
 	if (!bodyElement) return;
-	OverlayScrollbars(
-		// docs say that a initialization to the body element would affect native functionality like window.scrollTo
-		// but just leave it here for now
-		{
-			target: bodyElement,
-			cancel: {
-				nativeScrollbarsOverlaid: true,    // don't initialize the overlay scrollbar if there is a native one
-			}
-		}, {
-		scrollbars: {
-			theme: 'scrollbar-base scrollbar-auto py-1',
-			autoHide: 'move',
-			autoHideDelay: 500,
-			autoHideSuspend: false,
-		},
-	});
+
+	const existingBodyOs = OverlayScrollbars(bodyElement);
+	if (!existingBodyOs) {
+		OverlayScrollbars(
+			// docs say that a initialization to the body element would affect native functionality like window.scrollTo
+			// but just leave it here for now
+			{
+				target: bodyElement,
+				cancel: {
+					nativeScrollbarsOverlaid: true,    // don't initialize the overlay scrollbar if there is a native one
+				}
+			}, {
+			scrollbars: {
+				theme: 'scrollbar-base scrollbar-auto py-1',
+				autoHide: 'move',
+				autoHideDelay: 500,
+				autoHideSuspend: false,
+			},
+		});
+	} else {
+		existingBodyOs.update();
+	}
 
 	const katexElements = document.querySelectorAll('.katex-display') as NodeListOf<HTMLElement>;
 
@@ -777,34 +783,25 @@ function onTransitionStart() {
 	// Remove the delay for the first time page load
 	document.documentElement.style.setProperty('--content-delay', '0ms');
 
-	// Prevent elements from overlapping the navbar
-	if (bannerEnabled) {
-		let threshold = window.innerHeight * (BANNER_HEIGHT / 100) - 72 - 16;
-		let navbar = document.getElementById('navbar-wrapper');
-		if (navbar && document.body.classList.contains('lg:is-home')) {
-			if (document.body.scrollTop >= threshold || document.documentElement.scrollTop >= threshold) {
-				navbar.classList.add('navbar-hidden');
+	requestAnimationFrame(() => {
+		// Prevent elements from overlapping the navbar
+		if (bannerEnabled) {
+			const threshold = window.innerHeight * (BANNER_HEIGHT / 100) - 72 - 16;
+			const navbarEl = document.getElementById('navbar-wrapper');
+			const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+			if (navbarEl && document.body.classList.contains('lg:is-home') && scrollTop >= threshold) {
+				navbarEl.classList.add('navbar-hidden');
 			}
 		}
-	}
 
-	// Increase the page height during page transition to prevent scrolling animation from jumping.
-	// Skip this for hash navigation — the extra 300vh shifts all element positions,
-	// causing Astro's built-in hash scroll to land at the wrong location.
-	if (!navigatingToHash) {
-		const heightExtend = document.getElementById('page-height-extend');
-		if (heightExtend) {
-			heightExtend.classList.remove('hidden');
+		// Increase the page height during page transition to prevent scrolling animation from jumping.
+		// Skip this for hash navigation — the extra 300vh shifts all element positions,
+		// causing Astro's built-in hash scroll to land at the wrong location.
+		if (!navigatingToHash) {
+			document.getElementById('page-height-extend')?.classList.remove('hidden');
+			document.getElementById('toc-wrapper')?.classList.add('toc-not-ready');
 		}
-	}
-
-	// Hide the TOC while scrolling back to top (not needed for hash nav)
-	if (!navigatingToHash) {
-		let toc = document.getElementById('toc-wrapper');
-		if (toc) {
-			toc.classList.add('toc-not-ready');
-		}
-	}
+	});
 
 }
 
@@ -832,7 +829,7 @@ function onTransitionAfterSwap() {
 	// Show banner after page transition
 	showBanner();
 
-	initCustomScrollbar();
+	requestAnimationFrame(initCustomScrollbar);
 	// When using the Firefox VT shim, let onload-animation play naturally so
 	// content fades in. With real View Transitions (Chrome/Safari), strip them
 	// immediately since the VT animations handle the visual transition.
@@ -965,7 +962,7 @@ function setupTransitionHandlers() {
 		// style with animation:none, the bar stays at the correct position.
 	const bar = document.getElementById('swup-progress-bar');
 	if (bar && bar.classList.contains('is-loading')) {
-		const activeAnimation = bar.getAnimations()[0];
+		const activeAnimation = bar.getAnimations().find((animation) => animation.playState === 'running');
 		const timing = activeAnimation?.effect?.getComputedTiming();
 		const progress = typeof timing?.progress === 'number' ? timing.progress : null;
 		const frozenWidth = progress !== null
