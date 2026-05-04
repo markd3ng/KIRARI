@@ -12,6 +12,8 @@ interface Props {
 	decoding?: "async" | "sync" | "auto";
 	fetchpriority?: "high" | "low" | "auto";
 	sizes?: string;
+	width?: number | string;
+	height?: number | string;
 }
 
 import { Image } from "astro:assets";
@@ -27,6 +29,8 @@ const {
 	decoding = "async",
 	fetchpriority = "auto",
 	sizes,
+	width,
+	height,
 } = Astro.props;
 const className = Astro.props.class;
 
@@ -71,10 +75,12 @@ const imageStyle = `object-position: ${position}`;
             style={imageStyle}
             loading={loading}
             decoding={decoding}
-            fetchpriority={fetchpriority}
-            sizes={sizes}
-        />
-    )}
+			fetchpriority={fetchpriority}
+			sizes={sizes}
+			width={width}
+			height={height}
+		/>
+	)}
     {!isLocal && (
         <img
             src={isPublic ? url(src) : src}

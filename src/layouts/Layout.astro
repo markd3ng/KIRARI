@@ -936,99 +936,118 @@ function onTransitionEnd() {
 	}, 200);
 }
 
-// Set up event handlers based on whether we're using View Transitions or Swup
-function setupTransitionHandlers() {
-	// Use Swup fallback only for browsers without View Transitions API
-	const forceSwup = !supportsViewTransitions;
+	function getNavigationHash(to?: string) {
+		if (!to) return '';
+		try {
+			return new URL(to, window.location.href).hash;
+		} catch {
+			return '';
+		}
+	}
 
-	let pendingTitle = '';
-
-	if (!forceSwup) {
-		// Use View Transitions (Chrome/Safari/Firefox 128+)
-
-
-		document.addEventListener('astro:before-preparation', (event: any) => {
-			navigatingToHash = event.to?.hash || '';
-			onTransitionStart();
+	function stripHashNavigationAnimations() {
+		document.querySelectorAll('.onload-animation').forEach((el: Element) => {
+			el.classList.remove('onload-animation');
+			if (el instanceof HTMLElement) el.style.opacity = '1';
 		});
+		document.documentElement.style.scrollBehavior = 'auto';
+	}
 
-		// astro:before-swap - copy theme/styles to new document to prevent black flash
-		document.addEventListener('astro:before-swap', (event: any) => {
+	function freezeProgressBar() {
+		const bar = document.getElementById('swup-progress-bar');
+		if (!bar || !bar.classList.contains('is-loading')) return;
 
-
-		// Freeze the progress bar at its current visual position before the swap.
-		// transition:persist detaches/reattaches the element, which restarts CSS
-		// animations. By capturing the computed width and setting it as an inline
-		// style with animation:none, the bar stays at the correct position.
-	const bar = document.getElementById('swup-progress-bar');
-	if (bar && bar.classList.contains('is-loading')) {
 		const activeAnimation = bar.getAnimations().find((animation) => animation.playState === 'running');
 		const timing = activeAnimation?.effect?.getComputedTiming();
 		const progress = typeof timing?.progress === 'number' ? timing.progress : null;
 		const frozenWidth = progress !== null
 			? `${Math.max(0, Math.min(95, progress * 95))}%`
 			: '60%';
+
 		bar.style.width = frozenWidth;
 		bar.style.animation = 'none';
 		bar.style.opacity = '1';
 	}
 
-
-		const newDoc = event.newDocument;
-		if (newDoc && newDoc.documentElement) {
-			// For hash navigation, strip onload-animation from the new document
-			// BEFORE swap so content is immediately visible at correct positions.
-			// Without this, elements start at opacity:0 and Astro's hash scroll
-			// targets invisible content that may be at wrong positions.
-			if (navigatingToHash) {
-				newDoc.querySelectorAll('.onload-animation').forEach((el: Element) => {
-					el.classList.remove('onload-animation');
-					if (el instanceof HTMLElement) el.style.opacity = '1';
-				});
-				// Force instant scroll on new document so Astro's built-in
-				// hash scroll isn't smooth (smooth scroll can be interrupted
-				// by layout shifts from async content rendering).
-				newDoc.documentElement.style.scrollBehavior = 'auto';
-			}
-
-			// Prevent title flickering during head swap: save the new title and
-			// temporarily set it to match the current one so Astro's head diff
-			// won't touch the <title> element. We apply the real title after swap.
-			pendingTitle = newDoc.title;
-			const titleEl = newDoc.querySelector('title');
-			if (titleEl) {
-				titleEl.textContent = document.title;
-			}
-			// Copy dark mode class
-			if (document.documentElement.classList.contains('dark')) {
-				newDoc.documentElement.classList.add('dark');
-			} else {
-				newDoc.documentElement.classList.remove('dark');
-			}
-			// Copy CSS custom properties (theme colors)
-			const currentStyle = document.documentElement.style;
-			newDoc.documentElement.style.setProperty('--hue', currentStyle.getPropertyValue('--hue'));
-			newDoc.documentElement.style.setProperty('--banner-height-extend', currentStyle.getPropertyValue('--banner-height-extend'));
-			// Copy theme mode attribute
-			const themeMode = document.documentElement.getAttribute('data-theme-mode');
-			if (themeMode) {
-				newDoc.documentElement.setAttribute('data-theme-mode', themeMode);
-			}
-			// Copy Expressive Code theme attribute (fixes code block theme after View Transitions)
-			const expressiveTheme = document.documentElement.getAttribute('data-theme');
-			if (expressiveTheme) {
-				newDoc.documentElement.setAttribute('data-theme', expressiveTheme);
-			}
-			// Remove favicon links from new document to prevent browser re-fetching
-			// them during head swap. The existing favicons are already in the current
-			// head and don't change between pages.
-			newDoc.head.querySelectorAll('link[rel="icon"]').forEach((el: Element) => el.remove());
-
+	function prepareNewDocumentForSwap(newDoc: Document, pendingHash: string) {
+		if (pendingHash) {
+			newDoc.querySelectorAll('.onload-animation').forEach((el: Element) => {
+				el.classList.remove('onload-animation');
+				if (el instanceof HTMLElement) el.style.opacity = '1';
+			});
+			newDoc.documentElement.style.scrollBehavior = 'auto';
 		}
-	});
 
-		document.addEventListener('astro:after-swap', () => {
-			// Apply the real page title after swap to avoid flickering
+		return newDoc.title;
+	}
+
+	function copyPersistentDocumentState(newDoc: Document) {
+		if (document.documentElement.classList.contains('dark')) {
+			newDoc.documentElement.classList.add('dark');
+		} else {
+			newDoc.documentElement.classList.remove('dark');
+		}
+
+		const currentStyle = document.documentElement.style;
+		newDoc.documentElement.style.setProperty('--hue', currentStyle.getPropertyValue('--hue'));
+		newDoc.documentElement.style.setProperty('--banner-height-extend', currentStyle.getPropertyValue('--banner-height-extend'));
+
+		const themeMode = document.documentElement.getAttribute('data-theme-mode');
+		if (themeMode) {
+			newDoc.documentElement.setAttribute('data-theme-mode', themeMode);
+		}
+
+		const expressiveTheme = document.documentElement.getAttribute('data-theme');
+		if (expressiveTheme) {
+			newDoc.documentElement.setAttribute('data-theme', expressiveTheme);
+		}
+
+		newDoc.head.querySelectorAll('link[rel="icon"]').forEach((el: Element) => el.remove());
+	}
+
+	function restoreHashScrollAfterTransition() {
+		if (!navigatingToHash) return;
+
+		setTimeout(scrollToHash, 300);
+		setTimeout(scrollToHash, supportsViewTransitions ? 800 : 900);
+		if (supportsViewTransitions) {
+			setTimeout(scrollToHash, 1500);
+		}
+	}
+
+	// Set up the unified transition manager once and consume its normalized events.
+	function setupTransitionHandlers() {
+		let pendingTitle = '';
+
+		if (!supportsViewTransitions) {
+			document.addEventListener('astro:before-preparation', (event: any) => {
+				event.preventDefault();
+			});
+		}
+
+		transitionManager.on('transition:start', (data) => {
+			navigatingToHash = getNavigationHash(data?.to);
+			onTransitionStart();
+		});
+
+		transitionManager.on('transition:before-swap', (data) => {
+			freezeProgressBar();
+
+			const event = data?.rawEvent as { newDocument?: Document } | undefined;
+			const newDoc = event?.newDocument;
+			if (newDoc?.documentElement) {
+				pendingTitle = prepareNewDocumentForSwap(newDoc, navigatingToHash);
+				const titleEl = newDoc.querySelector('title');
+				if (titleEl) {
+					titleEl.textContent = document.title;
+				}
+				copyPersistentDocumentState(newDoc);
+			} else if (navigatingToHash) {
+				stripHashNavigationAnimations();
+			}
+		});
+
+		transitionManager.on('transition:after-swap', () => {
 			if (pendingTitle) {
 				document.title = pendingTitle;
 				pendingTitle = '';
@@ -1037,94 +1056,14 @@ function setupTransitionHandlers() {
 			onTransitionAfterSwap();
 		});
 
-		document.addEventListener('astro:page-load', () => {
-			// Start ending animation immediately. The VT pseudo-element for the
-			// progress bar fades via CSS animation (vt-progress-end), so by the
-			// time VT finishes and real DOM is revealed, both are near-transparent.
-			// This avoids the ~400ms delay from waiting for viewTransition.finished.
+		transitionManager.on('transition:end', () => {
 			onTransitionEnd();
-
-			if (navigatingToHash) {
-				// Re-scroll to hash target after dynamic content renders.
-				// Expressive code blocks, LaTeX, and images render asynchronously
-				// and may shift element positions after Astro's initial hash scroll.
-				// Also corrects for OverlayScrollbars resetting scroll during re-init.
-				// Multiple attempts at increasing intervals:
-				//   300ms — after onTransitionEnd's OS update at 200ms
-				//   800ms — after most async content (code blocks, LaTeX) renders
-				//  1500ms — final attempt for slow content (images, heavy LaTeX)
-				setTimeout(scrollToHash, 300);
-				setTimeout(scrollToHash, 800);
-				setTimeout(scrollToHash, 1500);
-			}
-
+			restoreHashScrollAfterTransition();
 			navigatingToHash = '';
 		});
-	} else {
-		// Use Swup (browsers without View Transitions API)
 
-
-		// Prevent Astro's ClientRouter from using View Transitions
-		// so Swup can handle navigation instead
-		document.addEventListener('astro:before-preparation', (event: any) => {
-			event.preventDefault();
-		});
-
-		const setupSwupHandlers = () => {
-			if (!window.swup?.hooks) return;
-
-
-
-			window.swup.hooks.on('visit:start', (visit: any) => {
-				navigatingToHash = visit.to?.hash || '';
-				onTransitionStart();
-			});
-
-			window.swup.hooks.on('content:replace', () => {
-				// For hash navigation, strip onload animations and force instant
-				// scroll so content is visible and positioned correctly.
-				if (navigatingToHash) {
-					document.querySelectorAll('.onload-animation').forEach((el: Element) => {
-						el.classList.remove('onload-animation');
-						if (el instanceof HTMLElement) el.style.opacity = '1';
-					});
-					document.documentElement.style.scrollBehavior = 'auto';
-				}
-				onTransitionAfterSwap();
-			});
-
-			window.swup.hooks.on('page:view', () => {
-				// Skip page-height-extend for hash navigation
-				if (!navigatingToHash) {
-					const heightExtend = document.getElementById('page-height-extend');
-					if (heightExtend) {
-						heightExtend.classList.remove('hidden');
-					}
-				}
-			});
-
-			window.swup.hooks.on('visit:end', () => {
-				onTransitionEnd();
-
-				if (navigatingToHash) {
-					setTimeout(scrollToHash, 300);
-					setTimeout(scrollToHash, 900);
-				}
-
-				navigatingToHash = '';
-			});
-		};
-
-		if (window.swup?.hooks) {
-			setupSwupHandlers();
-		} else {
-			document.addEventListener('swup:enable', setupSwupHandlers);
-		}
-
-		// Initialize Swup
 		transitionManager.init();
 	}
-}
 
 setupTransitionHandlers();
 
@@ -1258,7 +1197,7 @@ window.onresize = () => {
 </script>
 
 <script>
-import { supportsViewTransitions } from '../utils/transition-manager';
+import { transitionManager } from '../utils/transition-manager';
 
 let lightbox: any
 let photoSwipeLoaded = false
@@ -1316,42 +1255,7 @@ function destroyPhotoSwipe() {
 	lightbox = null;
 }
 
-// Set up PhotoSwipe based on transition system
-const useSwupForPhotoSwipe = !supportsViewTransitions;
-
-if (!useSwupForPhotoSwipe) {
-	// View Transitions mode
 	checkAndLoadPhotoSwipe();
-
-	document.addEventListener('astro:before-swap', () => {
-		destroyPhotoSwipe();
-	});
-
-	document.addEventListener('astro:after-swap', () => {
-		checkAndLoadPhotoSwipe();
-	});
-} else {
-	// Swup fallback mode
-	const setupSwupPhotoSwipe = () => {
-		checkAndLoadPhotoSwipe();
-
-		window.swup.hooks.on("page:view", () => {
-			checkAndLoadPhotoSwipe();
-		});
-
-		window.swup.hooks.on(
-			"content:replace",
-			() => {
-				destroyPhotoSwipe();
-			},
-			{ before: true },
-		);
-	};
-
-	if (window.swup) {
-		setupSwupPhotoSwipe();
-	} else {
-		document.addEventListener("swup:enable", setupSwupPhotoSwipe);
-	}
-}
-</script>
+	transitionManager.on('transition:before-swap', destroyPhotoSwipe);
+	transitionManager.on('transition:after-swap', checkAndLoadPhotoSwipe);
+	</script>

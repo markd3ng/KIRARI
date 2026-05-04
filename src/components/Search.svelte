@@ -1,25 +1,8 @@
 <script lang="ts">
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import Icon, { addIcon } from "@iconify/svelte";
-import fa6Icons from "@iconify-json/fa6-solid/icons.json";
-import materialIcons from "@iconify-json/material-symbols/icons.json";
-
-// Preload icons to avoid CDN requests
-if (materialIcons.icons.search) {
-	addIcon("material-symbols:search", {
-		body: materialIcons.icons.search.body,
-		width: materialIcons.width,
-		height: materialIcons.height,
-	});
-}
-if (fa6Icons.icons["chevron-right"]) {
-	addIcon("fa6-solid:chevron-right", {
-		body: fa6Icons.icons["chevron-right"].body,
-		width: fa6Icons.width,
-		height: fa6Icons.height,
-	});
-}
+import Icon from "@iconify/svelte";
+import "@utils/preload-icons";
 
 import { url } from "@utils/url-utils.ts";
 import { onMount } from "svelte";

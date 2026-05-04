@@ -1,9 +1,10 @@
-import type { AstroIntegration } from "@swup/astro";
-
 declare global {
 	interface Window {
-		// type from '@swup/astro' is incorrect
-		swup: AstroIntegration;
+		swup?: {
+			hooks?: {
+				on: (event: string, callback: (...args: any[]) => void, options?: unknown) => void;
+			};
+		};
 		stripOnloadAnimations?: () => void;
 		pagefind: {
 			search: (query: string) => Promise<{
@@ -11,6 +12,7 @@ declare global {
 					data: () => Promise<SearchResult>;
 				}>;
 			}>;
+			options?: (options: Record<string, unknown>) => Promise<void>;
 		};
 	}
 }

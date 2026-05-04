@@ -58,21 +58,27 @@ export function GithubCardComponent(properties, children) {
 		`script#${cardUuid}-script`,
 		{ type: "text/javascript", defer: true },
 		`
-      fetch('https://api.github.com/repos/${repo}', { referrerPolicy: "no-referrer" }).then(response => response.json()).then(data => {
-        document.getElementById('${cardUuid}-description').innerText = data.description?.replace(/:[a-zA-Z0-9_]+:/g, '') || "Description not set";
-        document.getElementById('${cardUuid}-language').innerText = data.language;
-        document.getElementById('${cardUuid}-forks').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.forks).replaceAll("\u202f", '');
-        document.getElementById('${cardUuid}-stars').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.stargazers_count).replaceAll("\u202f", '');
-        const avatarEl = document.getElementById('${cardUuid}-avatar');
-        avatarEl.style.backgroundImage = 'url(' + data.owner.avatar_url + ')';
-        avatarEl.style.backgroundColor = 'transparent';
-        document.getElementById('${cardUuid}-license').innerText = data.license?.spdx_id || "no-license";
-        document.getElementById('${cardUuid}-card').classList.remove("fetch-waiting");
-      }).catch(() => {
-        const c = document.getElementById('${cardUuid}-card');
-        c?.classList.add("fetch-error");
-      })
-    `,
+	      const initGithubCard = () => {
+	        const card = document.getElementById('${cardUuid}-card');
+	        if (!card || card.dataset.loaded === "true") return;
+	        fetch('https://api.github.com/repos/${repo}', { referrerPolicy: "no-referrer" }).then(response => response.json()).then(data => {
+	          document.getElementById('${cardUuid}-description').innerText = data.description?.replace(/:[a-zA-Z0-9_]+:/g, '') || "Description not set";
+	          document.getElementById('${cardUuid}-language').innerText = data.language;
+	          document.getElementById('${cardUuid}-forks').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.forks).replaceAll("\u202f", '');
+	          document.getElementById('${cardUuid}-stars').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.stargazers_count).replaceAll("\u202f", '');
+	          const avatarEl = document.getElementById('${cardUuid}-avatar');
+	          avatarEl.style.backgroundImage = 'url(' + data.owner.avatar_url + ')';
+	          avatarEl.style.backgroundColor = 'transparent';
+	          document.getElementById('${cardUuid}-license').innerText = data.license?.spdx_id || "no-license";
+	          card.dataset.loaded = "true";
+	          card.classList.remove("fetch-waiting");
+	        }).catch(() => {
+	          card.classList.add("fetch-error");
+	        })
+	      };
+	      initGithubCard();
+	      document.addEventListener("transition:after-swap", initGithubCard);
+	    `,
 	);
 
 	return h(

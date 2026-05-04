@@ -21,6 +21,7 @@ export interface TransitionEventData {
 	from?: string;
 	to?: string;
 	direction?: "forward" | "back";
+	rawEvent?: unknown;
 }
 
 type TransitionCallback = (data?: TransitionEventData) => void;
@@ -75,6 +76,9 @@ class TransitionManager {
 				}
 			});
 		}
+		if (typeof document !== "undefined") {
+			document.dispatchEvent(new CustomEvent(event, { detail: data }));
+		}
 	}
 
 	/**
@@ -105,6 +109,7 @@ class TransitionManager {
 				from: event.from?.href,
 				to: event.to?.href,
 				direction: event.direction,
+				rawEvent: event,
 			};
 			this.emit("transition:start", data);
 		});
@@ -116,6 +121,7 @@ class TransitionManager {
 				from: event.from?.href,
 				to: event.to?.href,
 				direction: event.direction,
+				rawEvent: event,
 			};
 			this.emit("transition:before-swap", data);
 		});
@@ -163,6 +169,7 @@ class TransitionManager {
 				this.emit("transition:start", {
 					from: visit.from?.url,
 					to: visit.to?.url,
+					rawEvent: visit,
 				});
 			});
 
@@ -182,6 +189,7 @@ class TransitionManager {
 			this.swupInstance.hooks.on("visit:end", (visit: any) => {
 				this.emit("transition:end", {
 					to: visit.to?.url,
+					rawEvent: visit,
 				});
 			});
 
@@ -226,8 +234,6 @@ export const transitionManager: TransitionManager = new TransitionManager();
 // Export for type declarations
 declare global {
 	interface Window {
-		// biome-ignore lint/suspicious/noExplicitAny: Global swup instance
-		swup: any;
 		transitionManager?: TransitionManager;
 	}
 }

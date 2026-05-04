@@ -2,7 +2,6 @@
 import { Icon } from "astro-icon/components";
 import { profileConfig } from "../../config";
 import { url } from "../../utils/url-utils";
-import BrandIcon from "../misc/BrandIcon.svelte";
 import ImageWrapper from "../misc/ImageWrapper.astro";
 
 const config = profileConfig;
@@ -23,18 +22,17 @@ const config = profileConfig;
         <div class="font-bold text-xl text-center mb-1 dark:text-neutral-50 transition">{config.name}</div>
         <div class="h-1 w-5 bg-[var(--primary)] mx-auto rounded-full mb-2 transition"></div>
         <div class="text-center text-neutral-400 mb-2.5 transition">{config.bio}</div>
-        <div class="flex flex-wrap gap-2 justify-center mb-1">
-            {config.links.length > 1 && config.links.map(item =>
-                    <a rel="noopener noreferrer me" aria-label={item.name} href={item.url} target="_blank" class="btn-regular rounded-lg h-10 w-10 active:scale-90">
-                        <BrandIcon icon={item.icon} class="text-[1.5rem]" client:load></BrandIcon>
-                    </a>
-            )}
-            {config.links.length == 1 && <a rel="noopener noreferrer me" aria-label={config.links[0].name} href={config.links[0].url} target="_blank"
-                                            class="btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95">
-                <BrandIcon icon={config.links[0].icon} class="text-[1.5rem]" client:load></BrandIcon>
-                {config.links[0].name}
-            </a>}
+		<div class="flex flex-wrap gap-2 justify-center mb-1">
+			{config.links.length > 1 && config.links.map(item =>
+					<a rel="noopener noreferrer me" aria-label={item.name} href={item.url} target="_blank" class="btn-regular rounded-lg h-10 w-10 active:scale-90">
+						<Icon name={item.icon} class="text-[1.5rem]" />
+					</a>
+			)}
+			{config.links.length == 1 && <a rel="noopener noreferrer me" aria-label={config.links[0].name} href={config.links[0].url} target="_blank"
+											class="btn-regular rounded-lg h-10 gap-2 px-3 font-bold active:scale-95">
+				<Icon name={config.links[0].icon} class="text-[1.5rem]" />
+				{config.links[0].name}
+			</a>}
         </div>
     </div>
 </div>
-

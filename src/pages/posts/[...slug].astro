@@ -162,6 +162,8 @@ const jsonLd = {
 </MainGridLayout>
 
 <script>
+import { transitionManager } from "../../utils/transition-manager";
+
 function lazyLoadImages() {
     const postContainer = document.getElementById('post-container');
     if (!postContainer) return;
@@ -182,13 +184,13 @@ if (document.readyState === 'loading') {
     lazyLoadImages();
 }
 
-document.addEventListener('astro:after-swap', lazyLoadImages);
-document.addEventListener('astro:page-load', lazyLoadImages);
+transitionManager.on('transition:after-swap', lazyLoadImages);
 </script>
 
 {mermaidConfig.enable && entry.data.mermaid && (
-<script>
-import mermaid from 'mermaid';
+	<script>
+	import mermaid from 'mermaid';
+	import { transitionManager } from "../../utils/transition-manager";
 
 function getTheme() {
     return document.documentElement.classList.contains('dark') ? 'dark' : 'default';
@@ -205,13 +207,12 @@ async function initMermaid() {
     await mermaid.run({ querySelector: 'pre.mermaid' });
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMermaid);
-} else {
-    initMermaid();
-}
+	if (document.readyState === 'loading') {
+	    document.addEventListener('DOMContentLoaded', initMermaid);
+	} else {
+	    initMermaid();
+	}
 
-document.addEventListener('astro:after-swap', initMermaid);
-document.addEventListener('astro:page-load', initMermaid);
-</script>
-)}
+	transitionManager.on('transition:after-swap', initMermaid);
+	</script>
+	)}

@@ -665,13 +665,18 @@ export const loadConfig = (): Config => {
 		return DEFAULT_CONFIG.site.banner.position || "center";
 	};
 
+	const envUmamiId = getEnvString("PUBLIC_UMAMI_ID");
+	const envPlausibleDomain = getEnvString("PUBLIC_PLAUSIBLE_DOMAIN");
+	const envMatomoSiteId = getEnvString("PUBLIC_MATOMO_SITE_ID");
+	const envMatomoSrc = getEnvString("PUBLIC_MATOMO_SRC");
+
 	// Build config with validation
 	const config: Config = {
 		site: {
-			url: getString(site?.url, DEFAULT_CONFIG.site.url),
-			base: getString(site?.base, DEFAULT_CONFIG.site.base),
-			title: getString(site?.title, DEFAULT_CONFIG.site.title),
-			subtitle: getString(site?.subtitle, DEFAULT_CONFIG.site.subtitle),
+			url: getEnvString("PUBLIC_SITE_URL", getString(site?.url, DEFAULT_CONFIG.site.url)),
+			base: getEnvString("PUBLIC_SITE_BASE", getString(site?.base, DEFAULT_CONFIG.site.base)),
+			title: getEnvString("PUBLIC_SITE_TITLE", getString(site?.title, DEFAULT_CONFIG.site.title)),
+			subtitle: getEnvString("PUBLIC_SITE_SUBTITLE", getString(site?.subtitle, DEFAULT_CONFIG.site.subtitle)),
 			lang: validateLang(site?.lang),
 			themeColor: {
 				hue: getNumber(site?.themeColor?.hue, DEFAULT_CONFIG.site.themeColor.hue),
@@ -682,9 +687,9 @@ export const loadConfig = (): Config => {
 				src: getString(site?.banner?.src, DEFAULT_CONFIG.site.banner.src),
 				position: validateBannerPosition(site?.banner?.position),
 				credit: {
-					enable: getBoolean(site?.banner?.credit?.enable, DEFAULT_CONFIG.site.banner.credit.enable),
-					text: getString(site?.banner?.credit?.text, DEFAULT_CONFIG.site.banner.credit.text),
-					url: getString(site?.banner?.credit?.url, DEFAULT_CONFIG.site.banner.credit.url || ""),
+					enable: getEnvBoolean("PUBLIC_BANNER_CREDIT_ENABLE", getBoolean(site?.banner?.credit?.enable, DEFAULT_CONFIG.site.banner.credit.enable)),
+					text: getEnvString("PUBLIC_BANNER_CREDIT_TEXT", getString(site?.banner?.credit?.text, DEFAULT_CONFIG.site.banner.credit.text)),
+					url: getEnvString("PUBLIC_BANNER_CREDIT_URL", getString(site?.banner?.credit?.url, DEFAULT_CONFIG.site.banner.credit.url || "")),
 				},
 			},
 			toc: {
@@ -728,23 +733,23 @@ export const loadConfig = (): Config => {
 			customScript: getString(footer?.customScript, DEFAULT_CONFIG.footer.customScript),
 		},
 		analytics: {
-			enable: getBoolean(analytics?.enable, DEFAULT_CONFIG.analytics.enable || false),
-			googleAnalyticsId: getString(analytics?.googleAnalyticsId, DEFAULT_CONFIG.analytics.googleAnalyticsId || ""),
-			clarityProjectId: getString(analytics?.clarityProjectId, DEFAULT_CONFIG.analytics.clarityProjectId || ""),
-			fathomSiteId: getString(analytics?.fathomSiteId, DEFAULT_CONFIG.analytics.fathomSiteId || ""),
-			simpleAnalyticsDomain: getString(analytics?.simpleAnalyticsDomain, DEFAULT_CONFIG.analytics.simpleAnalyticsDomain || ""),
-			amplitudeApiKey: getString(analytics?.amplitudeApiKey, DEFAULT_CONFIG.analytics.amplitudeApiKey || ""),
-			umami: analytics?.umami?.id ? {
-				id: getString(analytics.umami.id, ""),
-				src: getString(analytics.umami.src, ""),
+			enable: getEnvBoolean("PUBLIC_ANALYTICS_ENABLE", getBoolean(analytics?.enable, DEFAULT_CONFIG.analytics.enable || false)),
+			googleAnalyticsId: getEnvString("PUBLIC_GOOGLE_ANALYTICS_ID", getString(analytics?.googleAnalyticsId, DEFAULT_CONFIG.analytics.googleAnalyticsId || "")),
+			clarityProjectId: getEnvStringFromKeys(["PUBLIC_CLARITY_PROJECT_ID", "PUBLIC_CLARITY_ID"], getString(analytics?.clarityProjectId, DEFAULT_CONFIG.analytics.clarityProjectId || "")),
+			fathomSiteId: getEnvString("PUBLIC_FATHOM_SITE_ID", getString(analytics?.fathomSiteId, DEFAULT_CONFIG.analytics.fathomSiteId || "")),
+			simpleAnalyticsDomain: getEnvString("PUBLIC_SIMPLE_ANALYTICS_DOMAIN", getString(analytics?.simpleAnalyticsDomain, DEFAULT_CONFIG.analytics.simpleAnalyticsDomain || "")),
+			amplitudeApiKey: getEnvString("PUBLIC_AMPLITUDE_API_KEY", getString(analytics?.amplitudeApiKey, DEFAULT_CONFIG.analytics.amplitudeApiKey || "")),
+			umami: analytics?.umami?.id || envUmamiId ? {
+				id: getEnvString("PUBLIC_UMAMI_ID", getString(analytics?.umami?.id, "")),
+				src: getEnvString("PUBLIC_UMAMI_SRC", getString(analytics?.umami?.src, "")),
 			} : DEFAULT_CONFIG.analytics.umami,
-			plausible: analytics?.plausible?.domain ? {
-				domain: getString(analytics.plausible.domain, ""),
-				src: getString(analytics.plausible.src, ""),
+			plausible: analytics?.plausible?.domain || envPlausibleDomain ? {
+				domain: getEnvString("PUBLIC_PLAUSIBLE_DOMAIN", getString(analytics?.plausible?.domain, "")),
+				src: getEnvString("PUBLIC_PLAUSIBLE_SRC", getString(analytics?.plausible?.src, "")),
 			} : DEFAULT_CONFIG.analytics.plausible,
-			matomo: analytics?.matomo?.siteId && analytics?.matomo?.src ? {
-				siteId: getString(analytics.matomo.siteId, ""),
-				src: getString(analytics.matomo.src, ""),
+			matomo: (analytics?.matomo?.siteId && analytics?.matomo?.src) || (envMatomoSiteId && envMatomoSrc) ? {
+				siteId: getEnvString("PUBLIC_MATOMO_SITE_ID", getString(analytics?.matomo?.siteId, "")),
+				src: getEnvString("PUBLIC_MATOMO_SRC", getString(analytics?.matomo?.src, "")),
 			} : DEFAULT_CONFIG.analytics.matomo,
 		},
 		llms: {
@@ -758,8 +763,8 @@ export const loadConfig = (): Config => {
 			defaultImage: getString(og?.defaultImage, DEFAULT_CONFIG.og.defaultImage),
 		},
 		seo: {
-			indexNow: getBoolean(seo?.indexNow, DEFAULT_CONFIG.seo.indexNow || false),
-			indexNowKey: getString(seo?.indexNowKey, DEFAULT_CONFIG.seo.indexNowKey || ""),
+			indexNow: getEnvBoolean("PUBLIC_INDEXNOW_ENABLE", getBoolean(seo?.indexNow, DEFAULT_CONFIG.seo.indexNow || false)),
+			indexNowKey: getEnvString("PUBLIC_INDEXNOW_KEY", getString(seo?.indexNowKey, DEFAULT_CONFIG.seo.indexNowKey || "")),
 		},
 	};
 

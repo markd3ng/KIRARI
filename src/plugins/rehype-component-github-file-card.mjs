@@ -109,14 +109,17 @@ export function GithubFileCardComponent(properties, children) {
 		{ type: "text/javascript", defer: true },
 		`
       const initGithubFileCard = () => {
-        const cardEl = document.getElementById('${cardUuid}-card');
-        const avatarEl = document.getElementById('${cardUuid}-avatar');
-        const fileTypeEl = document.getElementById('${cardUuid}-filetype');
-        const fileSizeEl = document.getElementById('${cardUuid}-filesize');
-        const updatedEl = document.getElementById('${cardUuid}-updated');
-        if (!cardEl || !avatarEl || !fileTypeEl || !fileSizeEl || !updatedEl) {
-          return;
-        }
+	        const cardEl = document.getElementById('${cardUuid}-card');
+	        const avatarEl = document.getElementById('${cardUuid}-avatar');
+	        const fileTypeEl = document.getElementById('${cardUuid}-filetype');
+	        const fileSizeEl = document.getElementById('${cardUuid}-filesize');
+	        const updatedEl = document.getElementById('${cardUuid}-updated');
+	        if (!cardEl || !avatarEl || !fileTypeEl || !fileSizeEl || !updatedEl) {
+	          return;
+	        }
+	        if (cardEl.dataset.loaded === "true") {
+	          return;
+	        }
 
         const formatBytes = (bytes) => {
           if (typeof bytes !== "number" || Number.isNaN(bytes)) return "unknown";
@@ -170,16 +173,18 @@ export function GithubFileCardComponent(properties, children) {
             updatedEl.innerText = "unknown";
           });
 
-        Promise.allSettled([repoFetch, contentsFetch, commitsFetch]).then(() => {
-          cardEl.classList.remove("fetch-waiting");
-        });
-      }
+	        Promise.allSettled([repoFetch, contentsFetch, commitsFetch]).then(() => {
+	          cardEl.dataset.loaded = "true";
+	          cardEl.classList.remove("fetch-waiting");
+	        });
+	      }
       if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initGithubFileCard, { once: true });
-      } else {
-        initGithubFileCard();
-      }
-    `,
+	      } else {
+	        initGithubFileCard();
+	      }
+	      document.addEventListener("transition:after-swap", initGithubFileCard);
+	    `,
 	);
 
 	return h(

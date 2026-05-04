@@ -2,23 +2,8 @@
 import { AUTO_MODE, DARK_MODE, LIGHT_MODE } from "@constants/constants.ts";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import Icon, { addIcon } from "@iconify/svelte";
-import icons from "@iconify-json/material-symbols/icons.json";
-
-// Preload icons to avoid CDN requests
-[
-	"wb-sunny-outline-rounded",
-	"dark-mode-outline-rounded",
-	"radio-button-partial-outline",
-].forEach((name) => {
-	if (icons.icons[name]) {
-		addIcon(`material-symbols:${name}`, {
-			body: icons.icons[name].body,
-			width: icons.width,
-			height: icons.height,
-		});
-	}
-});
+import Icon from "@iconify/svelte";
+import "@utils/preload-icons";
 
 import {
 	applyThemeToDocument,

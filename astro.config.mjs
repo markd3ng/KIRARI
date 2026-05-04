@@ -74,7 +74,7 @@ export default defineConfig({
 					"dark-mode-outline-rounded",
 					"radio-button-partial-outline",
 				],
-				"fa6-brands": ["creative-commons"],
+				"fa6-brands": ["creative-commons", "github", "steam", "twitter"],
 				"fa6-regular": ["address-card"],
 				"fa6-solid": [
 					"arrow-up-right-from-square",
