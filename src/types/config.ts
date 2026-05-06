@@ -162,6 +162,23 @@ export type SeoConfig = {
 	indexNowKey?: string;
 };
 
+export type SearchConfig = {
+	docsearch: {
+		/** Enable Algolia DocSearch. When true, Pagefind is not loaded or indexed. */
+		enable: boolean;
+		/** Algolia application ID. */
+		appId: string;
+		/** Algolia search-only API key. */
+		apiKey: string;
+		/** Algolia index name. */
+		indexName: string;
+		/** Apply docsearch:language as a language facet filter. */
+		filterByLanguage: boolean;
+		/** Extra docsearch:* meta tags, such as version = "latest". */
+		metaTags: Record<string, string>;
+	};
+};
+
 export type AnalyticsConfig = {
 	/** Master switch to enable/disable all analytics. Default: false */
 	enable?: boolean;
@@ -212,8 +229,8 @@ export type Config = {
 	i18n: I18nConfig;
 	og: OGConfig;
 	seo: SeoConfig;
+	search: SearchConfig;
 };
-
 
 
 

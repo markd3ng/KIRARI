@@ -7,7 +7,7 @@ declare global {
 		};
 		stripOnloadAnimations?: () => void;
 		pagefind: {
-			search: (query: string) => Promise<{
+			search: (query: string, options?: Record<string, unknown>) => Promise<{
 				results: Array<{
 					data: () => Promise<SearchResult>;
 				}>;

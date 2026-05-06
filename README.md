@@ -71,6 +71,13 @@ defaultLang = "en"             # Root / redirects to /en/
 languages = ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"]
 fallbackToDefault = true       # Missing translations switch to the target language homepage
 
+[search.docsearch]
+enable = false                 # When true, Pagefind is disabled
+appId = ""
+apiKey = ""
+indexName = ""
+filterByLanguage = true        # Uses docsearch:language meta tags
+
 [site.themeColor]
 hue = 250                      # 0-360 (red: 0, teal: 200, cyan: 250, pink: 345)
 fixed = false                  # Hide theme color picker
@@ -145,6 +152,12 @@ translationKey: markdown
 If the current page has a matching translation, the navbar language switch links to that translated page. Otherwise it falls back to the target language homepage.
 
 Static spec pages can be localized by adding files under `src/content/spec/<lang-slug>/`, for example `src/content/spec/zh-cn/about.md`. Missing localized files fall back to the default `src/content/spec/about.md` or `friends.md` content.
+
+### Search
+
+Pagefind is the default local search engine. KIRARI adds a language filter to each generated page and searches only the active language, so `/zh-cn/` does not mix English results into Chinese queries.
+
+Algolia DocSearch can be enabled with `[search.docsearch]` or `PUBLIC_DOCSEARCH_*` environment variables. When DocSearch is enabled and `appId`, `apiKey`, and `indexName` are present, Pagefind is disabled at build/runtime. Pages emit `docsearch:language` plus optional `[search.docsearch.metaTags]` entries as `<meta name="docsearch:*">` tags for crawler facets.
 
 ### Performance Strategy
 
@@ -526,7 +539,7 @@ Both components use `w-full aspect-video` for responsive 16:9 display.
 | Framework | Astro 6.0 |
 | UI | Svelte 5 |
 | Styling | TailwindCSS 4 |
-| Search | Pagefind (via astro-pagefind) |
+| Search | Pagefind by default, optional Algolia DocSearch |
 | Code Highlight | Expressive Code |
 | Math | KaTeX |
 | Diagrams | Mermaid |

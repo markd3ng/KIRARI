@@ -61,6 +61,29 @@ languages = ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"]
 # 当前页面没有目标语言翻译时，语言切换回退到目标语言首页。
 fallbackToDefault = true
 
+# -----------------------------------------------------------------------------
+# Search / 搜索
+# -----------------------------------------------------------------------------
+[search.docsearch]
+# Enable Algolia DocSearch. When enabled, Pagefind is disabled at build/runtime.
+# 启用 Algolia DocSearch。启用后，构建和运行时都会禁用 Pagefind。
+enable = false
+
+# Algolia DocSearch credentials. Prefer PUBLIC_DOCSEARCH_* env vars for deploys.
+# Algolia DocSearch 凭据。部署时建议使用 PUBLIC_DOCSEARCH_* 环境变量。
+appId = ""
+apiKey = ""
+indexName = ""
+
+# Use <meta name="docsearch:language"> as a facet filter in DocSearch queries.
+# 使用 <meta name="docsearch:language"> 作为 DocSearch 查询的语言过滤条件。
+filterByLanguage = true
+
+# Extra <meta name="docsearch:*"> tags for the crawler, e.g. version = "latest".
+# 给爬虫使用的额外 <meta name="docsearch:*"> 标签，例如 version = "latest"。
+[search.docsearch.metaTags]
+# version = "latest"
+
 # Theme color configuration / 主题色配置
 [site.themeColor]
 # Hue value for theme color (0-360) / 主题色色相值（0-360）

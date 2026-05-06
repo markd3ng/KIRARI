@@ -3,7 +3,7 @@ import "../styles/fonts.css";
 
 import { ClientRouter } from "astro:transitions";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
-import { analyticsConfig, headConfig, profileConfig, siteConfig } from "@/config";
+import { analyticsConfig, headConfig, profileConfig, searchConfig, siteConfig } from "@/config";
 import {
 	AUTO_MODE,
 	BANNER_HEIGHT,
@@ -21,7 +21,7 @@ import { Config } from "../constants";
 import { defaultFavicons } from "../constants/icon";
 import type { Favicon } from "../types/config";
 import type { AlternateLink } from "../utils/i18n-utils";
-import { getLangHomeUrl, normalizeLangCode } from "../utils/i18n-utils";
+import { getLangHomeUrl, normalizeLangCode, toLangSlug } from "../utils/i18n-utils";
 import { pathsEqual, url } from "../utils/url-utils";
 import {
 	GoogleAnalytics,
@@ -113,10 +113,18 @@ const favicons: Favicon[] =
 // const siteLang = siteConfig.lang.replace('_', '-')
 const pageLang = normalizeLangCode(lang || siteConfig.lang);
 const siteLang = pageLang.replace("_", "-");
+const searchLang = toLangSlug(pageLang);
 const absoluteUrl = (path: string) => new URL(path, Astro.site || Astro.url.origin).href;
 const canonicalHref = canonicalUrl ? absoluteUrl(canonicalUrl) : Astro.url.href;
 const rssHref = absoluteUrl(getLangHomeUrl(pageLang).replace(/\/$/, "/rss.xml"));
 const xDefaultHref = absoluteUrl(getLangHomeUrl(Config.i18n.defaultLang));
+const docsearchEnabled =
+	!!searchConfig.docsearch.enable &&
+	!!searchConfig.docsearch.appId &&
+	!!searchConfig.docsearch.apiKey &&
+	!!searchConfig.docsearch.indexName;
+const docsearchMetaTags = Object.entries(searchConfig.docsearch.metaTags || {})
+	.filter(([key]) => key !== "language");
 const isHomePage =
 	pathsEqual(Astro.url.pathname, url("/")) ||
 	pathsEqual(Astro.url.pathname, getLangHomeUrl(pageLang));
@@ -157,6 +165,11 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 		<meta name="title" content={pageTitle} />
 		<meta name="description" content={description || pageTitle}>
 		<meta name="author" content={profileConfig.name}>
+		<meta name="docsearch:language" content={searchLang} />
+		<meta data-pagefind-filter="lang[content]" name="kirari:language" content={searchLang} />
+		{docsearchMetaTags.map(([key, value]) => (
+			<meta name={`docsearch:${key}`} content={value} />
+		))}
 		<link rel="canonical" href={canonicalHref} />
 		{alternates.map((alternate) => (
 			<link rel="alternate" hreflang={alternate.hreflang} href={absoluteUrl(alternate.url)} />
@@ -197,7 +210,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 			/>
 		))}
 
-		{import.meta.env.PROD && (
+		{import.meta.env.PROD && !docsearchEnabled && (
 			<link rel="modulepreload" href={url('/pagefind/pagefind.js')} />
 		)}
 
@@ -261,7 +274,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 			} catch {}
 		</script>
 		
-		{import.meta.env.PROD && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
+		{import.meta.env.PROD && !docsearchEnabled && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
 		async function loadPagefind() {
 			try {
 				const response = await fetch(scriptUrl, { method: 'HEAD' });

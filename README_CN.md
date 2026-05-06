@@ -71,6 +71,13 @@ defaultLang = "en"             # 根路径 / 跳转到 /en/
 languages = ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"]
 fallbackToDefault = true       # 缺少翻译时切换到目标语言首页
 
+[search.docsearch]
+enable = false                 # 开启后禁用 Pagefind
+appId = ""
+apiKey = ""
+indexName = ""
+filterByLanguage = true        # 使用 docsearch:language meta tags
+
 [site.themeColor]
 hue = 250                      # 0-360（红色: 0, 青色: 200, 天蓝: 250, 粉色: 345）
 fixed = false                  # 隐藏主题色选择器
@@ -145,6 +152,12 @@ translationKey: markdown
 如果当前页面存在目标语言翻译，导航栏语言切换会跳转到对应文章；否则回退到目标语言首页。
 
 静态说明页可以放在 `src/content/spec/<lang-slug>/` 下做本地化，例如 `src/content/spec/zh-cn/about.md`。如果目标语言文件不存在，会回退到默认的 `src/content/spec/about.md` 或 `friends.md`。
+
+### 搜索
+
+Pagefind 是默认本地搜索。KIRARI 会为每个生成页面写入语言过滤信息，并在当前语言范围内搜索，所以 `/zh-cn/` 不会混入英文结果。
+
+可以通过 `[search.docsearch]` 或 `PUBLIC_DOCSEARCH_*` 环境变量启用 Algolia DocSearch。当 DocSearch 开启且 `appId`、`apiKey`、`indexName` 都存在时，Pagefind 会在构建和运行时禁用。页面会输出 `docsearch:language`，并把可选的 `[search.docsearch.metaTags]` 写成 `<meta name="docsearch:*">`，供爬虫生成 facet。
 
 ### 性能策略
 
@@ -525,7 +538,7 @@ import Bilibili from "../../components/embed/Bilibili.astro";
 | 框架 | Astro 6.0 |
 | UI | Svelte 5 |
 | 样式 | TailwindCSS 4 |
-| 搜索 | Pagefind（通过 astro-pagefind） |
+| 搜索 | 默认 Pagefind，可选 Algolia DocSearch |
 | 代码高亮 | Expressive Code |
 | 数学 | KaTeX |
 | 图表 | Mermaid |

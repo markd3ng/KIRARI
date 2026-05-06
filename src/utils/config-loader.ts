@@ -221,6 +221,24 @@ type TomlConfig = {
 		/** IndexNow API key / IndexNow API 密钥 */
 		indexNowKey?: unknown;
 	};
+	/** Search configuration / 搜索配置 */
+	search?: {
+		/** Algolia DocSearch configuration / Algolia DocSearch 配置 */
+		docsearch?: {
+			/** Enable DocSearch and disable Pagefind / 启用 DocSearch 并禁用 Pagefind */
+			enable?: unknown;
+			/** Algolia application ID / Algolia 应用 ID */
+			appId?: unknown;
+			/** Algolia search-only API key / Algolia 搜索 API key */
+			apiKey?: unknown;
+			/** Algolia index name / Algolia 索引名 */
+			indexName?: unknown;
+			/** Filter DocSearch results by docsearch:language / 按 docsearch:language 过滤 */
+			filterByLanguage?: unknown;
+			/** Extra docsearch:* meta tags / 额外 docsearch:* meta 标签 */
+			metaTags?: unknown;
+		};
+	};
 };
 
 /**
@@ -342,6 +360,16 @@ const DEFAULT_CONFIG: Config = {
 	seo: {
 		indexNow: false,
 		indexNowKey: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+	},
+	search: {
+		docsearch: {
+			enable: false,
+			appId: "",
+			apiKey: "",
+			indexName: "",
+			filterByLanguage: true,
+			metaTags: {},
+		},
 	},
 };
 
@@ -478,6 +506,22 @@ const getStringArray = (value: unknown, fallback: string[]): string[] => {
 	}
 	
 	return result.length > 0 ? result : fallback;
+};
+
+const getStringRecord = (
+	value: unknown,
+	fallback: Record<string, string>,
+): Record<string, string> => {
+	if (typeof value !== "object" || value === null || Array.isArray(value)) {
+		return fallback;
+	}
+
+	const result: Record<string, string> = {};
+	for (const [key, item] of Object.entries(value)) {
+		if (typeof item === "string") result[key] = item;
+	}
+
+	return Object.keys(result).length > 0 ? result : fallback;
 };
 
 /**
@@ -658,6 +702,7 @@ export const loadConfig = (): Config => {
 	const i18n = toml.i18n;
 	const og = toml.og;
 	const seo = toml.seo;
+	const search = toml.search;
 
 	// Helper: validate lang field
 	const validLangs = ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"] as const;
@@ -796,6 +841,16 @@ export const loadConfig = (): Config => {
 		seo: {
 			indexNow: getEnvBoolean("PUBLIC_INDEXNOW_ENABLE", getBoolean(seo?.indexNow, DEFAULT_CONFIG.seo.indexNow || false)),
 			indexNowKey: getEnvString("PUBLIC_INDEXNOW_KEY", getString(seo?.indexNowKey, DEFAULT_CONFIG.seo.indexNowKey || "")),
+		},
+		search: {
+			docsearch: {
+				enable: getEnvBoolean("PUBLIC_DOCSEARCH_ENABLE", getBoolean(search?.docsearch?.enable, DEFAULT_CONFIG.search.docsearch.enable)),
+				appId: getEnvString("PUBLIC_DOCSEARCH_APP_ID", getString(search?.docsearch?.appId, DEFAULT_CONFIG.search.docsearch.appId)),
+				apiKey: getEnvString("PUBLIC_DOCSEARCH_API_KEY", getString(search?.docsearch?.apiKey, DEFAULT_CONFIG.search.docsearch.apiKey)),
+				indexName: getEnvString("PUBLIC_DOCSEARCH_INDEX_NAME", getString(search?.docsearch?.indexName, DEFAULT_CONFIG.search.docsearch.indexName)),
+				filterByLanguage: getEnvBoolean("PUBLIC_DOCSEARCH_FILTER_BY_LANGUAGE", getBoolean(search?.docsearch?.filterByLanguage, DEFAULT_CONFIG.search.docsearch.filterByLanguage)),
+				metaTags: getStringRecord(search?.docsearch?.metaTags, DEFAULT_CONFIG.search.docsearch.metaTags),
+			},
 		},
 	};
 

@@ -4,15 +4,30 @@ import { i18n } from "@i18n/translation";
 import Icon from "@iconify/svelte";
 import "@utils/preload-icons";
 
-import { getLangHomeUrl } from "@utils/i18n-utils";
+import { getLangHomeUrl, toLangSlug } from "@utils/i18n-utils";
 import { url } from "@utils/url-utils.ts";
 import { onMount } from "svelte";
 import type { SearchResult } from "@/global";
 
 export let lang: string | undefined = undefined;
+export let docsearch:
+	| {
+			enable: boolean;
+			appId: string;
+			apiKey: string;
+			indexName: string;
+			filterByLanguage: boolean;
+	  }
+	| undefined = undefined;
 
 const homeUrl = lang ? getLangHomeUrl(lang) : url("/");
 const searchLabel = i18n(I18nKey.search, lang);
+const langSlug = toLangSlug(lang);
+const docsearchEnabled =
+	!!docsearch?.enable &&
+	!!docsearch.appId &&
+	!!docsearch.apiKey &&
+	!!docsearch.indexName;
 
 let keywordDesktop = "";
 let keywordMobile = "";
@@ -20,6 +35,7 @@ let result: SearchResult[] = [];
 let isSearching = false;
 let pagefindLoaded = false;
 let initialized = false;
+let docsearchLoaded = false;
 
 // Debounce and concurrency control
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -52,6 +68,10 @@ const setSearchExpanded = (expanded: boolean): void => {
 };
 
 const togglePanel = () => {
+	if (docsearchEnabled) {
+		openDocSearch();
+		return;
+	}
 	const panel = document.getElementById("search-panel");
 	if (!panel) return;
 	panel.classList.toggle("float-panel-closed");
@@ -71,6 +91,11 @@ const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
 };
 
 const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
+	if (docsearchEnabled) {
+		if (keyword) openDocSearch(keyword);
+		return;
+	}
+
 	if (!keyword) {
 		setPanelVisibility(false, isDesktop);
 		result = [];
@@ -90,7 +115,9 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 		let searchResults: SearchResult[] = [];
 
 		if (import.meta.env.PROD && pagefindLoaded && window.pagefind) {
-			const response = await window.pagefind.search(keyword);
+			const response = await window.pagefind.search(keyword, {
+				filters: { lang: langSlug },
+			});
 			// Check if this search is still relevant (not superseded by newer search)
 			if (currentSearchId !== searchId) {
 				return; // Abandon stale search
@@ -125,6 +152,18 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 	}
 };
 
+const openDocSearch = (initialQuery = ""): void => {
+	const button = document.querySelector<HTMLButtonElement>(
+		"#docsearch-container .DocSearch-Button",
+	);
+	if (!button) return;
+	if (initialQuery) {
+		const input = document.querySelector<HTMLInputElement>("#search-input-desktop");
+		if (input) input.value = "";
+	}
+	button.click();
+};
+
 // Debounced search wrapper
 const debouncedSearch = (keyword: string, isDesktop: boolean): void => {
 	if (searchTimeout) {
@@ -136,6 +175,41 @@ const debouncedSearch = (keyword: string, isDesktop: boolean): void => {
 };
 
 onMount(() => {
+	const initializeDocSearch = async () => {
+		if (!docsearchEnabled || docsearchLoaded) return;
+
+		const container = document.getElementById("docsearch-container");
+		if (!container) return;
+
+		try {
+			const [{ default: docsearchInit }] = await Promise.all([
+				import("@docsearch/js"),
+				import("@docsearch/css"),
+			]);
+
+			docsearchInit({
+				container,
+				appId: docsearch!.appId,
+				apiKey: docsearch!.apiKey,
+				indices: [
+					{
+						name: docsearch!.indexName,
+						searchParameters: docsearch!.filterByLanguage
+							? {
+									facetFilters: [`language:${langSlug}`],
+								}
+							: undefined,
+					},
+				],
+				placeholder: searchLabel,
+			});
+
+			docsearchLoaded = true;
+		} catch (error) {
+			console.error("Failed to load DocSearch:", error);
+		}
+	};
+
 	const initializeSearch = () => {
 		initialized = true;
 		pagefindLoaded =
@@ -147,7 +221,10 @@ onMount(() => {
 		if (keywordMobile) search(keywordMobile, false);
 	};
 
-	if (import.meta.env.DEV) {
+	if (docsearchEnabled) {
+		initialized = true;
+		initializeDocSearch();
+	} else if (import.meta.env.DEV) {
 		initializeSearch();
 	} else {
 		document.addEventListener("pagefindready", () => {
@@ -176,7 +253,12 @@ onMount(() => {
 			keywordDesktop = (e.target as HTMLInputElement).value;
 		});
 		desktopInput.addEventListener("focus", () => {
-			search(keywordDesktop, true);
+			if (docsearchEnabled) {
+				openDocSearch(keywordDesktop);
+				desktopInput.blur();
+			} else {
+				search(keywordDesktop, true);
+			}
 		});
 	}
 
@@ -198,8 +280,10 @@ $: if (initialized && keywordMobile) {
 <!-- search panel -->
 <div id="search-panel" class="float-panel float-panel-closed search-panel absolute md:w-[30rem]
 top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
+	<div id="docsearch-container" class="docsearch-container" aria-hidden={!docsearchEnabled}></div>
 
     <!-- search bar inside panel for phone/tablet -->
+    {#if !docsearchEnabled}
     <div id="search-bar-inside" class="flex relative lg:hidden transition-all items-center h-11 rounded-xl
       bg-black/[0.04] hover:bg-black/[0.06] focus-within:bg-black/[0.06]
       dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
@@ -210,8 +294,10 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
                focus:w-60 text-black/50 dark:text-white/50"
         >
     </div>
+    {/if}
 
     <!-- search results -->
+    {#if !docsearchEnabled}
     {#each result as item}
         <a href={item.url}
            class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block
@@ -224,6 +310,7 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
             </div>
         </a>
     {/each}
+    {/if}
 </div>
 
 <style>
@@ -233,5 +320,19 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
   .search-panel {
     max-height: calc(100vh - 100px);
     overflow-y: auto;
+  }
+  .docsearch-container {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  :global(.DocSearch-Modal) {
+    border-radius: 1rem;
+  }
+  :global(.DocSearch-Button) {
+    margin: 0;
   }
 </style>

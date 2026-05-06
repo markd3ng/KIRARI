@@ -11,6 +11,7 @@ import type {
 	MermaidConfig,
 	NavBarConfig,
 	ProfileConfig,
+	SearchConfig,
 	SiteConfig,
 } from "./types/config";
 
@@ -46,3 +47,5 @@ export const analyticsConfig: AnalyticsConfig =
 export const llmsConfig: LLMsConfig = Config.llms as LLMsConfig;
 
 export const i18nConfig: I18nConfig = Config.i18n as I18nConfig;
+
+export const searchConfig: SearchConfig = Config.search as SearchConfig;

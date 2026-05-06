@@ -42,6 +42,12 @@ import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 
 // https://astro.build/config
 
+const docsearchEnabled =
+	!!Config.search?.docsearch?.enable &&
+	!!Config.search.docsearch.appId &&
+	!!Config.search.docsearch.apiKey &&
+	!!Config.search.docsearch.indexName;
+
 export default defineConfig({
 	site: Config.site.url,
 	base: Config.site.base,
@@ -143,7 +149,7 @@ export default defineConfig({
 		indexnow({
 			key: Config.seo?.indexNowKey,
 		}),
-		pagefind(),
+		!docsearchEnabled && pagefind(),
 		robotsTxt(),
 		sitemap({
 			customPages:
@@ -263,6 +269,7 @@ export default defineConfig({
 		build: {
 			minify: "esbuild",
 			cssCodeSplit: true,
+			chunkSizeWarningLimit: 700,
 			rollupOptions: {
 				onwarn(warning, warn) {
 					// temporarily suppress this warning
