@@ -36,11 +36,11 @@ function findCriticalCss() {
 
 function getDefaultHomePath() {
 	const rootHtml = join(distDir, "index.html");
-	if (!existsSync(rootHtml)) return "/en/";
+	if (!existsSync(rootHtml)) return "/en-US/";
 
 	const html = readFileSync(rootHtml, "utf8");
 	const refreshMatch = html.match(/http-equiv=["']refresh["'][^>]+content=["'][^"']*url=([^"']+)["']/i);
-	return refreshMatch?.[1] || "/en/";
+	return refreshMatch?.[1] || "/en-US/";
 }
 
 const defaultHomePath = getDefaultHomePath();

@@ -67,7 +67,7 @@ base = "/"                     # Base path (e.g., "/blog" for subdirectory)
 
 [i18n]
 enable = true
-defaultLang = "en-US"          # Root / redirects to /en-US/
+default-language = "en-US"     # Root / redirects to /en-US/
 languages = ["en-US", "zh-CN", "zh-TW", "zh-HK"]
 fallbackToDefault = true       # Missing translations switch to the target language homepage
 
@@ -137,7 +137,7 @@ indexNowKey = ""               # IndexNow API key
 
 ### Internationalization
 
-KIRARI uses BCP 47 language-prefixed public routes: `/en-US/`, `/zh-CN/`, `/zh-TW/`, and `/zh-HK/`. The root path `/` is only an entry redirect to the configured default language.
+KIRARI uses BCP 47 language-prefixed public routes: `/en-US/`, `/zh-CN/`, `/zh-TW/`, and `/zh-HK/`. The root path `/` is only an entry redirect to the configured `default-language`.
 
 Posts can be connected across languages with `translationKey`:
 

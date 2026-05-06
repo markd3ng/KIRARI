@@ -204,6 +204,10 @@ type TomlConfig = {
 		enable?: unknown;
 		/** Default language / 默认语言 */
 		defaultLang?: unknown;
+		/** Hugo-style default language key / Hugo 风格默认语言键 */
+		defaultLanguage?: unknown;
+		/** TOML key: default-language / TOML 键：default-language */
+		"default-language"?: unknown;
 		/** Enabled languages / 启用语言 */
 		languages?: unknown;
 		/** Fallback to default language when translation is missing / 缺失翻译时回退默认语言 */
@@ -834,7 +838,7 @@ export const loadConfig = (): Config => {
 		},
 		i18n: {
 			enable: getBoolean(i18n?.enable, DEFAULT_CONFIG.i18n.enable),
-			defaultLang: validateLang(i18n?.defaultLang),
+			defaultLang: validateLang(i18n?.["default-language"] ?? i18n?.defaultLanguage ?? i18n?.defaultLang),
 			languages: validateLangArray(i18n?.languages),
 			fallbackToDefault: getBoolean(i18n?.fallbackToDefault, DEFAULT_CONFIG.i18n.fallbackToDefault),
 		},

@@ -3,10 +3,11 @@ import { Config } from "../constants";
 import { getLangHomeUrl } from "../utils/i18n-utils";
 
 const target = getLangHomeUrl(Config.i18n.defaultLang);
+const htmlLang = Config.i18n.defaultLang;
 ---
 
 <!DOCTYPE html>
-<html lang={Config.i18n.defaultLang.replace("_", "-")}>
+<html lang={htmlLang}>
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="robots" content="noindex, follow" />

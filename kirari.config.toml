@@ -49,9 +49,9 @@
 # 启用 BCP 47 语言前缀 URL，例如 /en-US/ 与 /zh-CN/。
 enable = true
 
-# Default language. Root / redirects to this language prefix.
-# 默认语言。根路径 / 会跳转到该语言前缀。
-defaultLang = "en-US"
+# Default language, Hugo-style. Root / redirects to this language prefix.
+# 默认语言，Hugo 风格。根路径 / 会跳转到该语言前缀。
+default-language = "en-US"
 
 # Enabled BCP 47 language tags. Public routes use the same values.
 # 启用 BCP 47 语言标签。公开路由使用相同写法。

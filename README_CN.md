@@ -67,7 +67,7 @@ base = "/"                     # 基础路径（例如子目录用 "/blog"）
 
 [i18n]
 enable = true
-defaultLang = "en-US"          # 根路径 / 跳转到 /en-US/
+default-language = "en-US"     # 根路径 / 跳转到 /en-US/
 languages = ["en-US", "zh-CN", "zh-TW", "zh-HK"]
 fallbackToDefault = true       # 缺少翻译时切换到目标语言首页
 
@@ -137,7 +137,7 @@ indexNowKey = ""               # IndexNow API 密钥
 
 ### 国际化
 
-KIRARI 使用 BCP 47 语言前缀公开路由：`/en-US/`、`/zh-CN/`、`/zh-TW/`、`/zh-HK/`。根路径 `/` 只作为默认语言入口跳转。
+KIRARI 使用 BCP 47 语言前缀公开路由：`/en-US/`、`/zh-CN/`、`/zh-TW/`、`/zh-HK/`。根路径 `/` 只作为配置项 `default-language` 的语言入口跳转。
 
 文章可通过 `translationKey` 建立跨语言关联：
 
