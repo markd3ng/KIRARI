@@ -1,10 +1,11 @@
 ---
 import type { GetStaticPaths } from "astro";
-import { getEntry, render } from "astro:content";
+import { render } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getLocalizedSpecEntry } from "@utils/spec-content";
 import friendsItems from "../../_data/friends.json";
 import {
 	fromLangSlug,
@@ -21,7 +22,7 @@ export const getStaticPaths = (() =>
 	}))) satisfies GetStaticPaths;
 
 const lang = fromLangSlug(Astro.params.lang);
-const friendsPage = await getEntry("spec", "friends");
+const friendsPage = await getLocalizedSpecEntry("friends", lang);
 if (!friendsPage) throw new Error("Friends page content not found");
 const { Content } = await render(friendsPage);
 const friendsUrl = withLangPrefix("/friends/", lang);

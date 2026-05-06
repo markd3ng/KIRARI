@@ -1,10 +1,11 @@
 ---
 import type { GetStaticPaths } from "astro";
-import { getEntry, render } from "astro:content";
+import { render } from "astro:content";
 import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getLocalizedSpecEntry } from "@utils/spec-content";
 import {
 	fromLangSlug,
 	getEnabledLanguages,
@@ -20,7 +21,7 @@ export const getStaticPaths = (() =>
 	}))) satisfies GetStaticPaths;
 
 const lang = fromLangSlug(Astro.params.lang);
-const aboutPost = await getEntry("spec", "about");
+const aboutPost = await getLocalizedSpecEntry("about", lang);
 if (!aboutPost) throw new Error("About page content not found");
 const { Content } = await render(aboutPost);
 const aboutUrl = withLangPrefix("/about/", lang);

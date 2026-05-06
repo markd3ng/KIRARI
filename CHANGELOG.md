@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added Hugo-like i18n with language-prefixed routes (`/en/`, `/zh-cn/`, etc.), post-level `translationKey`, a navbar language switch, localized RSS feeds, canonical links, and `hreflang` alternates.
+- Added localized static spec page lookup with default-content fallback and Simplified Chinese About/Friends examples.
 - Added cross-platform deployment headers: generated `dist/_headers` for Cloudflare Pages and Netlify, plus `vercel.json` and `edgeone.json` cache rules.
 - Added generated root redirects for Cloudflare Pages/Netlify and a Vercel root redirect to the default language prefix.
 
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Moved public pages to language-prefixed URLs and kept `/` as a noindex default-language entry redirect.
 - Localized navbar preset labels and common interactive control labels by the active language route.
+- Kept sidebar profile links language-prefixed so About navigation stays inside the active locale.
 - Kept performance improvements general-purpose: self-hosted Roboto, responsive images, selective Astro prefetch, and immutable caching for hashed `/_astro/*` assets.
 - Updated README and README_CN with i18n, performance, and multi-platform deployment guidance.
 

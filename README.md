@@ -144,6 +144,8 @@ translationKey: markdown
 
 If the current page has a matching translation, the navbar language switch links to that translated page. Otherwise it falls back to the target language homepage.
 
+Static spec pages can be localized by adding files under `src/content/spec/<lang-slug>/`, for example `src/content/spec/zh-cn/about.md`. Missing localized files fall back to the default `src/content/spec/about.md` or `friends.md` content.
+
 ### Performance Strategy
 
 - Roboto is self-hosted through `@fontsource/roboto`; only the Latin `400`, `500`, and `700` weights are loaded by default.

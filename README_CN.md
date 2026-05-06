@@ -144,6 +144,8 @@ translationKey: markdown
 
 如果当前页面存在目标语言翻译，导航栏语言切换会跳转到对应文章；否则回退到目标语言首页。
 
+静态说明页可以放在 `src/content/spec/<lang-slug>/` 下做本地化，例如 `src/content/spec/zh-cn/about.md`。如果目标语言文件不存在，会回退到默认的 `src/content/spec/about.md` 或 `friends.md`。
+
 ### 性能策略
 
 - Roboto 通过 `@fontsource/roboto` 自托管，默认仅加载 Latin `400`、`500`、`700` 字重。
