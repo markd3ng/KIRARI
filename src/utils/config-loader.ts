@@ -6,7 +6,7 @@ import { LinkPreset, type Config, type LinkPresetType, type NavBarLink } from ".
  * Legacy EnvConfig type for backward compatibility
  * 旧版 EnvConfig 类型，用于向后兼容
  * 
- * @deprecated Use Config type instead. Will be removed in future version.
+ * Prefer Config for new code.
  */
 export type EnvConfig = {
 	siteUrl: string;
@@ -349,7 +349,7 @@ const DEFAULT_CONFIG: Config = {
  * Legacy default ENV config for backward compatibility
  * 旧版默认 ENV 配置，用于向后兼容
  * 
- * @deprecated Use DEFAULT_CONFIG instead. Will be removed in future version.
+ * Prefer DEFAULT_CONFIG for new code.
  */
 const DEFAULT_ENV_CONFIG: EnvConfig = {
 	siteUrl: DEFAULT_CONFIG.site.url,
