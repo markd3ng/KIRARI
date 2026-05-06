@@ -147,6 +147,7 @@ export type LLMsConfig = {
 export type I18nConfig = {
 	enable: boolean;
 	defaultLang: SiteConfig["lang"];
+	defaultLangInSubdir: boolean;
 	languages: SiteConfig["lang"][];
 	fallbackToDefault: boolean;
 };

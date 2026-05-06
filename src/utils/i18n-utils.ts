@@ -57,6 +57,20 @@ export function getEnabledLanguages(): LangCode[] {
 	return Array.from(new Set(languages));
 }
 
+export function isDefaultLang(lang?: string): boolean {
+	return normalizeLangCode(lang) === normalizeLangCode(Config.i18n.defaultLang);
+}
+
+export function shouldUseLangPrefix(lang?: string): boolean {
+	return Config.i18n.defaultLangInSubdir || !isDefaultLang(lang);
+}
+
+export function getPrefixedLanguages(): LangCode[] {
+	const languages = getEnabledLanguages();
+	if (Config.i18n.defaultLangInSubdir) return languages;
+	return languages.filter((lang) => !isDefaultLang(lang));
+}
+
 export function isLangSlug(slug?: string): boolean {
 	if (!slug) return false;
 	const normalized = toLangSlug(fromLangSlug(slug));
@@ -69,6 +83,7 @@ function joinUrl(...parts: string[]): string {
 
 export function withLangPrefix(path: string, lang?: string): string {
 	const cleanPath = path.startsWith("/") ? path : `/${path}`;
+	if (!shouldUseLangPrefix(lang)) return joinUrl("/", import.meta.env.BASE_URL, cleanPath);
 	return joinUrl("/", import.meta.env.BASE_URL, toLangSlug(lang), cleanPath);
 }
 

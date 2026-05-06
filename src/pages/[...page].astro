@@ -1,4 +1,5 @@
 ---
+import type { GetStaticPaths } from "astro";
 import Pagination from "../components/control/Pagination.astro";
 import PostPage from "../components/PostPage.astro";
 import { Config } from "../constants";
@@ -7,23 +8,39 @@ import MainGridLayout from "../layouts/MainGridLayout.astro";
 import { getSortedPosts } from "../utils/content-utils";
 import { getHomeAlternates, getLangHomeUrl, withLangPrefix } from "../utils/i18n-utils";
 
+export const getStaticPaths = (async () => {
+	const lang = Config.i18n.defaultLang;
+	const posts = await getSortedPosts(lang);
+	const totalPages = Math.ceil(posts.length / PAGE_SIZE);
+	const paths = [];
+	for (let pageNumber = 2; pageNumber <= totalPages; pageNumber++) {
+		paths.push({
+			params: { page: String(pageNumber) },
+			props: { lang, pageNumber },
+		});
+	}
+	return paths;
+}) satisfies GetStaticPaths;
+
 const lang = Config.i18n.defaultLang;
+const pageNumber = Number(Astro.props.pageNumber || Astro.params.page || 1);
 const allBlogPosts = await getSortedPosts(lang);
 const pageSize = PAGE_SIZE;
 const totalPages = Math.max(1, Math.ceil(allBlogPosts.length / pageSize));
+const start = (pageNumber - 1) * pageSize;
 
 const page = {
-	data: allBlogPosts.slice(0, pageSize),
-	start: 0,
-	end: pageSize - 1,
+	data: allBlogPosts.slice(start, start + pageSize),
+	start,
+	end: Math.min(start + pageSize - 1, allBlogPosts.length - 1),
 	size: pageSize,
 	total: allBlogPosts.length,
-	currentPage: 1,
+	currentPage: pageNumber,
 	lastPage: totalPages,
 	url: {
-		current: getLangHomeUrl(lang),
-		prev: undefined,
-		next: totalPages > 1 ? withLangPrefix("/2/", lang) : undefined,
+		current: withLangPrefix(`/${pageNumber}/`, lang),
+		prev: pageNumber > 1 ? withLangPrefix(pageNumber === 2 ? "/" : `/${pageNumber - 1}/`, lang) : undefined,
+		next: pageNumber < totalPages ? withLangPrefix(`/${pageNumber + 1}/`, lang) : undefined,
 		first: getLangHomeUrl(lang),
 		last: totalPages > 1 ? withLangPrefix(`/${totalPages}/`, lang) : getLangHomeUrl(lang),
 	},
@@ -32,7 +49,7 @@ const page = {
 const len = page.data.length;
 ---
 
-<MainGridLayout lang={lang} alternates={getHomeAlternates()} canonicalUrl={getLangHomeUrl(lang)}>
+<MainGridLayout lang={lang} alternates={getHomeAlternates()} canonicalUrl={page.url.current}>
 	<PostPage page={page} lang={lang}></PostPage>
 	<Pagination class="mx-auto onload-animation" page={page} lang={lang} style={`animation-delay: calc(var(--content-delay) + ${len * 50}ms)`}></Pagination>
 </MainGridLayout>

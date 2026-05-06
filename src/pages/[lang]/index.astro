@@ -7,15 +7,15 @@ import MainGridLayout from "../../layouts/MainGridLayout.astro";
 import { getSortedPosts } from "../../utils/content-utils";
 import {
 	fromLangSlug,
-	getEnabledLanguages,
 	getHomeAlternates,
 	getLangHomeUrl,
+	getPrefixedLanguages,
 	toLangSlug,
 	withLangPrefix,
 } from "../../utils/i18n-utils";
 
 export const getStaticPaths = (() =>
-	getEnabledLanguages().map((lang) => ({
+	getPrefixedLanguages().map((lang) => ({
 		params: { lang: toLangSlug(lang) },
 		props: { lang },
 	}))) satisfies GetStaticPaths;

@@ -4,36 +4,26 @@ import ArchivePanel from "@components/ArchivePanel.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { getSortedPostsList, getTaxonomyDisplayMappings } from "../../../utils/content-utils";
-import {
-	fromLangSlug,
-	getPathAlternates,
-	getPrefixedLanguages,
-	toLangSlug,
-	withLangPrefix,
-} from "../../../utils/i18n-utils";
-import { normalizeMappingKey } from "../../../utils/normalize";
-import { getTagName } from "../../../utils/url-utils";
+import { Config } from "../../constants";
+import { getSortedPostsList, getTaxonomyDisplayMappings } from "../../utils/content-utils";
+import { getPathAlternates, withLangPrefix } from "../../utils/i18n-utils";
+import { normalizeMappingKey } from "../../utils/normalize";
+import { getTagName } from "../../utils/url-utils";
 
 export const getStaticPaths = (async () => {
-	const paths = [];
-	for (const lang of getPrefixedLanguages()) {
-		const posts = await getSortedPostsList(lang);
-		const allTags = new Set<string>();
-		posts.forEach((post) => {
-			post.data.tags.forEach((tag) => allTags.add(normalizeMappingKey(tag)));
-		});
-		for (const tag of allTags) {
-			paths.push({
-				params: { lang: toLangSlug(lang), tag },
-				props: { lang, tag },
-			});
-		}
-	}
-	return paths;
+	const lang = Config.i18n.defaultLang;
+	const posts = await getSortedPostsList(lang);
+	const allTags = new Set<string>();
+	posts.forEach((post) => {
+		post.data.tags.forEach((tag) => allTags.add(normalizeMappingKey(tag)));
+	});
+	return Array.from(allTags).map((tag) => ({
+		params: { tag },
+		props: { lang, tag },
+	}));
 }) satisfies GetStaticPaths;
 
-const lang = fromLangSlug(Astro.params.lang);
+const lang = Config.i18n.defaultLang;
 const tag = Astro.params.tag as string;
 const posts = await getSortedPostsList(lang);
 const { tags: tagDisplayMap } = await getTaxonomyDisplayMappings(lang);

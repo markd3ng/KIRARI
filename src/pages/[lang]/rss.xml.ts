@@ -5,7 +5,7 @@ import type { APIContext, GetStaticPaths } from "astro";
 import MarkdownIt from "markdown-it";
 import sanitizeHtml from "sanitize-html";
 import { siteConfig } from "@/config";
-import { fromLangSlug, getEnabledLanguages, toHreflang, toLangSlug } from "../../utils/i18n-utils";
+import { fromLangSlug, getPrefixedLanguages, toHreflang, toLangSlug } from "../../utils/i18n-utils";
 
 const parser = new MarkdownIt();
 
@@ -18,7 +18,7 @@ function stripInvalidXmlChars(str: string): string {
 }
 
 export const getStaticPaths = (() =>
-	getEnabledLanguages().map((lang) => ({
+	getPrefixedLanguages().map((lang) => ({
 		params: { lang: toLangSlug(lang) },
 		props: { lang },
 	}))) satisfies GetStaticPaths;

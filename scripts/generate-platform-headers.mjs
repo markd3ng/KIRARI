@@ -36,11 +36,11 @@ function findCriticalCss() {
 
 function getDefaultHomePath() {
 	const rootHtml = join(distDir, "index.html");
-	if (!existsSync(rootHtml)) return "/en-US/";
+	if (!existsSync(rootHtml)) return "/";
 
 	const html = readFileSync(rootHtml, "utf8");
 	const refreshMatch = html.match(/http-equiv=["']refresh["'][^>]+content=["'][^"']*url=([^"']+)["']/i);
-	return refreshMatch?.[1] || "/en-US/";
+	return refreshMatch?.[1] || "/";
 }
 
 const defaultHomePath = getDefaultHomePath();
@@ -62,9 +62,7 @@ const headers = [
 	"/",
 	linkHeaders,
 	"",
-	defaultHomePath,
-	linkHeaders,
-	"",
+	...(defaultHomePath === "/" ? [] : [defaultHomePath, linkHeaders, ""]),
 	"/_astro/*",
 	"  Cache-Control: public, max-age=31536000, immutable",
 	"",
@@ -79,4 +77,7 @@ const headers = [
 	.join("\n");
 
 writeFileSync(join(distDir, "_headers"), `${headers}\n`);
-writeFileSync(join(distDir, "_redirects"), `/  ${defaultHomePath}  302\n`);
+writeFileSync(
+	join(distDir, "_redirects"),
+	defaultHomePath === "/" ? "" : `/  ${defaultHomePath}  302\n`,
+);

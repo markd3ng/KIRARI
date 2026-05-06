@@ -9,15 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added Hugo-like i18n with BCP 47 language-prefixed routes (`/en-US/`, `/zh-CN/`, etc.), post-level `translationKey`, a navbar language switch, localized RSS feeds, canonical links, and `hreflang` alternates.
+- Added Hugo-like i18n with BCP 47 routes, post-level `translationKey`, a navbar language switch, localized RSS feeds, canonical links, and `hreflang` alternates.
 - Added localized static spec page lookup with default-content fallback and Simplified Chinese About/Friends examples.
 - Added optional Algolia DocSearch configuration, runtime trigger integration, and `docsearch:*` meta tags.
 - Added cross-platform deployment headers: generated `dist/_headers` for Cloudflare Pages and Netlify, plus `vercel.json` and `edgeone.json` cache rules.
-- Added generated root redirects for Cloudflare Pages/Netlify and a Vercel root redirect to the default language prefix.
+- Added `default-language-in-subdir` to control whether the default language uses a prefixed URL.
 
 ### Changed
 
-- Moved public pages to language-prefixed URLs and kept `/` as a noindex default-language entry redirect.
+- Hid the default language route by default, so `/` serves `default-language` while non-default languages keep prefixes such as `/zh-CN/`.
 - Localized navbar preset labels and common interactive control labels by the active language route.
 - Kept sidebar profile links language-prefixed so About navigation stays inside the active locale.
 - Filtered Pagefind queries by active language and avoided persisting stale navbar/sidebar DOM across locale changes.

@@ -4,38 +4,28 @@ import ArchivePanel from "@components/ArchivePanel.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { getSortedPostsList, getTaxonomyDisplayMappings } from "../../../utils/content-utils";
-import {
-	fromLangSlug,
-	getPathAlternates,
-	getPrefixedLanguages,
-	toLangSlug,
-	withLangPrefix,
-} from "../../../utils/i18n-utils";
-import { normalizeMappingKey } from "../../../utils/normalize";
-import { getCategoryName } from "../../../utils/url-utils";
+import { Config } from "../../constants";
+import { getSortedPostsList, getTaxonomyDisplayMappings } from "../../utils/content-utils";
+import { getPathAlternates, withLangPrefix } from "../../utils/i18n-utils";
+import { normalizeMappingKey } from "../../utils/normalize";
+import { getCategoryName } from "../../utils/url-utils";
 
 export const getStaticPaths = (async () => {
-	const paths = [];
-	for (const lang of getPrefixedLanguages()) {
-		const posts = await getSortedPostsList(lang);
-		const allCategories = new Set<string>();
-		posts.forEach((post) => {
-			const category = post.data.category;
-			if (category && normalizeMappingKey(category) !== "") allCategories.add(normalizeMappingKey(category));
-			else allCategories.add("uncategorized");
-		});
-		for (const category of allCategories) {
-			paths.push({
-				params: { lang: toLangSlug(lang), category },
-				props: { lang, category },
-			});
-		}
-	}
-	return paths;
+	const lang = Config.i18n.defaultLang;
+	const posts = await getSortedPostsList(lang);
+	const allCategories = new Set<string>();
+	posts.forEach((post) => {
+		const category = post.data.category;
+		if (category && normalizeMappingKey(category) !== "") allCategories.add(normalizeMappingKey(category));
+		else allCategories.add("uncategorized");
+	});
+	return Array.from(allCategories).map((category) => ({
+		params: { category },
+		props: { lang, category },
+	}));
 }) satisfies GetStaticPaths;
 
-const lang = fromLangSlug(Astro.params.lang);
+const lang = Config.i18n.defaultLang;
 const category = Astro.params.category as string;
 const posts = await getSortedPostsList(lang);
 const { categories: categoryDisplayMap, tags: tagDisplayMap } = await getTaxonomyDisplayMappings(lang);

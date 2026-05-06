@@ -208,6 +208,10 @@ type TomlConfig = {
 		defaultLanguage?: unknown;
 		/** TOML key: default-language / TOML 键：default-language */
 		"default-language"?: unknown;
+		/** Put default language under its language subdirectory / 默认语言是否使用语言子目录 */
+		defaultLangInSubdir?: unknown;
+		/** TOML key: default-language-in-subdir / TOML 键：default-language-in-subdir */
+		"default-language-in-subdir"?: unknown;
 		/** Enabled languages / 启用语言 */
 		languages?: unknown;
 		/** Fallback to default language when translation is missing / 缺失翻译时回退默认语言 */
@@ -355,6 +359,7 @@ const DEFAULT_CONFIG: Config = {
 	i18n: {
 		enable: true,
 		defaultLang: "en-US",
+		defaultLangInSubdir: false,
 		languages: ["en-US", "zh-CN", "zh-TW", "zh-HK"],
 		fallbackToDefault: true,
 	},
@@ -839,6 +844,10 @@ export const loadConfig = (): Config => {
 		i18n: {
 			enable: getBoolean(i18n?.enable, DEFAULT_CONFIG.i18n.enable),
 			defaultLang: validateLang(i18n?.["default-language"] ?? i18n?.defaultLanguage ?? i18n?.defaultLang),
+			defaultLangInSubdir: getBoolean(
+				i18n?.["default-language-in-subdir"] ?? i18n?.defaultLangInSubdir,
+				DEFAULT_CONFIG.i18n.defaultLangInSubdir,
+			),
 			languages: validateLangArray(i18n?.languages),
 			fallbackToDefault: getBoolean(i18n?.fallbackToDefault, DEFAULT_CONFIG.i18n.fallbackToDefault),
 		},

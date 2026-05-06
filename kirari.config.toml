@@ -45,13 +45,20 @@
 # Internationalization / 国际化
 # -----------------------------------------------------------------------------
 [i18n]
-# Enable BCP 47 language-prefixed URLs, for example /en-US/ and /zh-CN/.
-# 启用 BCP 47 语言前缀 URL，例如 /en-US/ 与 /zh-CN/。
+# Enable BCP 47 i18n routes. Non-default languages use prefixes such as /zh-CN/.
+# 启用 BCP 47 国际化路由。非默认语言使用 /zh-CN/ 等前缀。
 enable = true
 
-# Default language, Hugo-style. Root / redirects to this language prefix.
-# 默认语言，Hugo 风格。根路径 / 会跳转到该语言前缀。
+# Default language, Hugo-style. When default-language-in-subdir is false,
+# root / serves this language directly.
+# 默认语言，Hugo 风格。default-language-in-subdir 为 false 时，根路径 / 直接作为该语言首页。
 default-language = "en-US"
+
+# Match Hugo's defaultContentLanguageInSubdir behavior.
+# false hides the default language prefix: / instead of /en-US/.
+# 对齐 Hugo 的 defaultContentLanguageInSubdir 行为。
+# false 会隐藏默认语言前缀：使用 / 而不是 /en-US/。
+default-language-in-subdir = false
 
 # Enabled BCP 47 language tags. Public routes use the same values.
 # 启用 BCP 47 语言标签。公开路由使用相同写法。

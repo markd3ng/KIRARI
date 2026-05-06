@@ -7,16 +7,16 @@ import MainGridLayout from "../../layouts/MainGridLayout.astro";
 import { getSortedPosts } from "../../utils/content-utils";
 import {
 	fromLangSlug,
-	getEnabledLanguages,
 	getHomeAlternates,
 	getLangHomeUrl,
+	getPrefixedLanguages,
 	toLangSlug,
 	withLangPrefix,
 } from "../../utils/i18n-utils";
 
 export const getStaticPaths = (async () => {
 	const paths = [];
-	for (const lang of getEnabledLanguages()) {
+	for (const lang of getPrefixedLanguages()) {
 		const posts = await getSortedPosts(lang);
 		const totalPages = Math.ceil(posts.length / PAGE_SIZE);
 		for (let pageNumber = 2; pageNumber <= totalPages; pageNumber++) {
