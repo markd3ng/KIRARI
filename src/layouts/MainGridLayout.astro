@@ -11,7 +11,9 @@ import { siteConfig } from "../config";
 import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_EXTEND,
+	BANNER_HEIGHT_EXTEND_MOBILE,
 	BANNER_HEIGHT_HOME,
+	BANNER_HEIGHT_HOME_MOBILE,
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
 } from "../constants/constants";
 import Layout from "./Layout.astro";
@@ -76,7 +78,7 @@ const mainPanelTop = siteConfig.banner.enable
 </div>
 
 <!-- Banner -->
-{siteConfig.banner.enable && <div id="banner-wrapper" class={`absolute z-10 w-full transition-[transform,opacity] duration-700 overflow-hidden`} style={`top: -${BANNER_HEIGHT_EXTEND}vh; min-height: calc(${BANNER_HEIGHT_HOME}vh + ${BANNER_HEIGHT_EXTEND}vh);`} transition:name="banner" transition:persist>
+{siteConfig.banner.enable && <div id="banner-wrapper" class={`absolute z-10 w-full transition-[transform,opacity] duration-700 overflow-hidden`} style={`--banner-top-mobile: -${BANNER_HEIGHT_EXTEND_MOBILE}vh; --banner-min-height-mobile: calc(${BANNER_HEIGHT_HOME_MOBILE}vh + ${BANNER_HEIGHT_EXTEND_MOBILE}vh); --banner-top-desktop: -${BANNER_HEIGHT_EXTEND}vh; --banner-min-height-desktop: calc(${BANNER_HEIGHT_HOME}vh + ${BANNER_HEIGHT_EXTEND}vh);`} transition:name="banner" transition:persist>
     <ImageWrapper
         id="banner"
         alt="Banner image of the blog"
@@ -88,7 +90,7 @@ const mainPanelTop = siteConfig.banner.enable
         decoding="sync"
         fetchpriority="high"
         sizes="100vw"
-        widths={[640, 960, 1280, 1440, 1600, 1920]}
+        widths={[480, 640, 750, 828, 960, 1080, 1200, 1280, 1440, 1600, 1920]}
         quality={72}
     >
     </ImageWrapper>
@@ -161,3 +163,17 @@ const mainPanelTop = siteConfig.banner.enable
     </div>
 </div>
 </Layout>
+
+<style>
+#banner-wrapper {
+	top: var(--banner-top-mobile);
+	min-height: var(--banner-min-height-mobile);
+}
+
+@media (min-width: 1024px) {
+	#banner-wrapper {
+		top: var(--banner-top-desktop);
+		min-height: var(--banner-min-height-desktop);
+	}
+}
+</style>

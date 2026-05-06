@@ -9,6 +9,10 @@ export const DEFAULT_THEME: "auto" = AUTO_MODE;
 export const BANNER_HEIGHT: number = 35;
 export const BANNER_HEIGHT_EXTEND: number = 30;
 export const BANNER_HEIGHT_HOME: number = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
+export const BANNER_HEIGHT_MOBILE: number = 32;
+export const BANNER_HEIGHT_EXTEND_MOBILE: number = 18;
+export const BANNER_HEIGHT_HOME_MOBILE: number =
+	BANNER_HEIGHT_MOBILE + BANNER_HEIGHT_EXTEND_MOBILE;
 
 // The height the main panel overlaps the banner, unit: rem
 export const MAIN_PANEL_OVERLAPS_BANNER_HEIGHT: number = 3.5;

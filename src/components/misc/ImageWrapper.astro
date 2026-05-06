@@ -12,8 +12,8 @@ interface Props {
 	decoding?: "async" | "sync" | "auto";
 	fetchpriority?: "high" | "low" | "auto";
 	sizes?: string;
-	width?: number | string;
-	height?: number | string;
+	width?: number | `${number}`;
+	height?: number | `${number}`;
 	widths?: number[];
 	quality?: "low" | "mid" | "high" | "max" | number;
 	format?: "avif" | "png" | "jpg" | "jpeg" | "tiff" | "webp" | "gif" | "svg";

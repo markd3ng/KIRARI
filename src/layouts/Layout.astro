@@ -8,7 +8,10 @@ import {
 	AUTO_MODE,
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_EXTEND,
+	BANNER_HEIGHT_EXTEND_MOBILE,
 	BANNER_HEIGHT_HOME,
+	BANNER_HEIGHT_HOME_MOBILE,
+	BANNER_HEIGHT_MOBILE,
 	DARK_MODE,
 	DEFAULT_THEME,
 	LIGHT_MODE,
@@ -110,12 +113,23 @@ if (!lang) {
 const siteLang = lang.replace("_", "-");
 
 const bannerOffsetByPosition = {
-	top: `${BANNER_HEIGHT_EXTEND}vh`,
-	center: `${BANNER_HEIGHT_EXTEND / 2}vh`,
-	bottom: "0",
+	top: {
+		desktop: `${BANNER_HEIGHT_EXTEND}vh`,
+		mobile: `${BANNER_HEIGHT_EXTEND_MOBILE}vh`,
+	},
+	center: {
+		desktop: `${BANNER_HEIGHT_EXTEND / 2}vh`,
+		mobile: `${BANNER_HEIGHT_EXTEND_MOBILE / 2}vh`,
+	},
+	bottom: {
+		desktop: "0",
+		mobile: "0",
+	},
 };
-const bannerOffset =
+const selectedBannerOffset =
 	bannerOffsetByPosition[siteConfig.banner.position || "center"];
+const bannerOffset = selectedBannerOffset.desktop;
+const bannerOffsetMobile = selectedBannerOffset.mobile;
 
 const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 ---
@@ -179,7 +193,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 		)}
 
 		<!-- Set the theme before the page is rendered to avoid a flash -->
-		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue}}>
+		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, BANNER_HEIGHT_EXTEND_MOBILE, PAGE_WIDTH, configHue}}>
 			// Load the theme from local storage
 			const theme = localStorage.getItem('theme') || DEFAULT_THEME;
 			
@@ -205,7 +219,9 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 			const hue = localStorage.getItem('hue') || configHue;
 
 			// calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
-			let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
+			const getBannerExtendPercent = () =>
+				window.innerWidth >= 1024 ? BANNER_HEIGHT_EXTEND : BANNER_HEIGHT_EXTEND_MOBILE;
+			let offset = Math.floor(window.innerHeight * (getBannerExtendPercent() / 100));
 			offset = offset - offset % 4;
 
 			document.documentElement.style.setProperty('--hue', hue);
@@ -382,8 +398,11 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 
 <style is:global define:vars={{
 	bannerOffset,
+	bannerOffsetMobile,
 	'banner-height-home': `${BANNER_HEIGHT_HOME}vh`,
+	'banner-height-home-mobile': `${BANNER_HEIGHT_HOME_MOBILE}vh`,
 	'banner-height': `${BANNER_HEIGHT}vh`,
+	'banner-height-mobile': `${BANNER_HEIGHT_MOBILE}vh`,
 }}>
 @reference "tailwindcss";
 
@@ -433,28 +452,46 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 }
 
 .enable-banner.is-home #banner-wrapper {
-	@apply h-[var(--banner-height-home)] translate-y-[var(--banner-height-extend)];
+	@apply h-[var(--banner-height-home-mobile)] translate-y-[var(--banner-height-extend)];
 }
 .enable-banner #banner-wrapper {
-	@apply h-[var(--banner-height-home)];
-	min-height: calc(var(--banner-height-home) + var(--banner-height-extend, 0px));
+	@apply h-[var(--banner-height-home-mobile)];
+	min-height: calc(var(--banner-height-home-mobile) + var(--banner-height-extend, 0px));
 	contain: paint;
 }
 
 .enable-banner.is-home #banner {
-	@apply h-[var(--banner-height-home)] translate-y-0;
+	@apply h-[var(--banner-height-home-mobile)] translate-y-0;
 }
 .enable-banner #banner {
-	@apply h-[var(--banner-height-home)] translate-y-[var(--bannerOffset)];
+	@apply h-[var(--banner-height-home-mobile)] translate-y-[var(--bannerOffsetMobile)];
 }
 .enable-banner.is-home #main-grid {
 	@apply translate-y-[var(--banner-height-extend)];
 }
 .enable-banner #top-row {
-	@apply h-[calc(var(--banner-height-home)_-_4.5rem)];
+	@apply h-[calc(var(--banner-height-home-mobile)_-_4.5rem)];
 }
 .enable-banner.is-home #sidebar-sticky {
 	@apply top-[calc(1rem_-_var(--banner-height-extend))];
+}
+@media (min-width: 1024px) {
+	.enable-banner.is-home #banner-wrapper {
+		@apply h-[var(--banner-height-home)];
+	}
+	.enable-banner #banner-wrapper {
+		@apply h-[var(--banner-height-home)];
+		min-height: calc(var(--banner-height-home) + var(--banner-height-extend, 0px));
+	}
+	.enable-banner.is-home #banner {
+		@apply h-[var(--banner-height-home)];
+	}
+	.enable-banner #banner {
+		@apply h-[var(--banner-height-home)] translate-y-[var(--bannerOffset)];
+	}
+	.enable-banner #top-row {
+		@apply h-[calc(var(--banner-height-home)_-_4.5rem)];
+	}
 }
 .navbar-hidden {
 	@apply opacity-0 -translate-y-16;
@@ -479,6 +516,9 @@ import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_HOME,
 	BANNER_HEIGHT_EXTEND,
+	BANNER_HEIGHT_EXTEND_MOBILE,
+	BANNER_HEIGHT_HOME_MOBILE,
+	BANNER_HEIGHT_MOBILE,
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT
 } from "../constants/constants";
 import { siteConfig } from '../config';
@@ -793,7 +833,8 @@ function onTransitionStart() {
 	requestAnimationFrame(() => {
 		const shouldHideNavbar = (() => {
 			if (!bannerEnabled) return false;
-			const threshold = window.innerHeight * (BANNER_HEIGHT / 100) - 72 - 16;
+			const bannerHeightPercent = window.innerWidth >= 1024 ? BANNER_HEIGHT : BANNER_HEIGHT_MOBILE;
+			const threshold = window.innerHeight * (bannerHeightPercent / 100) - 72 - 16;
 			const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
 			return document.body.classList.contains('lg:is-home') && scrollTop >= threshold;
 		})();
@@ -1084,14 +1125,21 @@ let ticking = false
 // Pre-calculate thresholds to avoid calculations during scroll
 let bannerHeight = viewportHeight * (BANNER_HEIGHT / 100)
 let navbarThreshold = 0
+function getBannerHeightPercent() {
+	return viewportWidth >= 1024 ? BANNER_HEIGHT : BANNER_HEIGHT_MOBILE
+}
+function getHomeBannerHeightPercent() {
+	return viewportWidth >= 1024 ? BANNER_HEIGHT_HOME : BANNER_HEIGHT_HOME_MOBILE
+}
+function getBannerExtendPercent() {
+	return viewportWidth >= 1024 ? BANNER_HEIGHT_EXTEND : BANNER_HEIGHT_EXTEND_MOBILE
+}
 function updateThresholds() {
-	bannerHeight = viewportHeight * (BANNER_HEIGHT / 100)
+	bannerHeight = viewportHeight * (getBannerHeightPercent() / 100)
 	const NAVBAR_HEIGHT = 72
 	const MAIN_PANEL_EXCESS_HEIGHT = MAIN_PANEL_OVERLAPS_BANNER_HEIGHT * 16
-	let navbarBannerHeight = BANNER_HEIGHT
-	if (isHome && viewportWidth >= 1024) {
-		navbarBannerHeight = BANNER_HEIGHT_HOME
-	}
+	let navbarBannerHeight = getBannerHeightPercent()
+	if (isHome) navbarBannerHeight = getHomeBannerHeightPercent()
 	navbarThreshold = viewportHeight * (navbarBannerHeight / 100) - NAVBAR_HEIGHT - MAIN_PANEL_EXCESS_HEIGHT - 16
 }
 updateThresholds()
@@ -1161,7 +1209,7 @@ window.onresize = () => {
 				orientationChanged || widthDelta >= 32 || heightDelta >= 180
 
 			if (shouldRecalculateBannerOffset) {
-				let offset = Math.floor(viewportHeight * (BANNER_HEIGHT_EXTEND / 100));
+				let offset = Math.floor(viewportHeight * (getBannerExtendPercent() / 100));
 				offset = offset - offset % 4;
 				document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
 				lastBannerViewportWidth = nextWidth

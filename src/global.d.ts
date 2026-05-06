@@ -17,6 +17,8 @@ declare global {
 	}
 }
 
+export {};
+
 interface SearchResult {
 	url: string;
 	meta: {
