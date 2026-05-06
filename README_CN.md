@@ -149,7 +149,7 @@ translationKey: markdown
 - Roboto 通过 `@fontsource/roboto` 自托管，默认仅加载 Latin `400`、`500`、`700` 字重。
 - Banner、头像、文章封面继续生成响应式图片宽度，降低移动端传输体积并保留显示效果。
 - Astro prefetch 使用 selective 策略：主导航使用 `hover`，移动/菜单链接使用 `tap`，不启用 `prefetchAll`。
-- `pnpm build` 会生成供 Cloudflare Pages 与 Netlify 使用的 `dist/_headers`，同时通过 `vercel.json` 与 `edgeone.json` 为 Vercel、EdgeOne 设置缓存头。
+- `pnpm build` 会生成供 Cloudflare Pages 与 Netlify 使用的 `dist/_headers` 与 `dist/_redirects`，同时通过 `vercel.json` 与 `edgeone.json` 为 Vercel、EdgeOne 设置缓存头。
 - `/_astro/*` 使用 immutable 强缓存，因为文件名带内容 hash；HTML、Pagefind 与非 hash public 文件保持可安全更新。
 
 ### 导航栏

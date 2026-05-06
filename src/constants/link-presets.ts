@@ -24,3 +24,18 @@ export const LinkPresets: { [key in LinkPresetType]: NavBarLink } = {
 		url: "/friends/",
 	},
 };
+
+export function getLinkPreset(preset: LinkPresetType, lang?: string): NavBarLink {
+	const link = LinkPresets[preset];
+	const keyByPreset: Partial<Record<LinkPresetType, I18nKey>> = {
+		[LinkPreset.Home]: I18nKey.home,
+		[LinkPreset.About]: I18nKey.about,
+		[LinkPreset.Archive]: I18nKey.archive,
+		[LinkPreset.Friends]: I18nKey.friends,
+	};
+	const key = keyByPreset[preset];
+	return {
+		...link,
+		name: key ? i18n(key, lang) : link.name,
+	};
+}

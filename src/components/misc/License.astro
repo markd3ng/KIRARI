@@ -10,9 +10,10 @@ interface Props {
 	pubDate: Date;
 	lastUpdated?: Date;
 	class: string;
+	lang?: string;
 }
 
-const { title, pubDate, lastUpdated } = Astro.props;
+const { title, pubDate, lastUpdated, lang } = Astro.props;
 const className = Astro.props.class;
 const profileConf = profileConfig;
 const licenseConf = licenseConfig;
@@ -27,21 +28,21 @@ const postUrl = decodeURIComponent(Astro.url.toString());
     </a>
     <div class="flex gap-6 mt-2">
         <div>
-            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.author)}</div>
+            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.author, lang)}</div>
             <div class="transition text-black/75 dark:text-white/75 line-clamp-2">{profileConf.name}</div>
         </div>
         <div>
-            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.publishedAt)}</div>
+            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.publishedAt, lang)}</div>
             <div class="transition text-black/75 dark:text-white/75 line-clamp-2">{formatDateToYYYYMMDD(pubDate)}</div>
         </div>
         {lastUpdated instanceof Date && (
         <div>
-            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.lastUpdatedAt)}</div>
+            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.lastUpdatedAt, lang)}</div>
             <div class="transition text-black/75 dark:text-white/75 line-clamp-2">{formatDateToYYYYMMDD(lastUpdated)}</div>
         </div>
         )}
         <div>
-            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.license)}</div>
+            <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.license, lang)}</div>
             <a href={licenseConf.url} target="_blank" rel="noopener noreferrer" class="link text-[var(--primary)] line-clamp-2">{licenseConf.name}</a>
         </div>
     </div>

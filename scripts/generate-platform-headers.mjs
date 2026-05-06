@@ -24,7 +24,7 @@ function findFirstAsset(pattern) {
 }
 
 function findCriticalCss() {
-	const defaultHome = join(distDir, "en", "index.html");
+	const defaultHome = join(distDir, getDefaultHomePath().replace(/^\/|\/$/g, ""), "index.html");
 	const fallbackHome = join(distDir, "index.html");
 	const htmlPath = existsSync(defaultHome) ? defaultHome : fallbackHome;
 	if (!existsSync(htmlPath)) return undefined;
@@ -34,6 +34,16 @@ function findCriticalCss() {
 	return stylesheetMatch?.[1];
 }
 
+function getDefaultHomePath() {
+	const rootHtml = join(distDir, "index.html");
+	if (!existsSync(rootHtml)) return "/en/";
+
+	const html = readFileSync(rootHtml, "utf8");
+	const refreshMatch = html.match(/http-equiv=["']refresh["'][^>]+content=["'][^"']*url=([^"']+)["']/i);
+	return refreshMatch?.[1] || "/en/";
+}
+
+const defaultHomePath = getDefaultHomePath();
 const criticalCss = findCriticalCss();
 const roboto400 = findFirstAsset(/roboto-latin-400-normal.*\.woff2$/);
 
@@ -52,7 +62,7 @@ const headers = [
 	"/",
 	linkHeaders,
 	"",
-	"/en/",
+	defaultHomePath,
 	linkHeaders,
 	"",
 	"/_astro/*",
@@ -69,3 +79,4 @@ const headers = [
 	.join("\n");
 
 writeFileSync(join(distDir, "_headers"), `${headers}\n`);
+writeFileSync(join(distDir, "_redirects"), `/  ${defaultHomePath}  302\n`);

@@ -1,7 +1,9 @@
 ---
 import { Icon } from "astro-icon/components";
 import { navBarConfig, siteConfig } from "../config";
-import { LinkPresets } from "../constants/link-presets";
+import { getLinkPreset } from "../constants/link-presets";
+import I18nKey from "../i18n/i18nKey";
+import { i18n } from "../i18n/translation";
 import { type LinkPresetType, type NavBarLink } from "../types/config";
 import type { AlternateLink } from "../utils/i18n-utils";
 import { getLangHomeUrl, withLangPrefix } from "../utils/i18n-utils";
@@ -19,7 +21,7 @@ const alternates = Astro.props.alternates as AlternateLink[] | undefined;
 let links: NavBarLink[] = navBarConfig.links.map(
 	(item: NavBarLink | LinkPresetType): NavBarLink => {
 		if (typeof item === "number") {
-			return LinkPresets[item];
+			return getLinkPreset(item, lang);
 		}
 		return item;
 	},
@@ -35,6 +37,9 @@ const resolveNavUrl = (link: NavBarLink) => {
 	if (link.external) return link.url;
 	return lang ? withLangPrefix(link.url, lang) : url(link.url);
 };
+const searchLabel = i18n(I18nKey.search, lang);
+const themeLabel = `${i18n(I18nKey.lightMode, lang)} / ${i18n(I18nKey.darkMode, lang)}`;
+const displaySettingsLabel = i18n(I18nKey.themeColor, lang);
 ---
 <div id="navbar" class="z-50 onload-animation">
     <div class="absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)] transition"></div> <!-- used for onload animation -->
@@ -68,34 +73,34 @@ const resolveNavUrl = (link: NavBarLink) => {
                 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
             ">
                 <Icon name="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30" />
-                <input id="search-input-desktop" placeholder="Search" aria-label="Search"
+                <input id="search-input-desktop" placeholder={searchLabel} aria-label={searchLabel}
                     class="transition-all pl-10 text-sm bg-transparent outline-0
                     h-full w-40 active:w-60 focus:w-60 text-black/50 dark:text-white/50"
                 />
             </div>
 
             <!-- Search toggle button for mobile - instant display -->
-            <button type="button" aria-label="Search panel" id="search-switch" aria-controls="search-panel" aria-expanded="false" aria-haspopup="dialog"
+            <button type="button" aria-label={searchLabel} id="search-switch" aria-controls="search-panel" aria-expanded="false" aria-haspopup="dialog"
                 class="btn-plain scale-animation lg:!hidden rounded-lg w-11 h-11 active:scale-90">
                 <Icon name="material-symbols:search" class="text-[1.25rem]" />
             </button>
 
-            <Search client:idle></Search>
+            <Search lang={lang} client:idle></Search>
             {!siteConfig.themeColor.fixed && (
-                    <button type="button" aria-label="Display settings" aria-controls="display-setting" aria-expanded="false" aria-haspopup="dialog" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
+                    <button type="button" aria-label={displaySettingsLabel} aria-controls="display-setting" aria-expanded="false" aria-haspopup="dialog" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
                         <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>
                     </button>
             )}
             <!-- z-50 make the panel higher than other float panels -->
             <div class="relative z-50" id="theme-switch-wrapper">
-                <button type="button" aria-label="Light or dark mode" aria-controls="light-dark-panel" aria-haspopup="menu" class="relative btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="scheme-switch">
+                <button type="button" aria-label={themeLabel} aria-controls="light-dark-panel" aria-haspopup="menu" class="relative btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="scheme-switch">
                     {themeIcons.map(({ mode, icon }) => (
                         <div class={`absolute theme-icon-${mode}`}>
                             <Icon name={icon} class="text-[1.25rem]" />
                         </div>
                     ))}
                 </button>
-                <LightDarkSwitch client:idle></LightDarkSwitch>
+                <LightDarkSwitch lang={lang} client:idle></LightDarkSwitch>
             </div>
             <LanguageSwitch currentLang={lang} alternates={alternates}></LanguageSwitch>
             <button type="button" aria-label="Menu" name="Nav Menu" aria-controls="nav-menu-panel" aria-expanded="false" aria-haspopup="menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
@@ -103,7 +108,7 @@ const resolveNavUrl = (link: NavBarLink) => {
             </button>
         </div>
         <NavMenuPanel links={links} lang={lang}></NavMenuPanel>
-        <DisplaySettings client:only="svelte"></DisplaySettings>
+        <DisplaySettings lang={lang} client:only="svelte"></DisplaySettings>
     </div>
 </div>
 
