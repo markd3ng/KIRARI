@@ -15,7 +15,7 @@ tagLabels:
 category: network_and_operations
 categoryLabel: 网络与运维
 draft: false
-lang: en
+lang: en-US
 ---
 
 ## Network Setup

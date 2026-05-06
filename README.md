@@ -62,13 +62,13 @@ Edit `kirari.config.toml` in the project root:
 url = "https://your-domain.com"
 title = "Your Site"
 subtitle = "Your Tagline"
-lang = "en"                    # en, zh_CN, zh_TW, ja, ko, es, th, vi, tr, id
+lang = "en-US"                 # en-US, zh-CN, zh-TW, zh-HK, ja-JP, ko-KR, es-ES, th-TH, vi-VN, tr-TR, id-ID
 base = "/"                     # Base path (e.g., "/blog" for subdirectory)
 
 [i18n]
 enable = true
-defaultLang = "en"             # Root / redirects to /en/
-languages = ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"]
+defaultLang = "en-US"          # Root / redirects to /en-US/
+languages = ["en-US", "zh-CN", "zh-TW", "zh-HK"]
 fallbackToDefault = true       # Missing translations switch to the target language homepage
 
 [search.docsearch]
@@ -137,25 +137,25 @@ indexNowKey = ""               # IndexNow API key
 
 ### Internationalization
 
-KIRARI uses language-prefixed public routes: `/en/`, `/zh-cn/`, `/zh-tw/`, `/ja/`, `/ko/`, `/es/`, `/th/`, `/vi/`, `/tr/`, and `/id/`. The root path `/` is only an entry redirect to the configured default language.
+KIRARI uses BCP 47 language-prefixed public routes: `/en-US/`, `/zh-CN/`, `/zh-TW/`, and `/zh-HK/`. The root path `/` is only an entry redirect to the configured default language.
 
 Posts can be connected across languages with `translationKey`:
 
 ```yaml
 ---
 title: Markdown Example
-lang: en
+lang: en-US
 translationKey: markdown
 ---
 ```
 
 If the current page has a matching translation, the navbar language switch links to that translated page. Otherwise it falls back to the target language homepage.
 
-Static spec pages can be localized by adding files under `src/content/spec/<lang-slug>/`, for example `src/content/spec/zh-cn/about.md`. Missing localized files fall back to the default `src/content/spec/about.md` or `friends.md` content.
+Static spec pages can be localized by adding files under `src/content/spec/<lang-slug>/`, for example `src/content/spec/zh-CN/about.md`. Missing localized files fall back to the default `src/content/spec/about.md` or `friends.md` content.
 
 ### Search
 
-Pagefind is the default local search engine. KIRARI adds a language filter to each generated page and searches only the active language, so `/zh-cn/` does not mix English results into Chinese queries.
+Pagefind is the default local search engine. KIRARI adds a language filter to each generated page and searches only the active language, so `/zh-CN/` does not mix English results into Chinese queries.
 
 Algolia DocSearch can be enabled with `[search.docsearch]` or `PUBLIC_DOCSEARCH_*` environment variables. When DocSearch is enabled and `appId`, `apiKey`, and `indexName` are present, Pagefind is disabled at build/runtime. Pages emit `docsearch:language` plus optional `[search.docsearch.metaTags]` entries as `<meta name="docsearch:*">` tags for crawler facets.
 
@@ -288,7 +288,7 @@ og: /og/custom.png       # Optional custom OG image for this post
 tags: [tag1, tag2]       # Optional
 category: Guides         # Optional
 draft: false             # Hide in production
-lang: en                 # Language code
+lang: en-US              # BCP 47 language tag
 mermaid: true            # Enable Mermaid diagrams
 ---
 

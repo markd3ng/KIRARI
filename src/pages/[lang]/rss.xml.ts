@@ -5,7 +5,7 @@ import type { APIContext, GetStaticPaths } from "astro";
 import MarkdownIt from "markdown-it";
 import sanitizeHtml from "sanitize-html";
 import { siteConfig } from "@/config";
-import { fromLangSlug, getEnabledLanguages, toLangSlug } from "../../utils/i18n-utils";
+import { fromLangSlug, getEnabledLanguages, toHreflang, toLangSlug } from "../../utils/i18n-utils";
 
 const parser = new MarkdownIt();
 
@@ -28,7 +28,7 @@ export async function GET(context: APIContext): Promise<Response> {
 	const blog = await getSortedPosts(lang);
 
 	return rss({
-		title: `${siteConfig.title} (${toLangSlug(lang)})`,
+		title: `${siteConfig.title} (${toHreflang(lang)})`,
 		description: siteConfig.subtitle || "No description",
 		site: context.site ?? "https://fuwari.vercel.app",
 		items: blog.map((post) => {
@@ -45,6 +45,6 @@ export async function GET(context: APIContext): Promise<Response> {
 				}),
 			};
 		}),
-		customData: `<language>${toLangSlug(lang)}</language>`,
+		customData: `<language>${toHreflang(lang)}</language>`,
 	});
 }

@@ -1,7 +1,7 @@
 import Key from "../i18nKey";
 import type { Translation } from "../translation";
 
-export const zh_TW: Translation = {
+export const zhTW: Translation = {
 	[Key.home]: "首頁",
 	[Key.about]: "關於",
 	[Key.archive]: "彙整",

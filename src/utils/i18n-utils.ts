@@ -5,44 +5,50 @@ import type { SiteConfig } from "../types/config";
 export type LangCode = SiteConfig["lang"];
 
 export const languageLabels: Record<LangCode, string> = {
-	en: "English",
-	zh_CN: "简体中文",
-	zh_TW: "繁體中文",
-	ja: "日本語",
-	ko: "한국어",
-	es: "Español",
-	th: "ไทย",
-	vi: "Tiếng Việt",
-	tr: "Türkçe",
-	id: "Bahasa Indonesia",
+	"en-US": "English",
+	"zh-CN": "简体中文",
+	"zh-TW": "繁體中文",
+	"zh-HK": "繁體中文（香港）",
+	"ja-JP": "日本語",
+	"ko-KR": "한국어",
+	"es-ES": "Español",
+	"th-TH": "ไทย",
+	"vi-VN": "Tiếng Việt",
+	"tr-TR": "Türkçe",
+	"id-ID": "Bahasa Indonesia",
 };
 
 const supportedLangs: LangCode[] = [
-	"en",
-	"zh_CN",
-	"zh_TW",
-	"ja",
-	"ko",
-	"es",
-	"th",
-	"vi",
-	"tr",
-	"id",
+	"en-US",
+	"zh-CN",
+	"zh-TW",
+	"zh-HK",
+	"ja-JP",
+	"ko-KR",
+	"es-ES",
+	"th-TH",
+	"vi-VN",
+	"tr-TR",
+	"id-ID",
 ];
 
 export function normalizeLangCode(lang?: string): LangCode {
-	const normalized = (lang || Config.i18n.defaultLang || "en").replace("-", "_");
+	const normalized = lang || Config.i18n.defaultLang || "en-US";
 	const lower = normalized.toLowerCase();
 	const match = supportedLangs.find((item) => item.toLowerCase() === lower);
-	return match || Config.i18n.defaultLang || "en";
+	return match || Config.i18n.defaultLang || "en-US";
 }
 
 export function toLangSlug(lang?: string): string {
-	return normalizeLangCode(lang).replace("_", "-").toLowerCase();
+	return normalizeLangCode(lang);
+}
+
+export function toHreflang(lang?: string): string {
+	return normalizeLangCode(lang);
 }
 
 export function fromLangSlug(slug?: string): LangCode {
-	return normalizeLangCode((slug || "").replace("-", "_"));
+	return normalizeLangCode(slug);
 }
 
 export function getEnabledLanguages(): LangCode[] {
@@ -92,7 +98,7 @@ export type AlternateLink = {
 export function getHomeAlternates(): AlternateLink[] {
 	return getEnabledLanguages().map((lang) => ({
 		lang,
-		hreflang: toLangSlug(lang),
+		hreflang: toHreflang(lang),
 		label: languageLabels[lang],
 		url: getLangHomeUrl(lang),
 	}));
@@ -101,7 +107,7 @@ export function getHomeAlternates(): AlternateLink[] {
 export function getPathAlternates(pathBuilder: (lang: LangCode) => string): AlternateLink[] {
 	return getEnabledLanguages().map((lang) => ({
 		lang,
-		hreflang: toLangSlug(lang),
+		hreflang: toHreflang(lang),
 		label: languageLabels[lang],
 		url: pathBuilder(lang),
 	}));

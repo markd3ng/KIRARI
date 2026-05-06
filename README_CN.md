@@ -62,13 +62,13 @@ pnpm preview
 url = "https://your-domain.com"
 title = "你的站点"
 subtitle = "你的标语"
-lang = "zh_CN"                 # en, zh_CN, zh_TW, ja, ko, es, th, vi, tr, id
+lang = "zh-CN"                 # en-US, zh-CN, zh-TW, zh-HK, ja-JP, ko-KR, es-ES, th-TH, vi-VN, tr-TR, id-ID
 base = "/"                     # 基础路径（例如子目录用 "/blog"）
 
 [i18n]
 enable = true
-defaultLang = "en"             # 根路径 / 跳转到 /en/
-languages = ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"]
+defaultLang = "en-US"          # 根路径 / 跳转到 /en-US/
+languages = ["en-US", "zh-CN", "zh-TW", "zh-HK"]
 fallbackToDefault = true       # 缺少翻译时切换到目标语言首页
 
 [search.docsearch]
@@ -137,25 +137,25 @@ indexNowKey = ""               # IndexNow API 密钥
 
 ### 国际化
 
-KIRARI 使用语言前缀公开路由：`/en/`、`/zh-cn/`、`/zh-tw/`、`/ja/`、`/ko/`、`/es/`、`/th/`、`/vi/`、`/tr/`、`/id/`。根路径 `/` 只作为默认语言入口跳转。
+KIRARI 使用 BCP 47 语言前缀公开路由：`/en-US/`、`/zh-CN/`、`/zh-TW/`、`/zh-HK/`。根路径 `/` 只作为默认语言入口跳转。
 
 文章可通过 `translationKey` 建立跨语言关联：
 
 ```yaml
 ---
 title: Markdown Example
-lang: en
+lang: en-US
 translationKey: markdown
 ---
 ```
 
 如果当前页面存在目标语言翻译，导航栏语言切换会跳转到对应文章；否则回退到目标语言首页。
 
-静态说明页可以放在 `src/content/spec/<lang-slug>/` 下做本地化，例如 `src/content/spec/zh-cn/about.md`。如果目标语言文件不存在，会回退到默认的 `src/content/spec/about.md` 或 `friends.md`。
+静态说明页可以放在 `src/content/spec/<lang-slug>/` 下做本地化，例如 `src/content/spec/zh-CN/about.md`。如果目标语言文件不存在，会回退到默认的 `src/content/spec/about.md` 或 `friends.md`。
 
 ### 搜索
 
-Pagefind 是默认本地搜索。KIRARI 会为每个生成页面写入语言过滤信息，并在当前语言范围内搜索，所以 `/zh-cn/` 不会混入英文结果。
+Pagefind 是默认本地搜索。KIRARI 会为每个生成页面写入语言过滤信息，并在当前语言范围内搜索，所以 `/zh-CN/` 不会混入英文结果。
 
 可以通过 `[search.docsearch]` 或 `PUBLIC_DOCSEARCH_*` 环境变量启用 Algolia DocSearch。当 DocSearch 开启且 `appId`、`apiKey`、`indexName` 都存在时，Pagefind 会在构建和运行时禁用。页面会输出 `docsearch:language`，并把可选的 `[search.docsearch.metaTags]` 写成 `<meta name="docsearch:*">`，供爬虫生成 facet。
 
@@ -288,7 +288,7 @@ og: /og/custom.png       # 可选，当前文章专用 OG 图片
 tags: [标签1, 标签2]     # 可选
 category: Guides         # 可选
 draft: false             # 在生产环境隐藏
-lang: zh_CN              # 语言代码
+lang: zh-CN              # BCP 47 语言标签
 mermaid: true            # 启用 Mermaid 图表
 ---
 

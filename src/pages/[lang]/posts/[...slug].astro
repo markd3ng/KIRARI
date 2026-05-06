@@ -17,6 +17,7 @@ import {
 	getEnabledLanguages,
 	getLangHomeUrl,
 	languageLabels,
+	toHreflang,
 	toLangSlug,
 	type AlternateLink,
 } from "@utils/i18n-utils";
@@ -54,7 +55,7 @@ const alternates: AlternateLink[] = getEnabledLanguages().map((itemLang) => {
 	const translated = translationMap[itemLang];
 	return {
 		lang: itemLang,
-		hreflang: toLangSlug(itemLang),
+		hreflang: toHreflang(itemLang),
 		label: languageLabels[itemLang],
 		url: translated ? getPostUrlBySlug(translated.id, itemLang) : getLangHomeUrl(itemLang),
 	};
@@ -75,7 +76,7 @@ const jsonLd = {
 		url: Astro.site,
 	},
 	datePublished: formatDateToYYYYMMDD(entry.data.published),
-	inLanguage: lang.replace("_", "-"),
+	inLanguage: toHreflang(lang),
 	image: new URL(ogImageUrl, Astro.site || Astro.url.origin).href,
 };
 ---

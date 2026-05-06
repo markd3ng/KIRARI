@@ -14,7 +14,7 @@ tagLabels:
 category: hardware_and_diy
 categoryLabel: 硬件与DIY
 draft: false
-lang: en
+lang: en-US
 ---
 
 ## Hardware Projects

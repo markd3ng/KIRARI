@@ -8,7 +8,7 @@ tagLabels:
 category: Examples
 categoryLabel: 示例
 draft: true
-lang: zh_CN
+lang: zh-CN
 translationKey: draft
 ---
 

@@ -52,7 +52,7 @@ type TomlConfig = {
 		subtitle?: unknown;
 		/** Base path (e.g., "/" or "/blog") / 基础路径 */
 		base?: unknown;
-		/** Language code (e.g., "en", "zh_CN") / 语言代码 */
+		/** BCP 47 language tag (e.g., "en-US", "zh-CN") / BCP 47 语言标签 */
 		lang?: unknown;
 		/** Theme color configuration / 主题颜色配置 */
 		themeColor?: {
@@ -254,7 +254,7 @@ const DEFAULT_CONFIG: Config = {
 		base: "/",
 		title: "KIRARI",
 		subtitle: "Demo Site",
-		lang: "en",
+		lang: "en-US",
 		themeColor: {
 			hue: 250,
 			fixed: false,
@@ -350,8 +350,8 @@ const DEFAULT_CONFIG: Config = {
 	},
 	i18n: {
 		enable: true,
-		defaultLang: "en",
-		languages: ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"],
+		defaultLang: "en-US",
+		languages: ["en-US", "zh-CN", "zh-TW", "zh-HK"],
 		fallbackToDefault: true,
 	},
 	og: {
@@ -705,18 +705,21 @@ export const loadConfig = (): Config => {
 	const search = toml.search;
 
 	// Helper: validate lang field
-	const validLangs = ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"] as const;
+	const validLangs = ["en-US", "zh-CN", "zh-TW", "zh-HK", "ja-JP", "ko-KR", "es-ES", "th-TH", "vi-VN", "tr-TR", "id-ID"] as const;
 	const validateLang = (value: unknown): typeof validLangs[number] => {
-		if (typeof value === "string" && validLangs.includes(value as typeof validLangs[number])) {
-			return value as typeof validLangs[number];
+		if (typeof value === "string") {
+			const match = validLangs.find((lang) => lang.toLowerCase() === value.toLowerCase());
+			if (match) {
+				return match;
+			}
 		}
 		return DEFAULT_CONFIG.site.lang;
 	};
 	const validateLangArray = (value: unknown): typeof validLangs[number][] => {
 		if (!Array.isArray(value)) return DEFAULT_CONFIG.i18n.languages;
-		const languages = value.filter((item): item is typeof validLangs[number] => {
-			return typeof item === "string" && validLangs.includes(item as typeof validLangs[number]);
-		});
+		const languages = value
+			.map(validateLang)
+			.filter((item): item is typeof validLangs[number] => validLangs.includes(item));
 		return languages.length > 0 ? Array.from(new Set(languages)) : DEFAULT_CONFIG.i18n.languages;
 	};
 

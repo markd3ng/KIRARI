@@ -21,7 +21,7 @@ import { Config } from "../constants";
 import { defaultFavicons } from "../constants/icon";
 import type { Favicon } from "../types/config";
 import type { AlternateLink } from "../utils/i18n-utils";
-import { getLangHomeUrl, normalizeLangCode, toLangSlug } from "../utils/i18n-utils";
+import { getLangHomeUrl, normalizeLangCode, toHreflang } from "../utils/i18n-utils";
 import { pathsEqual, url } from "../utils/url-utils";
 import {
 	GoogleAnalytics,
@@ -113,7 +113,7 @@ const favicons: Favicon[] =
 // const siteLang = siteConfig.lang.replace('_', '-')
 const pageLang = normalizeLangCode(lang || siteConfig.lang);
 const siteLang = pageLang.replace("_", "-");
-const searchLang = toLangSlug(pageLang);
+const searchLang = toHreflang(pageLang);
 const absoluteUrl = (path: string) => new URL(path, Astro.site || Astro.url.origin).href;
 const canonicalHref = canonicalUrl ? absoluteUrl(canonicalUrl) : Astro.url.href;
 const rssHref = absoluteUrl(getLangHomeUrl(pageLang).replace(/\/$/, "/rss.xml"));

@@ -10,16 +10,17 @@ export type SiteConfig = {
 	subtitle: string;
 
 	lang:
-		| "en"
-		| "zh_CN"
-		| "zh_TW"
-		| "ja"
-		| "ko"
-		| "es"
-		| "th"
-		| "vi"
-		| "tr"
-		| "id";
+		| "en-US"
+		| "zh-CN"
+		| "zh-TW"
+		| "zh-HK"
+		| "ja-JP"
+		| "ko-KR"
+		| "es-ES"
+		| "th-TH"
+		| "vi-VN"
+		| "tr-TR"
+		| "id-ID";
 
 	themeColor: {
 		hue: number;
@@ -231,6 +232,3 @@ export type Config = {
 	seo: SeoConfig;
 	search: SearchConfig;
 };
-
-
-

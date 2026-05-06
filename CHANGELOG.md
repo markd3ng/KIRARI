@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added Hugo-like i18n with language-prefixed routes (`/en/`, `/zh-cn/`, etc.), post-level `translationKey`, a navbar language switch, localized RSS feeds, canonical links, and `hreflang` alternates.
+- Added Hugo-like i18n with BCP 47 language-prefixed routes (`/en-US/`, `/zh-CN/`, etc.), post-level `translationKey`, a navbar language switch, localized RSS feeds, canonical links, and `hreflang` alternates.
 - Added localized static spec page lookup with default-content fallback and Simplified Chinese About/Friends examples.
 - Added optional Algolia DocSearch configuration, runtime trigger integration, and `docsearch:*` meta tags.
 - Added cross-platform deployment headers: generated `dist/_headers` for Cloudflare Pages and Netlify, plus `vercel.json` and `edgeone.json` cache rules.

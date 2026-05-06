@@ -38,24 +38,24 @@
 
 # Language code / 语言代码
 # Type: string / 类型: 字符串
-# Options / 可选值: en, zh_CN, zh_TW, ja, ko, es, th, vi, tr, id
-# lang = "en"
+# Options / 可选值: en-US, zh-CN, zh-TW, zh-HK, ja-JP, ko-KR, es-ES, th-TH, vi-VN, tr-TR, id-ID
+# lang = "en-US"
 
 # -----------------------------------------------------------------------------
 # Internationalization / 国际化
 # -----------------------------------------------------------------------------
 [i18n]
-# Enable language-prefixed URLs, for example /en/ and /zh-cn/
-# 启用语言前缀 URL，例如 /en/ 与 /zh-cn/
+# Enable BCP 47 language-prefixed URLs, for example /en-US/ and /zh-CN/.
+# 启用 BCP 47 语言前缀 URL，例如 /en-US/ 与 /zh-CN/。
 enable = true
 
 # Default language. Root / redirects to this language prefix.
 # 默认语言。根路径 / 会跳转到该语言前缀。
-defaultLang = "en"
+defaultLang = "en-US"
 
-# Enabled languages. URL slugs are normalized to lowercase kebab-case.
-# 启用语言。URL slug 会标准化为小写短横线。
-languages = ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"]
+# Enabled BCP 47 language tags. Public routes use the same values.
+# 启用 BCP 47 语言标签。公开路由使用相同写法。
+languages = ["en-US", "zh-CN", "zh-TW", "zh-HK"]
 
 # When a page has no translation in the target language, switch to the target homepage.
 # 当前页面没有目标语言翻译时，语言切换回退到目标语言首页。

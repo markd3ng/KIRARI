@@ -4,7 +4,7 @@ import { i18n } from "@i18n/translation";
 import Icon from "@iconify/svelte";
 import "@utils/preload-icons";
 
-import { getLangHomeUrl, toLangSlug } from "@utils/i18n-utils";
+import { getLangHomeUrl, toHreflang } from "@utils/i18n-utils";
 import { url } from "@utils/url-utils.ts";
 import { onMount } from "svelte";
 import type { SearchResult } from "@/global";
@@ -22,7 +22,7 @@ export let docsearch:
 
 const homeUrl = lang ? getLangHomeUrl(lang) : url("/");
 const searchLabel = i18n(I18nKey.search, lang);
-const langSlug = toLangSlug(lang);
+const searchLang = toHreflang(lang);
 const docsearchEnabled =
 	!!docsearch?.enable &&
 	!!docsearch.appId &&
@@ -116,7 +116,7 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 
 		if (import.meta.env.PROD && pagefindLoaded && window.pagefind) {
 			const response = await window.pagefind.search(keyword, {
-				filters: { lang: langSlug },
+				filters: { lang: searchLang },
 			});
 			// Check if this search is still relevant (not superseded by newer search)
 			if (currentSearchId !== searchId) {
@@ -196,7 +196,7 @@ onMount(() => {
 						name: docsearch!.indexName,
 						searchParameters: docsearch!.filterByLanguage
 							? {
-									facetFilters: [`language:${langSlug}`],
+									facetFilters: [`language:${searchLang}`],
 								}
 							: undefined,
 					},
