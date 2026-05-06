@@ -4,6 +4,7 @@ import type {
 	ExpressiveCodeConfig,
 	FooterConfig,
 	HeadConfig,
+	I18nConfig,
 
 	LicenseConfig,
 	LLMsConfig,
@@ -44,3 +45,4 @@ export const analyticsConfig: AnalyticsConfig =
 
 export const llmsConfig: LLMsConfig = Config.llms as LLMsConfig;
 
+export const i18nConfig: I18nConfig = Config.i18n as I18nConfig;

@@ -8,6 +8,8 @@ tagLabels:
 category: Examples
 categoryLabel: 示例
 draft: true
+lang: en
+translationKey: draft
 ---
 
 # This Article is a Draft

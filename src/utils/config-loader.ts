@@ -198,6 +198,17 @@ type TomlConfig = {
 		/** Enable i18n support / 启用国际化支持 */
 		i18n?: unknown;
 	};
+	/** Internationalization configuration / 国际化配置 */
+	i18n?: {
+		/** Enable language-prefixed routes / 启用语言前缀路由 */
+		enable?: unknown;
+		/** Default language / 默认语言 */
+		defaultLang?: unknown;
+		/** Enabled languages / 启用语言 */
+		languages?: unknown;
+		/** Fallback to default language when translation is missing / 缺失翻译时回退默认语言 */
+		fallbackToDefault?: unknown;
+	};
 	/** Open Graph configuration / Open Graph 配置 */
 	og?: {
 		/** Default OG image path / 默认 OG 图片路径 */
@@ -318,6 +329,12 @@ const DEFAULT_CONFIG: Config = {
 		title: "KIRARI",
 		description: "Documentation for KIRARI",
 		i18n: true,
+	},
+	i18n: {
+		enable: true,
+		defaultLang: "en",
+		languages: ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"],
+		fallbackToDefault: true,
 	},
 	og: {
 		defaultImage: "/og/default.png",
@@ -638,6 +655,7 @@ export const loadConfig = (): Config => {
 	const footer = toml.footer;
 	const analytics = toml.analytics;
 	const llms = toml.llms;
+	const i18n = toml.i18n;
 	const og = toml.og;
 	const seo = toml.seo;
 
@@ -648,6 +666,13 @@ export const loadConfig = (): Config => {
 			return value as typeof validLangs[number];
 		}
 		return DEFAULT_CONFIG.site.lang;
+	};
+	const validateLangArray = (value: unknown): typeof validLangs[number][] => {
+		if (!Array.isArray(value)) return DEFAULT_CONFIG.i18n.languages;
+		const languages = value.filter((item): item is typeof validLangs[number] => {
+			return typeof item === "string" && validLangs.includes(item as typeof validLangs[number]);
+		});
+		return languages.length > 0 ? Array.from(new Set(languages)) : DEFAULT_CONFIG.i18n.languages;
 	};
 
 	// Helper: validate toc depth (1-3)
@@ -758,6 +783,12 @@ export const loadConfig = (): Config => {
 			title: getString(llms?.title, DEFAULT_CONFIG.llms.title || ""),
 			description: getString(llms?.description, DEFAULT_CONFIG.llms.description || ""),
 			i18n: getBoolean(llms?.i18n, DEFAULT_CONFIG.llms.i18n || false),
+		},
+		i18n: {
+			enable: getBoolean(i18n?.enable, DEFAULT_CONFIG.i18n.enable),
+			defaultLang: validateLang(i18n?.defaultLang),
+			languages: validateLangArray(i18n?.languages),
+			fallbackToDefault: getBoolean(i18n?.fallbackToDefault, DEFAULT_CONFIG.i18n.fallbackToDefault),
 		},
 		og: {
 			defaultImage: getString(og?.defaultImage, DEFAULT_CONFIG.og.defaultImage),

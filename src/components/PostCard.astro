@@ -22,6 +22,7 @@ interface Props {
 	style: string;
 	tagDisplayMap?: Record<string, string>;
 	categoryDisplayMap?: Record<string, string>;
+	lang?: string;
 }
 const {
 
@@ -37,6 +38,7 @@ const {
 	style,
 	tagDisplayMap = {},
 	categoryDisplayMap = {},
+	lang,
 } = Astro.props;
 
 const className = Astro.props.class;
@@ -62,7 +64,7 @@ const { remarkPluginFrontmatter } = await render(entry);
         </a>
 
         <!-- metadata -->
-        <PostMetadata published={published} updated={updated} tags={tags} category={category} hideTagsForMobile={true} hideUpdateDate={true} tagDisplayMap={tagDisplayMap} categoryDisplayMap={categoryDisplayMap} class="mb-4"></PostMetadata>
+        <PostMetadata published={published} updated={updated} tags={tags} category={category} hideTagsForMobile={true} hideUpdateDate={true} tagDisplayMap={tagDisplayMap} categoryDisplayMap={categoryDisplayMap} lang={lang} class="mb-4"></PostMetadata>
 
 
         <!-- description -->
@@ -73,11 +75,11 @@ const { remarkPluginFrontmatter } = await render(entry);
         <!-- word count and read time  -->
         <div class="text-sm text-black/30 dark:text-white/30 flex gap-4 transition">
             <div>
-                {remarkPluginFrontmatter.words} {" " + i18n(remarkPluginFrontmatter.words === 1 ? I18nKey.wordCount : I18nKey.wordsCount)}
+                {remarkPluginFrontmatter.words} {" " + i18n(remarkPluginFrontmatter.words === 1 ? I18nKey.wordCount : I18nKey.wordsCount, lang)}
             </div>
             <div>|</div>
             <div>
-                {remarkPluginFrontmatter.minutes} {" " + i18n(remarkPluginFrontmatter.minutes === 1 ? I18nKey.minuteCount : I18nKey.minutesCount)}
+                {remarkPluginFrontmatter.minutes} {" " + i18n(remarkPluginFrontmatter.minutes === 1 ? I18nKey.minuteCount : I18nKey.minutesCount, lang)}
             </div>
         </div>
 
@@ -111,4 +113,3 @@ const { remarkPluginFrontmatter } = await render(entry);
     }
 </div>
 <div class="transition border-t-[1px] border-dashed mx-6 border-black/10 dark:border-white/[0.15] last:border-t-0 md:hidden"></div>
-

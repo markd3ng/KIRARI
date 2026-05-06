@@ -19,6 +19,7 @@ const postsCollection = defineCollection({
 		category: z.string().optional().nullable().default(""),
 		categoryLabel: z.string().optional().default(""),
 		lang: z.string().optional().default(""),
+		translationKey: z.string().optional().default(""),
 		mermaid: z.boolean().optional().default(false),
 
 		/* For internal use */
@@ -36,7 +37,6 @@ export const collections = {
 	posts: postsCollection,
 	spec: specCollection,
 };
-
 
 
 

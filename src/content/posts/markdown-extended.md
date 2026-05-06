@@ -12,6 +12,8 @@ tagLabels:
 category: 'Examples'
 categoryLabel: 示例
 draft: false
+lang: en
+translationKey: markdown-extended
 ---
 
 ## GitHub Repository Cards

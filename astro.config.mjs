@@ -49,6 +49,10 @@ export default defineConfig({
 	build: {
 		inlineStylesheets: "auto",
 	},
+	prefetch: {
+		prefetchAll: false,
+		defaultStrategy: "hover",
+	},
 	integrations: [
 		// Swup integration removed, using Astro's native ClientRouter
 		// with dynamic Swup fallback for browsers without View Transitions API
@@ -70,6 +74,7 @@ export default defineConfig({
 					"notes-rounded",
 					"schedule-outline-rounded",
 					"search",
+					"language",
 					"wb-sunny-outline-rounded",
 					"dark-mode-outline-rounded",
 					"radio-button-partial-outline",

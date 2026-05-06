@@ -143,6 +143,13 @@ export type LLMsConfig = {
 	i18n?: boolean;
 };
 
+export type I18nConfig = {
+	enable: boolean;
+	defaultLang: SiteConfig["lang"];
+	languages: SiteConfig["lang"][];
+	fallbackToDefault: boolean;
+};
+
 export type OGConfig = {
 	/** Default OG image for all pages and post fallback, e.g. /og/default.png */
 	defaultImage: string;
@@ -202,10 +209,10 @@ export type Config = {
 	footer: FooterConfig;
 	analytics: AnalyticsConfig;
 	llms: LLMsConfig;
+	i18n: I18nConfig;
 	og: OGConfig;
 	seo: SeoConfig;
 };
-
 
 
 

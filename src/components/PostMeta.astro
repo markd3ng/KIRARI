@@ -20,6 +20,7 @@ interface Props {
 	hideUpdateDate?: boolean;
 	tagDisplayMap?: Record<string, string>;
 	categoryDisplayMap?: Record<string, string>;
+	lang?: string;
 }
 const {
 	published,
@@ -30,6 +31,7 @@ const {
 	hideUpdateDate = false,
 	tagDisplayMap = {},
 	categoryDisplayMap = {},
+	lang,
 } = Astro.props;
 
 const className = Astro.props.class;
@@ -63,10 +65,10 @@ const className = Astro.props.class;
             <Icon name="material-symbols:book-2-outline-rounded" class="text-xl"></Icon>
         </div>
         <div class="flex flex-row flex-nowrap items-center">
-            <a href={getCategoryUrl(category)} aria-label={`View all posts in the ${category} category`}
+            <a href={getCategoryUrl(category, lang)} aria-label={`View all posts in the ${category} category`}
                class="link-lg transition text-50 text-sm font-medium
                             hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap">
-                {getCategoryName(category || i18n(I18nKey.uncategorized), categoryDisplayMap)}
+                {getCategoryName(category || i18n(I18nKey.uncategorized, lang), categoryDisplayMap)}
 
             </a>
         </div>
@@ -81,14 +83,14 @@ const className = Astro.props.class;
         <div class="flex flex-row flex-nowrap items-center">
             {(tags && tags.length > 0) && tags.map((tag, i) => (
                 <div class:list={[{"hidden": i == 0}, "mx-1.5 text-[var(--meta-divider)] text-sm"]}>/</div>
-                <a href={getTagUrl(tag)} aria-label={`View all posts with the ${tag.trim()} tag`}
+                <a href={getTagUrl(tag, lang)} aria-label={`View all posts with the ${tag.trim()} tag`}
                    class="link-lg transition text-50 text-sm font-medium
                                 hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap">
                     {getTagName(tag.trim(), tagDisplayMap)}
 
                 </a>
             ))}
-            {!(tags && tags.length > 0) && <div class="transition text-50 text-sm font-medium">{i18n(I18nKey.noTags)}</div>}
+            {!(tags && tags.length > 0) && <div class="transition text-50 text-sm font-medium">{i18n(I18nKey.noTags, lang)}</div>}
         </div>
     </div>
 </div>

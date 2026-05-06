@@ -17,6 +17,8 @@ import {
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
 } from "../constants/constants";
 import Layout from "./Layout.astro";
+import type { AlternateLink } from "../utils/i18n-utils";
+import { normalizeLangCode } from "../utils/i18n-utils";
 
 interface Props {
 	title?: string;
@@ -33,6 +35,8 @@ interface Props {
 	articleUpdated?: Date | string;
 	/** Article tags */
 	articleTags?: string[];
+	alternates?: AlternateLink[];
+	canonicalUrl?: string;
 }
 
 const {
@@ -46,12 +50,13 @@ const {
 	articlePublished,
 	articleUpdated,
 	articleTags,
+	alternates,
+	canonicalUrl,
 } = Astro.props;
+const pageLang = normalizeLangCode(lang || siteConfig.lang);
 const hasBannerCredit =
 	siteConfig.banner.enable && siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
-const displayBanner = banner || siteConfig.banner.src;
-
 const mainPanelTop = siteConfig.banner.enable
 	? `calc(${BANNER_HEIGHT}vh - ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem)`
 	: "5.5rem";
@@ -61,19 +66,21 @@ const mainPanelTop = siteConfig.banner.enable
 	title={title} 
 	banner={banner} 
 	description={description} 
-	lang={lang} 
+	lang={pageLang}
 	setOGTypeArticle={setOGTypeArticle}
 	ogImage={ogImage}
 	articlePublished={articlePublished}
 	articleUpdated={articleUpdated}
 	articleTags={articleTags}
+	alternates={alternates}
+	canonicalUrl={canonicalUrl}
 >
 
 <!-- Navbar -->
 <slot slot="head" name="head"></slot>
 <div id="top-row" class="z-50 pointer-events-none relative transition-[opacity,transform] duration-700 max-w-[var(--page-width)] px-0 md:px-4 mx-auto" transition:name="navbar" transition:persist>
     <div id="navbar-wrapper" class="pointer-events-auto sticky top-0 transition-[opacity,transform]">
-        <Navbar></Navbar>
+        <Navbar lang={pageLang} alternates={alternates}></Navbar>
     </div>
 </div>
 
@@ -119,7 +126,7 @@ const mainPanelTop = siteConfig.banner.enable
 
 
             <div transition:name="sidebar" transition:persist>
-                <SideBar class="mb-4 row-start-2 row-end-3 col-span-1 lg:row-start-1 lg:row-end-2 lg:col-span-1 lg:max-w-[17.5rem] onload-animation" headings={headings}></SideBar>
+                <SideBar class="mb-4 row-start-2 row-end-3 col-span-1 lg:row-start-1 lg:row-end-2 lg:col-span-1 lg:max-w-[17.5rem] onload-animation" headings={headings} lang={pageLang}></SideBar>
             </div>
 
             <main id="swup-container" class="transition-swup-fade row-start-1 row-end-2 col-span-1 lg:col-start-2 lg:col-span-1 overflow-hidden" transition:name="main-content">
@@ -128,13 +135,13 @@ const mainPanelTop = siteConfig.banner.enable
                     <!-- make id different from windows.swup global property -->
                     <slot></slot>
                     <div class="footer col-span-2 onload-animation hidden lg:block">
-                        <Footer></Footer>
+                        <Footer lang={pageLang}></Footer>
                     </div>
                 </div>
             </main>
 
             <div class="footer col-span-1 lg:col-span-2 onload-animation block lg:hidden">
-                <Footer></Footer>
+                <Footer lang={pageLang}></Footer>
             </div>
         </div>
 

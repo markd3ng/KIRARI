@@ -17,8 +17,11 @@ import {
 	LIGHT_MODE,
 	PAGE_WIDTH,
 } from "../constants/constants";
+import { Config } from "../constants";
 import { defaultFavicons } from "../constants/icon";
 import type { Favicon } from "../types/config";
+import type { AlternateLink } from "../utils/i18n-utils";
+import { getLangHomeUrl, normalizeLangCode } from "../utils/i18n-utils";
 import { pathsEqual, url } from "../utils/url-utils";
 import {
 	GoogleAnalytics,
@@ -44,11 +47,12 @@ interface Props {
 	articleUpdated?: Date | string;
 	/** Article tags for OG article:tag */
 	articleTags?: string[];
+	alternates?: AlternateLink[];
+	canonicalUrl?: string;
 }
 
 let { 
 	title, 
-	banner, 
 	description, 
 	lang, 
 	setOGTypeArticle,
@@ -56,6 +60,8 @@ let {
 	articlePublished,
 	articleUpdated,
 	articleTags,
+	alternates = [],
+	canonicalUrl,
 } = Astro.props;
 
 // Resolve OG image URL
@@ -87,8 +93,6 @@ const tags: string[] = articleTags || [];
 // apply a class to the body element to decide the height of the banner, only used for initial page load
 // Swup can update the body for each page visit, but it's after the page transition, causing a delay for banner height change
 // so use Swup hooks instead to change the height immediately when a link is clicked
-const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
-
 // defines global css variables
 // why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
 const configHue = siteConfig.themeColor.hue;
@@ -107,10 +111,15 @@ const favicons: Favicon[] =
 	siteConfig.favicon.length > 0 ? siteConfig.favicon : defaultFavicons;
 
 // const siteLang = siteConfig.lang.replace('_', '-')
-if (!lang) {
-	lang = `${siteConfig.lang}`;
-}
-const siteLang = lang.replace("_", "-");
+const pageLang = normalizeLangCode(lang || siteConfig.lang);
+const siteLang = pageLang.replace("_", "-");
+const absoluteUrl = (path: string) => new URL(path, Astro.site || Astro.url.origin).href;
+const canonicalHref = canonicalUrl ? absoluteUrl(canonicalUrl) : Astro.url.href;
+const rssHref = absoluteUrl(getLangHomeUrl(pageLang).replace(/\/$/, "/rss.xml"));
+const xDefaultHref = absoluteUrl(getLangHomeUrl(Config.i18n.defaultLang));
+const isHomePage =
+	pathsEqual(Astro.url.pathname, url("/")) ||
+	pathsEqual(Astro.url.pathname, getLangHomeUrl(pageLang));
 
 const bannerOffsetByPosition = {
 	top: {
@@ -148,14 +157,14 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 		<meta name="title" content={pageTitle} />
 		<meta name="description" content={description || pageTitle}>
 		<meta name="author" content={profileConfig.name}>
-		<link rel="canonical" href={Astro.url} />
-
-		<!-- DNS prefetch for Iconify API to reduce latency -->
-		<link rel="dns-prefetch" href="https://api.iconify.design">
-		<link rel="preconnect" href="https://api.iconify.design" crossorigin>
+		<link rel="canonical" href={canonicalHref} />
+		{alternates.map((alternate) => (
+			<link rel="alternate" hreflang={alternate.hreflang} href={absoluteUrl(alternate.url)} />
+		))}
+		{alternates.length > 0 && <link rel="alternate" hreflang="x-default" href={xDefaultHref} />}
 
 		<meta property="og:site_name" content={siteConfig.title}>
-		<meta property="og:url" content={Astro.url}>
+		<meta property="og:url" content={canonicalHref}>
 		<meta property="og:title" content={pageTitle}>
 		<meta property="og:description" content={description || pageTitle}>
 		{setOGTypeArticle ? (
@@ -173,7 +182,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 		{resolvedOgImage && <meta property="og:image" content={resolvedOgImage} />}
 
 		<meta name="twitter:card" content="summary_large_image">
-		<meta property="twitter:url" content={Astro.url}>
+		<meta property="twitter:url" content={canonicalHref}>
 		<meta name="twitter:title" content={pageTitle}>
 		<meta name="twitter:description" content={description || pageTitle}>
 		{resolvedOgImage && <meta property="twitter:image" content={resolvedOgImage} />}
@@ -348,7 +357,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 		)}
 
 
-		<link rel="alternate" type="application/rss+xml" title={profileConfig.name} href={`${Astro.site}rss.xml`}/>
+		<link rel="alternate" type="application/rss+xml" title={`${profileConfig.name} (${siteLang})`} href={rssHref}/>
 
 
 		<!-- Firefox View Transition shim: must run BEFORE ClientRouter module loads.
@@ -534,6 +543,7 @@ const clickOutsideConfigs = [
 	{ panel: "display-setting", ignores: ["display-setting", "display-settings-switch"] },
 	{ panel: "nav-menu-panel", ignores: ["nav-menu-panel", "nav-menu-switch"] },
 	{ panel: "search-panel", ignores: ["search-panel", "search-bar", "search-switch"] },
+	{ panel: "language-panel", ignores: ["language-panel", "language-switch"] },
 ] as const;
 
 document.addEventListener("click", (event) => {

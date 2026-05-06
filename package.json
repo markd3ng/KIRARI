@@ -14,12 +14,13 @@
     "dev": "astro dev",
     "start": "astro dev",
     "check": "astro check",
-    "build": "astro build",
+    "build": "astro build && node scripts/generate-platform-headers.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "type-check": "tsc --noEmit",
     "new-post": "node scripts/new-post.js",
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow pnpm",
+    "prepare": "npx skilld prepare || true"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.8",

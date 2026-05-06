@@ -1,0 +1,58 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getEntry, render } from "astro:content";
+import Markdown from "@components/misc/Markdown.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import friendsItems from "../../_data/friends.json";
+import {
+	fromLangSlug,
+	getEnabledLanguages,
+	getPathAlternates,
+	toLangSlug,
+	withLangPrefix,
+} from "../../utils/i18n-utils";
+
+export const getStaticPaths = (() =>
+	getEnabledLanguages().map((lang) => ({
+		params: { lang: toLangSlug(lang) },
+		props: { lang },
+	}))) satisfies GetStaticPaths;
+
+const lang = fromLangSlug(Astro.params.lang);
+const friendsPage = await getEntry("spec", "friends");
+if (!friendsPage) throw new Error("Friends page content not found");
+const { Content } = await render(friendsPage);
+const friendsUrl = withLangPrefix("/friends/", lang);
+const alternates = getPathAlternates((itemLang) => withLangPrefix("/friends/", itemLang));
+const items = friendsItems;
+---
+
+<MainGridLayout title={i18n(I18nKey.friends, lang)} description={i18n(I18nKey.friends, lang)} lang={lang} alternates={alternates} canonicalUrl={friendsUrl}>
+	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32 mb-4">
+		<div class="card-base z-10 px-9 py-6 relative w-full ">
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8 my-4">
+				{items.map((item) => (
+					<div class="flex flex-nowrap items-stretch h-28 gap-4 rounded-[var(--radius-large)]">
+						<div class="w-28 h-28 flex-shrink-0 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-900">
+							<img src={item.siteIcon} alt={item.siteTitle} width="112" height="112" loading="lazy" decoding="async" class="w-full h-full object-cover">
+						</div>
+						<div class="grow w-full">
+							<div class="font-bold transition text-lg text-neutral-900 dark:text-neutral-100 mb-1">{item.siteTitle}</div>
+							<div class="text-50 text-sm font-medium">{item.siteDesc}</div>
+						</div>
+						<a href={item.siteUrl} target="_blank" rel="noopener noreferrer"
+							class="flex btn-regular w-[3.25rem] rounded-lg bg-[var(--enter-btn-bg)] hover:bg-[var(--enter-btn-bg-hover)] active:bg-[var(--enter-btn-bg-active)] active:scale-95">
+							<span class="transition text-[var(--primary)] text-4xl mx-auto">&rsaquo;</span>
+						</a>
+					</div>
+				))}
+			</div>
+
+			<Markdown class="mt-2">
+				<Content />
+			</Markdown>
+		</div>
+	</div>
+</MainGridLayout>

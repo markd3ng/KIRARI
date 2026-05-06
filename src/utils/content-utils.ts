@@ -1,6 +1,7 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import { normalizeMappingKey } from "@utils/normalize";
 import { getCategoryUrl } from "@utils/url-utils.ts";
+import { filterPostsByLang, getPostLang, normalizeLangCode } from "./i18n-utils";
 
 // Cache for all blog posts to avoid repeated getCollection calls
 let cachedPosts: CollectionEntry<"posts">[] | null = null;
@@ -84,8 +85,34 @@ async function buildDisplayNameMappings(): Promise<DisplayNameMappings> {
 	return cachedDisplayNameMappings;
 }
 
-export async function getTaxonomyDisplayMappings(): Promise<DisplayNameMappings> {
-	return buildDisplayNameMappings();
+export async function getTaxonomyDisplayMappings(lang?: string): Promise<DisplayNameMappings> {
+	if (!lang) return buildDisplayNameMappings();
+
+	const targetLang = normalizeLangCode(lang);
+	const allBlogPosts = filterPostsByLang(await getAllPosts(), targetLang);
+	const mappings: DisplayNameMappings = {
+		tags: {},
+		categories: {},
+	};
+
+	for (const post of allBlogPosts) {
+		const tagLabels = post.data.tagLabels ?? {};
+		for (const [rawKey, rawLabel] of Object.entries(tagLabels)) {
+			if (typeof rawLabel !== "string") continue;
+			applyDisplayMapping(mappings.tags, rawKey, rawLabel, {
+				type: "tag",
+				source: post.id,
+			});
+		}
+		if (post.data.category && post.data.categoryLabel) {
+			applyDisplayMapping(mappings.categories, post.data.category, post.data.categoryLabel, {
+				type: "category",
+				source: post.id,
+			});
+		}
+	}
+
+	return mappings;
 }
 
 // // Retrieve posts and sort them by publication date
@@ -100,8 +127,17 @@ async function getRawSortedPosts() {
 	return sorted;
 }
 
-export async function getSortedPosts(): Promise<CollectionEntry<"posts">[]> {
-	const sorted = await getRawSortedPosts();
+export async function getSortedPosts(lang?: string): Promise<CollectionEntry<"posts">[]> {
+	const sorted = lang
+		? filterPostsByLang(await getRawSortedPosts(), lang)
+		: await getRawSortedPosts();
+
+	for (const post of sorted) {
+		post.data.nextSlug = "";
+		post.data.nextTitle = "";
+		post.data.prevSlug = "";
+		post.data.prevTitle = "";
+	}
 
 	for (let i = 1; i < sorted.length; i++) {
 		sorted[i].data.nextSlug = sorted[i - 1].id;
@@ -118,8 +154,10 @@ export type PostForList = {
 	id: string;
 	data: CollectionEntry<"posts">["data"];
 };
-export async function getSortedPostsList(): Promise<PostForList[]> {
-	const sortedFullPosts = await getRawSortedPosts();
+export async function getSortedPostsList(lang?: string): Promise<PostForList[]> {
+	const sortedFullPosts = lang
+		? filterPostsByLang(await getRawSortedPosts(), lang)
+		: await getRawSortedPosts();
 
 	const sortedPostsList = sortedFullPosts.map((post) => ({
 		id: post.id,
@@ -133,8 +171,10 @@ export type Tag = {
 	count: number;
 };
 
-export async function getTagList(): Promise<Tag[]> {
-	const allBlogPosts = await getAllPosts();
+export async function getTagList(lang?: string): Promise<Tag[]> {
+	const allBlogPosts = lang
+		? filterPostsByLang(await getAllPosts(), lang)
+		: await getAllPosts();
 
 	const countMap: { [key: string]: number } = {};
 	allBlogPosts.forEach((post: { data: { tags: string[] } }) => {
@@ -158,8 +198,10 @@ export type Category = {
 	url: string;
 };
 
-export async function getCategoryList(): Promise<Category[]> {
-	const allBlogPosts = await getAllPosts();
+export async function getCategoryList(lang?: string): Promise<Category[]> {
+	const allBlogPosts = lang
+		? filterPostsByLang(await getAllPosts(), lang)
+		: await getAllPosts();
 	const count: { [key: string]: number } = {};
 	allBlogPosts.forEach((post: { data: { category: string | null } }) => {
 		if (!post.data.category) {
@@ -182,9 +224,28 @@ export async function getCategoryList(): Promise<Category[]> {
 		ret.push({
 			name: c,
 			count: count[c],
-			url: getCategoryUrl(c),
+			url: getCategoryUrl(c, lang),
 		});
 	}
 	return ret;
 }
 
+export async function getPostTranslations(
+	post: CollectionEntry<"posts">,
+): Promise<CollectionEntry<"posts">[]> {
+	const key = post.data.translationKey?.trim();
+	if (!key) return [post];
+	const posts = await getAllPosts();
+	return posts.filter((item) => item.data.translationKey?.trim() === key);
+}
+
+export async function getPostTranslationMap(
+	post: CollectionEntry<"posts">,
+): Promise<Record<string, CollectionEntry<"posts">>> {
+	const translations = await getPostTranslations(post);
+	const map: Record<string, CollectionEntry<"posts">> = {};
+	for (const translation of translations) {
+		map[getPostLang(translation)] = translation;
+	}
+	return map;
+}

@@ -1,0 +1,51 @@
+---
+import type { GetStaticPaths } from "astro";
+import Pagination from "../../components/control/Pagination.astro";
+import PostPage from "../../components/PostPage.astro";
+import { PAGE_SIZE } from "../../constants/constants";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
+import { getSortedPosts } from "../../utils/content-utils";
+import {
+	fromLangSlug,
+	getEnabledLanguages,
+	getHomeAlternates,
+	getLangHomeUrl,
+	toLangSlug,
+	withLangPrefix,
+} from "../../utils/i18n-utils";
+
+export const getStaticPaths = (() =>
+	getEnabledLanguages().map((lang) => ({
+		params: { lang: toLangSlug(lang) },
+		props: { lang },
+	}))) satisfies GetStaticPaths;
+
+const lang = fromLangSlug(Astro.params.lang);
+const allBlogPosts = await getSortedPosts(lang);
+const pageSize = PAGE_SIZE;
+const totalPages = Math.max(1, Math.ceil(allBlogPosts.length / pageSize));
+
+const page = {
+	data: allBlogPosts.slice(0, pageSize),
+	start: 0,
+	end: pageSize - 1,
+	size: pageSize,
+	total: allBlogPosts.length,
+	currentPage: 1,
+	lastPage: totalPages,
+	url: {
+		current: getLangHomeUrl(lang),
+		prev: undefined,
+		next: totalPages > 1 ? withLangPrefix("/2/", lang) : undefined,
+		first: getLangHomeUrl(lang),
+		last: totalPages > 1 ? withLangPrefix(`/${totalPages}/`, lang) : getLangHomeUrl(lang),
+	},
+};
+
+const len = page.data.length;
+---
+
+<MainGridLayout lang={lang} alternates={getHomeAlternates()} canonicalUrl={getLangHomeUrl(lang)}>
+	<PostPage page={page} lang={lang}></PostPage>
+	<Pagination class="mx-auto onload-animation" page={page} lang={lang} style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>
+</MainGridLayout>

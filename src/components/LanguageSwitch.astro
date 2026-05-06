@@ -1,0 +1,64 @@
+---
+import { Icon } from "astro-icon/components";
+import type { AlternateLink, LangCode } from "../utils/i18n-utils";
+import {
+	getEnabledLanguages,
+	getLangHomeUrl,
+	languageLabels,
+	normalizeLangCode,
+	toLangSlug,
+} from "../utils/i18n-utils";
+
+interface Props {
+	currentLang?: string;
+	alternates?: AlternateLink[];
+}
+
+const { currentLang, alternates = [] } = Astro.props;
+const current = normalizeLangCode(currentLang);
+const alternateMap = new Map(alternates.map((alternate) => [alternate.lang, alternate.url]));
+const links = getEnabledLanguages().map((lang: LangCode) => ({
+	lang,
+	label: languageLabels[lang],
+	url: alternateMap.get(lang) || getLangHomeUrl(lang),
+	current: lang === current,
+}));
+---
+
+<div class="relative z-50">
+	<button
+		type="button"
+		aria-label="Language"
+		aria-controls="language-panel"
+		aria-haspopup="menu"
+		aria-expanded="false"
+		class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90"
+		id="language-switch"
+	>
+		<Icon name="material-symbols:language" class="text-[1.25rem]" />
+	</button>
+	<div
+		id="language-panel"
+		class="absolute transition float-panel-closed top-11 -right-2 pt-5"
+		role="menu"
+		tabindex="-1"
+	>
+		<div class="card-base py-2 px-2 min-w-[10rem]">
+			{links.map((item) => (
+				<a
+					href={item.url}
+					role="menuitem"
+					aria-current={item.current ? "true" : undefined}
+					data-astro-prefetch="tap"
+					class:list={[
+						"flex transition whitespace-nowrap items-center !justify-start w-full btn-plain scale-animation rounded-lg h-10 px-3 active:scale-95 gap-2",
+						{ "text-[var(--primary)]": item.current },
+					]}
+				>
+					<span class="text-sm font-medium">{item.label}</span>
+					<span class="ml-auto text-xs text-black/30 dark:text-white/30">{toLangSlug(item.lang)}</span>
+				</a>
+			))}
+		</div>
+	</div>
+</div>

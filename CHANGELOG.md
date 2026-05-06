@@ -7,220 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- CLS hardening for banner rendering and transition behavior:
-  - Limited `#banner-wrapper`/navbar transition properties to `transform` and `opacity` to avoid layout-affecting animations.
-  - Added stable `min-height` fallback for banner wrapper to reduce first-paint layout movement risk.
-  - Reduced hash-scroll retries during transitions (from 3 attempts to 2) to lower forced-scroll jitter.
-  - Added resize guard for `--banner-height-extend` recalculation so mobile browser chrome expand/collapse (height-only minor resize) does not repeatedly shift banner position.
-
-### Notes
-
-- Performance verification was executed with local Lighthouse JSON artifacts under `artifacts/psi/` because PSI API quota was exhausted in the current environment.
-- Branch promotion policy for this round requires excluding commit `4663fe96997af868c1f0d1709a78b3647aef5f50` (Vercel Speed Insights integration) from `dev` and `main`.
-
-
-## [0.2.0] - 2026-03-26
-
 ### Added
 
-- **Full TOML Configuration Support**: All configuration fields can now be set via `kirari.config.toml`
-  - Complete `site` module (url, title, subtitle, base, lang, themeColor, banner, toc, favicon)
-  - Complete `profile` module (avatar, name, bio, links)
-  - Complete `navBar` module with preset and custom link support
-  - Complete `license`, `expressiveCode`, `mermaid`, `head`, `footer` modules
-  - Complete `llms` and `og` modules
-  - Enhanced `analytics` and `seo` module coverage
-- **Type Guards and Validators**: Runtime validation for all configuration fields
-  - `getNumber()`: Validates numeric fields (hue, toc depth)
-  - `getStringArray()`: Validates string arrays (expressiveCode themes)
-  - `validateNavBarLinks()`: Validates navigation links with preset support
-  - `validateProfileLinks()`: Validates profile social links
-  - `validateFavicons()`: Validates favicon configurations
-- **Comprehensive JSDoc Comments**: All configuration files now have bilingual documentation
-  - `src/utils/env.ts`: Environment variable reader functions
-  - `src/utils/config-loader.ts`: Configuration loading and validation logic
-  - `TomlConfig` type: Field-level documentation for all TOML options
+- Added Hugo-like i18n with language-prefixed routes (`/en/`, `/zh-cn/`, etc.), post-level `translationKey`, a navbar language switch, localized RSS feeds, canonical links, and `hreflang` alternates.
+- Added cross-platform deployment headers: generated `dist/_headers` for Cloudflare Pages and Netlify, plus `vercel.json` and `edgeone.json` cache rules.
 
 ### Changed
 
-- **Configuration Priority**: TOML is now the primary configuration method
-  - Old priority: `src/constants.ts` hardcoded values → limited TOML support
-  - New priority: Environment Variables → `kirari.config.toml` → Default values
-- **`src/constants.ts` Refactored**: Now loads configuration via `loadConfig()` instead of hardcoding
-  - Removed all inline configuration values
-  - Configuration now fully controlled by TOML file
-  - Reduced from ~150 lines to ~16 lines
-- **Documentation Overhaul**: README and README_CN completely rewritten
-  - TOML configuration is now the recommended approach
-  - Environment variables are now only recommended for sensitive data
-  - Added comprehensive TOML examples with all fields
-- **TOML Example Enhanced**: `kirari.config.toml` now includes:
-  - All configuration fields with examples
-  - Bilingual (English/Chinese) comments for every field
-  - Type annotations and usage guidelines
-  - Array field examples (navBar.links, profile.links, favicon)
-
-### Migration Guide
-
-**From v0.1.0 to v0.2.0:**
-
-If you were using `src/constants.ts` for configuration:
-
-1. Copy your configuration values to `kirari.config.toml`
-2. See the updated `kirari.config.toml` for field names and structure
-3. Environment variables still work with the same names
-
-If you were using environment variables for non-sensitive data:
-
-1. Consider moving non-sensitive config to `kirari.config.toml` for better readability
-2. Keep sensitive data (analytics IDs, API keys) in environment variables
-3. Both approaches work - choose based on your deployment needs
-
-**No breaking changes**: All existing environment variables and TOML configurations continue to work.
-
----
-
-## [0.1.0] - 2026-03-25
-
-### Fixed
-
-- Improved accessibility semantics for key interactive components:
-  - Refactored `ButtonLink` to avoid nested interactive elements.
-  - Updated `Pagination` with proper navigation semantics and non-clickable disabled states.
-  - Added ARIA state/controls wiring for widget expand actions and navbar panels.
-  - Synchronized search panel trigger `aria-expanded` state with actual panel visibility.
-
-### Changed
-
-- Optimized hero banner image delivery for better mobile LCP:
-  - Extended `ImageWrapper` to support `loading`, `decoding`, `fetchpriority`, and `sizes`.
-  - Prioritized homepage banner with eager/high-priority loading strategy.
-  - Removed initial banner hidden/scale state that could delay LCP visibility.
-- Reduced main-thread contention and CLS risk during first render:
-  - Deferred Pagefind initialization to idle time with fallback scheduling.
-  - Removed unnecessary `#top-row` height transition in banner layout.
-- Removed Partytown script wrapping for custom head/footer scripts to avoid deprecated sandbox warnings in Lighthouse best-practices audits.
-- Unified taxonomy slug normalization by reusing `normalizeMappingKey` in tags/categories routes and content utility paths.
-- Reduced non-critical console noise in UI/plugin runtime paths (kept critical error logging for transition/search failures).
-
-### Notes
-
-- No functional behavior or configuration schema changes in this cleanup round.
-- Risk focus: taxonomy slug normalization consistency (`tag`/`category` matching and `uncategorized` handling).
-- Regression checklist: verify `/tags/[tag]`, `/categories/[category]`, search panel, and page transitions in both View Transition and Swup fallback modes.
-
-
-## [0.2.0] - 2026-03-26
-
-
-### Added
-
-- **Full TOML Configuration Support**: All configuration fields can now be set via `kirari.config.toml`
-  - Complete `site` module (url, title, subtitle, base, lang, themeColor, banner, toc, favicon)
-  - Complete `profile` module (avatar, name, bio, links)
-  - Complete `navBar` module with preset and custom link support
-  - Complete `license`, `expressiveCode`, `mermaid`, `head`, `footer` modules
-  - Complete `llms` and `og` modules
-  - Enhanced `analytics` and `seo` module coverage
-- **Type Guards and Validators**: Runtime validation for all configuration fields
-  - `getNumber()`: Validates numeric fields (hue, toc depth)
-  - `getStringArray()`: Validates string arrays (expressiveCode themes)
-  - `validateNavBarLinks()`: Validates navigation links with preset support
-  - `validateProfileLinks()`: Validates profile social links
-  - `validateFavicons()`: Validates favicon configurations
-- **Comprehensive JSDoc Comments**: All configuration files now have bilingual documentation
-  - `src/utils/env.ts`: Environment variable reader functions
-  - `src/utils/config-loader.ts`: Configuration loading and validation logic
-  - `TomlConfig` type: Field-level documentation for all TOML options
-
-### Changed
-
-- **Configuration Priority**: TOML is now the primary configuration method
-  - Old priority: `src/constants.ts` hardcoded values → limited TOML support
-  - New priority: Environment Variables → `kirari.config.toml` → Default values
-- **`src/constants.ts` Refactored**: Now loads configuration via `loadConfig()` instead of hardcoding
-  - Removed all inline configuration values
-  - Configuration now fully controlled by TOML file
-  - Reduced from ~150 lines to ~16 lines
-- **Documentation Overhaul**: README and README_CN completely rewritten
-  - TOML configuration is now the recommended approach
-  - Environment variables are now only recommended for sensitive data
-  - Added comprehensive TOML examples with all fields
-- **TOML Example Enhanced**: `kirari.config.toml` now includes:
-  - All configuration fields with examples
-  - Bilingual (English/Chinese) comments for every field
-  - Type annotations and usage guidelines
-  - Array field examples (navBar.links, profile.links, favicon)
-
-### Migration Guide
-
-**From v0.1.0 to v0.2.0:**
-
-If you were using `src/constants.ts` for configuration:
-
-1. Copy your configuration values to `kirari.config.toml`
-2. See the updated `kirari.config.toml` for field names and structure
-3. Environment variables still work with the same names
-
-If you were using environment variables for non-sensitive data:
-
-1. Consider moving non-sensitive config to `kirari.config.toml` for better readability
-2. Keep sensitive data (analytics IDs, API keys) in environment variables
-3. Both approaches work - choose based on your deployment needs
-
-**No breaking changes**: All existing environment variables and TOML configurations continue to work.
-
----
-
-## [0.1.0] - 2026-03-25
-
-### Added
-
-- Integrated `astro-analytics` plugin supporting multiple analytics services:
-  - Master switch `enable` (default: `false`) to control all analytics loading
-  - Google Analytics (`googleAnalyticsId`)
-  - Umami (`umami.id`, `umami.src`)
-  - Plausible (`plausible.domain`, `plausible.src`)
-  - Microsoft Clarity (`clarityProjectId`)
-  - Fathom (`fathomSiteId`)
-  - Simple Analytics (`simpleAnalyticsDomain`)
-  - Matomo (`matomo.siteId`, `matomo.src`)
-  - Amplitude (`amplitudeApiKey`)
-- Added environment variables for all analytics services (e.g., `PUBLIC_GOOGLE_ANALYTICS_ID`, `PUBLIC_UMAMI_ID`, etc.)
-- Added optional `og` field to post frontmatter for per-post OG image override.
-- Added `src/utils/env.ts` with unified env readers: `getEnvString`, `getEnvBoolean`, and `getEnvStringFromKeys`.
-- Added backward-compatible analytics env alias: `PUBLIC_CLARITY_ID` (with `PUBLIC_CLARITY_PROJECT_ID` as preferred key).
-- Added optional Hugo-style TOML config file support via root `kirari.config.toml`.
-- Added `src/utils/config-loader.ts` to resolve config by priority: env > TOML > defaults.
-- Added `PUBLIC_INDEXNOW_ENABLE` env override for `seo.indexNow`.
-
-
-
-### Changed
-
-- Replaced manual Clarity script with inline script (still controlled by `enable` switch). Other services use `astro-analytics` components.
-- Analytics scripts are now rendered directly in `<head>` instead of via Partytown for component compatibility.
-- **IndexNow integration is now opt-in** - Set `seo.indexNow: true` in `src/constants.ts` to enable. Default is `false` to avoid unnecessary external requests and potential 403 errors.
-- Simplified OG selection logic to: `frontmatter.og` → `og.defaultImage`.
-- Updated `README.md` and `README_CN.md` OG sections to match the new static selection model.
-- Refactored `src/constants.ts` to load resolved config from `src/utils/config-loader.ts`, supporting optional TOML overrides.
-
-- Analytics scripts now require both `analytics.enable` and production runtime (`import.meta.env.PROD`) before loading.
-- Updated `.env.example`, `README.md`, and `README_CN.md` to document env priority, analytics production guard, and Clarity alias compatibility.
-
+- Moved public pages to language-prefixed URLs and kept `/` as a noindex default-language entry redirect.
+- Kept performance improvements general-purpose: self-hosted Roboto, responsive images, selective Astro prefetch, and immutable caching for hashed `/_astro/*` assets.
+- Updated README and README_CN with i18n, performance, and multi-platform deployment guidance.
 
 ### Removed
 
-- Removed dynamic OG image generation route `src/pages/og/[...slug].png.ts`.
-- Removed `useCoverAsOg` and other obsolete dynamic OG config options from configuration/types.
-- Removed unused component props (`draft` in `PostCard`, `size` in `ButtonTag`, `slug` in `License`) and synchronized callers.
-- Removed empty unused component `src/components/GlobalStyles.astro`.
-- Removed unused dependency `@swup/progress-plugin` and synchronized lockfile.
+- Removed stale local review/fix report artifacts from the repository.
 
-### Fixed
+## [0.2.0] - 2026-03-26
 
-- Clarified that analytics scripts (Google Analytics, Umami, Microsoft Clarity, etc.) should be wrapped in backticks to avoid quote conflicts with HTML attributes.
-- Removed duplicated `Config` type declarations in `src/types/config.ts` to keep a single source of type truth.
+### Added
 
+- Added complete TOML configuration support through `kirari.config.toml`.
+- Added runtime validators and type guards for site, navigation, profile, favicon, analytics, SEO, LLM, and rendering configuration.
+- Added bilingual configuration comments and JSDoc around the config loader.
+
+### Changed
+
+- Refactored `src/constants.ts` to load resolved configuration instead of hardcoded values.
+- Documented configuration priority: environment variables, TOML, then defaults.
+- Rewrote README and README_CN around the TOML-first configuration workflow.
+
+## [0.1.0] - 2026-03-25
+
+### Added
+
+- Added analytics integration, optional per-post OG image overrides, environment helpers, TOML config bootstrap, and IndexNow configuration.
+- Added Pagefind search, Mermaid, KaTeX, View Transitions with Swup fallback, and LLM documentation generation.
+
+### Changed
+
+- Improved accessibility semantics for interactive controls.
+- Optimized banner delivery and reduced first-render layout shift risk.
+- Unified taxonomy slug normalization for tags and categories.
+
+### Removed
+
+- Removed obsolete dynamic OG route and unused components, props, dependencies, and debug noise.

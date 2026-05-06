@@ -41,6 +41,26 @@
 # Options / 可选值: en, zh_CN, zh_TW, ja, ko, es, th, vi, tr, id
 # lang = "en"
 
+# -----------------------------------------------------------------------------
+# Internationalization / 国际化
+# -----------------------------------------------------------------------------
+[i18n]
+# Enable language-prefixed URLs, for example /en/ and /zh-cn/
+# 启用语言前缀 URL，例如 /en/ 与 /zh-cn/
+enable = true
+
+# Default language. Root / redirects to this language prefix.
+# 默认语言。根路径 / 会跳转到该语言前缀。
+defaultLang = "en"
+
+# Enabled languages. URL slugs are normalized to lowercase kebab-case.
+# 启用语言。URL slug 会标准化为小写短横线。
+languages = ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"]
+
+# When a page has no translation in the target language, switch to the target homepage.
+# 当前页面没有目标语言翻译时，语言切换回退到目标语言首页。
+fallbackToDefault = true
+
 # Theme color configuration / 主题色配置
 [site.themeColor]
 # Hue value for theme color (0-360) / 主题色色相值（0-360）

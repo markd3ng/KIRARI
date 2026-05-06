@@ -10,6 +10,7 @@ category: examples
 categoryLabel: 示例
 draft: false
 lang: zh_CN
+translationKey: mermaid-test
 mermaid: true
 ---
 

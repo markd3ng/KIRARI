@@ -14,6 +14,7 @@ tagLabels:
 category: devops
 categoryLabel: 运维开发
 draft: false
+lang: en
 ---
 
 ## Container Orchestration

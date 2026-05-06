@@ -1,0 +1,58 @@
+---
+import type { GetStaticPaths } from "astro";
+import ArchivePanel from "@components/ArchivePanel.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getSortedPostsList, getTaxonomyDisplayMappings } from "../../../utils/content-utils";
+import {
+	fromLangSlug,
+	getEnabledLanguages,
+	getPathAlternates,
+	toLangSlug,
+	withLangPrefix,
+} from "../../../utils/i18n-utils";
+import { normalizeMappingKey } from "../../../utils/normalize";
+import { getCategoryName } from "../../../utils/url-utils";
+
+export const getStaticPaths = (async () => {
+	const paths = [];
+	for (const lang of getEnabledLanguages()) {
+		const posts = await getSortedPostsList(lang);
+		const allCategories = new Set<string>();
+		posts.forEach((post) => {
+			const category = post.data.category;
+			if (category && normalizeMappingKey(category) !== "") allCategories.add(normalizeMappingKey(category));
+			else allCategories.add("uncategorized");
+		});
+		for (const category of allCategories) {
+			paths.push({
+				params: { lang: toLangSlug(lang), category },
+				props: { lang, category },
+			});
+		}
+	}
+	return paths;
+}) satisfies GetStaticPaths;
+
+const lang = fromLangSlug(Astro.params.lang);
+const category = Astro.params.category as string;
+const posts = await getSortedPostsList(lang);
+const { categories: categoryDisplayMap, tags: tagDisplayMap } = await getTaxonomyDisplayMappings(lang);
+const normalizedCategory = normalizeMappingKey(category);
+const filteredPosts = posts.filter((post) => {
+	const postCat = post.data.category;
+	if (normalizedCategory === "uncategorized") return !postCat || normalizeMappingKey(postCat) === "";
+	return postCat && normalizeMappingKey(postCat) === normalizedCategory;
+});
+
+const categoryName = normalizedCategory === "uncategorized"
+	? i18n(I18nKey.uncategorized, lang)
+	: getCategoryName(category, categoryDisplayMap);
+const categoryUrl = withLangPrefix(`/categories/${normalizedCategory}/`, lang);
+const alternates = getPathAlternates((itemLang) => withLangPrefix(`/categories/${normalizedCategory}/`, itemLang));
+---
+
+<MainGridLayout title={`${i18n(I18nKey.archive, lang)} - ${categoryName}`} lang={lang} alternates={alternates} canonicalUrl={categoryUrl}>
+	<ArchivePanel sortedPosts={filteredPosts} tagDisplayMap={tagDisplayMap} lang={lang}></ArchivePanel>
+</MainGridLayout>

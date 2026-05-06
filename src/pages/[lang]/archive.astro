@@ -1,0 +1,31 @@
+---
+import type { GetStaticPaths } from "astro";
+import ArchivePanel from "@components/ArchivePanel.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getSortedPostsList, getTaxonomyDisplayMappings } from "../../utils/content-utils";
+import {
+	fromLangSlug,
+	getEnabledLanguages,
+	getPathAlternates,
+	toLangSlug,
+	withLangPrefix,
+} from "../../utils/i18n-utils";
+
+export const getStaticPaths = (() =>
+	getEnabledLanguages().map((lang) => ({
+		params: { lang: toLangSlug(lang) },
+		props: { lang },
+	}))) satisfies GetStaticPaths;
+
+const lang = fromLangSlug(Astro.params.lang);
+const sortedPostsList = await getSortedPostsList(lang);
+const { tags: tagDisplayMap } = await getTaxonomyDisplayMappings(lang);
+const archiveUrl = withLangPrefix("/archive/", lang);
+const alternates = getPathAlternates((itemLang) => withLangPrefix("/archive/", itemLang));
+---
+
+<MainGridLayout title={i18n(I18nKey.archive, lang)} lang={lang} alternates={alternates} canonicalUrl={archiveUrl}>
+	<ArchivePanel sortedPosts={sortedPostsList} tagDisplayMap={tagDisplayMap} lang={lang}></ArchivePanel>
+</MainGridLayout>

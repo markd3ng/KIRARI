@@ -20,23 +20,12 @@ A modern, high-performance static blog theme built with **Astro 6** + **Svelte 5
 - **Full-text Search** - Powered by Pagefind, with debounce and concurrent request handling
 - **Mermaid Diagrams** - Flowcharts, sequence diagrams, and more with client-side rendering
 - **Math Equations** - KaTeX for LaTeX rendering
-- **Multi-language** - 10 languages supported (en, zh_CN, zh_TW, ja, ko, es, th, vi, tr, id)
+- **Hugo-like i18n** - Language-prefixed URLs, per-post `translationKey`, language switch, canonical and `hreflang` links
 - **LLM-Ready** - Auto-generates `llms.txt` for AI indexing
 - **Dark Mode** - System preference detection + manual toggle
 - **Smooth Transitions** - View Transitions API with Swup fallback for older browsers
 - **Security Hardened** - All external links include `rel="noopener noreferrer"`
 - **Code Hygiene** - Removed unused props/files/dependencies and reduced debug log noise (no functional behavior change)
-
-### Maintenance Notes (Unreleased)
-
-- Internal cleanup only: no configuration item changes and no feature behavior changes.
-- Taxonomy normalization is unified through shared utilities for tag/category slug matching consistency.
-- Suggested regression checks: `/tags/[tag]`, `/categories/[category]`, search panel behavior, and page transitions (View Transitions + Swup fallback).
-- CLS optimization workflow is now staged by branch gates (`test -> dev -> main`) with required checks: `pnpm type-check`, `pnpm check`, `pnpm build`, and post-deploy verification.
-- Banner CLS hardening focuses on `#banner-wrapper`: stable height fallback, transform-only transition scope, and resize recalculation guards for mobile viewport chrome changes.
-- Release gate rule: do not promote commit `4663fe96997af868c1f0d1709a78b3647aef5f50` (Speed Insights integration) into `dev`/`main`.
-
-
 
 ## Quick Start
 
@@ -75,6 +64,12 @@ title = "Your Site"
 subtitle = "Your Tagline"
 lang = "en"                    # en, zh_CN, zh_TW, ja, ko, es, th, vi, tr, id
 base = "/"                     # Base path (e.g., "/blog" for subdirectory)
+
+[i18n]
+enable = true
+defaultLang = "en"             # Root / redirects to /en/
+languages = ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"]
+fallbackToDefault = true       # Missing translations switch to the target language homepage
 
 [site.themeColor]
 hue = 250                      # 0-360 (red: 0, teal: 200, cyan: 250, pink: 345)
@@ -132,6 +127,30 @@ i18n = true
 indexNow = false               # Enable IndexNow for instant search engine indexing
 indexNowKey = ""               # IndexNow API key
 ```
+
+### Internationalization
+
+KIRARI uses language-prefixed public routes: `/en/`, `/zh-cn/`, `/zh-tw/`, `/ja/`, `/ko/`, `/es/`, `/th/`, `/vi/`, `/tr/`, and `/id/`. The root path `/` is only an entry redirect to the configured default language.
+
+Posts can be connected across languages with `translationKey`:
+
+```yaml
+---
+title: Markdown Example
+lang: en
+translationKey: markdown
+---
+```
+
+If the current page has a matching translation, the navbar language switch links to that translated page. Otherwise it falls back to the target language homepage.
+
+### Performance Strategy
+
+- Roboto is self-hosted through `@fontsource/roboto`; only the Latin `400`, `500`, and `700` weights are loaded by default.
+- Responsive image widths are generated for banner, avatar, and post covers to reduce mobile transfer size while preserving display quality.
+- Astro prefetch is selective: navigation links use `hover`, mobile/menu links use `tap`, and `prefetchAll` stays disabled.
+- `pnpm build` generates `dist/_headers` for Cloudflare Pages and Netlify, while `vercel.json` and `edgeone.json` define immutable caching for `/_astro/*` on Vercel and EdgeOne.
+- `/_astro/*` is immutable because filenames are content-hashed; HTML, Pagefind assets, and non-hashed public files stay revalidation-friendly.
 
 ### Navigation Bar
 

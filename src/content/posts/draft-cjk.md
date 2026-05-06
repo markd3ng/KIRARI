@@ -8,6 +8,8 @@ tagLabels:
 category: Examples
 categoryLabel: 示例
 draft: true
+lang: zh_CN
+translationKey: draft
 ---
 
 

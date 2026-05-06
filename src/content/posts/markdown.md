@@ -9,6 +9,8 @@ tagLabels:
 category: Examples
 categoryLabel: 示例
 draft: false
+lang: en
+translationKey: markdown
 ---
 
 # An h1 header

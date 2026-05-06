@@ -1,0 +1,62 @@
+---
+import type { GetStaticPaths } from "astro";
+import Pagination from "../../components/control/Pagination.astro";
+import PostPage from "../../components/PostPage.astro";
+import { PAGE_SIZE } from "../../constants/constants";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
+import { getSortedPosts } from "../../utils/content-utils";
+import {
+	fromLangSlug,
+	getEnabledLanguages,
+	getHomeAlternates,
+	getLangHomeUrl,
+	toLangSlug,
+	withLangPrefix,
+} from "../../utils/i18n-utils";
+
+export const getStaticPaths = (async () => {
+	const paths = [];
+	for (const lang of getEnabledLanguages()) {
+		const posts = await getSortedPosts(lang);
+		const totalPages = Math.ceil(posts.length / PAGE_SIZE);
+		for (let pageNumber = 2; pageNumber <= totalPages; pageNumber++) {
+			paths.push({
+				params: { lang: toLangSlug(lang), page: String(pageNumber) },
+				props: { lang, pageNumber },
+			});
+		}
+	}
+	return paths;
+}) satisfies GetStaticPaths;
+
+const lang = fromLangSlug(Astro.params.lang);
+const pageNumber = Number(Astro.props.pageNumber || Astro.params.page || 1);
+const allBlogPosts = await getSortedPosts(lang);
+const pageSize = PAGE_SIZE;
+const totalPages = Math.max(1, Math.ceil(allBlogPosts.length / pageSize));
+const start = (pageNumber - 1) * pageSize;
+
+const page = {
+	data: allBlogPosts.slice(start, start + pageSize),
+	start,
+	end: Math.min(start + pageSize - 1, allBlogPosts.length - 1),
+	size: pageSize,
+	total: allBlogPosts.length,
+	currentPage: pageNumber,
+	lastPage: totalPages,
+	url: {
+		current: withLangPrefix(`/${pageNumber}/`, lang),
+		prev: pageNumber > 1 ? withLangPrefix(pageNumber === 2 ? "/" : `/${pageNumber - 1}/`, lang) : undefined,
+		next: pageNumber < totalPages ? withLangPrefix(`/${pageNumber + 1}/`, lang) : undefined,
+		first: getLangHomeUrl(lang),
+		last: totalPages > 1 ? withLangPrefix(`/${totalPages}/`, lang) : getLangHomeUrl(lang),
+	},
+};
+
+const len = page.data.length;
+---
+
+<MainGridLayout lang={lang} alternates={getHomeAlternates()} canonicalUrl={page.url.current}>
+	<PostPage page={page} lang={lang}></PostPage>
+	<Pagination class="mx-auto onload-animation" page={page} lang={lang} style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>
+</MainGridLayout>

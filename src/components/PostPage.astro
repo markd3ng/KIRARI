@@ -5,8 +5,9 @@ import { getPostUrlBySlug } from "@utils/url-utils";
 import PostCard from "./PostCard.astro";
 
 const { page } = Astro.props;
+const lang = Astro.props.lang;
 const { tags: tagDisplayMap, categories: categoryDisplayMap } =
-	await getTaxonomyDisplayMappings();
+	await getTaxonomyDisplayMappings(lang);
 
 
 // let delay = 0;
@@ -21,9 +22,10 @@ const { tags: tagDisplayMap, categories: categoryDisplayMap } =
                 category={entry.data.category}
                 published={entry.data.published}
                 updated={entry.data.updated}
-                url={getPostUrlBySlug(entry.id)}
+                url={getPostUrlBySlug(entry.id, lang)}
                 image={entry.data.image}
                 description={entry.data.description}
+                lang={lang}
                 tagDisplayMap={tagDisplayMap}
                 categoryDisplayMap={categoryDisplayMap}
                 class:list="onload-animation"

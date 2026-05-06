@@ -20,23 +20,12 @@
 - **全文搜索** - 基于 Pagefind，支持防抖和并发请求处理
 - **Mermaid 图表** - 流程图、时序图等，客户端渲染
 - **数学公式** - 使用 KaTeX 渲染 LaTeX
-- **多语言** - 支持 10 种语言（en、zh_CN、zh_TW、ja、ko、es、th、vi、tr、id）
+- **Hugo-like i18n** - 语言前缀 URL、文章 `translationKey`、语言切换、canonical 与 `hreflang`
 - **LLM 就绪** - 自动生成 `llms.txt` 供 AI 索引
 - **深色模式** - 支持系统偏好检测 + 手动切换
 - **平滑过渡** - View Transitions API，旧浏览器自动降级到 Swup
 - **安全加固** - 所有外链均包含 `rel="noopener noreferrer"`
 - **代码整洁** - 清理未使用参数/文件/依赖，并减少调试日志噪音（不改变功能行为）
-
-### 维护说明（Unreleased）
-
-- 本轮仅做内部清理：不涉及配置项变更，也不改变功能行为。
-- 标签/分类 slug 规范化已统一到共享工具函数，减少匹配逻辑分叉。
-- 建议回归点：`/tags/[tag]`、`/categories/[category]`、搜索面板行为、页面过渡（View Transitions 与 Swup 降级）。
-- CLS 优化改造采用分支闸门流程（`test -> dev -> main`），每阶段需通过：`pnpm type-check`、`pnpm check`、`pnpm build` 与部署后验证。
-- Banner CLS 治理聚焦 `#banner-wrapper`：增加稳定高度兜底、收敛为 `transform/opacity` 过渡、并在移动端视口高度轻微变化时避免重复重算偏移。
-- 晋级规则：提交 `4663fe96997af868c1f0d1709a78b3647aef5f50`（Speed Insights 集成）不得进入 `dev`/`main`。
-
-
 
 ## 快速开始
 
@@ -75,6 +64,12 @@ title = "你的站点"
 subtitle = "你的标语"
 lang = "zh_CN"                 # en, zh_CN, zh_TW, ja, ko, es, th, vi, tr, id
 base = "/"                     # 基础路径（例如子目录用 "/blog"）
+
+[i18n]
+enable = true
+defaultLang = "en"             # 根路径 / 跳转到 /en/
+languages = ["en", "zh_CN", "zh_TW", "ja", "ko", "es", "th", "vi", "tr", "id"]
+fallbackToDefault = true       # 缺少翻译时切换到目标语言首页
 
 [site.themeColor]
 hue = 250                      # 0-360（红色: 0, 青色: 200, 天蓝: 250, 粉色: 345）
@@ -132,6 +127,30 @@ i18n = true
 indexNow = false               # 启用 IndexNow 即时搜索引擎索引
 indexNowKey = ""               # IndexNow API 密钥
 ```
+
+### 国际化
+
+KIRARI 使用语言前缀公开路由：`/en/`、`/zh-cn/`、`/zh-tw/`、`/ja/`、`/ko/`、`/es/`、`/th/`、`/vi/`、`/tr/`、`/id/`。根路径 `/` 只作为默认语言入口跳转。
+
+文章可通过 `translationKey` 建立跨语言关联：
+
+```yaml
+---
+title: Markdown Example
+lang: en
+translationKey: markdown
+---
+```
+
+如果当前页面存在目标语言翻译，导航栏语言切换会跳转到对应文章；否则回退到目标语言首页。
+
+### 性能策略
+
+- Roboto 通过 `@fontsource/roboto` 自托管，默认仅加载 Latin `400`、`500`、`700` 字重。
+- Banner、头像、文章封面继续生成响应式图片宽度，降低移动端传输体积并保留显示效果。
+- Astro prefetch 使用 selective 策略：主导航使用 `hover`，移动/菜单链接使用 `tap`，不启用 `prefetchAll`。
+- `pnpm build` 会生成供 Cloudflare Pages 与 Netlify 使用的 `dist/_headers`，同时通过 `vercel.json` 与 `edgeone.json` 为 Vercel、EdgeOne 设置缓存头。
+- `/_astro/*` 使用 immutable 强缓存，因为文件名带内容 hash；HTML、Pagefind 与非 hash public 文件保持可安全更新。
 
 ### 导航栏
 

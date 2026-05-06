@@ -18,6 +18,7 @@ tagLabels:
 category: frontend
 categoryLabel: 前端开发
 draft: false
+lang: en
 ---
 
 ## Mapping Test

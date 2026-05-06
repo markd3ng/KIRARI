@@ -35,3 +35,17 @@ _content_repo/
 
 # codebuddy
 .codebuddy/
+
+# Skilld references (recreated by `skilld install`)
+.skilld
+
+# local performance reports
+artifacts/psi/
+artifacts/lighthouse/
+lighthouse*.json
+lighthouse*.html
+pagespeed*.json
+pagespeed*.html
+KIRARI_*_REPORT*.md
+KIRARI_CODE_REVIEW_*.md
+KIRARI_FIX_PLAN_*.md
