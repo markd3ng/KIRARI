@@ -1,14 +1,22 @@
 ---
+import type { CollectionEntry } from "astro:content";
 import { Icon } from "astro-icon/components";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import { formatDateToYYYYMMDD } from "../utils/date-utils";
+import { getLanguageConfig, toHreflang } from "../utils/i18n-utils";
 import {
 	getCategoryName,
 	getCategoryUrl,
+	getPostUrlBySlug,
 	getTagName,
 	getTagUrl,
 } from "../utils/url-utils";
+
+type TranslationItem = {
+	post: CollectionEntry<"posts">;
+	lang: string;
+};
 
 interface Props {
 	class: string;
@@ -20,6 +28,7 @@ interface Props {
 	hideUpdateDate?: boolean;
 	tagDisplayMap?: Record<string, string>;
 	categoryDisplayMap?: Record<string, string>;
+	translations?: TranslationItem[];
 	lang?: string;
 }
 const {
@@ -31,13 +40,45 @@ const {
 	hideUpdateDate = false,
 	tagDisplayMap = {},
 	categoryDisplayMap = {},
+	translations = [],
 	lang,
 } = Astro.props;
 
 const className = Astro.props.class;
+const translationLinks = translations.map((item) => {
+	const langConfig = getLanguageConfig(item.lang);
+	return {
+		label: langConfig.label,
+		hreflang: toHreflang(item.lang),
+		url: getPostUrlBySlug(item.post.id, item.lang),
+	};
+});
 ---
 
 <div class:list={["flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2", className]}>
+    <!-- translations -->
+    {translationLinks.length > 0 && (
+        <div class="flex items-center">
+            <div class="meta-icon">
+                <Icon name="material-symbols:language" class="text-xl"></Icon>
+            </div>
+            <div class="flex flex-row flex-nowrap items-center">
+                {translationLinks.map((link, i) => (
+                    <div class:list={[{"hidden": i == 0}, "mx-1.5 text-[var(--meta-divider)] text-sm"]}>/</div>
+                    <a
+                        href={link.url}
+                        hreflang={link.hreflang}
+                        rel="alternate"
+                        data-astro-prefetch="tap"
+                        class="link-lg transition text-50 text-sm font-medium hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap"
+                    >
+                        {link.label}
+                    </a>
+                ))}
+            </div>
+        </div>
+    )}
+
     <!-- publish date -->
     <div class="flex items-center">
         <div class="meta-icon"

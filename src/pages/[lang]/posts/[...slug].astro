@@ -5,7 +5,6 @@ import { render } from "astro:content";
 import { Icon } from "astro-icon/components";
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
-import PostTranslations from "@components/PostTranslations.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
@@ -122,13 +121,12 @@ const jsonLd = {
 			<div class="relative onload-animation">
 				<div
 					data-pagefind-body data-pagefind-weight="10" data-pagefind-meta="title"
-					class="transition w-full block font-bold mb-3 relative text-3xl md:text-[2.25rem]/[2.75rem]
+					class="transition w-full block font-bold mb-4 relative text-3xl md:text-[2.25rem]/[2.75rem]
 					text-black/90 dark:text-white/90 md:before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)]
 					before:absolute before:top-[50%] before:-translate-y-1/2 before:left-[-1.125rem]"
 				>
 					{entry.data.title}
 				</div>
-				<PostTranslations translations={translationLinks} />
 			</div>
 
 			<div class="onload-animation">
@@ -140,6 +138,7 @@ const jsonLd = {
 					category={entry.data.category}
 					tagDisplayMap={tagDisplayMap}
 					categoryDisplayMap={categoryDisplayMap}
+					translations={translationLinks}
 					lang={lang}
 				></PostMetadata>
 
