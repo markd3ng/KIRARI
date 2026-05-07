@@ -2,6 +2,7 @@
 import "../styles/fonts.css";
 
 import { ClientRouter } from "astro:transitions";
+import Analytics from "@components/Analytics.astro";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
 import { analyticsConfig, headConfig, profileConfig, searchConfig, siteConfig } from "@/config";
 import {
@@ -23,15 +24,6 @@ import type { Favicon } from "../types/config";
 import type { AlternateLink } from "../utils/i18n-utils";
 import { getLangHomeUrl, getLanguageConfig, normalizeLangCode, toHreflang } from "../utils/i18n-utils";
 import { pathsEqual, url } from "../utils/url-utils";
-import {
-	GoogleAnalytics,
-	Umami,
-	Plausible,
-	Fathom,
-	SimpleAnalytics,
-	Matomo,
-	Amplitude,
-} from "astro-analytics";
 
 interface Props {
 	title?: string;
@@ -338,38 +330,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 			<script is:inline set:html={headConfig.customScript} />
 		)}
 		{/* Analytics - only loaded in production when enable is true */}
-		{shouldLoadAnalytics && analyticsConfig.googleAnalyticsId && (
-			<GoogleAnalytics id={analyticsConfig.googleAnalyticsId} />
-		)}
-		{shouldLoadAnalytics && analyticsConfig.umami && (
-			<Umami id={analyticsConfig.umami.id} src={analyticsConfig.umami.src} />
-		)}
-		{shouldLoadAnalytics && analyticsConfig.plausible && (
-			<Plausible domain={analyticsConfig.plausible.domain} src={analyticsConfig.plausible.src} />
-		)}
-		{shouldLoadAnalytics && analyticsConfig.clarityProjectId && (
-			<script is:inline define:vars={{ clarityProjectId: analyticsConfig.clarityProjectId }}>
-				(function(c,l,a,r,i,t,y){
-					c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-					t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-					y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-				})(window, document, "clarity", "script", clarityProjectId);
-			</script>
-		)}
-		{shouldLoadAnalytics && analyticsConfig.fathomSiteId && (
-			<Fathom site={analyticsConfig.fathomSiteId} />
-		)}
-
-		{shouldLoadAnalytics && analyticsConfig.simpleAnalyticsDomain && (
-			<SimpleAnalytics domain={analyticsConfig.simpleAnalyticsDomain} />
-		)}
-		{shouldLoadAnalytics && analyticsConfig.matomo && (
-			<Matomo id={analyticsConfig.matomo.siteId} url={analyticsConfig.matomo.src} />
-		)}
-
-		{shouldLoadAnalytics && analyticsConfig.amplitudeApiKey && (
-			<Amplitude apiKey={analyticsConfig.amplitudeApiKey} />
-		)}
+		{shouldLoadAnalytics && <Analytics config={analyticsConfig} />}
 
 
 		<link rel="alternate" type="application/rss+xml" title={`${profileConfig.name} (${siteLang})`} href={rssHref}/>

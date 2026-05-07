@@ -398,7 +398,7 @@ footer: {
 }
 ```
 
-**`customScript`** - 第三方脚本（分析、广告）会自动通过 Partytown 卸载到 Web Worker 中执行以获得更好的性能。只需提供脚本**内容**（无需 `<script>` 标签）：
+**`customScript`** - 第三方脚本（分析、广告）会以内联方式渲染在 `<head>` 中。只需提供脚本**内容**（无需 `<script>` 标签）：
 
 ```typescript
 footer: {
@@ -410,7 +410,7 @@ footer: {
 }
 ```
 
-**`customHtml`** - 用于完全控制 HTML/脚本标签。如果你需要自定义属性或不希望使用 Partytown，请使用此选项：
+**`customHtml`** - 用于完全控制 HTML/脚本标签。如果你需要自定义属性，请使用此选项：
 
 ```typescript
 head: {
@@ -420,7 +420,7 @@ head: {
 
 ### LLM 文档
 
-Powered by `astro-llms-generate`。构建时生成：
+由 KIRARI 内置 postbuild 管线生成。构建时生成：
 - `llms.txt` - 主索引（Markdown 格式供 LLM 使用）
 - `llms-full.txt` - 完整内容合并文件
 - `llms-small.txt` - 精简版本
@@ -442,7 +442,7 @@ llms: {
 
 ### 统计分析
 
-通过 `astro-analytics` 集成，支持多种分析服务。在 `src/constants.ts` 中配置或通过环境变量设置。
+通过 KIRARI 内置 `Analytics.astro` 组件渲染，支持多种分析服务。在 `kirari.config.toml` 中配置或通过环境变量设置。
 
 分析脚本仅在同时满足以下条件时加载：
 1. `analytics.enable`（或 `PUBLIC_ANALYTICS_ENABLE`）为 `true`
@@ -480,16 +480,16 @@ analytics: {
 | Matomo | `matomo.siteId`, `matomo.src` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC` |
 | Amplitude | `amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
 
-> **注意**：脚本直接渲染在 `<head>` 中。Microsoft Clarity 使用手动脚本（非 astro-analytics 组件）。
+> **注意**：脚本直接渲染在 `<head>` 中。
 >
 > **兼容说明**：`PUBLIC_CLARITY_PROJECT_ID` 优先级更高；`PUBLIC_CLARITY_ID` 作为向后兼容别名保留。
 
 
 ### SEO 与索引
 
-主题集成了 SEO 插件：
+主题内置了 SEO 与索引工具：
 
-**Robots.txt** - 通过 `astro-robots-txt` 自动生成。无需手动配置；使用你配置中的 `site.url`。
+**Robots.txt** - 通过 KIRARI postbuild 管线自动生成。无需手动配置；使用你配置中的 `site.url`。
 
 **IndexNow** - 即时搜索引擎索引。**默认关闭**。在 `src/constants.ts` 中启用：
 
@@ -508,23 +508,15 @@ seo: {
 
 **Sitemap** - 由 `@astrojs/sitemap` 自动生成。当 `llms.sitemap: true` 时包含 LLMs 文件。
 
-## 集成的 Astro 插件
+## 内置构建工具
 
-| 插件 | 用途 |
+| 工具 | 用途 |
 |------|------|
-| `astro-robots-txt` | 自动生成带 sitemap 引用的 `robots.txt` |
-| `astro-indexnow` | 向搜索引擎提交 URL 实现即时索引 |
-| `astro-pagefind` | 构建时全文搜索索引 |
-| `astro-llms-generate` | 生成供 AI/LLM 使用的 `llms.txt` |
-| `astro-analytics` | 多服务统计分析（GA、Umami、Plausible、Clarity 等） |
+| KIRARI postbuild | 生成 `_headers`、`_redirects`、`robots.txt`、LLM 文件和 Pagefind 索引 |
+| KIRARI IndexNow | 启用后向搜索引擎提交 URL 实现即时索引 |
+| KIRARI Analytics | 多服务统计分析（GA、Umami、Plausible、Clarity 等） |
 | `@astrojs/sitemap` | XML sitemap 生成 |
-| `@astrojs/partytown` | 将第三方脚本卸载到 Web Worker |
-| `astro-mail-obfuscation` | 混淆 mailto 链接防止邮箱被采集 |
-| `astro-embed` | YouTube、Twitter/X 等富媒体嵌入 |
-
-### Partytown
-
-将第三方脚本（分析、广告）迁移到 Web Worker 中执行，保持主线程响应。无需配置——只需像往常一样在 `<head>` 中添加脚本即可。
+| KIRARI 邮箱混淆 | 混淆 mailto 链接防止邮箱被采集 |
 
 ### 邮箱混淆
 
@@ -534,11 +526,11 @@ seo: {
 如有咨询，请发邮件至 [contact@example.com](mailto:contact@example.com)。
 ```
 
-插件在构建时编码邮箱地址，仅在用户点击时解码。
+构建会在生成的 HTML 中编码邮箱地址。
 
 ### 视频嵌入
 
-使用 `astro-embed` 实现富媒体嵌入，或使用自定义组件实现全宽响应式视频：
+使用自定义组件实现全宽响应式视频：
 
 ```mdx
 import YouTube from "../../components/embed/YouTube.astro";
@@ -562,7 +554,7 @@ import Bilibili from "../../components/embed/Bilibili.astro";
 | 数学 | KaTeX |
 | 图表 | Mermaid |
 | OG 图片 | 单篇 `frontmatter.og` + 全站 `og.defaultImage` 回退 |
-| SEO | astro-robots-txt, astro-indexnow |
+| SEO | KIRARI postbuild, @astrojs/sitemap |
 | 过渡动画 | View Transitions API / Swup |
 | 滚动条 | OverlayScrollbars |
 
@@ -612,7 +604,6 @@ KIRARI/
 
 - [saicaca/fuwari](https://github.com/saicaca/fuwari) - 原始主题
 - [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) - 增强分支
-- [ColdranAI/astro-llms-generate](https://github.com/ColdranAI/astro-llms-generate) - LLM 文档生成器
 
 ## 许可证
 

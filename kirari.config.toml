@@ -353,8 +353,8 @@ url = "https://github.com/saicaca/fuwari"
 
 # Custom JavaScript content (no <script> tags needed) / 自定义 JavaScript 内容（无需 <script> 标签）
 # Type: string / 类型: 字符串
-# Note: Auto-offloaded to Web Worker via Partytown for better performance
-# 注意: 自动通过 Partytown 卸载到 Web Worker 以获得更好性能
+# Note: Rendered inline in <head>; prefer async/defer scripts when possible.
+# 注意: 会以内联方式渲染在 <head> 中；尽量使用 async/defer 脚本。
 # Example / 示例:
 #   customScript = `(function(c,l,a,r,i,t,y){
 #     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -377,8 +377,8 @@ url = "https://github.com/saicaca/fuwari"
 
 # Custom JavaScript content (no <script> tags needed) / 自定义 JavaScript 内容（无需 <script> 标签）
 # Type: string / 类型: 字符串
-# Note: Auto-offloaded to Web Worker via Partytown for better performance
-# 注意: 自动通过 Partytown 卸载到 Web Worker 以获得更好性能
+# Note: Rendered inline near the footer.
+# 注意: 会以内联方式渲染在页脚附近。
 # customScript = ""
 
 # -----------------------------------------------------------------------------

@@ -12,12 +12,6 @@ import { defineConfig } from "astro/config";
 // See src/utils/transition-manager.ts for the unified transition system
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
-import indexnow from "astro-indexnow";
-
-import astroLLMsGenerator from "astro-llms-generate";
-import mailObfuscation from "astro-mail-obfuscation";
-import pagefind from "astro-pagefind";
-import robotsTxt from "astro-robots-txt";
 
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeComponents from "rehype-components"; /* Render the custom directive content */
@@ -142,15 +136,8 @@ export default defineConfig({
 		}),
 		svelte(),
 
-		mailObfuscation(),
 		mdx(),
 
-		Config.seo?.indexNow &&
-		indexnow({
-			key: Config.seo?.indexNowKey,
-		}),
-		!docsearchEnabled && pagefind(),
-		robotsTxt(),
 		sitemap({
 			customPages:
 				Config.llms.enable && Config.llms.sitemap
@@ -170,12 +157,6 @@ export default defineConfig({
 						),
 					]
 					: [],
-		}),
-		Config.llms.enable &&
-		astroLLMsGenerator({
-			title: Config.llms.title,
-			description: Config.llms.description,
-			i18n: Config.llms.i18n,
 		}),
 	].filter(Boolean),
 	markdown: {
