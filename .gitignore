@@ -36,9 +36,7 @@ _content_repo/
 # codebuddy
 .codebuddy/
 
-# Skilld references (recreated by `skilld install`)
-AGENTS.md
-.agents/skills/
+# Skilld cache references (recreated by `skilld install`)
 .skilld
 
 # local performance reports
