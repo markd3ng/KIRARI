@@ -304,6 +304,7 @@ updated: 2024-05-02      # 可选
 description: 简短描述    # 可选
 image: /cover.png        # 可选，横幅图片
 og: /og/custom.png       # 可选，当前文章专用 OG 图片
+slug: custom-post-url    # 可选，自定义 URL slug
 tags: [标签1, 标签2]     # 可选
 category: Guides         # 可选
 draft: false             # 在生产环境隐藏
@@ -313,6 +314,15 @@ mermaid: true            # 启用 Mermaid 图表
 
 你的内容在这里。
 ```
+
+文章 URL 按以下优先级生成：
+
+- 优先使用 frontmatter 中的 `slug`。
+- 未提供时使用 `[posts].slug-strategy` 配置的回退策略。
+- `file` 保持当前基于文件路径的路由，例如 `markdown.md` -> `/posts/markdown/`。
+- `crc32` 根据 Astro content entry id 生成 8 位十六进制 slug。
+
+KIRARI 默认保留 `/posts/example/` 这种 pretty URL；`.html` 伪静态 URL 对现代 SEO 没有实质收益，还会让 canonical、RSS、sitemap 和 i18n 路由更容易产生重复或不一致。
 
 ### 标签与分类显示名
 

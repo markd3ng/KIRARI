@@ -2,6 +2,7 @@ import { type CollectionEntry, getCollection } from "astro:content";
 import { normalizeMappingKey } from "@utils/normalize";
 import { getCategoryUrl } from "@utils/url-utils.ts";
 import { filterPostsByLang, getPostLang, getPostTranslationGroupKey, normalizeLangCode } from "./i18n-utils";
+import { applyPostRouteSlug, getPostRouteSlug } from "./post-route-utils";
 
 // Cache for all blog posts to avoid repeated getCollection calls
 let cachedPosts: CollectionEntry<"posts">[] | null = null;
@@ -45,7 +46,23 @@ async function getAllPosts(): Promise<CollectionEntry<"posts">[]> {
 	cachedPosts = await getCollection("posts", ({ data }) => {
 		return import.meta.env.PROD ? data.draft !== true : true;
 	});
+	for (const post of cachedPosts) applyPostRouteSlug(post);
+	validatePostRouteSlugs(cachedPosts);
 	return cachedPosts;
+}
+
+function validatePostRouteSlugs(posts: CollectionEntry<"posts">[]): void {
+	const seen = new Map<string, string>();
+	for (const post of posts) {
+		const key = `${getPostLang(post)}:${getPostRouteSlug(post)}`;
+		const existing = seen.get(key);
+		if (existing && existing !== post.id) {
+			throw new Error(
+				`Duplicate post slug "${getPostRouteSlug(post)}" for ${getPostLang(post)}: ${existing} and ${post.id}`,
+			);
+		}
+		seen.set(key, post.id);
+	}
 }
 
 async function buildDisplayNameMappings(): Promise<DisplayNameMappings> {
@@ -140,11 +157,11 @@ export async function getSortedPosts(lang?: string): Promise<CollectionEntry<"po
 	}
 
 	for (let i = 1; i < sorted.length; i++) {
-		sorted[i].data.nextSlug = sorted[i - 1].id;
+		sorted[i].data.nextSlug = getPostRouteSlug(sorted[i - 1]);
 		sorted[i].data.nextTitle = sorted[i - 1].data.title;
 	}
 	for (let i = 0; i < sorted.length - 1; i++) {
-		sorted[i].data.prevSlug = sorted[i + 1].id;
+		sorted[i].data.prevSlug = getPostRouteSlug(sorted[i + 1]);
 		sorted[i].data.prevTitle = sorted[i + 1].data.title;
 	}
 

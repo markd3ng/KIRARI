@@ -117,6 +117,8 @@ export type BlogPostData = {
 	title: string;
 	published: Date;
 	description: string;
+	slug?: string;
+	routeSlug?: string;
 	tags: string[];
 	draft?: boolean;
 	image?: string;
@@ -126,6 +128,11 @@ export type BlogPostData = {
 	prevSlug?: string;
 	nextTitle?: string;
 	nextSlug?: string;
+};
+
+export type PostsConfig = {
+	/** How post URLs are generated when frontmatter slug is empty */
+	slugStrategy: "file" | "crc32";
 };
 
 export type ExpressiveCodeConfig = {
@@ -231,6 +238,7 @@ export type AnalyticsConfig = {
 
 export type Config = {
 	site: SiteConfig;
+	posts: PostsConfig;
 	navBar: NavBarConfig;
 	profile: ProfileConfig;
 	license: LicenseConfig;

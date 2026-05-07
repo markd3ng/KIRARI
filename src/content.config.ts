@@ -8,6 +8,7 @@ const postsCollection = defineCollection({
 	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/posts" }),
 	schema: z.object({
 		title: z.string(),
+		slug: z.string().optional().default(""),
 		published: z.date(),
 		updated: z.date().optional(),
 		draft: z.boolean().optional().default(false),
@@ -27,6 +28,7 @@ const postsCollection = defineCollection({
 		prevSlug: z.string().default(""),
 		nextTitle: z.string().default(""),
 		nextSlug: z.string().default(""),
+		routeSlug: z.string().default(""),
 	}),
 });
 const specCollection = defineCollection({
@@ -37,7 +39,6 @@ export const collections = {
 	posts: postsCollection,
 	spec: specCollection,
 };
-
 
 
 

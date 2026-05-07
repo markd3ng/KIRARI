@@ -14,13 +14,14 @@ import {
 	toHreflang,
 	type AlternateLink,
 } from "@utils/i18n-utils";
+import { getPostRouteSlug, getPostUrl, getPostUrlBySlug } from "@utils/post-route-utils";
 import {
 	getPostTranslationLinks,
 	getPostTranslationMap,
 	getSortedPosts,
 	getTaxonomyDisplayMappings,
 } from "@utils/content-utils";
-import { getDir, getPostUrlBySlug } from "@utils/url-utils";
+import { getDir } from "@utils/url-utils";
 import { Config } from "../../constants";
 import { licenseConfig, mermaidConfig, profileConfig, siteConfig } from "../../config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
@@ -31,7 +32,7 @@ export async function getStaticPaths() {
 	const lang = Config.i18n.defaultLang;
 	const blogEntries = await getSortedPosts(lang);
 	return blogEntries.map((entry) => ({
-		params: { slug: entry.id },
+		params: { slug: getPostRouteSlug(entry) },
 		props: { entry, lang },
 	}));
 }
@@ -53,11 +54,11 @@ const alternates: AlternateLink[] = getEnabledLanguages().flatMap((itemLang) => 
 		lang: itemLang,
 		hreflang: toHreflang(itemLang),
 		label: getLanguageConfig(itemLang).label,
-		url: getPostUrlBySlug(translated.id, itemLang),
+		url: getPostUrl(translated, itemLang),
 	};
 });
 
-const canonicalUrl = getPostUrlBySlug(entry.id, lang);
+const canonicalUrl = getPostUrl(entry, lang);
 const ogImageUrl = entry.data.og?.trim() || siteConfig.og?.defaultImage || "/og/default.png";
 
 const jsonLd = {

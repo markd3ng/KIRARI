@@ -42,6 +42,19 @@
 # lang = "en-US"
 
 # -----------------------------------------------------------------------------
+# Posts / 文章
+# -----------------------------------------------------------------------------
+[posts]
+# Slug strategy used when a post does not define frontmatter `slug`.
+# `file` keeps the current URL based on the content file path.
+# `crc32` generates a stable 8-character hex slug from the content entry id.
+# 文章未定义 frontmatter `slug` 时使用的 slug 策略。
+# `file` 保持当前基于内容文件路径的 URL。
+# `crc32` 根据内容 entry id 生成稳定的 8 位十六进制 slug。
+# Options / 可选值: file, crc32
+slug-strategy = "file"
+
+# -----------------------------------------------------------------------------
 # Internationalization / 国际化
 # -----------------------------------------------------------------------------
 [i18n]

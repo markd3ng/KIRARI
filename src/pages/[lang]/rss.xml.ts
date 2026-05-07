@@ -1,6 +1,6 @@
 import rss from "@astrojs/rss";
 import { getSortedPosts } from "@utils/content-utils";
-import { getPostUrlBySlug } from "@utils/url-utils";
+import { getPostUrl } from "@utils/post-route-utils";
 import type { APIContext, GetStaticPaths } from "astro";
 import MarkdownIt from "markdown-it";
 import sanitizeHtml from "sanitize-html";
@@ -39,7 +39,7 @@ export async function GET(context: APIContext): Promise<Response> {
 				title: post.data.title,
 				pubDate: post.data.published,
 				description: post.data.description || "",
-				link: getPostUrlBySlug(post.id, lang),
+				link: getPostUrl(post, lang),
 				content: sanitizeHtml(parser.render(cleanedContent), {
 					allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
 				}),

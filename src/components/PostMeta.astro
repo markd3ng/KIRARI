@@ -5,10 +5,10 @@ import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import { formatDateToYYYYMMDD } from "../utils/date-utils";
 import { getLanguageConfig, toHreflang } from "../utils/i18n-utils";
+import { getPostUrl } from "../utils/post-route-utils";
 import {
 	getCategoryName,
 	getCategoryUrl,
-	getPostUrlBySlug,
 	getTagName,
 	getTagUrl,
 } from "../utils/url-utils";
@@ -50,7 +50,7 @@ const translationLinks = translations.map((item) => {
 	return {
 		label: langConfig.label,
 		hreflang: toHreflang(item.lang),
-		url: getPostUrlBySlug(item.post.id, item.lang),
+		url: getPostUrl(item.post, item.lang),
 	};
 });
 ---

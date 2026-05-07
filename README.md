@@ -304,6 +304,7 @@ updated: 2024-05-02      # Optional
 description: Short desc  # Optional
 image: /cover.png        # Optional banner image
 og: /og/custom.png       # Optional custom OG image for this post
+slug: custom-post-url    # Optional custom URL slug
 tags: [tag1, tag2]       # Optional
 category: Guides         # Optional
 draft: false             # Hide in production
@@ -313,6 +314,15 @@ mermaid: true            # Enable Mermaid diagrams
 
 Your content here.
 ```
+
+Post URLs use this order:
+
+- `slug` in frontmatter, when provided.
+- The configured `[posts].slug-strategy` fallback.
+- `file` keeps the current file path based route, for example `markdown.md` -> `/posts/markdown/`.
+- `crc32` generates an 8-character hex slug from the Astro content entry id.
+
+KIRARI intentionally keeps pretty URLs such as `/posts/example/`; `.html` pseudo-static URLs do not improve modern SEO and would make canonical, RSS, sitemap, and i18n routing more fragile.
 
 ### Tag & Category Display Names
 

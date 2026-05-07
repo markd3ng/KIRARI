@@ -10,6 +10,7 @@ import type {
 	LLMsConfig,
 	MermaidConfig,
 	NavBarConfig,
+	PostsConfig,
 	ProfileConfig,
 	SearchConfig,
 	SiteConfig,
@@ -18,6 +19,8 @@ import type {
 // Export individual configs for backward compatibility with the theme
 // Site configuration
 export const siteConfig: SiteConfig = Config.site as SiteConfig;
+
+export const postsConfig: PostsConfig = Config.posts as PostsConfig;
 
 // Navigation bar configuration
 export const navBarConfig: NavBarConfig = Config.navBar as NavBarConfig;

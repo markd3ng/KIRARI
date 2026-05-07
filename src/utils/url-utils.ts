@@ -18,11 +18,6 @@ export function url(path: string): string {
 	return joinUrl("", import.meta.env.BASE_URL, path);
 }
 
-export function getPostUrlBySlug(slug: string, lang?: string): string {
-	if (lang) return withLangPrefix(`/posts/${slug}/`, lang);
-	return url(`/posts/${slug}/`);
-}
-
 export function getTagUrl(tag: string, lang?: string): string {
 	if (lang) return withLangPrefix(`/tags/${normalizeMappingKey(tag)}/`, lang);
 	return url(`/tags/${normalizeMappingKey(tag)}/`);

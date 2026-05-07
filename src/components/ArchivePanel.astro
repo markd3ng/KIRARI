@@ -2,7 +2,8 @@
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import type { PostForList } from "../utils/content-utils";
-import { getPostUrlBySlug, getTagName } from "../utils/url-utils";
+import { getPostUrlBySlug } from "../utils/post-route-utils";
+import { getTagName } from "../utils/url-utils";
 
 interface Props {
 	sortedPosts: PostForList[];
@@ -63,7 +64,7 @@ function formatTag(tagList: string[]) {
 
 			{group.posts.map((post) => (
 				<a
-					href={getPostUrlBySlug(post.id, lang)}
+					href={getPostUrlBySlug(post.data.routeSlug || post.id, lang)}
 					aria-label={post.data.title}
 					class="group btn-plain !block h-10 w-full rounded-lg hover:text-[initial]"
 				>

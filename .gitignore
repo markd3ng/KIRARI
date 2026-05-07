@@ -37,6 +37,7 @@ _content_repo/
 .codebuddy/
 
 # Skilld references (recreated by `skilld install`)
+AGENTS.md
 .agents/skills/
 .skilld
 

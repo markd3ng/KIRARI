@@ -89,6 +89,13 @@ type TomlConfig = {
 		/** Favicon array / 图标数组 */
 		favicon?: unknown; // Array type, will be validated at runtime
 	};
+	/** Posts routing configuration / 文章路由配置 */
+	posts?: {
+		/** Slug strategy when frontmatter slug is empty / frontmatter slug 为空时的 slug 策略 */
+		slugStrategy?: unknown;
+		/** TOML key: slug-strategy / TOML 键：slug-strategy */
+		"slug-strategy"?: unknown;
+	};
 	/** Navigation bar configuration / 导航栏配置 */
 	navBar?: {
 		/** Navigation links (presets or custom) / 导航链接（预设或自定义） */
@@ -359,6 +366,9 @@ const DEFAULT_CONFIG: Config = {
 		title: "KIRARI",
 		description: "Documentation for KIRARI",
 		i18n: true,
+	},
+	posts: {
+		slugStrategy: "file",
 	},
 	i18n: {
 		enable: true,
@@ -910,6 +920,10 @@ export const loadConfig = (): Config => {
 	const envMatomoSrc = getEnvString("PUBLIC_MATOMO_SRC");
 	const languageMap = getLanguageConfigMap(i18n?.languages);
 	const enabledLanguages = getEnabledLangsFromI18n(i18n?.languages);
+	const validatePostSlugStrategy = (value: unknown): "file" | "crc32" => {
+		if (value === "file" || value === "crc32") return value;
+		return DEFAULT_CONFIG.posts.slugStrategy;
+	};
 
 	// Build config with validation
 	const config: Config = {
@@ -938,6 +952,9 @@ export const loadConfig = (): Config => {
 				depth: validateTocDepth(site?.toc?.depth),
 			},
 			favicon: validateFavicons(site?.favicon),
+		},
+		posts: {
+			slugStrategy: validatePostSlugStrategy(toml.posts?.["slug-strategy"] ?? toml.posts?.slugStrategy),
 		},
 		navBar: {
 			links: validateNavBarLinks(navBar?.links, DEFAULT_CONFIG.navBar.links),
