@@ -19,8 +19,8 @@
     "astro": "astro",
     "type-check": "tsc --noEmit",
     "new-post": "node scripts/new-post.js",
-    "preinstall": "npx only-allow pnpm",
-    "prepare": "npx skilld prepare || true"
+    "preinstall": "node scripts/ensure-pnpm.mjs",
+    "prepare": "node scripts/prepare-skilld.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.8",
