@@ -31,6 +31,7 @@ class TransitionManager {
 	// biome-ignore lint/suspicious/noExplicitAny: Swup instance is dynamically loaded and difficult to type
 	private swupInstance: any = null;
 	private initialized = false;
+	private astroNavigationInProgress = false;
 
 	constructor() {
 		// Initialize listener sets
@@ -105,6 +106,7 @@ class TransitionManager {
 		// astro:before-preparation - Navigation starts
 		// biome-ignore lint/suspicious/noExplicitAny: Astro view transition events are not strictly typed
 		document.addEventListener("astro:before-preparation", (event: any) => {
+			this.astroNavigationInProgress = true;
 			const data: TransitionEventData = {
 				from: event.from?.href,
 				to: event.to?.href,
@@ -136,6 +138,8 @@ class TransitionManager {
 
 		// astro:page-load - Navigation complete
 		document.addEventListener("astro:page-load", () => {
+			if (!this.astroNavigationInProgress) return;
+			this.astroNavigationInProgress = false;
 			const data: TransitionEventData = {
 				to: window.location.href,
 			};
