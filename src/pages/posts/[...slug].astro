@@ -5,17 +5,18 @@ import { render } from "astro:content";
 import { Icon } from "astro-icon/components";
 import License from "@components/misc/License.astro";
 import Markdown from "@components/misc/Markdown.astro";
+import PostTranslations from "@components/PostTranslations.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import {
 	getEnabledLanguages,
-	getLangHomeUrl,
-	languageLabels,
+	getLanguageConfig,
 	toHreflang,
 	type AlternateLink,
 } from "@utils/i18n-utils";
 import {
+	getPostTranslationLinks,
 	getPostTranslationMap,
 	getSortedPosts,
 	getTaxonomyDisplayMappings,
@@ -45,13 +46,15 @@ const { tags: tagDisplayMap, categories: categoryDisplayMap } =
 const { Content, headings, remarkPluginFrontmatter } = await render(entry);
 
 const translationMap = await getPostTranslationMap(entry);
-const alternates: AlternateLink[] = getEnabledLanguages().map((itemLang) => {
+const translationLinks = await getPostTranslationLinks(entry, lang);
+const alternates: AlternateLink[] = getEnabledLanguages().flatMap((itemLang) => {
 	const translated = translationMap[itemLang];
+	if (!translated) return [];
 	return {
 		lang: itemLang,
 		hreflang: toHreflang(itemLang),
-		label: languageLabels[itemLang],
-		url: translated ? getPostUrlBySlug(translated.id, itemLang) : getLangHomeUrl(itemLang),
+		label: getLanguageConfig(itemLang).label,
+		url: getPostUrlBySlug(translated.id, itemLang),
 	};
 });
 
@@ -118,6 +121,7 @@ const jsonLd = {
 				>
 					{entry.data.title}
 				</div>
+				<PostTranslations translations={translationLinks} />
 			</div>
 
 			<div class="onload-animation">

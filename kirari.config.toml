@@ -60,13 +60,47 @@ default-language = "en-US"
 # false 会隐藏默认语言前缀：使用 / 而不是 /en-US/。
 default-language-in-subdir = false
 
-# Enabled BCP 47 language tags. Public routes use the same values.
-# 启用 BCP 47 语言标签。公开路由使用相同写法。
-languages = ["en-US", "zh-CN", "zh-TW", "zh-HK"]
+# Generate redirects from the hidden default-language prefix to canonical URLs.
+# 从被隐藏的默认语言前缀生成到正式 URL 的重定向。
+disable-default-language-redirect = false
 
 # When a page has no translation in the target language, switch to the target homepage.
 # 当前页面没有目标语言翻译时，语言切换回退到目标语言首页。
 fallbackToDefault = true
+
+# Enabled language objects. Public routes use the same BCP 47 values.
+# 启用语言对象。公开路由使用同样的 BCP 47 写法。
+[i18n.languages.en-US]
+label = "English"
+locale = "en-US"
+direction = "ltr"
+weight = 1
+disabled = false
+contentDir = "src/content/posts"
+
+[i18n.languages.zh-CN]
+label = "简体中文"
+locale = "zh-CN"
+direction = "ltr"
+weight = 2
+disabled = false
+contentDir = "src/content/posts/zh-CN"
+
+[i18n.languages.zh-TW]
+label = "繁體中文"
+locale = "zh-TW"
+direction = "ltr"
+weight = 3
+disabled = false
+contentDir = "src/content/posts/zh-TW"
+
+[i18n.languages.zh-HK]
+label = "繁體中文（香港）"
+locale = "zh-HK"
+direction = "ltr"
+weight = 4
+disabled = false
+contentDir = "src/content/posts/zh-HK"
 
 # -----------------------------------------------------------------------------
 # Search / 搜索

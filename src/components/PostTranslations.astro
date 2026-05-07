@@ -1,0 +1,42 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { Icon } from "astro-icon/components";
+import { getLanguageConfig, toHreflang } from "../utils/i18n-utils";
+import { getPostUrlBySlug } from "../utils/url-utils";
+
+type TranslationItem = {
+	post: CollectionEntry<"posts">;
+	lang: string;
+};
+
+interface Props {
+	translations?: TranslationItem[];
+}
+
+const { translations = [] } = Astro.props;
+const links = translations.map((item) => {
+	const langConfig = getLanguageConfig(item.lang);
+	return {
+		label: langConfig.label,
+		hreflang: toHreflang(item.lang),
+		url: getPostUrlBySlug(item.post.id, item.lang),
+	};
+});
+---
+
+{links.length > 0 && (
+	<div class="flex flex-wrap items-center gap-2 text-sm text-black/50 dark:text-white/50">
+		<Icon name="material-symbols:language" class="text-[1rem] text-[var(--primary)]" />
+		{links.map((link) => (
+			<a
+				href={link.url}
+				hreflang={link.hreflang}
+				rel="alternate"
+				data-astro-prefetch="tap"
+				class="btn-plain scale-animation rounded-lg h-8 px-2 text-xs font-medium text-[var(--primary)] active:scale-95"
+			>
+				{link.label}
+			</a>
+		))}
+	</div>
+)}

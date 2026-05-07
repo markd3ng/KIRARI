@@ -69,8 +69,24 @@ base = "/"                     # 基础路径（例如子目录用 "/blog"）
 enable = true
 default-language = "en-US"     # 根路径 / 直接作为默认语言
 default-language-in-subdir = false # false: /，true: /en-US/
-languages = ["en-US", "zh-CN", "zh-TW", "zh-HK"]
+disable-default-language-redirect = false # 将 /en-US/... 重定向到 /...
 fallbackToDefault = true       # 缺少翻译时切换到目标语言首页
+
+[i18n.languages.en-US]
+label = "English"
+locale = "en-US"
+direction = "ltr"
+weight = 1
+disabled = false
+contentDir = "src/content/posts"
+
+[i18n.languages.zh-CN]
+label = "简体中文"
+locale = "zh-CN"
+direction = "ltr"
+weight = 2
+disabled = false
+contentDir = "src/content/posts/zh-CN"
 
 [search.docsearch]
 enable = false                 # 开启后禁用 Pagefind
@@ -140,7 +156,9 @@ indexNowKey = ""               # IndexNow API 密钥
 
 KIRARI 使用 BCP 47 公开路由。默认情况下，配置项 `default-language` 对应语言不带前缀，例如 `en-US` 使用 `/`、`/archive/`、`/posts/.../`；非默认语言使用 `/zh-CN/` 等前缀。设置 `default-language-in-subdir = true` 后，默认语言也会放到 `/en-US/` 下。
 
-文章可通过 `translationKey` 建立跨语言关联：
+语言可使用 Hugo-like 对象配置 `label`、`locale`、`direction`、`weight`、`disabled`、`contentDir`。旧数组写法 `languages = ["en-US", "zh-CN"]` 仍然兼容。
+
+文章可通过 `translationKey` 建立跨语言关联；未提供时，KIRARI 也会根据语言文件名后缀和语言内容目录自动推断翻译关系：
 
 ```yaml
 ---

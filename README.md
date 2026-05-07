@@ -69,8 +69,24 @@ base = "/"                     # Base path (e.g., "/blog" for subdirectory)
 enable = true
 default-language = "en-US"     # Root / serves the default language
 default-language-in-subdir = false # false: /, true: /en-US/
-languages = ["en-US", "zh-CN", "zh-TW", "zh-HK"]
+disable-default-language-redirect = false # Redirect /en-US/... to /...
 fallbackToDefault = true       # Missing translations switch to the target language homepage
+
+[i18n.languages.en-US]
+label = "English"
+locale = "en-US"
+direction = "ltr"
+weight = 1
+disabled = false
+contentDir = "src/content/posts"
+
+[i18n.languages.zh-CN]
+label = "简体中文"
+locale = "zh-CN"
+direction = "ltr"
+weight = 2
+disabled = false
+contentDir = "src/content/posts/zh-CN"
 
 [search.docsearch]
 enable = false                 # When true, Pagefind is disabled
@@ -140,7 +156,9 @@ indexNowKey = ""               # IndexNow API key
 
 KIRARI uses BCP 47 public routes. By default, the configured `default-language` is served without a prefix, so `en-US` uses `/`, `/archive/`, and `/posts/.../`; non-default languages use prefixed URLs such as `/zh-CN/`. Set `default-language-in-subdir = true` to also put the default language under `/en-US/`.
 
-Posts can be connected across languages with `translationKey`:
+Languages can be configured as Hugo-like objects with `label`, `locale`, `direction`, `weight`, `disabled`, and `contentDir`. The old array form, `languages = ["en-US", "zh-CN"]`, is still supported.
+
+Posts can be connected across languages with `translationKey`; if it is omitted, KIRARI also infers translations from language filename suffixes and language content directories:
 
 ```yaml
 ---

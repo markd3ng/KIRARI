@@ -212,6 +212,10 @@ type TomlConfig = {
 		defaultLangInSubdir?: unknown;
 		/** TOML key: default-language-in-subdir / TOML 键：default-language-in-subdir */
 		"default-language-in-subdir"?: unknown;
+		/** Disable default language prefix redirects / 禁用默认语言前缀重定向 */
+		disableDefaultLanguageRedirect?: unknown;
+		/** TOML key: disable-default-language-redirect / TOML 键：disable-default-language-redirect */
+		"disable-default-language-redirect"?: unknown;
 		/** Enabled languages / 启用语言 */
 		languages?: unknown;
 		/** Fallback to default language when translation is missing / 缺失翻译时回退默认语言 */
@@ -360,7 +364,109 @@ const DEFAULT_CONFIG: Config = {
 		enable: true,
 		defaultLang: "en-US",
 		defaultLangInSubdir: false,
+		disableDefaultLanguageRedirect: false,
 		languages: ["en-US", "zh-CN", "zh-TW", "zh-HK"],
+		languageMap: {
+			"en-US": {
+				code: "en-US",
+				label: "English",
+				locale: "en-US",
+				direction: "ltr",
+				weight: 1,
+				disabled: false,
+				contentDir: "src/content/posts",
+			},
+			"zh-CN": {
+				code: "zh-CN",
+				label: "简体中文",
+				locale: "zh-CN",
+				direction: "ltr",
+				weight: 2,
+				disabled: false,
+				contentDir: "src/content/posts/zh-CN",
+			},
+			"zh-TW": {
+				code: "zh-TW",
+				label: "繁體中文",
+				locale: "zh-TW",
+				direction: "ltr",
+				weight: 3,
+				disabled: false,
+				contentDir: "src/content/posts/zh-TW",
+			},
+			"zh-HK": {
+				code: "zh-HK",
+				label: "繁體中文（香港）",
+				locale: "zh-HK",
+				direction: "ltr",
+				weight: 4,
+				disabled: false,
+				contentDir: "src/content/posts/zh-HK",
+			},
+			"ja-JP": {
+				code: "ja-JP",
+				label: "日本語",
+				locale: "ja-JP",
+				direction: "ltr",
+				weight: 5,
+				disabled: true,
+				contentDir: "src/content/posts/ja-JP",
+			},
+			"ko-KR": {
+				code: "ko-KR",
+				label: "한국어",
+				locale: "ko-KR",
+				direction: "ltr",
+				weight: 6,
+				disabled: true,
+				contentDir: "src/content/posts/ko-KR",
+			},
+			"es-ES": {
+				code: "es-ES",
+				label: "Español",
+				locale: "es-ES",
+				direction: "ltr",
+				weight: 7,
+				disabled: true,
+				contentDir: "src/content/posts/es-ES",
+			},
+			"th-TH": {
+				code: "th-TH",
+				label: "ไทย",
+				locale: "th-TH",
+				direction: "ltr",
+				weight: 8,
+				disabled: true,
+				contentDir: "src/content/posts/th-TH",
+			},
+			"vi-VN": {
+				code: "vi-VN",
+				label: "Tiếng Việt",
+				locale: "vi-VN",
+				direction: "ltr",
+				weight: 9,
+				disabled: true,
+				contentDir: "src/content/posts/vi-VN",
+			},
+			"tr-TR": {
+				code: "tr-TR",
+				label: "Türkçe",
+				locale: "tr-TR",
+				direction: "ltr",
+				weight: 10,
+				disabled: true,
+				contentDir: "src/content/posts/tr-TR",
+			},
+			"id-ID": {
+				code: "id-ID",
+				label: "Bahasa Indonesia",
+				locale: "id-ID",
+				direction: "ltr",
+				weight: 11,
+				disabled: true,
+				contentDir: "src/content/posts/id-ID",
+			},
+		},
 		fallbackToDefault: true,
 	},
 	og: {
@@ -731,6 +837,57 @@ export const loadConfig = (): Config => {
 			.filter((item): item is typeof validLangs[number] => validLangs.includes(item));
 		return languages.length > 0 ? Array.from(new Set(languages)) : DEFAULT_CONFIG.i18n.languages;
 	};
+	const defaultLanguageLabels: Record<typeof validLangs[number], string> = {
+		"en-US": "English",
+		"zh-CN": "简体中文",
+		"zh-TW": "繁體中文",
+		"zh-HK": "繁體中文（香港）",
+		"ja-JP": "日本語",
+		"ko-KR": "한국어",
+		"es-ES": "Español",
+		"th-TH": "ไทย",
+		"vi-VN": "Tiếng Việt",
+		"tr-TR": "Türkçe",
+		"id-ID": "Bahasa Indonesia",
+	};
+	const getLanguageRecord = (value: unknown): Record<string, unknown> => {
+		if (!value || Array.isArray(value) || typeof value !== "object") return {};
+		return value as Record<string, unknown>;
+	};
+	const getLanguageConfigMap = (value: unknown) => {
+		const record = getLanguageRecord(value);
+		const result: Config["i18n"]["languageMap"] = {} as Config["i18n"]["languageMap"];
+		const sourceLangs = Array.isArray(value)
+			? value.map(validateLang)
+			: Object.keys(record).length > 0
+			? Object.keys(record).map(validateLang)
+			: DEFAULT_CONFIG.i18n.languages;
+		for (const lang of Array.from(new Set(sourceLangs))) {
+			const raw = getLanguageRecord(record[lang]);
+			result[lang] = {
+				code: lang,
+				label: getString(raw.label, defaultLanguageLabels[lang]),
+				locale: getString(raw.locale, lang),
+				direction: raw.direction === "rtl" || raw.direction === "auto" ? raw.direction : "ltr",
+				weight: getNumber(raw.weight, DEFAULT_CONFIG.i18n.languageMap[lang]?.weight ?? 100),
+				disabled: getBoolean(raw.disabled, false),
+				contentDir: getString(
+					raw.contentDir ?? raw["content-dir"],
+					DEFAULT_CONFIG.i18n.languageMap[lang]?.contentDir ?? `src/content/posts/${lang}`,
+				),
+			};
+		}
+		return result;
+	};
+	const getEnabledLangsFromI18n = (value: unknown): typeof validLangs[number][] => {
+		if (Array.isArray(value)) return validateLangArray(value);
+		const map = getLanguageConfigMap(value);
+		const languages = Object.values(map)
+			.filter((item) => !item.disabled)
+			.sort((a, b) => a.weight - b.weight || a.code.localeCompare(b.code))
+			.map((item) => item.code);
+		return languages.length > 0 ? languages : DEFAULT_CONFIG.i18n.languages;
+	};
 
 	// Helper: validate toc depth (1-3)
 	const validateTocDepth = (value: unknown): 1 | 2 | 3 => {
@@ -751,6 +908,8 @@ export const loadConfig = (): Config => {
 	const envPlausibleDomain = getEnvString("PUBLIC_PLAUSIBLE_DOMAIN");
 	const envMatomoSiteId = getEnvString("PUBLIC_MATOMO_SITE_ID");
 	const envMatomoSrc = getEnvString("PUBLIC_MATOMO_SRC");
+	const languageMap = getLanguageConfigMap(i18n?.languages);
+	const enabledLanguages = getEnabledLangsFromI18n(i18n?.languages);
 
 	// Build config with validation
 	const config: Config = {
@@ -848,7 +1007,12 @@ export const loadConfig = (): Config => {
 				i18n?.["default-language-in-subdir"] ?? i18n?.defaultLangInSubdir,
 				DEFAULT_CONFIG.i18n.defaultLangInSubdir,
 			),
-			languages: validateLangArray(i18n?.languages),
+			disableDefaultLanguageRedirect: getBoolean(
+				i18n?.["disable-default-language-redirect"] ?? i18n?.disableDefaultLanguageRedirect,
+				DEFAULT_CONFIG.i18n.disableDefaultLanguageRedirect,
+			),
+			languages: enabledLanguages,
+			languageMap,
 			fallbackToDefault: getBoolean(i18n?.fallbackToDefault, DEFAULT_CONFIG.i18n.fallbackToDefault),
 		},
 		og: {

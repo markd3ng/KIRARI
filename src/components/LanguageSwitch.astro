@@ -4,7 +4,7 @@ import type { AlternateLink, LangCode } from "../utils/i18n-utils";
 import {
 	getEnabledLanguages,
 	getLangHomeUrl,
-	languageLabels,
+	getLanguageConfig,
 	normalizeLangCode,
 	toLangSlug,
 } from "../utils/i18n-utils";
@@ -19,7 +19,7 @@ const current = normalizeLangCode(currentLang);
 const alternateMap = new Map(alternates.map((alternate) => [alternate.lang, alternate.url]));
 const links = getEnabledLanguages().map((lang: LangCode) => ({
 	lang,
-	label: languageLabels[lang],
+	label: getLanguageConfig(lang).label,
 	url: alternateMap.get(lang) || getLangHomeUrl(lang),
 	current: lang === current,
 }));

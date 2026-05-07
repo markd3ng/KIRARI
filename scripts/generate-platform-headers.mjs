@@ -3,6 +3,7 @@ import { join, relative, sep } from "node:path";
 
 const distDir = new URL("../dist", import.meta.url).pathname;
 const astroDir = join(distDir, "_astro");
+const configPath = new URL("../kirari.config.toml", import.meta.url).pathname;
 
 function toPublicPath(filePath) {
 	return `/${relative(distDir, filePath).split(sep).join("/")}`;
@@ -43,6 +44,26 @@ function getDefaultHomePath() {
 	return refreshMatch?.[1] || "/";
 }
 
+function getRootHtmlLang() {
+	const rootHtml = join(distDir, "index.html");
+	if (!existsSync(rootHtml)) return "en-US";
+	const html = readFileSync(rootHtml, "utf8");
+	const langMatch = html.match(/<html[^>]+lang=["']([^"']+)["']/i);
+	return langMatch?.[1] || "en-US";
+}
+
+function defaultLanguageRedirects() {
+	const lang = getRootHtmlLang();
+	const defaultLangDir = join(distDir, lang);
+	const configText = existsSync(configPath) ? readFileSync(configPath, "utf8") : "";
+	const disabled = /disable-default-language-redirect\s*=\s*true/i.test(configText);
+	if (disabled || existsSync(defaultLangDir)) return [];
+	return [
+		`/${lang}/  /  301`,
+		`/${lang}/*  /:splat  301`,
+	];
+}
+
 const defaultHomePath = getDefaultHomePath();
 const criticalCss = findCriticalCss();
 const roboto400 = findFirstAsset(/roboto-latin-400-normal.*\.woff2$/);
@@ -77,7 +98,9 @@ const headers = [
 	.join("\n");
 
 writeFileSync(join(distDir, "_headers"), `${headers}\n`);
-writeFileSync(
-	join(distDir, "_redirects"),
-	defaultHomePath === "/" ? "" : `/  ${defaultHomePath}  302\n`,
-);
+const redirects = [
+	defaultHomePath === "/" ? undefined : `/  ${defaultHomePath}  302`,
+	...defaultLanguageRedirects(),
+].filter(Boolean);
+
+writeFileSync(join(distDir, "_redirects"), redirects.length > 0 ? `${redirects.join("\n")}\n` : "");

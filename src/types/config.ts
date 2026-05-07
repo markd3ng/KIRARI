@@ -148,8 +148,20 @@ export type I18nConfig = {
 	enable: boolean;
 	defaultLang: SiteConfig["lang"];
 	defaultLangInSubdir: boolean;
+	disableDefaultLanguageRedirect: boolean;
 	languages: SiteConfig["lang"][];
+	languageMap: Record<SiteConfig["lang"], I18nLanguageConfig>;
 	fallbackToDefault: boolean;
+};
+
+export type I18nLanguageConfig = {
+	code: SiteConfig["lang"];
+	label: string;
+	locale: string;
+	direction: "ltr" | "rtl" | "auto";
+	weight: number;
+	disabled: boolean;
+	contentDir: string;
 };
 
 export type OGConfig = {

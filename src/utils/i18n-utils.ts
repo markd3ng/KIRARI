@@ -44,7 +44,7 @@ export function toLangSlug(lang?: string): string {
 }
 
 export function toHreflang(lang?: string): string {
-	return normalizeLangCode(lang);
+	return getLanguageConfig(lang).locale;
 }
 
 export function fromLangSlug(slug?: string): LangCode {
@@ -55,6 +55,19 @@ export function getEnabledLanguages(): LangCode[] {
 	if (!Config.i18n.enable) return [normalizeLangCode(Config.i18n.defaultLang)];
 	const languages = Config.i18n.languages.map(normalizeLangCode);
 	return Array.from(new Set(languages));
+}
+
+export function getLanguageConfig(lang?: string) {
+	const normalized = normalizeLangCode(lang);
+	return Config.i18n.languageMap[normalized] || {
+		code: normalized,
+		label: languageLabels[normalized],
+		locale: normalized,
+		direction: "ltr",
+		weight: 100,
+		disabled: false,
+		contentDir: `src/content/posts/${normalized}`,
+	};
 }
 
 export function isDefaultLang(lang?: string): boolean {
@@ -92,7 +105,49 @@ export function getLangHomeUrl(lang?: string): string {
 }
 
 export function getPostLang(post: CollectionEntry<"posts">): LangCode {
-	return normalizeLangCode(post.data.lang || Config.i18n.defaultLang);
+	const frontmatterLang = post.data.lang?.trim();
+	if (frontmatterLang) return normalizeLangCode(frontmatterLang);
+	return inferLangFromContentId(post.id);
+}
+
+function trimPostContentDir(contentDir: string): string {
+	return contentDir
+		.replace(/\\/g, "/")
+		.replace(/^\.?\//, "")
+		.replace(/^src\/content\/posts\/?/, "")
+		.replace(/^content\/posts\/?/, "")
+		.replace(/^posts\/?/, "")
+		.replace(/\/$/, "");
+}
+
+export function inferLangFromContentId(id: string): LangCode {
+	for (const lang of getEnabledLanguages()) {
+		const suffixPattern = new RegExp(`(^|/)${lang.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+		if (suffixPattern.test(id)) return lang;
+		if (id.toLowerCase().endsWith(`.${lang.toLowerCase()}`)) return lang;
+
+		const dir = trimPostContentDir(getLanguageConfig(lang).contentDir);
+		if (dir && (id === dir || id.startsWith(`${dir}/`))) return lang;
+	}
+	return normalizeLangCode(Config.i18n.defaultLang);
+}
+
+export function getPostTranslationGroupKey(post: CollectionEntry<"posts">): string {
+	const explicitKey = post.data.translationKey?.trim();
+	if (explicitKey) return `key:${explicitKey}`;
+	return `auto:${getLanguageNeutralPostId(post.id)}`;
+}
+
+export function getLanguageNeutralPostId(id: string): string {
+	let neutral = id;
+	for (const lang of getEnabledLanguages()) {
+		const dir = trimPostContentDir(getLanguageConfig(lang).contentDir);
+		if (dir && neutral.startsWith(`${dir}/`)) neutral = neutral.slice(dir.length + 1);
+		if (neutral.toLowerCase().startsWith(`${lang.toLowerCase()}/`)) neutral = neutral.slice(lang.length + 1);
+		const suffix = `.${lang}`;
+		if (neutral.toLowerCase().endsWith(suffix.toLowerCase())) neutral = neutral.slice(0, -suffix.length);
+	}
+	return neutral.replace(/\/index$/, "");
 }
 
 export function filterPostsByLang<T extends CollectionEntry<"posts">>(
@@ -113,8 +168,8 @@ export type AlternateLink = {
 export function getHomeAlternates(): AlternateLink[] {
 	return getEnabledLanguages().map((lang) => ({
 		lang,
-		hreflang: toHreflang(lang),
-		label: languageLabels[lang],
+		hreflang: getLanguageConfig(lang).locale,
+		label: getLanguageConfig(lang).label,
 		url: getLangHomeUrl(lang),
 	}));
 }
@@ -122,8 +177,8 @@ export function getHomeAlternates(): AlternateLink[] {
 export function getPathAlternates(pathBuilder: (lang: LangCode) => string): AlternateLink[] {
 	return getEnabledLanguages().map((lang) => ({
 		lang,
-		hreflang: toHreflang(lang),
-		label: languageLabels[lang],
+		hreflang: getLanguageConfig(lang).locale,
+		label: getLanguageConfig(lang).label,
 		url: pathBuilder(lang),
 	}));
 }

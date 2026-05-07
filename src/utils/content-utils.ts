@@ -1,7 +1,7 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import { normalizeMappingKey } from "@utils/normalize";
 import { getCategoryUrl } from "@utils/url-utils.ts";
-import { filterPostsByLang, getPostLang, normalizeLangCode } from "./i18n-utils";
+import { filterPostsByLang, getPostLang, getPostTranslationGroupKey, normalizeLangCode } from "./i18n-utils";
 
 // Cache for all blog posts to avoid repeated getCollection calls
 let cachedPosts: CollectionEntry<"posts">[] | null = null;
@@ -233,10 +233,9 @@ export async function getCategoryList(lang?: string): Promise<Category[]> {
 export async function getPostTranslations(
 	post: CollectionEntry<"posts">,
 ): Promise<CollectionEntry<"posts">[]> {
-	const key = post.data.translationKey?.trim();
-	if (!key) return [post];
+	const key = getPostTranslationGroupKey(post);
 	const posts = await getAllPosts();
-	return posts.filter((item) => item.data.translationKey?.trim() === key);
+	return posts.filter((item) => getPostTranslationGroupKey(item) === key);
 }
 
 export async function getPostTranslationMap(
@@ -248,4 +247,18 @@ export async function getPostTranslationMap(
 		map[getPostLang(translation)] = translation;
 	}
 	return map;
+}
+
+export async function getPostTranslationLinks(
+	post: CollectionEntry<"posts">,
+	currentLang?: string,
+) {
+	const current = normalizeLangCode(currentLang || getPostLang(post));
+	const translations = await getPostTranslations(post);
+	return translations
+		.map((translation) => ({
+			post: translation,
+			lang: getPostLang(translation),
+		}))
+		.filter((item) => item.lang !== current);
 }

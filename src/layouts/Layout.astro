@@ -21,7 +21,7 @@ import { Config } from "../constants";
 import { defaultFavicons } from "../constants/icon";
 import type { Favicon } from "../types/config";
 import type { AlternateLink } from "../utils/i18n-utils";
-import { getLangHomeUrl, normalizeLangCode, toHreflang } from "../utils/i18n-utils";
+import { getLangHomeUrl, getLanguageConfig, normalizeLangCode, toHreflang } from "../utils/i18n-utils";
 import { pathsEqual, url } from "../utils/url-utils";
 import {
 	GoogleAnalytics,
@@ -112,7 +112,9 @@ const favicons: Favicon[] =
 
 // const siteLang = siteConfig.lang.replace('_', '-')
 const pageLang = normalizeLangCode(lang || siteConfig.lang);
-const siteLang = pageLang.replace("_", "-");
+const languageConfig = getLanguageConfig(pageLang);
+const siteLang = languageConfig.locale;
+const siteDirection = languageConfig.direction === "auto" ? undefined : languageConfig.direction;
 const searchLang = toHreflang(pageLang);
 const absoluteUrl = (path: string) => new URL(path, Astro.site || Astro.url.origin).href;
 const canonicalHref = canonicalUrl ? absoluteUrl(canonicalUrl) : Astro.url.href;
@@ -153,7 +155,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 
 
 <!DOCTYPE html>
-<html lang={siteLang} class="bg-[var(--page-bg)] transition text-[14px] md:text-[16px]"
+<html lang={siteLang} dir={siteDirection} class="bg-[var(--page-bg)] transition text-[14px] md:text-[16px]"
 	  data-overlayscrollbars-initialize
 >
 	<head>
