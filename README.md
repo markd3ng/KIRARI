@@ -182,9 +182,16 @@ Algolia DocSearch can be enabled with `[search.docsearch]` or `PUBLIC_DOCSEARCH_
 
 - Roboto is self-hosted through `@fontsource/roboto`; only the Latin `400`, `500`, and `700` weights are loaded by default.
 - Responsive image widths are generated for banner, avatar, and post covers to reduce mobile transfer size while preserving display quality.
+- Public or external images rendered through the fallback `<img>` path preserve caller-provided `width` and `height`, so layout-sensitive images can avoid CLS without forcing dimensions on every remote image.
 - Astro prefetch is selective: navigation links use `hover`, mobile/menu links use `tap`, and `prefetchAll` stays disabled.
 - `pnpm build` generates `dist/_headers` and `dist/_redirects` for Cloudflare Pages and Netlify, while `vercel.json` and `edgeone.json` define immutable caching for `/_astro/*` on Vercel and EdgeOne.
 - `/_astro/*` is immutable because filenames are content-hashed; HTML, Pagefind assets, and non-hashed public files stay revalidation-friendly.
+
+### Release Maintenance
+
+- Release checks should run `pnpm install --frozen-lockfile`, `pnpm type-check`, `pnpm astro check`, and `pnpm build`.
+- Dependency refreshes are intended to stay inside the declared semver ranges for release patches unless a migration release explicitly opts into major upgrades.
+- `@astrojs/check` is kept in `devDependencies`; production behavior still uses the same `pnpm astro check` workflow during validation.
 
 ### Navigation Bar
 

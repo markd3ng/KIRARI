@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-05-08
+
 ### Added
 
 - Added Hugo-like i18n with BCP 47 routes, language object config, post-level `translationKey`, inferred translation groups, inline post translation links, localized RSS feeds, canonical links, and `hreflang` alternates.
@@ -14,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added optional Algolia DocSearch configuration, runtime trigger integration, and `docsearch:*` meta tags.
 - Added cross-platform deployment headers: generated `dist/_headers` for Cloudflare Pages and Netlify, plus `vercel.json` and `edgeone.json` cache rules.
 - Added `default-language-in-subdir` and default-language prefix alias redirects.
+- Added configurable post URL slugs with `frontmatter.slug` support and `crc32` hex fallback generation.
+- Added tracked project agent/skill guidance for KIRARI repository workflows.
 
 ### Changed
 
@@ -23,7 +27,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Kept sidebar profile links language-prefixed so About navigation stays inside the active locale.
 - Filtered Pagefind queries by active language and avoided persisting stale navbar/sidebar DOM across locale changes.
 - Kept performance improvements general-purpose: self-hosted Roboto, responsive images, selective Astro prefetch, and immutable caching for hashed `/_astro/*` assets.
-- Updated README and README_CN with i18n, performance, and multi-platform deployment guidance.
+- Aligned inline post translation links with the existing post metadata row.
+- Internalized project-owned postbuild tasks for robots, Pagefind, IndexNow, LLM files, platform headers, and analytics output.
+- Updated compatible dependency versions within the existing semver ranges, including Astro integrations, Svelte, Tailwind CSS, Pagefind, Mermaid, KaTeX, Swup, and related tooling.
+- Moved `@astrojs/check` to `devDependencies` while keeping the `pnpm astro check` workflow.
+- Updated README and README_CN with i18n, performance, deployment, slug, and release maintenance guidance.
+
+### Fixed
+
+- Passed `width` and `height` through `ImageWrapper.astro` fallback `<img>` output when callers provide explicit dimensions.
+- Prevented the initial page load from replaying the transition progress bar and causing a visible re-render.
 
 ### Removed
 
