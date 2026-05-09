@@ -12,15 +12,47 @@ const postsCollection = defineCollection({
 		published: z.date(),
 		updated: z.date().optional(),
 		draft: z.boolean().optional().default(false),
-		description: z.string().optional().default(""),
-		image: z.string().optional().default(""),
-		og: z.string().optional().default(""),
-		tags: z.array(z.string()).optional().default([]),
+		description: z
+			.string()
+			.optional()
+			.nullable()
+			.transform((value) => value ?? ""),
+		image: z
+			.string()
+			.optional()
+			.nullable()
+			.transform((value) => value ?? ""),
+		og: z
+			.string()
+			.optional()
+			.nullable()
+			.transform((value) => value ?? ""),
+		tags: z
+			.array(z.string())
+			.optional()
+			.nullable()
+			.transform((value) => value ?? []),
 		tagLabels: z.record(z.string(), z.string()).optional().default({}),
-		category: z.string().optional().nullable().default(""),
-		categoryLabel: z.string().optional().default(""),
-		lang: z.string().optional().default(""),
-		translationKey: z.string().optional().default(""),
+		category: z
+			.string()
+			.optional()
+			.nullable()
+			.transform((value) => value ?? ""),
+		categoryLabel: z
+			.string()
+			.optional()
+			.nullable()
+			.transform((value) => value ?? ""),
+		lang: z
+			.string()
+			.optional()
+			.nullable()
+			.transform((value) => value ?? ""),
+		translationKey: z
+			.string()
+			.optional()
+			.nullable()
+			.transform((value) => value ?? ""),
 		mermaid: z.boolean().optional().default(false),
 
 		/* For internal use */
@@ -39,7 +71,6 @@ export const collections = {
 	posts: postsCollection,
 	spec: specCollection,
 };
-
 
 
 

@@ -51,5 +51,7 @@ const len = page.data.length;
 
 <MainGridLayout lang={lang} alternates={getHomeAlternates()} canonicalUrl={page.url.current}>
 	<PostPage page={page} lang={lang}></PostPage>
-	<Pagination class="mx-auto onload-animation" page={page} lang={lang} style={`animation-delay: calc(var(--content-delay) + ${len * 50}ms)`}></Pagination>
+	{page.total > page.size && (
+		<Pagination class="mx-auto onload-animation" page={page} lang={lang} style={`animation-delay: calc(var(--content-delay) + ${len * 50}ms)`}></Pagination>
+	)}
 </MainGridLayout>
