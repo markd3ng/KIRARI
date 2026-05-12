@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.4",
-    "@astrojs/rss": "4.0.17",
+    "@astrojs/rss": "4.0.18",
     "@astrojs/sitemap": "^3.7.2",
     "@astrojs/svelte": "8.0.3",
     "@docsearch/css": "^4.6.3",
@@ -37,7 +37,7 @@
     "@iconify-json/fa6-brands": "^1.2.6",
     "@iconify-json/fa6-regular": "^1.2.4",
     "@iconify-json/fa6-solid": "^1.2.4",
-    "@iconify-json/material-symbols": "^1.2.70",
+    "@iconify-json/material-symbols": "^1.2.71",
     "@iconify/svelte": "^5.2.1",
     "@swup/preload-plugin": "^3.2.11",
     "@tailwindcss/typography": "^0.5.19",
