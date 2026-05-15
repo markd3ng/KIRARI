@@ -95,6 +95,31 @@ apiKey = ""
 indexName = ""
 filterByLanguage = true        # Uses docsearch:language meta tags
 
+[landingPage]
+enable = true                  # false restores the classic post-list homepage
+latestCount = 3                # Number of recent posts on the landing page
+heroImage = "assets/images/demo-banner.png"
+eyebrow = "WELCOME TO KIRARI"
+title = "Documenting Ideas."
+highlight = "Sharing Knowledge."
+description = "A space for notes, tutorials, and thoughts on technology and development."
+primaryCtaLabel = "Explore Articles"
+secondaryCtaLabel = "Learn More"
+# When enabled, / is the landing page and the full post-list homepage is /blog/.
+
+[landingPage.features]
+enable = true                  # false hides the feature cards section
+
+[[landingPage.features.items]]
+icon = "material-symbols:electric-bolt-rounded"
+title = "Technical Articles"
+description = "In-depth guides and tutorials for developers."
+
+[[landingPage.features.items]]
+icon = "material-symbols:menu-book-outline-rounded"
+title = "Learning Notes"
+description = "Record and share the learning journey."
+
 [site.themeColor]
 hue = 250                      # 0-360 (red: 0, teal: 200, cyan: 250, pink: 345)
 fixed = false                  # Hide theme color picker

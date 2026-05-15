@@ -1,0 +1,743 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { render } from "astro:content";
+import path from "node:path";
+import { Icon } from "astro-icon/components";
+import Footer from "@components/Footer.astro";
+import ImageWrapper from "@components/misc/ImageWrapper.astro";
+import Navbar from "@components/Navbar.astro";
+import { landingPageConfig, profileConfig, siteConfig } from "@/config";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import Layout from "@/layouts/Layout.astro";
+import { getCategoryList, getTaxonomyDisplayMappings } from "@utils/content-utils";
+import type { AlternateLink } from "@utils/i18n-utils";
+import { getLangHomeUrl, withLangPrefix } from "@utils/i18n-utils";
+import { getPostUrl } from "@utils/post-route-utils";
+import { getCategoryName, getDir } from "@utils/url-utils";
+
+interface Props {
+	posts: CollectionEntry<"posts">[];
+	lang: string;
+	alternates?: AlternateLink[];
+	canonicalUrl?: string;
+}
+
+const { posts, lang, alternates, canonicalUrl } = Astro.props;
+const latestEntries = posts.slice(0, landingPageConfig.latestCount);
+const { tags: tagDisplayMap, categories: categoryDisplayMap } =
+	await getTaxonomyDisplayMappings(lang);
+const categories = (await getCategoryList(lang))
+	.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+	.slice(0, 4);
+const latestPosts = await Promise.all(
+	latestEntries.map(async (entry) => {
+		const { remarkPluginFrontmatter } = await render(entry);
+		const imageBasePath = path.join(
+			"content/posts/",
+			getDir(getDir(entry.id) === "/" ? (entry as any).filePath.replace("src/content/posts/", "") : entry.id),
+		);
+
+		return {
+			entry,
+			url: getPostUrl(entry, lang),
+			words: remarkPluginFrontmatter.words,
+			minutes: remarkPluginFrontmatter.minutes,
+			imageBasePath,
+		};
+	}),
+);
+
+const blogUrl = withLangPrefix("/blog/", lang);
+const archiveUrl = withLangPrefix("/archive/", lang);
+const aboutUrl = withLangPrefix("/about/", lang);
+const friendsUrl = withLangPrefix("/friends/", lang);
+const connectLinks = profileConfig.links.slice(0, 3);
+const defaultLandingCopy = {
+	eyebrow: "WELCOME TO KIRARI",
+	title: "Documenting Ideas.",
+	highlight: "Sharing Knowledge.",
+	description: "A space for notes, tutorials, and thoughts on technology and development.",
+	primaryCtaLabel: "Explore Articles",
+	secondaryCtaLabel: "Learn More",
+};
+const defaultFeatureItems = [
+	{
+		icon: "material-symbols:electric-bolt-rounded",
+		title: "Technical Articles",
+		description: "In-depth guides and tutorials for developers.",
+	},
+	{
+		icon: "material-symbols:menu-book-outline-rounded",
+		title: "Learning Notes",
+		description: "Record and share the learning journey.",
+	},
+	{
+		icon: "material-symbols:code-rounded",
+		title: "Open Source",
+		description: "Build with modern web technologies.",
+	},
+	{
+		icon: "material-symbols:favorite-outline-rounded",
+		title: "Community",
+		description: "Connect and grow together.",
+	},
+];
+
+const localizedLandingCopy = {
+	"en-US": {
+		...defaultLandingCopy,
+		latestEyebrow: "Latest Updates",
+		latestTitle: "Latest Articles",
+		viewAllArticles: "View All Articles",
+		brandDescription: "Documenting ideas and sharing knowledge. Built with care and modern web technologies.",
+		navigation: "Navigation",
+		blog: "Blog",
+		connect: "Connect",
+		readTime: (minutes: number) => `${minutes} ${minutes === 1 ? "minute" : "minutes"} read`,
+		features: [
+			["Technical Articles", "In-depth guides and tutorials for developers."],
+			["Learning Notes", "Record and share the learning journey."],
+			["Open Source", "Build with modern web technologies."],
+			["Community", "Connect and grow together."],
+		],
+	},
+	"zh-CN": {
+		eyebrow: "欢迎来到 KIRARI",
+		title: "记录灵感。",
+		highlight: "分享知识。",
+		description: "这里记录技术笔记、教程，以及关于开发与工程实践的思考。",
+		primaryCtaLabel: "浏览文章",
+		secondaryCtaLabel: "了解更多",
+		latestEyebrow: "最新动态",
+		latestTitle: "最新文章",
+		viewAllArticles: "查看全部文章",
+		brandDescription: "记录想法，分享知识。用现代 Web 技术认真构建。",
+		navigation: "导航",
+		blog: "博客",
+		connect: "联系",
+		readTime: (minutes: number) => `${minutes} 分钟阅读`,
+		features: [
+			["技术文章", "面向开发者的深度指南与教程。"],
+			["学习笔记", "记录并分享持续学习的过程。"],
+			["开源实践", "基于现代 Web 技术进行构建。"],
+			["社区交流", "连接彼此，共同成长。"],
+		],
+	},
+	"zh-TW": {
+		eyebrow: "歡迎來到 KIRARI",
+		title: "記錄靈感。",
+		highlight: "分享知識。",
+		description: "這裡記錄技術筆記、教學，以及關於開發與工程實踐的思考。",
+		primaryCtaLabel: "瀏覽文章",
+		secondaryCtaLabel: "了解更多",
+		latestEyebrow: "最新動態",
+		latestTitle: "最新文章",
+		viewAllArticles: "查看全部文章",
+		brandDescription: "記錄想法，分享知識。用現代 Web 技術用心構建。",
+		navigation: "導覽",
+		blog: "部落格",
+		connect: "連結",
+		readTime: (minutes: number) => `${minutes} 分鐘閱讀`,
+		features: [
+			["技術文章", "面向開發者的深度指南與教學。"],
+			["學習筆記", "記錄並分享持續學習的過程。"],
+			["開源實踐", "基於現代 Web 技術進行構建。"],
+			["社群交流", "連結彼此，共同成長。"],
+		],
+	},
+};
+
+const activeLandingLocale = lang === "zh-CN" ? "zh-CN" : lang === "zh-TW" || lang === "zh-HK" ? "zh-TW" : "en-US";
+const localizedCopy = localizedLandingCopy[activeLandingLocale];
+const copy = {
+	...localizedCopy,
+	eyebrow: landingPageConfig.eyebrow === defaultLandingCopy.eyebrow ? localizedCopy.eyebrow : landingPageConfig.eyebrow,
+	title: landingPageConfig.title === defaultLandingCopy.title ? localizedCopy.title : landingPageConfig.title,
+	highlight: landingPageConfig.highlight === defaultLandingCopy.highlight ? localizedCopy.highlight : landingPageConfig.highlight,
+	description: landingPageConfig.description === defaultLandingCopy.description ? localizedCopy.description : landingPageConfig.description,
+	primaryCtaLabel: landingPageConfig.primaryCtaLabel === defaultLandingCopy.primaryCtaLabel ? localizedCopy.primaryCtaLabel : landingPageConfig.primaryCtaLabel,
+	secondaryCtaLabel: landingPageConfig.secondaryCtaLabel === defaultLandingCopy.secondaryCtaLabel ? localizedCopy.secondaryCtaLabel : landingPageConfig.secondaryCtaLabel,
+};
+const usesDefaultFeatures =
+	landingPageConfig.features.items.length === defaultFeatureItems.length &&
+	landingPageConfig.features.items.every((feature, index) => {
+		const defaultFeature = defaultFeatureItems[index];
+		return (
+			feature.icon === defaultFeature.icon &&
+			feature.title === defaultFeature.title &&
+			feature.description === defaultFeature.description
+		);
+	});
+const features = usesDefaultFeatures
+	? copy.features.map(([title, description], index) => ({
+			icon: defaultFeatureItems[index].icon,
+			title,
+			description,
+		}))
+	: landingPageConfig.features.items;
+const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18nKey.wordsCount, lang);
+---
+
+	<Layout
+	title={siteConfig.title}
+	description={copy.description}
+	lang={lang}
+	alternates={alternates}
+	canonicalUrl={canonicalUrl || getLangHomeUrl(lang)}
+>
+	<div class="kirari-landing min-h-screen bg-[#0A0E14] text-[#F9FAFB]">
+		<div class="landing-field" aria-hidden="true" transition:animate="none">
+			<div class="landing-stars"></div>
+			<div class="landing-glow landing-glow-a"></div>
+			<div class="landing-glow landing-glow-b"></div>
+		</div>
+
+		<header class="pointer-events-none sticky top-0 z-50 mx-auto max-w-[var(--page-width)] px-0 md:px-4" transition:name="navbar">
+			<div id="navbar-wrapper" class="pointer-events-auto transition-[opacity,transform]">
+				<Navbar lang={lang} alternates={alternates} showSearch={false}></Navbar>
+			</div>
+		</header>
+
+		<main id="swup-container" class="transition-swup-fade relative z-10">
+			<section class="landing-hero mx-auto grid max-w-[76rem] grid-cols-1 items-center gap-10 px-4 pb-7 pt-6 md:px-6 lg:grid-cols-[0.45fr_0.55fr] lg:gap-8 lg:pb-4 lg:pt-10">
+				<div class="landing-fade-up">
+					<p class="mb-5 text-sm font-bold uppercase tracking-[0.18em] text-[#60A5FA]">
+						{copy.eyebrow}
+					</p>
+					<h1 class="max-w-[38rem] text-5xl font-extrabold leading-[1.02] tracking-normal text-white md:text-6xl lg:text-[4rem]">
+						<span>{copy.title}</span>
+						<span class="mt-2 block bg-gradient-to-r from-[#60A5FA] via-[#3B82F6] to-[#93C5FD] bg-clip-text text-transparent">
+							{copy.highlight}
+						</span>
+					</h1>
+					<p class="mt-6 max-w-[30rem] text-base leading-8 text-[#9CA3AF] md:text-lg">
+						{copy.description}
+					</p>
+					<div class="mt-9 flex flex-col gap-4 sm:flex-row">
+						<a href={blogUrl} data-astro-prefetch="hover" class="landing-primary-btn">
+							<span>{copy.primaryCtaLabel}</span>
+							<Icon name="material-symbols:chevron-right-rounded" class="text-xl" />
+						</a>
+						<a href={aboutUrl} data-astro-prefetch="hover" class="landing-secondary-btn">
+							<span>{copy.secondaryCtaLabel}</span>
+							<Icon name="material-symbols:chevron-right-rounded" class="text-xl" />
+						</a>
+					</div>
+				</div>
+
+				<div class="landing-hero-art landing-fade-up lg:mt-8" style="animation-delay: 120ms">
+					<div class="hero-art-shell">
+						<div class="hero-art-glow"></div>
+						<ImageWrapper
+							src={landingPageConfig.heroImage}
+							alt={`${siteConfig.title} hero illustration`}
+							class="hero-art-image"
+							loading="eager"
+							decoding="sync"
+							fetchpriority="high"
+							sizes="(min-width: 1024px) 56vw, 100vw"
+							widths={[480, 640, 828, 1080, 1280, 1600]}
+							quality={74}
+						/>
+						<div class="hero-art-shine"></div>
+					</div>
+				</div>
+			</section>
+
+			{landingPageConfig.features.enable && features.length > 0 && (
+				<section class="mx-auto max-w-[76rem] px-4 pb-5 md:px-6">
+					<div class="landing-feature-grid">
+						{features.map((feature, index) => (
+							<article class="landing-feature-card landing-fade-up" style={`animation-delay: ${180 + index * 70}ms`}>
+								<div class="landing-feature-icon">
+									<Icon name={feature.icon} class="text-2xl" />
+								</div>
+								<h2>{feature.title}</h2>
+								<p>{feature.description}</p>
+							</article>
+						))}
+					</div>
+				</section>
+			)}
+
+			<section class="mx-auto max-w-[76rem] px-4 pb-10 pt-6 md:px-6">
+				<div class="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+					<div>
+						<p class="text-sm font-bold uppercase tracking-[0.18em] text-[#60A5FA]">{copy.latestEyebrow}</p>
+						<h2 class="mt-2 text-3xl font-extrabold text-white">{copy.latestTitle}</h2>
+					</div>
+					<a href={blogUrl} data-astro-prefetch="hover" class="landing-text-link">
+						<span>{copy.viewAllArticles}</span>
+						<Icon name="material-symbols:chevron-right-rounded" class="text-xl" />
+					</a>
+				</div>
+
+				<div class="flex flex-col gap-4">
+					{latestPosts.map(({ entry, url, words, minutes, imageBasePath }, index) => (
+						<article class="landing-article-card landing-fade-up" style={`animation-delay: ${index * 80}ms`}>
+							<a href={url} aria-label={entry.data.title} data-astro-prefetch="hover" class="landing-article-cover">
+								{entry.data.image ? (
+									<ImageWrapper
+										src={entry.data.image}
+										basePath={imageBasePath}
+										alt={`Cover image of ${entry.data.title}`}
+										class="h-full w-full"
+										loading="lazy"
+										sizes="(min-width: 768px) 240px, 100vw"
+										widths={[320, 480, 640]}
+										quality={68}
+									/>
+								) : (
+									<div class="landing-article-fallback">
+										<Icon name="material-symbols:article-outline-rounded" class="text-4xl" />
+									</div>
+								)}
+							</a>
+							<div class="min-w-0 flex-1">
+								<div class="mb-3 flex flex-wrap items-center gap-2 text-xs font-medium text-[#6B7280]">
+									<span>{entry.data.published.toISOString().slice(0, 10)}</span>
+									<span>/</span>
+									<span>{getCategoryName(entry.data.category || "uncategorized", categoryDisplayMap)}</span>
+									{entry.data.tags.slice(0, 4).map((tag) => (
+										<span class="landing-tag">{tagDisplayMap[tag] || tag}</span>
+									))}
+								</div>
+								<a href={url} data-astro-prefetch="hover" class="group block">
+									<h3 class="line-clamp-2 text-xl font-bold text-white transition group-hover:text-[#60A5FA]">
+										{entry.data.title}
+									</h3>
+								</a>
+								<p class="mt-2 line-clamp-2 text-sm leading-6 text-[#9CA3AF]">
+									{entry.data.description}
+								</p>
+								<div class="mt-3 flex gap-3 text-xs text-[#6B7280]">
+									<span>{words} {wordLabel(words)}</span>
+									<span>|</span>
+									<span>{copy.readTime(minutes)}</span>
+								</div>
+							</div>
+							<a href={url} aria-label={`Read ${entry.data.title}`} data-astro-prefetch="hover" class="landing-article-arrow">
+								<Icon name="material-symbols:chevron-right-rounded" class="text-2xl" />
+							</a>
+						</article>
+					))}
+				</div>
+			</section>
+
+			<footer class="mx-auto max-w-[76rem] px-4 pb-12 pt-8 md:px-6">
+				<div class="landing-footer">
+					<div>
+						<a href={getLangHomeUrl(lang)} class="inline-flex items-center gap-2 text-lg font-extrabold text-[#60A5FA]">
+							<Icon name="material-symbols:home-outline-rounded" class="text-2xl" />
+							{siteConfig.title}
+						</a>
+						<p class="mt-4 max-w-[18rem] text-sm leading-6 text-[#9CA3AF]">
+							{copy.brandDescription}
+						</p>
+						<div class="mt-5 flex gap-3">
+							{connectLinks.map((link) => (
+								<a href={link.url} aria-label={link.name} target="_blank" rel="noopener noreferrer" class="landing-social-link">
+									<span>{link.name.slice(0, 1).toUpperCase()}</span>
+								</a>
+							))}
+						</div>
+					</div>
+					<div>
+						<h3>{copy.navigation}</h3>
+						<a href={getLangHomeUrl(lang)} data-astro-prefetch="hover">{i18n(I18nKey.home, lang)}</a>
+						<a href={blogUrl} data-astro-prefetch="hover">{copy.blog}</a>
+						<a href={archiveUrl} data-astro-prefetch="hover">{i18n(I18nKey.archive, lang)}</a>
+						<a href={aboutUrl} data-astro-prefetch="hover">{i18n(I18nKey.about, lang)}</a>
+						<a href={friendsUrl} data-astro-prefetch="hover">{i18n(I18nKey.friends, lang)}</a>
+					</div>
+					<div>
+						<h3>{i18n(I18nKey.categories, lang)}</h3>
+						{categories.map((category) => (
+							<a href={category.url} data-astro-prefetch="hover">
+								{getCategoryName(category.name, categoryDisplayMap)}
+							</a>
+						))}
+					</div>
+					<div>
+						<h3>{copy.connect}</h3>
+						{connectLinks.map((link) => (
+							<a href={link.url} target="_blank" rel="noopener noreferrer">{link.name}</a>
+						))}
+					</div>
+				</div>
+				<Footer lang={lang}></Footer>
+			</footer>
+		</main>
+	</div>
+</Layout>
+
+<style>
+	.kirari-landing {
+		position: relative;
+		overflow: hidden;
+		color-scheme: dark;
+		isolation: isolate;
+	}
+
+	.kirari-landing ::selection {
+		background: rgba(96, 165, 250, 0.28);
+		color: #f9fafb;
+	}
+
+	.landing-hero h1,
+	.landing-hero h1 *,
+	.landing-hero > div:first-child > p:first-child {
+		user-select: none;
+	}
+
+	.landing-field {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		contain: paint;
+		background:
+			radial-gradient(circle at 75% 12%, rgba(59, 130, 246, 0.28), transparent 30rem),
+			radial-gradient(circle at 10% 44%, rgba(14, 165, 233, 0.12), transparent 28rem),
+			linear-gradient(180deg, #020617 0%, #0a0e14 45%, #07101d 100%);
+	}
+
+	.landing-stars {
+		position: absolute;
+		inset: 0;
+		opacity: 0.32;
+		background-image:
+			radial-gradient(circle, rgba(255, 255, 255, 0.8) 0 1px, transparent 1px),
+			radial-gradient(circle, rgba(96, 165, 250, 0.85) 0 1px, transparent 1px);
+		background-position: 0 0, 34px 52px;
+		background-size: 92px 92px, 138px 138px;
+		mask-image: linear-gradient(to bottom, black 0%, black 64%, transparent 100%);
+	}
+
+	.landing-glow {
+		position: absolute;
+		border-radius: 999px;
+		filter: blur(58px);
+		opacity: 0.48;
+	}
+
+	.landing-glow-a {
+		top: 6rem;
+		right: 5vw;
+		width: 18rem;
+		height: 18rem;
+		background: rgba(59, 130, 246, 0.32);
+	}
+
+	.landing-glow-b {
+		left: 4vw;
+		bottom: 12rem;
+		width: 16rem;
+		height: 16rem;
+		background: rgba(16, 185, 129, 0.12);
+	}
+
+	.landing-fade-up {
+		opacity: 0;
+		transform: translateY(18px);
+		animation: landing-fade-up 680ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+	}
+
+	@keyframes landing-fade-up {
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.landing-primary-btn,
+	.landing-secondary-btn {
+		display: inline-flex;
+		min-height: 3.25rem;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		border-radius: 0.875rem;
+		padding: 0 1.75rem;
+		font-weight: 700;
+		transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+	}
+
+	.landing-primary-btn {
+		background: linear-gradient(135deg, #3b82f6, #2563eb);
+		color: white;
+		box-shadow: 0 16px 34px rgba(59, 130, 246, 0.28);
+	}
+
+	.landing-secondary-btn {
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		background: rgba(255, 255, 255, 0.03);
+		color: rgba(255, 255, 255, 0.88);
+		backdrop-filter: blur(16px);
+	}
+
+	.landing-primary-btn:hover,
+	.landing-secondary-btn:hover {
+		transform: translateY(-2px);
+		border-color: rgba(96, 165, 250, 0.36);
+		box-shadow: 0 18px 40px rgba(59, 130, 246, 0.24);
+	}
+
+	.hero-art-shell {
+		position: relative;
+		margin-left: auto;
+		aspect-ratio: 1.22;
+		width: min(100%, 39rem);
+	}
+
+	.hero-art-glow {
+		position: absolute;
+		inset: 7%;
+		border-radius: 999px;
+		background: radial-gradient(circle, rgba(96, 165, 250, 0.58), transparent 68%);
+		filter: blur(34px);
+	}
+
+	.hero-art-image {
+		position: absolute;
+		inset: 0;
+		border-radius: 2rem;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		box-shadow: 0 26px 80px rgba(0, 0, 0, 0.48), 0 0 90px rgba(59, 130, 246, 0.22);
+	}
+
+	.hero-art-shine {
+		position: absolute;
+		inset: 0;
+		border-radius: 2rem;
+		background:
+			linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 30%),
+			radial-gradient(circle at 74% 18%, rgba(147, 197, 253, 0.28), transparent 12rem);
+		pointer-events: none;
+	}
+
+	.landing-feature-grid {
+		display: grid;
+		grid-template-columns: repeat(1, minmax(0, 1fr));
+		gap: 1rem;
+	}
+
+	.landing-feature-card,
+	.landing-article-card,
+	.landing-footer {
+		border: 1px solid rgba(255, 255, 255, 0.06);
+		background: rgba(255, 255, 255, 0.03);
+		box-shadow: 0 16px 42px rgba(0, 0, 0, 0.22);
+	}
+
+	.landing-feature-card {
+		border-radius: 1.25rem;
+		padding: 1.35rem;
+		transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+	}
+
+	.landing-feature-card:hover,
+	.landing-article-card:hover {
+		transform: translateY(-4px);
+		border-color: rgba(59, 130, 246, 0.4);
+		background: rgba(255, 255, 255, 0.045);
+	}
+
+	.landing-feature-icon {
+		display: flex;
+		width: 3rem;
+		height: 3rem;
+		align-items: center;
+		justify-content: center;
+		border-radius: 999px;
+		background: rgba(59, 130, 246, 0.15);
+		color: #60a5fa;
+	}
+
+	.landing-feature-card h2 {
+		margin-top: 1.15rem;
+		font-size: 1rem;
+		font-weight: 800;
+		color: white;
+	}
+
+	.landing-feature-card p {
+		margin-top: 0.5rem;
+		color: #9ca3af;
+		font-size: 0.9rem;
+		line-height: 1.65;
+	}
+
+	.landing-text-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		color: #60a5fa;
+		font-weight: 700;
+		transition: transform 0.25s ease, color 0.25s ease;
+	}
+
+	.landing-text-link:hover {
+		color: #93c5fd;
+		transform: translateX(4px);
+	}
+
+	.landing-article-card {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 1rem;
+		border-radius: 1rem;
+		padding: 1rem;
+		transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+	}
+
+	.landing-article-card:hover {
+		box-shadow: 0 18px 48px rgba(0, 0, 0, 0.36);
+	}
+
+	.landing-article-cover {
+		position: relative;
+		aspect-ratio: 2 / 1;
+		overflow: hidden;
+		border-radius: 1rem;
+		background: rgba(59, 130, 246, 0.1);
+	}
+
+	.landing-article-fallback {
+		display: flex;
+		height: 100%;
+		align-items: center;
+		justify-content: center;
+		color: #60a5fa;
+		background: radial-gradient(circle at 50% 20%, rgba(96, 165, 250, 0.3), rgba(15, 23, 42, 0.92));
+	}
+
+	.landing-tag {
+		border-radius: 999px;
+		border: 1px solid rgba(96, 165, 250, 0.18);
+		padding: 0.15rem 0.45rem;
+		color: #9ca3af;
+	}
+
+	.landing-article-arrow {
+		display: none;
+		width: 3rem;
+		height: 3rem;
+		align-items: center;
+		justify-content: center;
+		align-self: center;
+		border-radius: 999px;
+		color: #60a5fa;
+		transition: transform 0.25s ease, background 0.25s ease;
+	}
+
+	.landing-article-card:hover .landing-article-arrow {
+		transform: translateX(4px);
+		background: rgba(59, 130, 246, 0.12);
+	}
+
+	.landing-footer {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 2rem;
+		border-radius: 1rem;
+		padding: 2rem;
+	}
+
+	.landing-footer h3 {
+		margin-bottom: 1rem;
+		color: white;
+		font-size: 0.95rem;
+		font-weight: 800;
+	}
+
+	.landing-footer a:not(.landing-social-link) {
+		display: block;
+		margin-top: 0.7rem;
+		color: #9ca3af;
+		transition: color 0.2s ease;
+	}
+
+	.landing-footer a:not(.landing-social-link):hover {
+		color: #60a5fa;
+	}
+
+	.landing-social-link {
+		display: flex;
+		width: 2.25rem;
+		height: 2.25rem;
+		align-items: center;
+		justify-content: center;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.06);
+		color: white;
+		transition: transform 0.2s ease, background 0.2s ease;
+	}
+
+	.landing-social-link:hover {
+		transform: translateY(-2px);
+		background: rgba(59, 130, 246, 0.28);
+	}
+
+	:global(.kirari-landing .footer) {
+		color: rgba(255, 255, 255, 0.62);
+	}
+
+	:global(.kirari-landing .footer > div:first-child) {
+		border-color: rgba(255, 255, 255, 0.08);
+	}
+
+	@media (min-width: 640px) {
+		.landing-feature-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.landing-footer {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (min-width: 768px) {
+		.landing-article-card {
+			grid-template-columns: 15rem minmax(0, 1fr) 3rem;
+			align-items: center;
+		}
+
+		.landing-article-cover {
+			width: 15rem;
+			height: 7.5rem;
+		}
+
+		.landing-article-arrow {
+			display: flex;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.landing-feature-grid {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+
+		.landing-footer {
+			grid-template-columns: 1.4fr 0.75fr 0.75fr 0.75fr;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.landing-fade-up {
+			animation: none;
+			opacity: 1;
+			transform: none;
+		}
+
+		.landing-primary-btn,
+		.landing-secondary-btn,
+		.landing-feature-card,
+		.landing-article-card,
+		.landing-text-link,
+		.landing-social-link {
+			transition: none;
+		}
+	}
+</style>

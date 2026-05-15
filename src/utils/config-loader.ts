@@ -258,6 +258,34 @@ type TomlConfig = {
 			metaTags?: unknown;
 		};
 	};
+	/** Landing page configuration / Landing Page 配置 */
+	landingPage?: {
+		/** Enable PRD-style landing page on home routes / 在首页启用 PRD 风格 Landing Page */
+		enable?: unknown;
+		/** Number of latest posts to show / 最新文章数量 */
+		latestCount?: unknown;
+		/** Hero image path / Hero 图片路径 */
+		heroImage?: unknown;
+		/** Hero eyebrow text / Hero 小标题 */
+		eyebrow?: unknown;
+		/** Hero title first line / Hero 主标题 */
+		title?: unknown;
+		/** Hero highlighted line / Hero 高亮标题 */
+		highlight?: unknown;
+		/** Hero description / Hero 描述 */
+		description?: unknown;
+		/** Primary CTA label / 主按钮文案 */
+		primaryCtaLabel?: unknown;
+		/** Secondary CTA label / 副按钮文案 */
+		secondaryCtaLabel?: unknown;
+		/** Feature cards configuration / 特性卡片配置 */
+		features?: {
+			/** Show feature cards section / 显示特性卡片模块 */
+			enable?: unknown;
+			/** Feature card items / 特性卡片列表 */
+			items?: unknown;
+		};
+	};
 };
 
 /**
@@ -494,6 +522,42 @@ const DEFAULT_CONFIG: Config = {
 			indexName: "",
 			filterByLanguage: true,
 			metaTags: {},
+		},
+	},
+	landingPage: {
+		enable: false,
+		latestCount: 3,
+		heroImage: "assets/images/demo-banner.png",
+		eyebrow: "WELCOME TO KIRARI",
+		title: "Documenting Ideas.",
+		highlight: "Sharing Knowledge.",
+		description: "A space for notes, tutorials, and thoughts on technology and development.",
+		primaryCtaLabel: "Explore Articles",
+		secondaryCtaLabel: "Learn More",
+		features: {
+			enable: true,
+			items: [
+				{
+					icon: "material-symbols:electric-bolt-rounded",
+					title: "Technical Articles",
+					description: "In-depth guides and tutorials for developers.",
+				},
+				{
+					icon: "material-symbols:menu-book-outline-rounded",
+					title: "Learning Notes",
+					description: "Record and share the learning journey.",
+				},
+				{
+					icon: "material-symbols:code-rounded",
+					title: "Open Source",
+					description: "Build with modern web technologies.",
+				},
+				{
+					icon: "material-symbols:favorite-outline-rounded",
+					title: "Community",
+					description: "Connect and grow together.",
+				},
+			],
 		},
 	},
 };
@@ -828,6 +892,7 @@ export const loadConfig = (): Config => {
 	const og = toml.og;
 	const seo = toml.seo;
 	const search = toml.search;
+	const landingPage = toml.landingPage;
 
 	// Helper: validate lang field
 	const validLangs = ["en-US", "zh-CN", "zh-TW", "zh-HK", "ja-JP", "ko-KR", "es-ES", "th-TH", "vi-VN", "tr-TR", "id-ID"] as const;
@@ -923,6 +988,50 @@ export const loadConfig = (): Config => {
 	const validatePostSlugStrategy = (value: unknown): "file" | "crc32" => {
 		if (value === "file" || value === "crc32") return value;
 		return DEFAULT_CONFIG.posts.slugStrategy;
+	};
+	const validateLatestCount = (value: unknown): number => {
+		const count = Math.trunc(getNumber(value, DEFAULT_CONFIG.landingPage.latestCount));
+		if (count < 1) return DEFAULT_CONFIG.landingPage.latestCount;
+		return Math.min(count, 12);
+	};
+	const validateLandingFeatures = (value: unknown): Config["landingPage"]["features"] => {
+		const fallback = DEFAULT_CONFIG.landingPage.features;
+
+		if (typeof value !== "object" || value === null) {
+			return fallback;
+		}
+
+		const rawFeatures = value as {
+			enable?: unknown;
+			items?: unknown;
+		};
+		const items = Array.isArray(rawFeatures.items)
+			? rawFeatures.items.flatMap((item) => {
+					if (typeof item !== "object" || item === null) return [];
+
+					const rawItem = item as {
+						icon?: unknown;
+						title?: unknown;
+						description?: unknown;
+					};
+					const title = getString(rawItem.title, "").trim();
+					const description = getString(rawItem.description, "").trim();
+					if (!title || !description) return [];
+
+					return [
+						{
+							icon: getString(rawItem.icon, "material-symbols:star-outline-rounded").trim() || "material-symbols:star-outline-rounded",
+							title,
+							description,
+						},
+					];
+				})
+			: fallback.items;
+
+		return {
+			enable: getBoolean(rawFeatures.enable, fallback.enable),
+			items: items.length > 0 ? items : fallback.items,
+		};
 	};
 
 	// Build config with validation
@@ -1048,6 +1157,18 @@ export const loadConfig = (): Config => {
 				filterByLanguage: getEnvBoolean("PUBLIC_DOCSEARCH_FILTER_BY_LANGUAGE", getBoolean(search?.docsearch?.filterByLanguage, DEFAULT_CONFIG.search.docsearch.filterByLanguage)),
 				metaTags: getStringRecord(search?.docsearch?.metaTags, DEFAULT_CONFIG.search.docsearch.metaTags),
 			},
+		},
+		landingPage: {
+			enable: getBoolean(landingPage?.enable, DEFAULT_CONFIG.landingPage.enable),
+			latestCount: validateLatestCount(landingPage?.latestCount),
+			heroImage: getString(landingPage?.heroImage, DEFAULT_CONFIG.landingPage.heroImage),
+			eyebrow: getString(landingPage?.eyebrow, DEFAULT_CONFIG.landingPage.eyebrow),
+			title: getString(landingPage?.title, DEFAULT_CONFIG.landingPage.title),
+			highlight: getString(landingPage?.highlight, DEFAULT_CONFIG.landingPage.highlight),
+			description: getString(landingPage?.description, DEFAULT_CONFIG.landingPage.description),
+			primaryCtaLabel: getString(landingPage?.primaryCtaLabel, DEFAULT_CONFIG.landingPage.primaryCtaLabel),
+			secondaryCtaLabel: getString(landingPage?.secondaryCtaLabel, DEFAULT_CONFIG.landingPage.secondaryCtaLabel),
+			features: validateLandingFeatures(landingPage?.features),
 		},
 	};
 

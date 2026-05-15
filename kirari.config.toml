@@ -138,6 +138,62 @@ filterByLanguage = true
 [search.docsearch.metaTags]
 # version = "latest"
 
+# -----------------------------------------------------------------------------
+# Landing Page / 首页 Landing Page
+# -----------------------------------------------------------------------------
+[landingPage]
+# Enable the PRD-style landing page on home routes. Set to false to restore the
+# classic post-list homepage.
+# 在首页启用 PRD 风格 Landing Page。设为 false 可恢复经典文章列表首页。
+# When enabled, the complete post-list homepage is still available at /blog/.
+# 启用后，完整文章列表首页仍可通过 /blog/ 访问。
+enable = true
+
+# Number of recent posts shown in the Latest Articles section.
+# Latest Articles 模块展示的最新文章数量。
+latestCount = 3
+
+# Hero illustration/image path. Relative to /src, or /public if starts with '/'.
+# Hero 插画/图片路径。相对于 /src，若以 '/' 开头则相对于 /public。
+heroImage = "assets/images/demo-banner.png"
+
+# Hero copy. Override these to localize or rebrand the landing page.
+# Hero 文案。可按需覆盖以本地化或调整品牌表达。
+eyebrow = "WELCOME TO KIRARI"
+title = "Documenting Ideas."
+highlight = "Sharing Knowledge."
+description = "A space for notes, tutorials, and thoughts on technology and development."
+primaryCtaLabel = "Explore Articles"
+secondaryCtaLabel = "Learn More"
+
+# Feature Cards section. Disable it when the landing page should jump directly
+# from Hero to Latest Articles.
+# 特性卡片模块。如需让 Landing Page 从 Hero 直接进入最新文章，可关闭。
+[landingPage.features]
+enable = true
+
+# Feature card items. Icons use Iconify names supported by astro-icon.
+# 特性卡片列表。图标使用 astro-icon 支持的 Iconify 名称。
+[[landingPage.features.items]]
+icon = "material-symbols:electric-bolt-rounded"
+title = "Technical Articles"
+description = "In-depth guides and tutorials for developers."
+
+[[landingPage.features.items]]
+icon = "material-symbols:menu-book-outline-rounded"
+title = "Learning Notes"
+description = "Record and share the learning journey."
+
+[[landingPage.features.items]]
+icon = "material-symbols:code-rounded"
+title = "Open Source"
+description = "Build with modern web technologies."
+
+[[landingPage.features.items]]
+icon = "material-symbols:favorite-outline-rounded"
+title = "Community"
+description = "Connect and grow together."
+
 # Theme color configuration / 主题色配置
 [site.themeColor]
 # Hue value for theme color (0-360) / 主题色色相值（0-360）

@@ -667,6 +667,7 @@ function scheduleBodyScrollbarUpdate() {
 
 function showBanner() {
 	if (!siteConfig.banner.enable) return;
+	if (!document.getElementById('banner-wrapper')) return;
 
 	const banner = document.getElementById('banner');
 	if (!banner) {
@@ -743,14 +744,14 @@ function init() {
 
 	const scrollRestore = parseInt(document.documentElement.dataset.scrollRestore || '0');
 
-	// Normal OS init at 600ms (let animations complete first)
-	setTimeout(() => {
-		initCustomScrollbar();
-		if (window.location.hash) {
-			requestAnimationFrame(scrollToHash);
-			setTimeout(scrollToHash, 150);
-		}
-	}, 600);
+	// Initialize the body scrollbar before the page visually settles. Delaying
+	// this until after first paint makes the body get rewrapped later, which
+	// reads as a second page load on both landing and blog pages.
+	initCustomScrollbar();
+	if (window.location.hash) {
+		requestAnimationFrame(scrollToHash);
+		setTimeout(scrollToHash, 150);
+	}
 
 	// Scroll restoration for F5 refresh: don't fight async resets — instead,
 	// let everything initialize, then scroll to saved position and reveal page.
@@ -765,16 +766,16 @@ function init() {
 			document.body.scrollTop = scrollRestore;
 		};
 
-		// Primary restore: OS init (600ms) + async settle buffer (300ms)
+		// Primary restore after the immediate scrollbar init has settled.
 		setTimeout(() => {
 			doRestore();
 			// Reveal page at the correct scroll position
 			document.documentElement.style.opacity = '';
-		}, 900);
+		}, 120);
 
 		// Safety net re-checks for late async resets
+		setTimeout(doRestore, 600);
 		setTimeout(doRestore, 1200);
-		setTimeout(doRestore, 1800);
 
 		// Cleanup after all restores complete
 		setTimeout(() => {
@@ -782,7 +783,7 @@ function init() {
 			try { history.scrollRestoration = 'auto'; } catch {}
 			// Failsafe: ensure page is visible
 			document.documentElement.style.opacity = '';
-		}, 2000);
+		}, 1400);
 	}
 }
 

@@ -5,6 +5,7 @@ import type {
 	FooterConfig,
 	HeadConfig,
 	I18nConfig,
+	LandingPageConfig,
 
 	LicenseConfig,
 	LLMsConfig,
@@ -52,3 +53,6 @@ export const llmsConfig: LLMsConfig = Config.llms as LLMsConfig;
 export const i18nConfig: I18nConfig = Config.i18n as I18nConfig;
 
 export const searchConfig: SearchConfig = Config.search as SearchConfig;
+
+export const landingPageConfig: LandingPageConfig =
+	Config.landingPage as LandingPageConfig;

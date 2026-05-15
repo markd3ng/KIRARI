@@ -236,6 +236,33 @@ export type AnalyticsConfig = {
 	amplitudeApiKey?: string;
 };
 
+export type LandingPageConfig = {
+	/** Show the PRD-style landing page on home routes instead of the classic post list. */
+	enable: boolean;
+	/** Number of recent posts to show in the Latest Articles section. */
+	latestCount: number;
+	/** Hero illustration/image path. Relative to src, or public when it starts with /. */
+	heroImage: string;
+	eyebrow: string;
+	title: string;
+	highlight: string;
+	description: string;
+	primaryCtaLabel: string;
+	secondaryCtaLabel: string;
+	features: LandingPageFeaturesConfig;
+};
+
+export type LandingPageFeatureItem = {
+	icon: string;
+	title: string;
+	description: string;
+};
+
+export type LandingPageFeaturesConfig = {
+	enable: boolean;
+	items: LandingPageFeatureItem[];
+};
+
 export type Config = {
 	site: SiteConfig;
 	posts: PostsConfig;
@@ -252,4 +279,5 @@ export type Config = {
 	og: OGConfig;
 	seo: SeoConfig;
 	search: SearchConfig;
+	landingPage: LandingPageConfig;
 };

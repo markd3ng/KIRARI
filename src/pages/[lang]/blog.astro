@@ -1,20 +1,11 @@
 ---
 import type { GetStaticPaths } from "astro";
 import Pagination from "../../components/control/Pagination.astro";
-import LandingPage from "../../components/landing/LandingPage.astro";
 import PostPage from "../../components/PostPage.astro";
-import { Config } from "../../constants";
 import { PAGE_SIZE } from "../../constants/constants";
 import MainGridLayout from "../../layouts/MainGridLayout.astro";
 import { getSortedPosts } from "../../utils/content-utils";
-import {
-	fromLangSlug,
-	getHomeAlternates,
-	getLangHomeUrl,
-	getPrefixedLanguages,
-	toLangSlug,
-	withLangPrefix,
-} from "../../utils/i18n-utils";
+import { fromLangSlug, getPathAlternates, getPrefixedLanguages, toLangSlug, withLangPrefix } from "../../utils/i18n-utils";
 
 export const getStaticPaths = (() =>
 	getPrefixedLanguages().map((lang) => ({
@@ -26,6 +17,7 @@ const lang = fromLangSlug(Astro.params.lang);
 const allBlogPosts = await getSortedPosts(lang);
 const pageSize = PAGE_SIZE;
 const totalPages = Math.max(1, Math.ceil(allBlogPosts.length / pageSize));
+const currentUrl = withLangPrefix("/blog/", lang);
 
 const page = {
 	data: allBlogPosts.slice(0, pageSize),
@@ -36,22 +28,21 @@ const page = {
 	currentPage: 1,
 	lastPage: totalPages,
 	url: {
-		current: getLangHomeUrl(lang),
+		current: currentUrl,
 		prev: undefined,
 		next: totalPages > 1 ? withLangPrefix("/2/", lang) : undefined,
-		first: getLangHomeUrl(lang),
-		last: totalPages > 1 ? withLangPrefix(`/${totalPages}/`, lang) : getLangHomeUrl(lang),
+		first: currentUrl,
+		last: totalPages > 1 ? withLangPrefix(`/${totalPages}/`, lang) : currentUrl,
 	},
 };
 
 const len = page.data.length;
+const alternates = getPathAlternates((lang) => withLangPrefix("/blog/", lang));
 ---
 
-{Config.landingPage.enable ? (
-	<LandingPage posts={allBlogPosts} lang={lang} alternates={getHomeAlternates()} canonicalUrl={getLangHomeUrl(lang)} />
-) : (
-	<MainGridLayout lang={lang} alternates={getHomeAlternates()} canonicalUrl={getLangHomeUrl(lang)}>
-		<PostPage page={page} lang={lang}></PostPage>
+<MainGridLayout lang={lang} alternates={alternates} canonicalUrl={currentUrl}>
+	<PostPage page={page} lang={lang}></PostPage>
+	{page.total > page.size && (
 		<Pagination class="mx-auto onload-animation" page={page} lang={lang} style={`animation-delay: calc(var(--content-delay) + ${len * 50}ms)`}></Pagination>
-	</MainGridLayout>
-)}
+	)}
+</MainGridLayout>

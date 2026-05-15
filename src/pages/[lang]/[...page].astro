@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from "astro";
 import Pagination from "../../components/control/Pagination.astro";
 import PostPage from "../../components/PostPage.astro";
+import { Config } from "../../constants";
 import { PAGE_SIZE } from "../../constants/constants";
 import MainGridLayout from "../../layouts/MainGridLayout.astro";
 import { getSortedPosts } from "../../utils/content-utils";
@@ -35,6 +36,7 @@ const allBlogPosts = await getSortedPosts(lang);
 const pageSize = PAGE_SIZE;
 const totalPages = Math.max(1, Math.ceil(allBlogPosts.length / pageSize));
 const start = (pageNumber - 1) * pageSize;
+const blogHomeUrl = Config.landingPage.enable ? withLangPrefix("/blog/", lang) : getLangHomeUrl(lang);
 
 const page = {
 	data: allBlogPosts.slice(start, start + pageSize),
@@ -46,10 +48,10 @@ const page = {
 	lastPage: totalPages,
 	url: {
 		current: withLangPrefix(`/${pageNumber}/`, lang),
-		prev: pageNumber > 1 ? withLangPrefix(pageNumber === 2 ? "/" : `/${pageNumber - 1}/`, lang) : undefined,
+		prev: pageNumber > 1 ? (pageNumber === 2 ? blogHomeUrl : withLangPrefix(`/${pageNumber - 1}/`, lang)) : undefined,
 		next: pageNumber < totalPages ? withLangPrefix(`/${pageNumber + 1}/`, lang) : undefined,
-		first: getLangHomeUrl(lang),
-		last: totalPages > 1 ? withLangPrefix(`/${totalPages}/`, lang) : getLangHomeUrl(lang),
+		first: blogHomeUrl,
+		last: totalPages > 1 ? withLangPrefix(`/${totalPages}/`, lang) : blogHomeUrl,
 	},
 };
 

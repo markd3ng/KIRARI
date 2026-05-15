@@ -95,6 +95,31 @@ apiKey = ""
 indexName = ""
 filterByLanguage = true        # 使用 docsearch:language meta tags
 
+[landingPage]
+enable = true                  # false 恢复经典文章列表首页
+latestCount = 3                # Landing Page 展示的最新文章数量
+heroImage = "assets/images/demo-banner.png"
+eyebrow = "WELCOME TO KIRARI"
+title = "Documenting Ideas."
+highlight = "Sharing Knowledge."
+description = "A space for notes, tutorials, and thoughts on technology and development."
+primaryCtaLabel = "Explore Articles"
+secondaryCtaLabel = "Learn More"
+# 开启后，/ 为 Landing Page，完整文章列表首页保留在 /blog/。
+
+[landingPage.features]
+enable = true                  # false 隐藏特性卡片模块
+
+[[landingPage.features.items]]
+icon = "material-symbols:electric-bolt-rounded"
+title = "Technical Articles"
+description = "In-depth guides and tutorials for developers."
+
+[[landingPage.features.items]]
+icon = "material-symbols:menu-book-outline-rounded"
+title = "Learning Notes"
+description = "Record and share the learning journey."
+
 [site.themeColor]
 hue = 250                      # 0-360（红色: 0, 青色: 200, 天蓝: 250, 粉色: 345）
 fixed = false                  # 隐藏主题色选择器
