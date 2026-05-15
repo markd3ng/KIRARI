@@ -438,6 +438,35 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		background: rgba(16, 185, 129, 0.12);
 	}
 
+	:global(.kirari-landing #navbar > div:first-child),
+	:global(.kirari-landing #navbar .card-base) {
+		background: rgba(17, 24, 39, 0.9);
+		border-color: rgba(255, 255, 255, 0.06);
+		box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+		backdrop-filter: blur(20px);
+	}
+
+	:global(.kirari-landing #navbar .btn-plain) {
+		color: rgba(249, 250, 251, 0.78);
+	}
+
+	:global(.kirari-landing #navbar .btn-plain:hover),
+	:global(.kirari-landing #navbar .btn-plain:focus-visible) {
+		color: #60a5fa;
+	}
+
+	:global(.kirari-landing #navbar .btn-plain::before) {
+		background: transparent;
+	}
+
+	:global(.kirari-landing #navbar .btn-plain:hover::before) {
+		background: rgba(96, 165, 250, 0.12);
+	}
+
+	:global(.kirari-landing #navbar .btn-plain:active::before) {
+		background: rgba(96, 165, 250, 0.18);
+	}
+
 	.landing-fade-up {
 		opacity: 0;
 		transform: translateY(18px);
