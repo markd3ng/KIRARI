@@ -200,7 +200,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		</header>
 
 		<main id="swup-container" class="transition-swup-fade relative z-10">
-			<section class="landing-hero mx-auto grid max-w-[76rem] grid-cols-1 items-center gap-10 px-4 pb-7 pt-6 md:px-6 lg:grid-cols-[0.45fr_0.55fr] lg:gap-8 lg:pb-4 lg:pt-10">
+			<section class="landing-hero mx-auto grid max-w-[var(--page-width)] grid-cols-1 items-center gap-10 px-4 pb-7 pt-6 md:px-4 lg:grid-cols-[0.45fr_0.55fr] lg:gap-8 lg:pb-4 lg:pt-10">
 				<div class="landing-fade-up">
 					<p class="mb-5 text-sm font-bold uppercase tracking-[0.18em] text-[#60A5FA]">
 						{copy.eyebrow}
@@ -246,7 +246,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 			</section>
 
 			{landingPageConfig.features.enable && features.length > 0 && (
-				<section class="mx-auto max-w-[76rem] px-4 pb-5 md:px-6">
+				<section class="mx-auto max-w-[var(--page-width)] px-4 pb-5 md:px-4">
 					<div class="landing-feature-grid">
 						{features.map((feature, index) => (
 							<article class="landing-feature-card landing-fade-up" style={`animation-delay: ${180 + index * 70}ms`}>
@@ -261,7 +261,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 				</section>
 			)}
 
-			<section class="mx-auto max-w-[76rem] px-4 pb-10 pt-6 md:px-6">
+			<section class="mx-auto max-w-[var(--page-width)] px-4 pb-10 pt-6 md:px-4">
 				<div class="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 					<div>
 						<p class="text-sm font-bold uppercase tracking-[0.18em] text-[#60A5FA]">{copy.latestEyebrow}</p>
@@ -325,7 +325,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 				</div>
 			</section>
 
-			<footer class="mx-auto max-w-[76rem] px-4 pb-12 pt-8 md:px-6">
+			<footer class="mx-auto max-w-[var(--page-width)] px-4 pb-12 pt-8 md:px-4">
 				<div class="landing-footer">
 					<div>
 						<a href={getLangHomeUrl(lang)} class="inline-flex items-center gap-2 text-lg font-extrabold text-[#60A5FA]">
@@ -489,6 +489,11 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		margin-left: auto;
 		aspect-ratio: 1.22;
 		width: min(100%, 39rem);
+		overflow: hidden;
+		border-radius: var(--radius-large);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: rgba(255, 255, 255, 0.03);
+		box-shadow: 0 18px 48px rgba(0, 0, 0, 0.34), 0 0 60px rgba(59, 130, 246, 0.16);
 	}
 
 	.hero-art-glow {
@@ -502,18 +507,16 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 	.hero-art-image {
 		position: absolute;
 		inset: 0;
-		border-radius: 2rem;
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		box-shadow: 0 26px 80px rgba(0, 0, 0, 0.48), 0 0 90px rgba(59, 130, 246, 0.22);
+		border-radius: inherit;
 	}
 
 	.hero-art-shine {
 		position: absolute;
 		inset: 0;
-		border-radius: 2rem;
+		border-radius: inherit;
 		background:
-			linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 30%),
-			radial-gradient(circle at 74% 18%, rgba(147, 197, 253, 0.28), transparent 12rem);
+			linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 28%),
+			radial-gradient(circle at 74% 18%, rgba(147, 197, 253, 0.2), transparent 12rem);
 		pointer-events: none;
 	}
 
