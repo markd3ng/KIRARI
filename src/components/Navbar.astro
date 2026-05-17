@@ -161,6 +161,7 @@ function loadButtonScript() {
 // Make function globally accessible for re-initialization after page transitions
 (window as any).loadNavbarButtons = loadButtonScript;
 
+document.addEventListener("display-settings:ready", loadButtonScript);
 loadButtonScript();
 </script>
 

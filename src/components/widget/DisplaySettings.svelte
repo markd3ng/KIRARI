@@ -4,11 +4,16 @@ import { i18n } from "@i18n/translation";
 import Icon from "@iconify/svelte";
 import "@utils/preload-icons";
 import { getDefaultHue, getHue, setHue } from "@utils/setting-utils";
+import { onMount } from "svelte";
 
 export let lang: string | undefined = undefined;
 
 let hue = getHue();
 const defaultHue = getDefaultHue();
+
+onMount(() => {
+	document.dispatchEvent(new CustomEvent("display-settings:ready"));
+});
 
 function resetHue() {
 	hue = getDefaultHue();
