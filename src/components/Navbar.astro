@@ -18,6 +18,8 @@ const className = Astro.props.class;
 const lang = Astro.props.lang;
 const alternates = Astro.props.alternates as AlternateLink[] | undefined;
 const showSearch = Astro.props.showSearch !== false;
+const variant = Astro.props.variant || "default";
+const isLandingVariant = variant === "landing";
 
 let links: NavBarLink[] = navBarConfig.links.map(
 	(item: NavBarLink | LinkPresetType): NavBarLink => {
@@ -53,10 +55,15 @@ const docsearchConfig = {
 };
 ---
 <div id="navbar" class="z-50 onload-animation">
-    <div class="absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)] transition"></div> <!-- used for onload animation -->
+    <div class:list={[
+        "absolute h-8 left-0 right-0 -top-8 bg-[var(--card-bg)] transition",
+        { "navbar-landing-fill": isLandingVariant },
+    ]}></div> <!-- used for onload animation -->
     <div class:list={[
         className,
-        "card-base !overflow-visible max-w-[var(--page-width)] h-[4.5rem] !rounded-t-none mx-auto flex items-center justify-between px-4"]}>
+        "card-base !overflow-visible max-w-[var(--page-width)] h-[4.5rem] !rounded-t-none mx-auto flex items-center justify-between px-4",
+        { "navbar-landing backdrop-blur-xl border": isLandingVariant },
+    ]}>
         <a href={lang ? getLangHomeUrl(lang) : url('/')} aria-label="Home" data-astro-prefetch="hover" class="btn-plain scale-animation rounded-lg h-[3.25rem] px-5 font-bold active:scale-95">
             <div class="flex flex-row text-[var(--primary)] items-center text-md">
                 <Icon name="material-symbols:home-outline-rounded" class="text-[1.75rem] mb-1 mr-2" />
@@ -158,12 +165,42 @@ loadButtonScript();
 </script>
 
 <style>
-    html[data-theme-mode="light"] .theme-icon-dark,
-    html[data-theme-mode="light"] .theme-icon-auto,
-    html[data-theme-mode="dark"] .theme-icon-light,
-    html[data-theme-mode="dark"] .theme-icon-auto,
-    html[data-theme-mode="auto"] .theme-icon-light,
-    html[data-theme-mode="auto"] .theme-icon-dark {
+    .navbar-landing-fill {
+        background: var(--landing-nav-bg) !important;
+    }
+
+    .navbar-landing {
+        background: var(--landing-nav-bg) !important;
+        border-color: var(--landing-nav-border) !important;
+        box-shadow: var(--landing-nav-shadow) !important;
+        color: var(--landing-nav-text);
+    }
+
+    .navbar-landing .btn-plain {
+        color: var(--landing-nav-text);
+    }
+
+    .navbar-landing .btn-plain:hover,
+    .navbar-landing .btn-plain:focus-visible {
+        color: var(--landing-nav-hover);
+    }
+
+    .navbar-landing .btn-plain::before {
+        background: transparent;
+    }
+
+    .navbar-landing .btn-plain:hover::before {
+        background: var(--landing-nav-hover-bg);
+    }
+
+    .navbar-landing .btn-plain:active::before {
+        background: var(--landing-nav-active-bg);
+    }
+
+    html[data-theme-effective="light"] .theme-icon-dark,
+    html[data-theme-effective="light"] .theme-icon-auto,
+    html[data-theme-effective="dark"] .theme-icon-light,
+    html[data-theme-effective="dark"] .theme-icon-auto {
         display: none;
     }
 </style>

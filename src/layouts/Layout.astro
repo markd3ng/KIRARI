@@ -212,24 +212,34 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 		<script is:inline define:vars={{DEFAULT_THEME, LIGHT_MODE, DARK_MODE, AUTO_MODE, BANNER_HEIGHT_EXTEND, BANNER_HEIGHT_EXTEND_MOBILE, PAGE_WIDTH, configHue}}>
 			// Load the theme from local storage
 			const theme = localStorage.getItem('theme') || DEFAULT_THEME;
-			
-			// Set data attribute for theme icon display
-			document.documentElement.setAttribute('data-theme-mode', theme);
 
-			switch (theme) {
-				case LIGHT_MODE:
-					document.documentElement.classList.remove('dark');
-					break
-				case DARK_MODE:
-					document.documentElement.classList.add('dark');
-					break
-				case AUTO_MODE:
-					if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-						document.documentElement.classList.add('dark');
-					} else {
+			function applyInitialTheme(theme) {
+				// Keep the initial paint in sync with setting-utils.ts.
+				document.documentElement.setAttribute('data-theme-mode', theme);
+				let effectiveTheme = LIGHT_MODE;
+
+				switch (theme) {
+					case LIGHT_MODE:
 						document.documentElement.classList.remove('dark');
-					}
+						effectiveTheme = LIGHT_MODE;
+						break
+					case DARK_MODE:
+						document.documentElement.classList.add('dark');
+						effectiveTheme = DARK_MODE;
+						break
+					case AUTO_MODE:
+						if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+							document.documentElement.classList.add('dark');
+							effectiveTheme = DARK_MODE;
+						} else {
+							document.documentElement.classList.remove('dark');
+							effectiveTheme = LIGHT_MODE;
+						}
+				}
+				document.documentElement.setAttribute('data-theme-effective', effectiveTheme);
 			}
+
+			applyInitialTheme(theme);
 
 			// Load the hue from local storage
 			const hue = localStorage.getItem('hue') || configHue;
@@ -1004,6 +1014,11 @@ function copyPersistentDocumentState(newDoc: Document) {
 	const themeMode = document.documentElement.getAttribute('data-theme-mode');
 	if (themeMode) {
 		newDoc.documentElement.setAttribute('data-theme-mode', themeMode);
+	}
+
+	const effectiveTheme = document.documentElement.getAttribute('data-theme-effective');
+	if (effectiveTheme) {
+		newDoc.documentElement.setAttribute('data-theme-effective', effectiveTheme);
 	}
 
 	const expressiveTheme = document.documentElement.getAttribute('data-theme');

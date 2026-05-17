@@ -186,7 +186,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 	alternates={alternates}
 	canonicalUrl={canonicalUrl || getLangHomeUrl(lang)}
 >
-	<div class="kirari-landing min-h-screen bg-[#0A0E14] text-[#F9FAFB]">
+	<div class="kirari-landing min-h-screen">
 		<div class="landing-field" aria-hidden="true" transition:animate="none">
 			<div class="landing-stars"></div>
 			<div class="landing-glow landing-glow-a"></div>
@@ -195,23 +195,23 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 
 		<header class="pointer-events-none sticky top-0 z-50 mx-auto max-w-[var(--page-width)] px-0 md:px-4" transition:name="navbar">
 			<div id="navbar-wrapper" class="pointer-events-auto transition-[opacity,transform]">
-				<Navbar lang={lang} alternates={alternates} showSearch={false}></Navbar>
+				<Navbar lang={lang} alternates={alternates} showSearch={false} variant="landing"></Navbar>
 			</div>
 		</header>
 
 		<main id="swup-container" class="transition-swup-fade relative z-10">
 			<section class="landing-hero mx-auto grid max-w-[var(--page-width)] grid-cols-1 items-center gap-10 px-4 pb-7 pt-6 md:px-4 lg:grid-cols-[0.45fr_0.55fr] lg:gap-8 lg:pb-4 lg:pt-10">
 				<div class="landing-fade-up">
-					<p class="mb-5 text-sm font-bold uppercase tracking-[0.18em] text-[#60A5FA]">
+					<p class="mb-5 text-sm font-bold uppercase tracking-[0.18em] text-[var(--landing-accent)]">
 						{copy.eyebrow}
 					</p>
-					<h1 class="max-w-[38rem] text-5xl font-extrabold leading-[1.02] tracking-normal text-white md:text-6xl lg:text-[4rem]">
+					<h1 class="max-w-[38rem] text-5xl font-extrabold leading-[1.02] tracking-normal text-[var(--landing-text-primary)] md:text-6xl lg:text-[4rem]">
 						<span>{copy.title}</span>
-						<span class="mt-2 block bg-gradient-to-r from-[#60A5FA] via-[#3B82F6] to-[#93C5FD] bg-clip-text text-transparent">
+						<span class="mt-2 block bg-[linear-gradient(90deg,var(--landing-accent),var(--landing-accent-strong),var(--landing-accent-soft))] bg-clip-text text-transparent">
 							{copy.highlight}
 						</span>
 					</h1>
-					<p class="mt-6 max-w-[30rem] text-base leading-8 text-[#9CA3AF] md:text-lg">
+					<p class="mt-6 max-w-[30rem] text-base leading-8 text-[var(--landing-text-secondary)] md:text-lg">
 						{copy.description}
 					</p>
 					<div class="mt-9 flex flex-col gap-4 sm:flex-row">
@@ -264,8 +264,8 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 			<section class="mx-auto max-w-[var(--page-width)] px-4 pb-10 pt-6 md:px-4">
 				<div class="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 					<div>
-						<p class="text-sm font-bold uppercase tracking-[0.18em] text-[#60A5FA]">{copy.latestEyebrow}</p>
-						<h2 class="mt-2 text-3xl font-extrabold text-white">{copy.latestTitle}</h2>
+						<p class="text-sm font-bold uppercase tracking-[0.18em] text-[var(--landing-accent)]">{copy.latestEyebrow}</p>
+						<h2 class="mt-2 text-3xl font-extrabold text-[var(--landing-text-primary)]">{copy.latestTitle}</h2>
 					</div>
 					<a href={blogUrl} data-astro-prefetch="hover" class="landing-text-link">
 						<span>{copy.viewAllArticles}</span>
@@ -295,7 +295,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 								)}
 							</a>
 							<div class="min-w-0 flex-1">
-								<div class="mb-3 flex flex-wrap items-center gap-2 text-xs font-medium text-[#6B7280]">
+								<div class="mb-3 flex flex-wrap items-center gap-2 text-xs font-medium text-[var(--landing-text-muted)]">
 									<span>{entry.data.published.toISOString().slice(0, 10)}</span>
 									<span>/</span>
 									<span>{getCategoryName(entry.data.category || "uncategorized", categoryDisplayMap)}</span>
@@ -304,14 +304,14 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 									))}
 								</div>
 								<a href={url} data-astro-prefetch="hover" class="group block">
-									<h3 class="line-clamp-2 text-xl font-bold text-white transition group-hover:text-[#60A5FA]">
+									<h3 class="line-clamp-2 text-xl font-bold text-[var(--landing-text-primary)] transition group-hover:text-[var(--landing-accent)]">
 										{entry.data.title}
 									</h3>
 								</a>
-								<p class="mt-2 line-clamp-2 text-sm leading-6 text-[#9CA3AF]">
+								<p class="mt-2 line-clamp-2 text-sm leading-6 text-[var(--landing-text-secondary)]">
 									{entry.data.description}
 								</p>
-								<div class="mt-3 flex gap-3 text-xs text-[#6B7280]">
+								<div class="mt-3 flex gap-3 text-xs text-[var(--landing-text-muted)]">
 									<span>{words} {wordLabel(words)}</span>
 									<span>|</span>
 									<span>{copy.readTime(minutes)}</span>
@@ -328,11 +328,11 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 			<footer class="mx-auto max-w-[var(--page-width)] px-4 pb-12 pt-8 md:px-4">
 				<div class="landing-footer">
 					<div>
-						<a href={getLangHomeUrl(lang)} class="inline-flex items-center gap-2 text-lg font-extrabold text-[#60A5FA]">
+						<a href={getLangHomeUrl(lang)} data-landing-home-link class="inline-flex items-center gap-2 text-lg font-extrabold text-[var(--landing-accent)]">
 							<Icon name="material-symbols:home-outline-rounded" class="text-2xl" />
 							{siteConfig.title}
 						</a>
-						<p class="mt-4 max-w-[18rem] text-sm leading-6 text-[#9CA3AF]">
+						<p class="mt-4 max-w-[18rem] text-sm leading-6 text-[var(--landing-text-secondary)]">
 							{copy.brandDescription}
 						</p>
 						<div class="mt-5 flex gap-3">
@@ -345,7 +345,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 					</div>
 					<div>
 						<h3>{copy.navigation}</h3>
-						<a href={getLangHomeUrl(lang)} data-astro-prefetch="hover">{i18n(I18nKey.home, lang)}</a>
+						<a href={getLangHomeUrl(lang)} data-astro-prefetch="hover" data-landing-home-link>{i18n(I18nKey.home, lang)}</a>
 						<a href={blogUrl} data-astro-prefetch="hover">{copy.blog}</a>
 						<a href={archiveUrl} data-astro-prefetch="hover">{i18n(I18nKey.archive, lang)}</a>
 						<a href={aboutUrl} data-astro-prefetch="hover">{i18n(I18nKey.about, lang)}</a>
@@ -372,17 +372,165 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 	</div>
 </Layout>
 
+<script>
+	import { transitionManager } from "@utils/transition-manager";
+
+	function normalizePath(path: string) {
+		return path.replace(/\/+$/, "") || "/";
+	}
+
+	function scrollLandingToTop() {
+		const overlayViewport = document.querySelector("[data-overlayscrollbars-viewport]") as HTMLElement | null;
+		overlayViewport?.scrollTo({ top: 0, behavior: "smooth" });
+		window.scrollTo({ top: 0, behavior: "smooth" });
+		document.documentElement.scrollTop = 0;
+		document.body.scrollTop = 0;
+	}
+
+	function bindLandingHomeLinks() {
+		document.querySelectorAll<HTMLAnchorElement>("[data-landing-home-link]").forEach((link) => {
+			if (link.dataset.landingHomeBound === "true") return;
+			link.dataset.landingHomeBound = "true";
+			link.addEventListener("click", (event) => {
+				const target = new URL(link.href, window.location.href);
+				const samePage =
+					target.origin === window.location.origin &&
+					normalizePath(target.pathname) === normalizePath(window.location.pathname) &&
+					!target.hash;
+
+				if (!samePage) return;
+				event.preventDefault();
+				scrollLandingToTop();
+			});
+		});
+	}
+
+	bindLandingHomeLinks();
+	transitionManager.on("transition:after-swap", bindLandingHomeLinks);
+</script>
+
 <style>
 	.kirari-landing {
+		--landing-page-bg:
+			radial-gradient(circle at 75% 12%, rgba(59, 130, 246, 0.18), transparent 30rem),
+			radial-gradient(circle at 12% 38%, rgba(14, 165, 233, 0.12), transparent 28rem),
+			linear-gradient(180deg, #f8fbff 0%, #eef6ff 48%, #f6fbff 100%);
+		--landing-field-bg: var(--landing-page-bg);
+		--landing-star-primary: rgba(15, 23, 42, 0.38);
+		--landing-star-secondary: rgba(59, 130, 246, 0.62);
+		--landing-star-opacity: 0.2;
+		--landing-star-mask: linear-gradient(to bottom, black 0%, black 68%, transparent 100%);
+		--landing-glow-a: rgba(59, 130, 246, 0.22);
+		--landing-glow-b: rgba(16, 185, 129, 0.1);
+		--landing-text-primary: #0f172a;
+		--landing-text-secondary: #475569;
+		--landing-text-muted: #64748b;
+		--landing-accent: #2563eb;
+		--landing-accent-strong: #1d4ed8;
+		--landing-accent-soft: #60a5fa;
+		--landing-border: rgba(15, 23, 42, 0.1);
+		--landing-border-strong: rgba(37, 99, 235, 0.28);
+		--landing-surface: rgba(255, 255, 255, 0.64);
+		--landing-surface-hover: rgba(255, 255, 255, 0.8);
+		--landing-surface-shadow: 0 16px 42px rgba(37, 99, 235, 0.12);
+		--landing-surface-shadow-hover: 0 18px 48px rgba(37, 99, 235, 0.18);
+		--landing-secondary-btn-bg: rgba(255, 255, 255, 0.56);
+		--landing-secondary-btn-text: rgba(15, 23, 42, 0.82);
+		--landing-hero-border: rgba(37, 99, 235, 0.18);
+		--landing-hero-bg: rgba(255, 255, 255, 0.5);
+		--landing-hero-shadow: 0 18px 48px rgba(37, 99, 235, 0.16), 0 0 60px rgba(59, 130, 246, 0.16);
+		--landing-hero-glow: rgba(96, 165, 250, 0.36);
+		--landing-hero-shine:
+			linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 28%),
+			radial-gradient(circle at 74% 18%, rgba(37, 99, 235, 0.14), transparent 12rem);
+		--landing-icon-bg: rgba(59, 130, 246, 0.12);
+		--landing-cover-bg: rgba(59, 130, 246, 0.08);
+		--landing-fallback-bg: radial-gradient(circle at 50% 20%, rgba(96, 165, 250, 0.28), rgba(226, 241, 255, 0.92));
+		--landing-tag-border: rgba(37, 99, 235, 0.2);
+		--landing-arrow-hover-bg: rgba(37, 99, 235, 0.1);
+		--landing-social-bg: rgba(37, 99, 235, 0.1);
+		--landing-social-text: #2563eb;
+		--landing-social-hover-bg: rgba(37, 99, 235, 0.18);
+		--landing-footer-base-text: rgba(15, 23, 42, 0.62);
+		--landing-footer-base-border: rgba(15, 23, 42, 0.08);
+		--landing-nav-bg: rgba(255, 255, 255, 0.76);
+		--landing-nav-text: rgba(15, 23, 42, 0.74);
+		--landing-nav-hover: #2563eb;
+		--landing-nav-hover-bg: rgba(37, 99, 235, 0.1);
+		--landing-nav-active-bg: rgba(37, 99, 235, 0.16);
+		--landing-nav-border: rgba(15, 23, 42, 0.08);
+		--landing-nav-shadow: 0 14px 34px rgba(37, 99, 235, 0.12);
+		--landing-primary-btn-bg: linear-gradient(135deg, #3b82f6, #2563eb);
+		--landing-primary-btn-text: #ffffff;
+		--landing-primary-btn-shadow: 0 16px 34px rgba(59, 130, 246, 0.28);
+		--landing-btn-hover-shadow: 0 18px 40px rgba(59, 130, 246, 0.24);
 		position: relative;
 		overflow: hidden;
-		color-scheme: dark;
+		background: var(--landing-page-bg);
+		color: var(--landing-text-primary);
+		color-scheme: light;
 		isolation: isolate;
+	}
+
+	:global(html.dark) .kirari-landing {
+		--landing-page-bg:
+			radial-gradient(circle at 75% 12%, rgba(59, 130, 246, 0.28), transparent 30rem),
+			radial-gradient(circle at 10% 44%, rgba(14, 165, 233, 0.12), transparent 28rem),
+			linear-gradient(180deg, #020617 0%, #0a0e14 45%, #07101d 100%);
+		--landing-field-bg: var(--landing-page-bg);
+		--landing-star-primary: rgba(255, 255, 255, 0.8);
+		--landing-star-secondary: rgba(96, 165, 250, 0.85);
+		--landing-star-opacity: 0.32;
+		--landing-glow-a: rgba(59, 130, 246, 0.32);
+		--landing-glow-b: rgba(16, 185, 129, 0.12);
+		--landing-text-primary: #f9fafb;
+		--landing-text-secondary: #9ca3af;
+		--landing-text-muted: #6b7280;
+		--landing-accent: #60a5fa;
+		--landing-accent-strong: #3b82f6;
+		--landing-accent-soft: #93c5fd;
+		--landing-border: rgba(255, 255, 255, 0.06);
+		--landing-border-strong: rgba(59, 130, 246, 0.4);
+		--landing-surface: rgba(255, 255, 255, 0.03);
+		--landing-surface-hover: rgba(255, 255, 255, 0.045);
+		--landing-surface-shadow: 0 16px 42px rgba(0, 0, 0, 0.22);
+		--landing-surface-shadow-hover: 0 18px 48px rgba(0, 0, 0, 0.36);
+		--landing-secondary-btn-bg: rgba(255, 255, 255, 0.03);
+		--landing-secondary-btn-text: rgba(255, 255, 255, 0.88);
+		--landing-hero-border: rgba(255, 255, 255, 0.08);
+		--landing-hero-bg: rgba(255, 255, 255, 0.03);
+		--landing-hero-shadow: 0 18px 48px rgba(0, 0, 0, 0.34), 0 0 60px rgba(59, 130, 246, 0.16);
+		--landing-hero-glow: rgba(96, 165, 250, 0.58);
+		--landing-hero-shine:
+			linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 28%),
+			radial-gradient(circle at 74% 18%, rgba(147, 197, 253, 0.2), transparent 12rem);
+		--landing-icon-bg: rgba(59, 130, 246, 0.15);
+		--landing-cover-bg: rgba(59, 130, 246, 0.1);
+		--landing-fallback-bg: radial-gradient(circle at 50% 20%, rgba(96, 165, 250, 0.3), rgba(15, 23, 42, 0.92));
+		--landing-tag-border: rgba(96, 165, 250, 0.18);
+		--landing-arrow-hover-bg: rgba(59, 130, 246, 0.12);
+		--landing-social-bg: rgba(255, 255, 255, 0.06);
+		--landing-social-text: #ffffff;
+		--landing-social-hover-bg: rgba(59, 130, 246, 0.28);
+		--landing-footer-base-text: rgba(255, 255, 255, 0.62);
+		--landing-footer-base-border: rgba(255, 255, 255, 0.08);
+		--landing-nav-bg: rgba(17, 24, 39, 0.9);
+		--landing-nav-text: rgba(249, 250, 251, 0.78);
+		--landing-nav-hover: #60a5fa;
+		--landing-nav-hover-bg: rgba(96, 165, 250, 0.12);
+		--landing-nav-active-bg: rgba(96, 165, 250, 0.18);
+		--landing-nav-border: rgba(255, 255, 255, 0.06);
+		--landing-nav-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+		--landing-primary-btn-bg: linear-gradient(135deg, #3b82f6, #2563eb);
+		--landing-primary-btn-text: #ffffff;
+		--landing-primary-btn-shadow: 0 16px 34px rgba(59, 130, 246, 0.28);
+		--landing-btn-hover-shadow: 0 18px 40px rgba(59, 130, 246, 0.24);
+		color-scheme: dark;
 	}
 
 	.kirari-landing ::selection {
 		background: rgba(96, 165, 250, 0.28);
-		color: #f9fafb;
+		color: var(--landing-text-primary);
 	}
 
 	.landing-hero h1,
@@ -397,22 +545,19 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		z-index: 0;
 		pointer-events: none;
 		contain: paint;
-		background:
-			radial-gradient(circle at 75% 12%, rgba(59, 130, 246, 0.28), transparent 30rem),
-			radial-gradient(circle at 10% 44%, rgba(14, 165, 233, 0.12), transparent 28rem),
-			linear-gradient(180deg, #020617 0%, #0a0e14 45%, #07101d 100%);
+		background: var(--landing-field-bg);
 	}
 
 	.landing-stars {
 		position: absolute;
 		inset: 0;
-		opacity: 0.32;
+		opacity: var(--landing-star-opacity);
 		background-image:
-			radial-gradient(circle, rgba(255, 255, 255, 0.8) 0 1px, transparent 1px),
-			radial-gradient(circle, rgba(96, 165, 250, 0.85) 0 1px, transparent 1px);
+			radial-gradient(circle, var(--landing-star-primary) 0 1px, transparent 1px),
+			radial-gradient(circle, var(--landing-star-secondary) 0 1px, transparent 1px);
 		background-position: 0 0, 34px 52px;
 		background-size: 92px 92px, 138px 138px;
-		mask-image: linear-gradient(to bottom, black 0%, black 64%, transparent 100%);
+		mask-image: var(--landing-star-mask);
 	}
 
 	.landing-glow {
@@ -427,7 +572,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		right: 5vw;
 		width: 18rem;
 		height: 18rem;
-		background: rgba(59, 130, 246, 0.32);
+		background: var(--landing-glow-a);
 	}
 
 	.landing-glow-b {
@@ -435,36 +580,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		bottom: 12rem;
 		width: 16rem;
 		height: 16rem;
-		background: rgba(16, 185, 129, 0.12);
-	}
-
-	:global(.kirari-landing #navbar > div:first-child),
-	:global(.kirari-landing #navbar .card-base) {
-		background: rgba(17, 24, 39, 0.9);
-		border-color: rgba(255, 255, 255, 0.06);
-		box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
-		backdrop-filter: blur(20px);
-	}
-
-	:global(.kirari-landing #navbar .btn-plain) {
-		color: rgba(249, 250, 251, 0.78);
-	}
-
-	:global(.kirari-landing #navbar .btn-plain:hover),
-	:global(.kirari-landing #navbar .btn-plain:focus-visible) {
-		color: #60a5fa;
-	}
-
-	:global(.kirari-landing #navbar .btn-plain::before) {
-		background: transparent;
-	}
-
-	:global(.kirari-landing #navbar .btn-plain:hover::before) {
-		background: rgba(96, 165, 250, 0.12);
-	}
-
-	:global(.kirari-landing #navbar .btn-plain:active::before) {
-		background: rgba(96, 165, 250, 0.18);
+		background: var(--landing-glow-b);
 	}
 
 	.landing-fade-up {
@@ -494,23 +610,23 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 	}
 
 	.landing-primary-btn {
-		background: linear-gradient(135deg, #3b82f6, #2563eb);
-		color: white;
-		box-shadow: 0 16px 34px rgba(59, 130, 246, 0.28);
+		background: var(--landing-primary-btn-bg);
+		color: var(--landing-primary-btn-text);
+		box-shadow: var(--landing-primary-btn-shadow);
 	}
 
 	.landing-secondary-btn {
-		border: 1px solid rgba(255, 255, 255, 0.12);
-		background: rgba(255, 255, 255, 0.03);
-		color: rgba(255, 255, 255, 0.88);
+		border: 1px solid var(--landing-border);
+		background: var(--landing-secondary-btn-bg);
+		color: var(--landing-secondary-btn-text);
 		backdrop-filter: blur(16px);
 	}
 
 	.landing-primary-btn:hover,
 	.landing-secondary-btn:hover {
 		transform: translateY(-2px);
-		border-color: rgba(96, 165, 250, 0.36);
-		box-shadow: 0 18px 40px rgba(59, 130, 246, 0.24);
+		border-color: var(--landing-border-strong);
+		box-shadow: var(--landing-btn-hover-shadow);
 	}
 
 	.hero-art-shell {
@@ -521,16 +637,16 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		max-height: 32rem;
 		overflow: hidden;
 		border-radius: var(--radius-large);
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		background: rgba(255, 255, 255, 0.03);
-		box-shadow: 0 18px 48px rgba(0, 0, 0, 0.34), 0 0 60px rgba(59, 130, 246, 0.16);
+		border: 1px solid var(--landing-hero-border);
+		background: var(--landing-hero-bg);
+		box-shadow: var(--landing-hero-shadow);
 	}
 
 	.hero-art-glow {
 		position: absolute;
 		inset: 7%;
 		border-radius: 999px;
-		background: radial-gradient(circle, rgba(96, 165, 250, 0.58), transparent 68%);
+		background: radial-gradient(circle, var(--landing-hero-glow), transparent 68%);
 		filter: blur(34px);
 	}
 
@@ -544,9 +660,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		position: absolute;
 		inset: 0;
 		border-radius: inherit;
-		background:
-			linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 28%),
-			radial-gradient(circle at 74% 18%, rgba(147, 197, 253, 0.2), transparent 12rem);
+		background: var(--landing-hero-shine);
 		pointer-events: none;
 	}
 
@@ -559,9 +673,10 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 	.landing-feature-card,
 	.landing-article-card,
 	.landing-footer {
-		border: 1px solid rgba(255, 255, 255, 0.06);
-		background: rgba(255, 255, 255, 0.03);
-		box-shadow: 0 16px 42px rgba(0, 0, 0, 0.22);
+		border: 1px solid var(--landing-border);
+		background: var(--landing-surface);
+		box-shadow: var(--landing-surface-shadow);
+		backdrop-filter: blur(18px);
 	}
 
 	.landing-feature-card {
@@ -573,8 +688,8 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 	.landing-feature-card:hover,
 	.landing-article-card:hover {
 		transform: translateY(-4px);
-		border-color: rgba(59, 130, 246, 0.4);
-		background: rgba(255, 255, 255, 0.045);
+		border-color: var(--landing-border-strong);
+		background: var(--landing-surface-hover);
 	}
 
 	.landing-feature-icon {
@@ -584,20 +699,20 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		align-items: center;
 		justify-content: center;
 		border-radius: 999px;
-		background: rgba(59, 130, 246, 0.15);
-		color: #60a5fa;
+		background: var(--landing-icon-bg);
+		color: var(--landing-accent);
 	}
 
 	.landing-feature-card h2 {
 		margin-top: 1.15rem;
 		font-size: 1rem;
 		font-weight: 800;
-		color: white;
+		color: var(--landing-text-primary);
 	}
 
 	.landing-feature-card p {
 		margin-top: 0.5rem;
-		color: #9ca3af;
+		color: var(--landing-text-secondary);
 		font-size: 0.9rem;
 		line-height: 1.65;
 	}
@@ -606,13 +721,13 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
-		color: #60a5fa;
+		color: var(--landing-accent);
 		font-weight: 700;
 		transition: transform 0.25s ease, color 0.25s ease;
 	}
 
 	.landing-text-link:hover {
-		color: #93c5fd;
+		color: var(--landing-accent-soft);
 		transform: translateX(4px);
 	}
 
@@ -626,7 +741,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 	}
 
 	.landing-article-card:hover {
-		box-shadow: 0 18px 48px rgba(0, 0, 0, 0.36);
+		box-shadow: var(--landing-surface-shadow-hover);
 	}
 
 	.landing-article-cover {
@@ -634,7 +749,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		aspect-ratio: 2 / 1;
 		overflow: hidden;
 		border-radius: 1rem;
-		background: rgba(59, 130, 246, 0.1);
+		background: var(--landing-cover-bg);
 	}
 
 	.landing-article-fallback {
@@ -642,15 +757,15 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		height: 100%;
 		align-items: center;
 		justify-content: center;
-		color: #60a5fa;
-		background: radial-gradient(circle at 50% 20%, rgba(96, 165, 250, 0.3), rgba(15, 23, 42, 0.92));
+		color: var(--landing-accent);
+		background: var(--landing-fallback-bg);
 	}
 
 	.landing-tag {
 		border-radius: 999px;
-		border: 1px solid rgba(96, 165, 250, 0.18);
+		border: 1px solid var(--landing-tag-border);
 		padding: 0.15rem 0.45rem;
-		color: #9ca3af;
+		color: var(--landing-text-secondary);
 	}
 
 	.landing-article-arrow {
@@ -661,13 +776,13 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		justify-content: center;
 		align-self: center;
 		border-radius: 999px;
-		color: #60a5fa;
+		color: var(--landing-accent);
 		transition: transform 0.25s ease, background 0.25s ease;
 	}
 
 	.landing-article-card:hover .landing-article-arrow {
 		transform: translateX(4px);
-		background: rgba(59, 130, 246, 0.12);
+		background: var(--landing-arrow-hover-bg);
 	}
 
 	.landing-footer {
@@ -680,7 +795,7 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 
 	.landing-footer h3 {
 		margin-bottom: 1rem;
-		color: white;
+		color: var(--landing-text-primary);
 		font-size: 0.95rem;
 		font-weight: 800;
 	}
@@ -688,12 +803,12 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 	.landing-footer a:not(.landing-social-link) {
 		display: block;
 		margin-top: 0.7rem;
-		color: #9ca3af;
+		color: var(--landing-text-secondary);
 		transition: color 0.2s ease;
 	}
 
 	.landing-footer a:not(.landing-social-link):hover {
-		color: #60a5fa;
+		color: var(--landing-accent);
 	}
 
 	.landing-social-link {
@@ -703,22 +818,22 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		align-items: center;
 		justify-content: center;
 		border-radius: 999px;
-		background: rgba(255, 255, 255, 0.06);
-		color: white;
+		background: var(--landing-social-bg);
+		color: var(--landing-social-text);
 		transition: transform 0.2s ease, background 0.2s ease;
 	}
 
 	.landing-social-link:hover {
 		transform: translateY(-2px);
-		background: rgba(59, 130, 246, 0.28);
+		background: var(--landing-social-hover-bg);
 	}
 
 	:global(.kirari-landing .footer) {
-		color: rgba(255, 255, 255, 0.62);
+		color: var(--landing-footer-base-text);
 	}
 
 	:global(.kirari-landing .footer > div:first-child) {
-		border-color: rgba(255, 255, 255, 0.08);
+		border-color: var(--landing-footer-base-border);
 	}
 
 	@media (min-width: 640px) {

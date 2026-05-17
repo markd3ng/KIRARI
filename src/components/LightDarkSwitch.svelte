@@ -26,7 +26,7 @@ let mode: LIGHT_DARK_MODE = $state(
 
 onMount(() => {
 	mode = getStoredTheme();
-	document.documentElement.setAttribute("data-theme-mode", mode);
+	applyThemeToDocument(mode);
 
 	// Wire up the button that's rendered in Navbar.astro
 	const button = document.getElementById("scheme-switch");
@@ -59,7 +59,6 @@ onMount(() => {
 function switchScheme(newMode: LIGHT_DARK_MODE) {
 	mode = newMode;
 	setTheme(newMode);
-	document.documentElement.setAttribute("data-theme-mode", newMode);
 }
 
 function toggleScheme() {
