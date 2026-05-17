@@ -411,59 +411,63 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 
 <style>
 	.kirari-landing {
+		--landing-hue-primary: oklch(0.62 0.18 var(--hue));
+		--landing-hue-primary-hover: oklch(0.7 0.16 var(--hue));
+		--landing-hue-primary-strong: oklch(0.54 0.2 var(--hue));
+		--landing-hue-primary-soft: oklch(0.78 0.13 var(--hue));
 		--landing-page-bg:
-			radial-gradient(circle at 75% 12%, rgba(59, 130, 246, 0.18), transparent 30rem),
-			radial-gradient(circle at 12% 38%, rgba(14, 165, 233, 0.12), transparent 28rem),
+			radial-gradient(circle at 75% 12%, oklch(0.62 0.18 var(--hue) / 0.18), transparent 30rem),
+			radial-gradient(circle at 12% 38%, oklch(0.74 0.13 calc(var(--hue) + 28) / 0.12), transparent 28rem),
 			linear-gradient(180deg, #f8fbff 0%, #eef6ff 48%, #f6fbff 100%);
 		--landing-field-bg: var(--landing-page-bg);
 		--landing-star-primary: rgba(15, 23, 42, 0.38);
-		--landing-star-secondary: rgba(59, 130, 246, 0.62);
+		--landing-star-secondary: oklch(0.68 0.15 var(--hue) / 0.62);
 		--landing-star-opacity: 0.2;
 		--landing-star-mask: linear-gradient(to bottom, black 0%, black 68%, transparent 100%);
-		--landing-glow-a: rgba(59, 130, 246, 0.22);
-		--landing-glow-b: rgba(16, 185, 129, 0.1);
+		--landing-glow-a: oklch(0.62 0.18 var(--hue) / 0.22);
+		--landing-glow-b: oklch(0.68 0.13 calc(var(--hue) + 52) / 0.1);
 		--landing-text-primary: #0f172a;
 		--landing-text-secondary: #475569;
 		--landing-text-muted: #64748b;
-		--landing-accent: #2563eb;
-		--landing-accent-strong: #1d4ed8;
-		--landing-accent-soft: #60a5fa;
+		--landing-accent: var(--landing-hue-primary);
+		--landing-accent-strong: var(--landing-hue-primary-strong);
+		--landing-accent-soft: var(--landing-hue-primary-soft);
 		--landing-border: rgba(15, 23, 42, 0.1);
-		--landing-border-strong: rgba(37, 99, 235, 0.28);
+		--landing-border-strong: oklch(0.62 0.18 var(--hue) / 0.28);
 		--landing-surface: rgba(255, 255, 255, 0.64);
 		--landing-surface-hover: rgba(255, 255, 255, 0.8);
-		--landing-surface-shadow: 0 16px 42px rgba(37, 99, 235, 0.12);
-		--landing-surface-shadow-hover: 0 18px 48px rgba(37, 99, 235, 0.18);
+		--landing-surface-shadow: 0 16px 42px oklch(0.62 0.18 var(--hue) / 0.12);
+		--landing-surface-shadow-hover: 0 18px 48px oklch(0.62 0.18 var(--hue) / 0.18);
 		--landing-secondary-btn-bg: rgba(255, 255, 255, 0.56);
 		--landing-secondary-btn-text: rgba(15, 23, 42, 0.82);
-		--landing-hero-border: rgba(37, 99, 235, 0.18);
+		--landing-hero-border: oklch(0.62 0.18 var(--hue) / 0.18);
 		--landing-hero-bg: rgba(255, 255, 255, 0.5);
-		--landing-hero-shadow: 0 18px 48px rgba(37, 99, 235, 0.16), 0 0 60px rgba(59, 130, 246, 0.16);
-		--landing-hero-glow: rgba(96, 165, 250, 0.36);
+		--landing-hero-shadow: 0 18px 48px oklch(0.62 0.18 var(--hue) / 0.16), 0 0 60px oklch(0.62 0.18 var(--hue) / 0.16);
+		--landing-hero-glow: oklch(0.7 0.16 var(--hue) / 0.36);
 		--landing-hero-shine:
 			linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 28%),
-			radial-gradient(circle at 74% 18%, rgba(37, 99, 235, 0.14), transparent 12rem);
-		--landing-icon-bg: rgba(59, 130, 246, 0.12);
-		--landing-cover-bg: rgba(59, 130, 246, 0.08);
-		--landing-fallback-bg: radial-gradient(circle at 50% 20%, rgba(96, 165, 250, 0.28), rgba(226, 241, 255, 0.92));
-		--landing-tag-border: rgba(37, 99, 235, 0.2);
-		--landing-arrow-hover-bg: rgba(37, 99, 235, 0.1);
-		--landing-social-bg: rgba(37, 99, 235, 0.1);
-		--landing-social-text: #2563eb;
-		--landing-social-hover-bg: rgba(37, 99, 235, 0.18);
+			radial-gradient(circle at 74% 18%, oklch(0.62 0.18 var(--hue) / 0.14), transparent 12rem);
+		--landing-icon-bg: oklch(0.62 0.18 var(--hue) / 0.12);
+		--landing-cover-bg: oklch(0.62 0.18 var(--hue) / 0.08);
+		--landing-fallback-bg: radial-gradient(circle at 50% 20%, oklch(0.7 0.16 var(--hue) / 0.28), oklch(0.95 0.04 var(--hue) / 0.92));
+		--landing-tag-border: oklch(0.62 0.18 var(--hue) / 0.2);
+		--landing-arrow-hover-bg: oklch(0.62 0.18 var(--hue) / 0.1);
+		--landing-social-bg: oklch(0.62 0.18 var(--hue) / 0.1);
+		--landing-social-text: var(--landing-hue-primary);
+		--landing-social-hover-bg: oklch(0.62 0.18 var(--hue) / 0.18);
 		--landing-footer-base-text: rgba(15, 23, 42, 0.62);
 		--landing-footer-base-border: rgba(15, 23, 42, 0.08);
 		--landing-nav-bg: rgba(255, 255, 255, 0.76);
 		--landing-nav-text: rgba(15, 23, 42, 0.74);
-		--landing-nav-hover: #2563eb;
-		--landing-nav-hover-bg: rgba(37, 99, 235, 0.1);
-		--landing-nav-active-bg: rgba(37, 99, 235, 0.16);
+		--landing-nav-hover: var(--landing-hue-primary);
+		--landing-nav-hover-bg: oklch(0.62 0.18 var(--hue) / 0.1);
+		--landing-nav-active-bg: oklch(0.62 0.18 var(--hue) / 0.16);
 		--landing-nav-border: rgba(15, 23, 42, 0.08);
-		--landing-nav-shadow: 0 14px 34px rgba(37, 99, 235, 0.12);
-		--landing-primary-btn-bg: linear-gradient(135deg, #3b82f6, #2563eb);
+		--landing-nav-shadow: 0 14px 34px oklch(0.62 0.18 var(--hue) / 0.12);
+		--landing-primary-btn-bg: linear-gradient(135deg, var(--landing-hue-primary-hover), var(--landing-hue-primary-strong));
 		--landing-primary-btn-text: #ffffff;
-		--landing-primary-btn-shadow: 0 16px 34px rgba(59, 130, 246, 0.28);
-		--landing-btn-hover-shadow: 0 18px 40px rgba(59, 130, 246, 0.24);
+		--landing-primary-btn-shadow: 0 16px 34px oklch(0.62 0.18 var(--hue) / 0.28);
+		--landing-btn-hover-shadow: 0 18px 40px oklch(0.62 0.18 var(--hue) / 0.24);
 		position: relative;
 		overflow: hidden;
 		background: var(--landing-page-bg);
@@ -473,24 +477,28 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 	}
 
 	:global(html.dark) .kirari-landing {
+		--landing-hue-primary: oklch(0.72 0.15 var(--hue));
+		--landing-hue-primary-hover: oklch(0.78 0.13 var(--hue));
+		--landing-hue-primary-strong: oklch(0.64 0.18 var(--hue));
+		--landing-hue-primary-soft: oklch(0.84 0.1 var(--hue));
 		--landing-page-bg:
-			radial-gradient(circle at 75% 12%, rgba(59, 130, 246, 0.28), transparent 30rem),
-			radial-gradient(circle at 10% 44%, rgba(14, 165, 233, 0.12), transparent 28rem),
+			radial-gradient(circle at 75% 12%, oklch(0.72 0.15 var(--hue) / 0.28), transparent 30rem),
+			radial-gradient(circle at 10% 44%, oklch(0.74 0.13 calc(var(--hue) + 28) / 0.12), transparent 28rem),
 			linear-gradient(180deg, #020617 0%, #0a0e14 45%, #07101d 100%);
 		--landing-field-bg: var(--landing-page-bg);
 		--landing-star-primary: rgba(255, 255, 255, 0.8);
-		--landing-star-secondary: rgba(96, 165, 250, 0.85);
+		--landing-star-secondary: oklch(0.78 0.13 var(--hue) / 0.85);
 		--landing-star-opacity: 0.32;
-		--landing-glow-a: rgba(59, 130, 246, 0.32);
-		--landing-glow-b: rgba(16, 185, 129, 0.12);
+		--landing-glow-a: oklch(0.72 0.15 var(--hue) / 0.32);
+		--landing-glow-b: oklch(0.7 0.12 calc(var(--hue) + 52) / 0.12);
 		--landing-text-primary: #f9fafb;
 		--landing-text-secondary: #9ca3af;
 		--landing-text-muted: #6b7280;
-		--landing-accent: #60a5fa;
-		--landing-accent-strong: #3b82f6;
-		--landing-accent-soft: #93c5fd;
+		--landing-accent: var(--landing-hue-primary);
+		--landing-accent-strong: var(--landing-hue-primary-strong);
+		--landing-accent-soft: var(--landing-hue-primary-soft);
 		--landing-border: rgba(255, 255, 255, 0.06);
-		--landing-border-strong: rgba(59, 130, 246, 0.4);
+		--landing-border-strong: oklch(0.72 0.15 var(--hue) / 0.4);
 		--landing-surface: rgba(255, 255, 255, 0.03);
 		--landing-surface-hover: rgba(255, 255, 255, 0.045);
 		--landing-surface-shadow: 0 16px 42px rgba(0, 0, 0, 0.22);
@@ -499,37 +507,37 @@ const wordLabel = (count: number) => i18n(count === 1 ? I18nKey.wordCount : I18n
 		--landing-secondary-btn-text: rgba(255, 255, 255, 0.88);
 		--landing-hero-border: rgba(255, 255, 255, 0.08);
 		--landing-hero-bg: rgba(255, 255, 255, 0.03);
-		--landing-hero-shadow: 0 18px 48px rgba(0, 0, 0, 0.34), 0 0 60px rgba(59, 130, 246, 0.16);
-		--landing-hero-glow: rgba(96, 165, 250, 0.58);
+		--landing-hero-shadow: 0 18px 48px rgba(0, 0, 0, 0.34), 0 0 60px oklch(0.72 0.15 var(--hue) / 0.16);
+		--landing-hero-glow: oklch(0.78 0.13 var(--hue) / 0.58);
 		--landing-hero-shine:
 			linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 28%),
-			radial-gradient(circle at 74% 18%, rgba(147, 197, 253, 0.2), transparent 12rem);
-		--landing-icon-bg: rgba(59, 130, 246, 0.15);
-		--landing-cover-bg: rgba(59, 130, 246, 0.1);
-		--landing-fallback-bg: radial-gradient(circle at 50% 20%, rgba(96, 165, 250, 0.3), rgba(15, 23, 42, 0.92));
-		--landing-tag-border: rgba(96, 165, 250, 0.18);
-		--landing-arrow-hover-bg: rgba(59, 130, 246, 0.12);
+			radial-gradient(circle at 74% 18%, oklch(0.84 0.1 var(--hue) / 0.2), transparent 12rem);
+		--landing-icon-bg: oklch(0.72 0.15 var(--hue) / 0.15);
+		--landing-cover-bg: oklch(0.72 0.15 var(--hue) / 0.1);
+		--landing-fallback-bg: radial-gradient(circle at 50% 20%, oklch(0.78 0.13 var(--hue) / 0.3), rgba(15, 23, 42, 0.92));
+		--landing-tag-border: oklch(0.78 0.13 var(--hue) / 0.18);
+		--landing-arrow-hover-bg: oklch(0.72 0.15 var(--hue) / 0.12);
 		--landing-social-bg: rgba(255, 255, 255, 0.06);
 		--landing-social-text: #ffffff;
-		--landing-social-hover-bg: rgba(59, 130, 246, 0.28);
+		--landing-social-hover-bg: oklch(0.72 0.15 var(--hue) / 0.28);
 		--landing-footer-base-text: rgba(255, 255, 255, 0.62);
 		--landing-footer-base-border: rgba(255, 255, 255, 0.08);
 		--landing-nav-bg: rgba(17, 24, 39, 0.9);
 		--landing-nav-text: rgba(249, 250, 251, 0.78);
-		--landing-nav-hover: #60a5fa;
-		--landing-nav-hover-bg: rgba(96, 165, 250, 0.12);
-		--landing-nav-active-bg: rgba(96, 165, 250, 0.18);
+		--landing-nav-hover: var(--landing-hue-primary);
+		--landing-nav-hover-bg: oklch(0.78 0.13 var(--hue) / 0.12);
+		--landing-nav-active-bg: oklch(0.78 0.13 var(--hue) / 0.18);
 		--landing-nav-border: rgba(255, 255, 255, 0.06);
 		--landing-nav-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
-		--landing-primary-btn-bg: linear-gradient(135deg, #3b82f6, #2563eb);
+		--landing-primary-btn-bg: linear-gradient(135deg, var(--landing-hue-primary-hover), var(--landing-hue-primary-strong));
 		--landing-primary-btn-text: #ffffff;
-		--landing-primary-btn-shadow: 0 16px 34px rgba(59, 130, 246, 0.28);
-		--landing-btn-hover-shadow: 0 18px 40px rgba(59, 130, 246, 0.24);
+		--landing-primary-btn-shadow: 0 16px 34px oklch(0.72 0.15 var(--hue) / 0.28);
+		--landing-btn-hover-shadow: 0 18px 40px oklch(0.72 0.15 var(--hue) / 0.24);
 		color-scheme: dark;
 	}
 
 	.kirari-landing ::selection {
-		background: rgba(96, 165, 250, 0.28);
+		background: oklch(0.78 0.13 var(--hue) / 0.28);
 		color: var(--landing-text-primary);
 	}
 
