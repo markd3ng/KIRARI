@@ -6,9 +6,9 @@ import "@utils/preload-icons";
 import { getDefaultHue, getHue, setHue } from "@utils/setting-utils";
 import { onMount } from "svelte";
 
-export let lang: string | undefined = undefined;
+let { lang = undefined }: { lang?: string } = $props();
 
-let hue = getHue();
+let hue = $state(getHue());
 const defaultHue = getDefaultHue();
 
 onMount(() => {
@@ -19,9 +19,11 @@ function resetHue() {
 	hue = getDefaultHue();
 }
 
-$: if (hue || hue === 0) {
-	setHue(hue);
-}
+$effect(() => {
+	if (Number.isFinite(hue)) {
+		setHue(hue);
+	}
+});
 </script>
 
 <div id="display-setting" class="float-panel float-panel-closed absolute transition-all w-80 right-4 px-4 py-4">
@@ -34,7 +36,7 @@ $: if (hue || hue === 0) {
             <button aria-label="Reset to Default" class="btn-regular w-7 h-7 rounded-md  active:scale-90 will-change-transform"
 					class:opacity-0={hue === defaultHue} class:pointer-events-none={hue === defaultHue} onclick={resetHue}>
                 <div class="text-[var(--btn-content)]">
-                    <Icon icon="fa6-solid:arrow-rotate-left" class="text-[0.875rem]"></Icon>
+                    <Icon icon="fa6-solid:arrow-rotate-left" class="text-icon-sm"></Icon>
                 </div>
             </button>
         </div>

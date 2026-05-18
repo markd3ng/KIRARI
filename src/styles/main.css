@@ -6,6 +6,12 @@
 
 @theme {
     --font-sans: "Roboto", "sans-serif", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --spacing-search-panel: 30rem;
+    --text-icon-sm: 0.875rem;
+    --text-icon-xs: 0.75rem;
+    --text-icon-lg: 1.25rem;
+    --text-landing-hero: 4rem;
+    --tracking-landing-eyebrow: 0.18em;
 }
 
 /* Custom utility classes that can be composed with @apply */

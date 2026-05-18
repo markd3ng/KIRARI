@@ -207,9 +207,11 @@ Algolia DocSearch can be enabled with `[search.docsearch]` or `PUBLIC_DOCSEARCH_
 
 - Roboto is self-hosted through `@fontsource/roboto`; only the Latin `400`, `500`, and `700` weights are loaded by default.
 - Responsive image widths are generated for banner, avatar, and post covers to reduce mobile transfer size while preserving display quality.
-- Public or external images rendered through the fallback `<img>` path preserve caller-provided `width` and `height`, so layout-sensitive images can avoid CLS without forcing dimensions on every remote image.
+- Public or external images rendered through the fallback `<img>` path preserve caller-provided `width` and `height`; layout-sensitive callers should provide dimensions or a stable wrapper aspect ratio to avoid CLS.
 - Astro prefetch is selective: navigation links use `hover`, mobile/menu links use `tap`, and `prefetchAll` stays disabled.
-- Display settings remain a `client:only` Svelte island by design because the panel reads browser-only state (`localStorage` and document theme variables) and does not contain SEO content.
+- Svelte islands should use Svelte 5 Runes (`$props`, `$state`, `$effect`) for local state and effects. Display settings remain a `client:only` island by design because the panel reads browser-only state (`localStorage` and document theme variables) and does not contain SEO content.
+- View Transition swaps must restore `<html>` appearance state from the semantic source (`localStorage` plus config defaults), not by copying the previous DOM. Theme mode, effective theme, Expressive Code theme, and Hue are applied during Astro swap hooks so client-side navigation matches a fresh page load.
+- SVG icons rendered through the shared sprite are refreshed after client-side swaps to guard against browser/runtime cases where dynamic `<use>` references need to be re-resolved.
 - `pnpm build` generates `dist/_headers` and `dist/_redirects` for Cloudflare Pages and Netlify, while `vercel.json` and `edgeone.json` define immutable caching for `/_astro/*` on Vercel and EdgeOne.
 - `/_astro/*` is immutable because filenames are content-hashed; HTML, Pagefind assets, and non-hashed public files stay revalidation-friendly.
 
@@ -266,7 +268,7 @@ src = "https://matomo.example.com/piwik.js"
 integrity = ""                 # Optional SRI hash for pinned/self-hosted scripts
 ```
 
-For analytics script security, prefer self-hosting or a same-origin proxy when possible. Use `integrity` only for pinned script assets that do not change without a matching hash update.
+For analytics script security, prefer self-hosting a pinned script asset when possible, or use a same-origin proxy when that matches your deployment model. Use `integrity` only for pinned assets that do not change without a matching hash update; hot-updating SaaS loader scripts should rely on a strict provider allowlist/CSP plan instead of forced SRI.
 
 **Analytics services table:**
 
@@ -531,7 +533,7 @@ analytics: {
 | Matomo | `matomo.siteId`, `matomo.src`, `matomo.integrity` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC`, `PUBLIC_MATOMO_INTEGRITY` |
 | Amplitude | `amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
 
-> **Note**: Scripts are rendered directly in `<head>` only in production when analytics are enabled. External analytics scripts include a strict referrer policy. Optional SRI is supported for Umami, Plausible, and Matomo when you pin or self-host the script asset.
+> **Note**: Scripts are rendered directly in `<head>` only in production when analytics are enabled. External analytics scripts include a strict referrer policy. Optional SRI is supported for Umami, Plausible, and Matomo when you pin or self-host the script asset; do not attach stale hashes to provider-managed scripts that update in place.
 >
 > **Compatibility**: `PUBLIC_CLARITY_PROJECT_ID` has higher priority; `PUBLIC_CLARITY_ID` is kept as a backward-compatible alias.
 

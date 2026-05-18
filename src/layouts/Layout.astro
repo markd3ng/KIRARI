@@ -506,7 +506,12 @@ import {
 	// SizeObserverPlugin,
 	// ClickScrollPlugin
 } from 'overlayscrollbars';
-import {getHue, getStoredTheme, setHue, setTheme} from "../utils/setting-utils";
+import {
+	applyHueToDocument,
+	applyThemeToDocument,
+	getHue,
+	getStoredTheme,
+} from "../utils/setting-utils";
 import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_HOME,
@@ -547,11 +552,20 @@ document.addEventListener("click", (event) => {
 
 function loadTheme() {
 	const theme = getStoredTheme()
-	setTheme(theme)
+	applyThemeToDocument(theme)
 }
 
 function loadHue() {
-	setHue(getHue())
+	applyHueToDocument(getHue())
+}
+
+function getStoredHueWithFallback() {
+	return localStorage.getItem('hue') || String(siteConfig.themeColor.hue);
+}
+
+function applyStoredAppearance(targetDocument: Document = document) {
+	applyThemeToDocument(getStoredTheme(), targetDocument);
+	applyHueToDocument(getStoredHueWithFallback(), targetDocument);
 }
 
 // Scroll to the current URL's hash target.
@@ -809,6 +823,7 @@ init();
 // When set, we skip page-height-extend (300vh) and strip onload animations
 // so that scroll position calculations for the hash target are correct.
 let navigatingToHash = '';
+let pendingTitle = '';
 
 // Progress bar - start loading animation
 function onTransitionStart() {
@@ -857,9 +872,10 @@ function onTransitionStart() {
 
 // Called after DOM swap - reinitialize components
 function onTransitionAfterSwap() {
-	// Reload theme and colors (critical for Swup mode where DOM is fully replaced)
-	loadTheme();
-	loadHue();
+	// Restore appearance from storage after the live document has been swapped.
+	applyStoredAppearance();
+	refreshSvgUses();
+	requestAnimationFrame(refreshSvgUses);
 
 	// Update isHome state based on new body class (set by Astro at build time)
 	isHome = document.body.classList.contains('lg:is-home');
@@ -988,6 +1004,21 @@ function freezeProgressBar() {
 	bar.style.opacity = '1';
 }
 
+function refreshSvgUses() {
+	document
+		.querySelectorAll('use[href^="#"], use[xlink\\:href^="#"]')
+		.forEach((use) => {
+			const href = use.getAttribute('href');
+			const xlinkHref = use.getAttribute('xlink:href');
+			if (href) {
+				use.setAttribute('href', href);
+			}
+			if (xlinkHref) {
+				use.setAttribute('xlink:href', xlinkHref);
+			}
+		});
+}
+
 function prepareNewDocumentForSwap(newDoc: Document, pendingHash: string) {
 	if (pendingHash) {
 		newDoc.querySelectorAll('.onload-animation').forEach((el: Element) => {
@@ -1000,32 +1031,9 @@ function prepareNewDocumentForSwap(newDoc: Document, pendingHash: string) {
 	return newDoc.title;
 }
 
-function copyPersistentDocumentState(newDoc: Document) {
-	if (document.documentElement.classList.contains('dark')) {
-		newDoc.documentElement.classList.add('dark');
-	} else {
-		newDoc.documentElement.classList.remove('dark');
-	}
-
+function copyPersistentLayoutState(newDoc: Document) {
 	const currentStyle = document.documentElement.style;
-	newDoc.documentElement.style.setProperty('--hue', currentStyle.getPropertyValue('--hue'));
 	newDoc.documentElement.style.setProperty('--banner-height-extend', currentStyle.getPropertyValue('--banner-height-extend'));
-
-	const themeMode = document.documentElement.getAttribute('data-theme-mode');
-	if (themeMode) {
-		newDoc.documentElement.setAttribute('data-theme-mode', themeMode);
-	}
-
-	const effectiveTheme = document.documentElement.getAttribute('data-theme-effective');
-	if (effectiveTheme) {
-		newDoc.documentElement.setAttribute('data-theme-effective', effectiveTheme);
-	}
-
-	const expressiveTheme = document.documentElement.getAttribute('data-theme');
-	if (expressiveTheme) {
-		newDoc.documentElement.setAttribute('data-theme', expressiveTheme);
-	}
-
 	newDoc.head.querySelectorAll('link[rel="icon"]').forEach((el: Element) => el.remove());
 }
 
@@ -1041,13 +1049,30 @@ function restoreHashScrollAfterTransition() {
 
 	// Set up the unified transition manager once and consume its normalized events.
 	function setupTransitionHandlers() {
-		let pendingTitle = '';
-
 		if (!supportsViewTransitions) {
 			document.addEventListener('astro:before-preparation', (event: any) => {
 				event.preventDefault();
 			});
 		}
+
+		document.addEventListener('astro:before-swap', (event: any) => {
+			const newDoc = event.newDocument;
+			if (!newDoc?.documentElement) return;
+
+			pendingTitle = prepareNewDocumentForSwap(newDoc, navigatingToHash);
+			const titleEl = newDoc.querySelector('title');
+			if (titleEl) {
+				titleEl.textContent = document.title;
+			}
+			applyStoredAppearance(newDoc);
+			copyPersistentLayoutState(newDoc);
+		});
+
+		document.addEventListener('astro:after-swap', () => {
+			applyStoredAppearance();
+			refreshSvgUses();
+			requestAnimationFrame(refreshSvgUses);
+		});
 
 		transitionManager.on('transition:start', (data) => {
 			navigatingToHash = getNavigationHash(data?.to);
@@ -1059,14 +1084,7 @@ function restoreHashScrollAfterTransition() {
 
 			const event = data?.rawEvent as { newDocument?: Document } | undefined;
 			const newDoc = event?.newDocument;
-			if (newDoc?.documentElement) {
-				pendingTitle = prepareNewDocumentForSwap(newDoc, navigatingToHash);
-				const titleEl = newDoc.querySelector('title');
-				if (titleEl) {
-					titleEl.textContent = document.title;
-				}
-				copyPersistentDocumentState(newDoc);
-			} else if (navigatingToHash) {
+			if (!newDoc?.documentElement && navigatingToHash) {
 				stripHashNavigationAnimations();
 			}
 		});

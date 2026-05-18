@@ -147,7 +147,7 @@ const jsonLd = {
 			</div>
 
 			{entry.data.image &&
-				<ImageWrapper id="post-cover" src={entry.data.image} basePath={path.join("content/posts/", getDir(getDir(entry.id) === "/" ? (entry as any).filePath.replace("src/content/posts/", "") : entry.id))} class="mb-8 rounded-xl banner-container onload-animation"/>
+				<ImageWrapper id="post-cover" src={entry.data.image} basePath={path.join("content/posts/", getDir(getDir(entry.id) === "/" ? (entry as any).filePath.replace("src/content/posts/", "") : entry.id))} class="mb-8 aspect-[16/9] rounded-xl banner-container onload-animation"/>
 			}
 
 			<div class="markdown-wrapper relative">

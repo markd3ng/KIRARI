@@ -20,47 +20,54 @@ export function getHue(): number {
 
 export function setHue(hue: number): void {
 	localStorage.setItem("hue", String(hue));
-	const r = document.querySelector(":root") as HTMLElement;
-	if (!r) {
-		return;
-	}
-	r.style.setProperty("--hue", String(hue));
+	applyHueToDocument(hue);
 }
 
-export function applyThemeToDocument(theme: LIGHT_DARK_MODE): void {
-	document.documentElement.setAttribute("data-theme-mode", theme);
+export function applyHueToDocument(
+	hue: number | string,
+	targetDocument: Document = document,
+): void {
+	targetDocument.documentElement.style.setProperty("--hue", String(hue));
+}
+
+export function applyThemeToDocument(
+	theme: LIGHT_DARK_MODE,
+	targetDocument: Document = document,
+): void {
+	const root = targetDocument.documentElement;
+	root.setAttribute("data-theme-mode", theme);
 	let effectiveTheme: typeof LIGHT_MODE | typeof DARK_MODE = LIGHT_MODE;
 
 	switch (theme) {
 		case LIGHT_MODE:
-			document.documentElement.classList.remove("dark");
+			root.classList.remove("dark");
 			effectiveTheme = LIGHT_MODE;
 			break;
 		case DARK_MODE:
-			document.documentElement.classList.add("dark");
+			root.classList.add("dark");
 			effectiveTheme = DARK_MODE;
 			break;
 		case AUTO_MODE:
 			if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-				document.documentElement.classList.add("dark");
+				root.classList.add("dark");
 				effectiveTheme = DARK_MODE;
 			} else {
-				document.documentElement.classList.remove("dark");
+				root.classList.remove("dark");
 				effectiveTheme = LIGHT_MODE;
 			}
 			break;
 	}
-	document.documentElement.setAttribute("data-theme-effective", effectiveTheme);
+	root.setAttribute("data-theme-effective", effectiveTheme);
 
 	// Set the theme for Expressive Code (auto switch)
 	const themes = expressiveCodeConfig.themes || [];
 	const lightTheme = themes[0];
 	const darkTheme = themes.length > 1 ? themes[1] : themes[0];
 
-	const isDarkNow = document.documentElement.classList.contains("dark");
+	const isDarkNow = root.classList.contains("dark");
 	const autoTheme = isDarkNow ? darkTheme : lightTheme;
 	if (autoTheme) {
-		document.documentElement.setAttribute("data-theme", autoTheme);
+		root.setAttribute("data-theme", autoTheme);
 	}
 }
 
