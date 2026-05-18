@@ -613,6 +613,20 @@ url = "https://github.com/saicaca/fuwari"
 # 在 https://www.indexnow.org 获取你的密钥
 # indexNowKey = ""
 
+# -----------------------------------------------------------------------------
+# GitHub Card Configuration / GitHub 卡片配置
+# -----------------------------------------------------------------------------
+[githubCard]
+# GitHub card API base / GitHub 卡片 API 基础路径
+# Type: string / 类型: 字符串
+# Default: "https://api.github.com"
+# 默认值: "https://api.github.com"
+# Note: Use "/ghc" when KIRARI is deployed on Cloudflare Pages with the
+# GHCARD_CACHE Service Binding to KIRARI-GHCard-Cache.
+# 注意: 当 KIRARI 部署到 Cloudflare Pages 并绑定 KIRARI-GHCard-Cache
+# 的 GHCARD_CACHE Service Binding 时，推荐使用 "/ghc"。
+apiBase = "/ghc"
+
 # =============================================================================
 # END OF CONFIGURATION / 配置结束
 # =============================================================================

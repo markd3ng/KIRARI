@@ -200,6 +200,11 @@ export type SearchConfig = {
 	};
 };
 
+export type GithubCardConfig = {
+	/** GitHub REST API base for markdown GitHub cards. Use "/ghc" with the Cloudflare Pages service binding proxy. */
+	apiBase: string;
+};
+
 export type AnalyticsConfig = {
 	/** Master switch to enable/disable all analytics. Default: false */
 	enable?: boolean;
@@ -285,5 +290,6 @@ export type Config = {
 	og: OGConfig;
 	seo: SeoConfig;
 	search: SearchConfig;
+	githubCard: GithubCardConfig;
 	landingPage: LandingPageConfig;
 };

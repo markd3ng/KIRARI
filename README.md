@@ -95,6 +95,9 @@ apiKey = ""
 indexName = ""
 filterByLanguage = true        # Uses docsearch:language meta tags
 
+[githubCard]
+apiBase = "/ghc"                # Use Cloudflare Pages Service Binding proxy; default is https://api.github.com
+
 [landingPage]
 enable = true                  # false restores the classic post-list homepage
 latestCount = 3                # Number of recent posts on the landing page
@@ -331,6 +334,37 @@ PUBLIC_BING_VERIFICATION=your-verification-code
 | Production (non-sensitive) | Edit `kirari.config.toml` and commit |
 | Production (sensitive) | Set environment variables in Vercel/Netlify dashboard |
 | Default fallback | Values in `src/utils/config-loader.ts` |
+
+### GitHub Card Cache on Cloudflare Pages
+
+Markdown GitHub cards (`::github` and `::githubfile`) can use a private Cloudflare Worker cache through a Pages Function route:
+
+```toml
+[githubCard]
+apiBase = "/ghc"
+```
+
+Production request flow:
+
+```text
+Browser -> KIRARI Pages /ghc/* -> Pages Function -> GHCARD_CACHE Service Binding -> kirari-ghcard-cache Worker
+```
+
+Configure the Cloudflare Pages Service Binding:
+
+| Field | Value |
+|-------|-------|
+| Binding name | `GHCARD_CACHE` |
+| Service | `kirari-ghcard-cache` |
+
+Dashboard path: **Workers & Pages → KIRARI Pages Project → Settings → Bindings → Add binding → Service binding**.
+
+If you do not deploy the Worker cache, remove `[githubCard]` or set:
+
+```toml
+[githubCard]
+apiBase = "https://api.github.com"
+```
 
 
 ## Key Features

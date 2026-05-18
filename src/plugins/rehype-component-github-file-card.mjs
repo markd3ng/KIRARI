@@ -1,5 +1,9 @@
 /// <reference types="mdast" />
 import { h } from "hastscript";
+import {
+	resolveGithubCardApiBase,
+	toScriptLiteral,
+} from "./github-card-api-base.mjs";
 
 /**
  * Creates a GitHub File Card component.
@@ -11,7 +15,7 @@ import { h } from "hastscript";
  * @param {import('mdast').RootContent[]} children - The children elements of the component.
  * @returns {import('mdast').Parent} The created GitHub File Card component.
  */
-export function GithubFileCardComponent(properties, children) {
+export function GithubFileCardComponent(properties, children, githubCardApiBase) {
 	if (Array.isArray(children) && children.length !== 0)
 		return h("div", { class: "hidden" }, [
 			'Invalid directive. ("githubfile" directive must be leaf type "::githubfile{repo="owner/repo" file="path/to/file"}")',
@@ -35,6 +39,7 @@ export function GithubFileCardComponent(properties, children) {
 	const description = properties.description || "No description";
 
 	const repo = properties.repo;
+	const apiBase = resolveGithubCardApiBase(githubCardApiBase);
 	const owner = repo.split("/")[0];
 	const repoName = repo.split("/")[1];
 	const ref = properties.ref || "HEAD";
@@ -55,10 +60,12 @@ export function GithubFileCardComponent(properties, children) {
 		.map((segment) => encodeURIComponent(segment))
 		.join("/");
 	const refQuery = ref === "HEAD" ? "" : `?ref=${encodeURIComponent(ref)}`;
-	const contentsUrl = `https://api.github.com/repos/${repo}/contents/${encodedFilePath}${refQuery}`;
+	const repoUrl = `${apiBase}/repos/${repo}`;
+	const contentsUrl = `${apiBase}/repos/${repo}/contents/${encodedFilePath}${refQuery}`;
 	const commitRefQuery =
 		ref === "HEAD" ? "" : `&sha=${encodeURIComponent(ref)}`;
-	const commitsUrl = `https://api.github.com/repos/${repo}/commits?path=${encodeURIComponent(filePath)}&per_page=1${commitRefQuery}`;
+	const commitsUrl = `${apiBase}/repos/${repo}/commits?path=${encodeURIComponent(filePath)}&per_page=1${commitRefQuery}`;
+	const avatarFallbackUrl = `${apiBase}/avatar/${owner}?size=96`;
 
 	const cardUuid = `GFC${Math.random().toString(36).slice(-6)}`; // Collisions are not important
 	const fileUrl = encodeURI(
@@ -145,16 +152,16 @@ export function GithubFileCardComponent(properties, children) {
           });
         };
 
-        const repoFetch = fetch('https://api.github.com/repos/${repo}', { referrerPolicy: "no-referrer" })
+        const repoFetch = fetch(${toScriptLiteral(repoUrl)}, { referrerPolicy: "no-referrer" })
           .then(response => response.json())
           .then(data => {
-            const avatarUrl = data?.owner?.avatar_url || 'https://github.com/${owner}.png?size=96';
+            const avatarUrl = data?.owner?.avatar_url || ${toScriptLiteral(avatarFallbackUrl)};
             avatarEl.style.backgroundImage = 'url(' + avatarUrl + ')';
             avatarEl.style.backgroundColor = 'transparent';
           })
           .catch(() => {});
 
-        const contentsFetch = fetch('${contentsUrl}', { referrerPolicy: "no-referrer" })
+        const contentsFetch = fetch(${toScriptLiteral(contentsUrl)}, { referrerPolicy: "no-referrer" })
           .then(response => response.json())
           .then(data => {
             fileSizeEl.innerText = formatBytes(data?.size);
@@ -163,7 +170,7 @@ export function GithubFileCardComponent(properties, children) {
             fileSizeEl.innerText = "unknown";
           });
 
-        const commitsFetch = fetch('${commitsUrl}', { referrerPolicy: "no-referrer" })
+        const commitsFetch = fetch(${toScriptLiteral(commitsUrl)}, { referrerPolicy: "no-referrer" })
           .then(response => response.json())
           .then(data => {
             const commitDate = data?.[0]?.commit?.committer?.date || data?.[0]?.commit?.author?.date;

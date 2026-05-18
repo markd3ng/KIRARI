@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added configurable GitHub Card API base with Cloudflare Pages `/ghc` Service Binding proxy support.
+- Added a Pages Function route for `/ghc/*` to call the private `kirari-ghcard-cache` Worker via `GHCARD_CACHE`.
+
 ### Fixed
 
 - Backported selected upstream Fuwari PR fixes: GitHub admonition type mapping, nullable blank frontmatter handling, centered post card covers, and conditional pagination rendering.

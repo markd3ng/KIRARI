@@ -267,6 +267,11 @@ type TomlConfig = {
 			metaTags?: unknown;
 		};
 	};
+	/** GitHub card configuration / GitHub 卡片配置 */
+	githubCard?: {
+		/** GitHub REST API base for markdown cards / Markdown GitHub 卡片 API 基础路径 */
+		apiBase?: unknown;
+	};
 	/** Landing page configuration / Landing Page 配置 */
 	landingPage?: {
 		/** Enable PRD-style landing page on home routes / 在首页启用 PRD 风格 Landing Page */
@@ -532,6 +537,9 @@ const DEFAULT_CONFIG: Config = {
 			filterByLanguage: true,
 			metaTags: {},
 		},
+	},
+	githubCard: {
+		apiBase: "https://api.github.com",
 	},
 	landingPage: {
 		enable: false,
@@ -904,6 +912,7 @@ export const loadConfig = (): Config => {
 	const og = toml.og;
 	const seo = toml.seo;
 	const search = toml.search;
+	const githubCard = toml.githubCard;
 	const landingPage = toml.landingPage;
 
 	// Helper: validate lang field
@@ -1005,6 +1014,11 @@ export const loadConfig = (): Config => {
 		const count = Math.trunc(getNumber(value, DEFAULT_CONFIG.landingPage.latestCount));
 		if (count < 1) return DEFAULT_CONFIG.landingPage.latestCount;
 		return Math.min(count, 12);
+	};
+	const normalizeApiBase = (value: string): string => {
+		const trimmed = value.trim();
+		if (!trimmed) return DEFAULT_CONFIG.githubCard.apiBase;
+		return trimmed.replace(/\/+$/, "");
 	};
 	const validateLandingFeatures = (value: unknown): Config["landingPage"]["features"] => {
 		const fallback = DEFAULT_CONFIG.landingPage.features;
@@ -1172,6 +1186,14 @@ export const loadConfig = (): Config => {
 				filterByLanguage: getEnvBoolean("PUBLIC_DOCSEARCH_FILTER_BY_LANGUAGE", getBoolean(search?.docsearch?.filterByLanguage, DEFAULT_CONFIG.search.docsearch.filterByLanguage)),
 				metaTags: getStringRecord(search?.docsearch?.metaTags, DEFAULT_CONFIG.search.docsearch.metaTags),
 			},
+		},
+		githubCard: {
+			apiBase: normalizeApiBase(
+				getEnvString(
+					"PUBLIC_GITHUB_CARD_API_BASE",
+					getString(githubCard?.apiBase, DEFAULT_CONFIG.githubCard.apiBase),
+				),
+			),
 		},
 		landingPage: {
 			enable: getBoolean(landingPage?.enable, DEFAULT_CONFIG.landingPage.enable),

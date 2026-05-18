@@ -95,6 +95,9 @@ apiKey = ""
 indexName = ""
 filterByLanguage = true        # 使用 docsearch:language meta tags
 
+[githubCard]
+apiBase = "/ghc"                # 使用 Cloudflare Pages Service Binding 代理；默认值为 https://api.github.com
+
 [landingPage]
 enable = true                  # false 恢复经典文章列表首页
 latestCount = 3                # Landing Page 展示的最新文章数量
@@ -319,6 +322,37 @@ PUBLIC_BING_VERIFICATION=your-verification-code
 | 生产环境（非敏感）| 编辑 `kirari.config.toml` 并提交 |
 | 生产环境（敏感）| 在 Vercel/Netlify 控制台设置环境变量 |
 | 默认回退 | 使用 `src/utils/config-loader.ts` 中的值 |
+
+### Cloudflare Pages GitHub Card Cache
+
+Markdown GitHub 卡片（`::github` 和 `::githubfile`）可以通过 Pages Function 走私有 Worker 缓存：
+
+```toml
+[githubCard]
+apiBase = "/ghc"
+```
+
+生产请求链路：
+
+```text
+Browser -> KIRARI Pages /ghc/* -> Pages Function -> GHCARD_CACHE Service Binding -> kirari-ghcard-cache Worker
+```
+
+Cloudflare Pages 需要配置 Service Binding：
+
+| 字段 | 值 |
+|------|----|
+| Binding name | `GHCARD_CACHE` |
+| Service | `kirari-ghcard-cache` |
+
+Dashboard 路径：**Workers & Pages → KIRARI Pages Project → Settings → Bindings → Add binding → Service binding**。
+
+如果不部署 Worker 缓存，删除 `[githubCard]` 或改回：
+
+```toml
+[githubCard]
+apiBase = "https://api.github.com"
+```
 
 
 ## 主要功能

@@ -21,7 +21,6 @@ import remarkDirective from "remark-directive"; /* Handle directives */
 import remarkGithubAdmonitionsToDirectives from "remark-github-admonitions-to-directives";
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
-import { fileURLToPath } from "url";
 import { Config } from "./src/constants.ts";
 import { pluginCustomCopyButton } from "./src/plugins/expressive-code/custom-copy-button.js";
 import { pluginLanguageBadge } from "./src/plugins/expressive-code/language-badge.ts";
@@ -199,8 +198,18 @@ export default defineConfig({
 				rehypeComponents,
 				{
 					components: {
-						github: GithubCardComponent,
-						githubfile: GithubFileCardComponent,
+						github: (properties, children) =>
+							GithubCardComponent(
+								properties,
+								children,
+								Config.githubCard.apiBase,
+							),
+						githubfile: (properties, children) =>
+							GithubFileCardComponent(
+								properties,
+								children,
+								Config.githubCard.apiBase,
+							),
 						note: (x, y) => AdmonitionComponent(x, y, "note"),
 						tip: (x, y) => AdmonitionComponent(x, y, "tip"),
 						important: (x, y) => AdmonitionComponent(x, y, "important"),
