@@ -501,6 +501,12 @@ url = "https://github.com/saicaca/fuwari"
 # 注意: 默认为 https://analytics.umami.is/script.js
 # src = ""
 
+# Optional Subresource Integrity hash for a pinned/self-hosted Umami script
+# 可选：用于固定版本或自托管 Umami 脚本的 SRI 哈希
+# Prefer self-hosting or same-origin proxying before relying on third-party CDN SRI.
+# 建议优先自托管或同源代理；SRI 适合固定版本脚本。
+# integrity = ""
+
 # Plausible Analytics configuration / Plausible Analytics 配置
 [analytics.plausible]
 # Domain to track / 要追踪的域名
@@ -513,6 +519,10 @@ url = "https://github.com/saicaca/fuwari"
 # 注意: 默认为 https://plausible.io/js/script.js
 # src = ""
 
+# Optional Subresource Integrity hash for a pinned/self-hosted Plausible script
+# 可选：用于固定版本或自托管 Plausible 脚本的 SRI 哈希
+# integrity = ""
+
 # Matomo Analytics configuration / Matomo Analytics 配置
 [analytics.matomo]
 # Matomo site ID / Matomo 站点 ID
@@ -523,6 +533,10 @@ url = "https://github.com/saicaca/fuwari"
 # Type: string / 类型: 字符串
 # Example / 示例: "https://your-matomo-domain.com/matomo.js"
 # src = ""
+
+# Optional Subresource Integrity hash for a pinned/self-hosted Matomo script
+# 可选：用于固定版本或自托管 Matomo 脚本的 SRI 哈希
+# integrity = ""
 
 # -----------------------------------------------------------------------------
 # LLMs Documentation Configuration / LLM 文档配置

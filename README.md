@@ -209,12 +209,14 @@ Algolia DocSearch can be enabled with `[search.docsearch]` or `PUBLIC_DOCSEARCH_
 - Responsive image widths are generated for banner, avatar, and post covers to reduce mobile transfer size while preserving display quality.
 - Public or external images rendered through the fallback `<img>` path preserve caller-provided `width` and `height`, so layout-sensitive images can avoid CLS without forcing dimensions on every remote image.
 - Astro prefetch is selective: navigation links use `hover`, mobile/menu links use `tap`, and `prefetchAll` stays disabled.
+- Display settings remain a `client:only` Svelte island by design because the panel reads browser-only state (`localStorage` and document theme variables) and does not contain SEO content.
 - `pnpm build` generates `dist/_headers` and `dist/_redirects` for Cloudflare Pages and Netlify, while `vercel.json` and `edgeone.json` define immutable caching for `/_astro/*` on Vercel and EdgeOne.
 - `/_astro/*` is immutable because filenames are content-hashed; HTML, Pagefind assets, and non-hashed public files stay revalidation-friendly.
 
 ### Release Maintenance
 
 - Release checks should run `pnpm install --frozen-lockfile`, `pnpm type-check`, `pnpm astro check`, and `pnpm build`.
+- CI/CD providers should use the committed `pnpm-lock.yaml`; avoid unfrozen installs for release builds.
 - Dependency refreshes are intended to stay inside the declared semver ranges for release patches unless a migration release explicitly opts into major upgrades.
 - `@astrojs/check` is kept in `devDependencies`; production behavior still uses the same `pnpm astro check` workflow during validation.
 
@@ -251,15 +253,20 @@ amplitudeApiKey = "your-api-key"
 [analytics.umami]
 id = "your-website-id"
 src = "https://analytics.umami.is/script.js"
+integrity = ""                 # Optional SRI hash for pinned/self-hosted scripts
 
 [analytics.plausible]
 domain = "example.com"
 src = "https://plausible.io/js/script.js"
+integrity = ""                 # Optional SRI hash for pinned/self-hosted scripts
 
 [analytics.matomo]
 siteId = "1"
 src = "https://matomo.example.com/piwik.js"
+integrity = ""                 # Optional SRI hash for pinned/self-hosted scripts
 ```
+
+For analytics script security, prefer self-hosting or a same-origin proxy when possible. Use `integrity` only for pinned script assets that do not change without a matching hash update.
 
 **Analytics services table:**
 
@@ -290,12 +297,15 @@ PUBLIC_ANALYTICS_ENABLE=true
 PUBLIC_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
 PUBLIC_UMAMI_ID=your-website-id
 PUBLIC_UMAMI_SRC=https://analytics.umami.is/script.js
+PUBLIC_UMAMI_INTEGRITY=
 PUBLIC_PLAUSIBLE_DOMAIN=example.com
+PUBLIC_PLAUSIBLE_INTEGRITY=
 PUBLIC_CLARITY_PROJECT_ID=your-project-id
 PUBLIC_FATHOM_SITE_ID=your-site-id
 PUBLIC_SIMPLE_ANALYTICS_DOMAIN=example.com
 PUBLIC_MATOMO_SITE_ID=1
 PUBLIC_MATOMO_SRC=https://matomo.example.com/piwik.js
+PUBLIC_MATOMO_INTEGRITY=
 PUBLIC_AMPLITUDE_API_KEY=your-api-key
 
 # SEO
@@ -497,12 +507,12 @@ Analytics are loaded only when both conditions are met:
 analytics: {
   enable: true,                            // Master switch (default: false)
   googleAnalyticsId: "G-XXXXXXXXXX",       // Google Analytics
-  umami: { id: "your-id", src: "https://..." },  // Umami
-  plausible: { domain: "example.com" },     // Plausible
+  umami: { id: "your-id", src: "https://...", integrity: "" },  // Umami
+  plausible: { domain: "example.com", integrity: "" },     // Plausible
   clarityProjectId: "your-project-id",     // Microsoft Clarity
   fathomSiteId: "your-site-id",            // Fathom
   simpleAnalyticsDomain: "example.com",    // Simple Analytics
-  matomo: { siteId: "1", src: "https://..." },  // Matomo
+  matomo: { siteId: "1", src: "https://...", integrity: "" },  // Matomo
   amplitudeApiKey: "your-api-key"          // Amplitude
 }
 ```
@@ -513,16 +523,15 @@ analytics: {
 |---------|-----------|--------------|
 | **Master Switch** | `enable` | `PUBLIC_ANALYTICS_ENABLE` |
 | Google Analytics | `googleAnalyticsId` | `PUBLIC_GOOGLE_ANALYTICS_ID` |
-| Umami | `umami.id`, `umami.src` | `PUBLIC_UMAMI_ID`, `PUBLIC_UMAMI_SRC` |
-| Plausible | `plausible.domain`, `plausible.src` | `PUBLIC_PLAUSIBLE_DOMAIN`, `PUBLIC_PLAUSIBLE_SRC` |
+| Umami | `umami.id`, `umami.src`, `umami.integrity` | `PUBLIC_UMAMI_ID`, `PUBLIC_UMAMI_SRC`, `PUBLIC_UMAMI_INTEGRITY` |
+| Plausible | `plausible.domain`, `plausible.src`, `plausible.integrity` | `PUBLIC_PLAUSIBLE_DOMAIN`, `PUBLIC_PLAUSIBLE_SRC`, `PUBLIC_PLAUSIBLE_INTEGRITY` |
 | Microsoft Clarity | `clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` (preferred), `PUBLIC_CLARITY_ID` (alias) |
-
 | Fathom | `fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
 | Simple Analytics | `simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
-| Matomo | `matomo.siteId`, `matomo.src` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC` |
+| Matomo | `matomo.siteId`, `matomo.src`, `matomo.integrity` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC`, `PUBLIC_MATOMO_INTEGRITY` |
 | Amplitude | `amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
 
-> **Note**: Scripts are rendered directly in `<head>`.
+> **Note**: Scripts are rendered directly in `<head>` only in production when analytics are enabled. External analytics scripts include a strict referrer policy. Optional SRI is supported for Umami, Plausible, and Matomo when you pin or self-host the script asset.
 >
 > **Compatibility**: `PUBLIC_CLARITY_PROJECT_ID` has higher priority; `PUBLIC_CLARITY_ID` is kept as a backward-compatible alias.
 

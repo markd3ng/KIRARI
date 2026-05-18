@@ -19,13 +19,16 @@ export type EnvConfig = {
 	googleAnalyticsId: string;
 	umamiId: string;
 	umamiSrc: string;
+	umamiIntegrity: string;
 	plausibleDomain: string;
 	plausibleSrc: string;
+	plausibleIntegrity: string;
 	clarityProjectId: string;
 	fathomSiteId: string;
 	simpleAnalyticsDomain: string;
 	matomoSiteId: string;
 	matomoSrc: string;
+	matomoIntegrity: string;
 	amplitudeApiKey: string;
 	indexNowEnable: boolean;
 	indexNowKey: string;
@@ -176,6 +179,8 @@ type TomlConfig = {
 			id?: unknown;
 			/** Script URL / 脚本 URL */
 			src?: unknown;
+			/** Optional SRI hash / 可选 SRI 哈希 */
+			integrity?: unknown;
 		};
 		/** Plausible analytics / Plausible 分析 */
 		plausible?: {
@@ -183,6 +188,8 @@ type TomlConfig = {
 			domain?: unknown;
 			/** Script URL / 脚本 URL */
 			src?: unknown;
+			/** Optional SRI hash / 可选 SRI 哈希 */
+			integrity?: unknown;
 		};
 		/** Matomo analytics / Matomo 分析 */
 		matomo?: {
@@ -190,6 +197,8 @@ type TomlConfig = {
 			siteId?: unknown;
 			/** Tracker URL / 跟踪器 URL */
 			src?: unknown;
+			/** Optional SRI hash / 可选 SRI 哈希 */
+			integrity?: unknown;
 		};
 	};
 	/** LLMs.txt configuration / LLMs.txt 配置 */
@@ -579,13 +588,16 @@ const DEFAULT_ENV_CONFIG: EnvConfig = {
 	googleAnalyticsId: DEFAULT_CONFIG.analytics.googleAnalyticsId || "",
 	umamiId: DEFAULT_CONFIG.analytics.umami?.id || "",
 	umamiSrc: DEFAULT_CONFIG.analytics.umami?.src || "",
+	umamiIntegrity: DEFAULT_CONFIG.analytics.umami?.integrity || "",
 	plausibleDomain: DEFAULT_CONFIG.analytics.plausible?.domain || "",
 	plausibleSrc: DEFAULT_CONFIG.analytics.plausible?.src || "",
+	plausibleIntegrity: DEFAULT_CONFIG.analytics.plausible?.integrity || "",
 	clarityProjectId: DEFAULT_CONFIG.analytics.clarityProjectId || "",
 	fathomSiteId: DEFAULT_CONFIG.analytics.fathomSiteId || "",
 	simpleAnalyticsDomain: DEFAULT_CONFIG.analytics.simpleAnalyticsDomain || "",
 	matomoSiteId: DEFAULT_CONFIG.analytics.matomo?.siteId || "",
 	matomoSrc: DEFAULT_CONFIG.analytics.matomo?.src || "",
+	matomoIntegrity: DEFAULT_CONFIG.analytics.matomo?.integrity || "",
 	amplitudeApiKey: DEFAULT_CONFIG.analytics.amplitudeApiKey || "",
 	indexNowEnable: DEFAULT_CONFIG.seo.indexNow || false,
 	indexNowKey: DEFAULT_CONFIG.seo.indexNowKey || "",
@@ -1109,14 +1121,17 @@ export const loadConfig = (): Config => {
 			umami: analytics?.umami?.id || envUmamiId ? {
 				id: getEnvString("PUBLIC_UMAMI_ID", getString(analytics?.umami?.id, "")),
 				src: getEnvString("PUBLIC_UMAMI_SRC", getString(analytics?.umami?.src, "")),
+				integrity: getEnvString("PUBLIC_UMAMI_INTEGRITY", getString(analytics?.umami?.integrity, "")),
 			} : DEFAULT_CONFIG.analytics.umami,
 			plausible: analytics?.plausible?.domain || envPlausibleDomain ? {
 				domain: getEnvString("PUBLIC_PLAUSIBLE_DOMAIN", getString(analytics?.plausible?.domain, "")),
 				src: getEnvString("PUBLIC_PLAUSIBLE_SRC", getString(analytics?.plausible?.src, "")),
+				integrity: getEnvString("PUBLIC_PLAUSIBLE_INTEGRITY", getString(analytics?.plausible?.integrity, "")),
 			} : DEFAULT_CONFIG.analytics.plausible,
 			matomo: (analytics?.matomo?.siteId && analytics?.matomo?.src) || (envMatomoSiteId && envMatomoSrc) ? {
 				siteId: getEnvString("PUBLIC_MATOMO_SITE_ID", getString(analytics?.matomo?.siteId, "")),
 				src: getEnvString("PUBLIC_MATOMO_SRC", getString(analytics?.matomo?.src, "")),
+				integrity: getEnvString("PUBLIC_MATOMO_INTEGRITY", getString(analytics?.matomo?.integrity, "")),
 			} : DEFAULT_CONFIG.analytics.matomo,
 		},
 		llms: {
@@ -1226,6 +1241,10 @@ export const loadEnvConfig = (): EnvConfig => {
 			"PUBLIC_UMAMI_SRC",
 			getString(analytics?.umami?.src, DEFAULT_ENV_CONFIG.umamiSrc),
 		),
+		umamiIntegrity: getEnvString(
+			"PUBLIC_UMAMI_INTEGRITY",
+			getString(analytics?.umami?.integrity, DEFAULT_ENV_CONFIG.umamiIntegrity),
+		),
 		plausibleDomain: getEnvString(
 			"PUBLIC_PLAUSIBLE_DOMAIN",
 			getString(analytics?.plausible?.domain, DEFAULT_ENV_CONFIG.plausibleDomain),
@@ -1233,6 +1252,10 @@ export const loadEnvConfig = (): EnvConfig => {
 		plausibleSrc: getEnvString(
 			"PUBLIC_PLAUSIBLE_SRC",
 			getString(analytics?.plausible?.src, DEFAULT_ENV_CONFIG.plausibleSrc),
+		),
+		plausibleIntegrity: getEnvString(
+			"PUBLIC_PLAUSIBLE_INTEGRITY",
+			getString(analytics?.plausible?.integrity, DEFAULT_ENV_CONFIG.plausibleIntegrity),
 		),
 		clarityProjectId: getEnvStringFromKeys(
 			["PUBLIC_CLARITY_PROJECT_ID", "PUBLIC_CLARITY_ID"],
@@ -1256,6 +1279,10 @@ export const loadEnvConfig = (): EnvConfig => {
 		matomoSrc: getEnvString(
 			"PUBLIC_MATOMO_SRC",
 			getString(analytics?.matomo?.src, DEFAULT_ENV_CONFIG.matomoSrc),
+		),
+		matomoIntegrity: getEnvString(
+			"PUBLIC_MATOMO_INTEGRITY",
+			getString(analytics?.matomo?.integrity, DEFAULT_ENV_CONFIG.matomoIntegrity),
 		),
 		amplitudeApiKey: getEnvString(
 			"PUBLIC_AMPLITUDE_API_KEY",

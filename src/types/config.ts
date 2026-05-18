@@ -211,6 +211,8 @@ export type AnalyticsConfig = {
 		id: string;
 		/** Umami script URL (default: https://analytics.umami.is/script.js) */
 		src?: string;
+		/** Optional Subresource Integrity hash for a pinned/self-hosted Umami script */
+		integrity?: string;
 	};
 	/** Plausible analytics configuration */
 	plausible?: {
@@ -218,6 +220,8 @@ export type AnalyticsConfig = {
 		domain: string;
 		/** Plausible script URL (default: https://plausible.io/js/script.js) */
 		src?: string;
+		/** Optional Subresource Integrity hash for a pinned/self-hosted Plausible script */
+		integrity?: string;
 	};
 	/** Microsoft Clarity project ID */
 	clarityProjectId?: string;
@@ -231,6 +235,8 @@ export type AnalyticsConfig = {
 		siteId: string;
 		/** Matomo tracker URL */
 		src: string;
+		/** Optional Subresource Integrity hash for a pinned/self-hosted Matomo script */
+		integrity?: string;
 	};
 	/** Amplitude analytics API key */
 	amplitudeApiKey?: string;
