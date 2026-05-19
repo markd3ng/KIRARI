@@ -330,7 +330,28 @@ PUBLIC_BING_VERIFICATION=your-verification-code
 
 ### GitHub Card Cache 适配器
 
-Markdown GitHub 卡片（`::github` 和 `::githubfile`）默认使用 `https://api.github.com`。运行时适配器为显式开启：未启用时，KIRARI 不生成 `/ghc` route，仍适合纯静态部署。
+Markdown GitHub 卡片（`::github` 和 `::githubfile`）默认使用 `https://api.github.com`。运行时适配器必须显式开启。未启用时，KIRARI 不生成 `/ghc` 运行时 route，仍适合纯静态部署。
+
+先选择模式：
+
+| 托管模式 | `apiBase` | Adapter | KIRARI 构建时生成的运行时 route | Token 位置 |
+|----------|-----------|---------|----------------------------------|------------|
+| 纯静态或不部署缓存服务 | `https://api.github.com` | 关闭 | 不生成 | KIRARI 不需要 token |
+| Cloudflare Pages + `KIRARI-GHCard-Cache` Worker | `/ghc` | `provider = "cloudflare"` | `functions/ghc/[[path]].ts` | 可选 `GITHUB_TOKEN` 配在外部 Worker Secret |
+| Vercel 同项目 Function | `/ghc` | `provider = "vercel"` | `api/ghc/[...path].ts` | 可选 `GITHUB_TOKEN` 配在 Vercel Project Environment Variables |
+
+默认直连 GitHub：
+
+```toml
+[githubCard]
+apiBase = "https://api.github.com"
+
+[githubCard.adapter]
+enabled = false
+provider = "none"
+route = "/ghc"
+serviceBinding = "GHCARD_CACHE"
+```
 
 Cloudflare Pages + `KIRARI-GHCard-Cache`：
 
@@ -360,7 +381,15 @@ Cloudflare Pages 需要配置 Service Binding：
 
 Dashboard 路径：**Workers & Pages → KIRARI Pages Project → Settings → Bindings → Add binding → Service binding**。
 
-Cloudflare 注意：这条路径下 KIRARI 本身不需要配置 `GITHUB_TOKEN`。可选的 GitHub API token 应配置在 `KIRARI-GHCard-Cache` Worker 项目中，位置是 Cloudflare Worker Secret。
+Cloudflare token 归属：
+
+| Token | 配置位置 | 用途 |
+|-------|----------|------|
+| `GITHUB_TOKEN` | `KIRARI-GHCard-Cache` Cloudflare Worker Secret | Worker 运行时请求 GitHub REST API |
+| `CLOUDFLARE_API_TOKEN` | `KIRARI-GHCard-Cache` GitHub Repository Secrets | Worker 项目 GitHub Actions 部署用 |
+| `CLOUDFLARE_ACCOUNT_ID` | `KIRARI-GHCard-Cache` GitHub Repository Secrets | Worker 部署目标 Cloudflare account |
+
+Cloudflare Service Binding 路径下，KIRARI 本身不需要配置 `GITHUB_TOKEN`。
 
 Vercel 免费版同项目适配器：
 
@@ -374,9 +403,26 @@ provider = "vercel"
 route = "/ghc"
 ```
 
-Vercel 适配器默认只使用同项目 Function 和 HTTP 缓存头，不要求 Vercel KV、Upstash、Supabase、Firewall 或 Deployment Protection。
+Vercel 适配器默认只使用同项目 Function 和 HTTP 缓存头，不要求 Vercel KV、Upstash、Supabase、Firewall、Deployment Protection 或 custom domain。
 
-Vercel 注意：如果希望提高 GitHub API rate limit，需要在 **Vercel Project → Settings → Environment Variables** 里添加 `GITHUB_TOKEN`。不要把真实 token 写入 `kirari.config.toml` 或仓库文件。
+Vercel token 归属：
+
+| Token | 配置位置 | 用途 |
+|-------|----------|------|
+| `GITHUB_TOKEN` | Vercel Project → Settings → Environment Variables | 生成的 Vercel Function 运行时请求 GitHub REST API |
+| `CLOUDFLARE_API_TOKEN` | 不使用 | Vercel 路径不部署 Cloudflare Worker |
+| `CLOUDFLARE_ACCOUNT_ID` | 不使用 | Vercel 路径不部署 Cloudflare Worker |
+
+不要把真实 token 写入 `kirari.config.toml` 或仓库文件。
+
+验证：
+
+| 检查项 | 预期结果 |
+|--------|----------|
+| Adapter 关闭 | 不生成 `functions/ghc` 或 `api/ghc` route |
+| Cloudflare adapter 开启 | 构建前生成 `functions/ghc/[[path]].ts` |
+| Vercel adapter 开启 | 构建前生成 `api/ghc/[...path].ts` |
+| Adapter 开启后的 Browser Network | GitHub card 请求走 `/ghc/repos/...` 和 `/ghc/avatar/...` |
 
 回滚到直连 GitHub：
 

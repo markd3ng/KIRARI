@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Changed the default GitHub Card behavior back to direct `https://api.github.com` access for pure static builds.
+- Reworked GitHub Card adapter documentation with explicit mode selection, generated route behavior, token ownership tables, and verification checks.
 - Clarified GitHub Card adapter token placement for Cloudflare Worker Secret versus Vercel Project Environment Variables.
 
 ### Fixed
