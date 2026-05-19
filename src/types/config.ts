@@ -201,8 +201,15 @@ export type SearchConfig = {
 };
 
 export type GithubCardConfig = {
-	/** GitHub REST API base for markdown GitHub cards. Use "/ghc" with the Cloudflare Pages service binding proxy. */
+	/** GitHub REST API base for markdown GitHub cards. Use "/ghc" when a runtime adapter is enabled. */
 	apiBase: string;
+	/** Optional runtime adapter for same-origin GitHub card proxy routes. Disabled by default. */
+	adapter: {
+		enabled: boolean;
+		provider: "none" | "cloudflare" | "vercel" | "auto";
+		route: string;
+		serviceBinding: string;
+	};
 };
 
 export type AnalyticsConfig = {

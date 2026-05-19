@@ -14,7 +14,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "check": "astro check",
-    "build": "astro build && node scripts/postbuild.mjs",
+    "build": "node scripts/materialize-ghc-adapter.mjs && astro build && node scripts/postbuild.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "type-check": "tsc --noEmit",

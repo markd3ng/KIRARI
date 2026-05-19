@@ -22,5 +22,5 @@
       "@/*": ["src/*"]
     }
   },
-  "include": [".astro/types.d.ts", "src/**/*", "functions/**/*"]
+  "include": [".astro/types.d.ts", "src/**/*", "functions/**/*", "api/**/*"]
 }

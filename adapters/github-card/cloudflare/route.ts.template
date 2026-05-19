@@ -1,0 +1,45 @@
+// @kirari-generated-ghc-adapter
+type ServiceBinding = {
+	fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response>;
+};
+
+type PagesContext<Env> = {
+	request: Request;
+	env: Env;
+};
+
+interface Env {
+	__GHC_SERVICE_BINDING__: ServiceBinding;
+}
+
+const routePrefix = "__GHC_ROUTE__";
+const serviceBindingName = "__GHC_SERVICE_BINDING__";
+
+export const onRequest = async (context: PagesContext<Env>): Promise<Response> => {
+	const incomingUrl = new URL(context.request.url);
+	const targetUrl = new URL(context.request.url);
+	targetUrl.pathname = targetUrl.pathname.replace(new RegExp(`^${routePrefix}`), "/api/github");
+
+	const headers = new Headers(context.request.headers);
+	headers.set("X-KIRARI-GHC-PUBLIC-BASE", `${incomingUrl.origin}${routePrefix}`);
+
+	const service = context.env[serviceBindingName as keyof Env];
+	if (!service) {
+		return Response.json(
+			{
+				error: "missing_service_binding",
+				message: `Cloudflare Pages Service Binding ${serviceBindingName} is not configured.`,
+			},
+			{ status: 500 },
+		);
+	}
+
+	return service.fetch(
+		new Request(targetUrl, {
+			method: context.request.method,
+			headers,
+			body: context.request.body,
+			redirect: context.request.redirect,
+		}),
+	);
+};

@@ -1,0 +1,240 @@
+// @kirari-generated-ghc-adapter
+const routePrefix = "__GHC_ROUTE__";
+const githubApiBase = "https://api.github.com";
+const githubAvatarBase = "https://github.com";
+const cacheNamespaceVersion = process.env.GHC_CACHE_NAMESPACE_VERSION || "v1";
+
+type Route =
+	| { kind: "repo"; owner: string; repo: string }
+	| { kind: "contents"; owner: string; repo: string; path: string; ref?: string }
+	| { kind: "commits"; owner: string; repo: string; path: string; sha?: string }
+	| { kind: "avatar"; owner: string; size: number };
+
+const namePattern = /^[A-Za-z0-9_.-]{1,100}$/;
+
+export default {
+	async fetch(request: Request): Promise<Response> {
+		if (request.method === "OPTIONS") {
+			return new Response(null, { status: 204, headers: corsHeaders(request) });
+		}
+
+		if (request.method !== "GET" && request.method !== "HEAD") {
+			return jsonResponse(request, { error: "method_not_allowed", message: "Only GET, HEAD, and OPTIONS are supported." }, 405);
+		}
+
+		const parsed = parseRoute(new URL(request.url));
+		if (!parsed.ok) {
+			return jsonResponse(request, { error: "invalid_request", message: parsed.message }, parsed.status);
+		}
+
+		try {
+			const upstream = await fetch(buildGithubUrl(parsed.route), {
+				method: "GET",
+				headers: buildGithubHeaders(parsed.route),
+				signal: AbortSignal.timeout(8000),
+			});
+			const response = await normalizeResponse(request, upstream, parsed.route);
+			return request.method === "HEAD" ? new Response(null, response) : response;
+		} catch {
+			return jsonResponse(
+				request,
+				{ error: "upstream_timeout", message: "GitHub upstream did not respond." },
+				504,
+			);
+		}
+	},
+};
+
+function parseRoute(url: URL): { ok: true; route: Route } | { ok: false; status: number; message: string } {
+	const path = url.pathname.startsWith("/api/")
+		? url.pathname.replace(/^\/api\/[^/]+/, routePrefix)
+		: url.pathname;
+
+	if (path === `${routePrefix}/healthz`) {
+		return { ok: false, status: 200, message: "OK" };
+	}
+
+	if (!path.startsWith(`${routePrefix}/`)) {
+		return { ok: false, status: 404, message: "Unsupported endpoint." };
+	}
+
+	const segments = path
+		.slice(routePrefix.length + 1)
+		.split("/")
+		.map((segment) => decodeURIComponent(segment));
+	const [resource] = segments;
+
+	if (resource === "repos") {
+		return parseRepoRoute(url, segments);
+	}
+	if (resource === "avatar") {
+		return parseAvatarRoute(url, segments);
+	}
+
+	return { ok: false, status: 404, message: "Unsupported GitHub cache endpoint." };
+}
+
+function parseRepoRoute(url: URL, segments: string[]) {
+	const [, owner, repo, action, ...rest] = segments;
+	if (!isValidName(owner) || !isValidName(repo)) {
+		return { ok: false as const, status: 400, message: "Invalid GitHub owner or repository name." };
+	}
+
+	if (!action) {
+		return { ok: true as const, route: { kind: "repo" as const, owner, repo } };
+	}
+
+	if (action === "contents") {
+		const path = rest.join("/");
+		if (!isValidPath(path)) {
+			return { ok: false as const, status: 400, message: "Invalid GitHub file path." };
+		}
+		const ref = url.searchParams.get("ref") || undefined;
+		return { ok: true as const, route: ref ? { kind: "contents" as const, owner, repo, path, ref } : { kind: "contents" as const, owner, repo, path } };
+	}
+
+	if (action === "commits" && rest.length === 0) {
+		const path = url.searchParams.get("path") || "";
+		if (!isValidPath(path) || (url.searchParams.get("per_page") && url.searchParams.get("per_page") !== "1")) {
+			return { ok: false as const, status: 400, message: "Invalid commits query." };
+		}
+		const sha = url.searchParams.get("sha") || undefined;
+		return { ok: true as const, route: sha ? { kind: "commits" as const, owner, repo, path, sha } : { kind: "commits" as const, owner, repo, path } };
+	}
+
+	return { ok: false as const, status: 404, message: "Unsupported repository endpoint." };
+}
+
+function parseAvatarRoute(url: URL, segments: string[]) {
+	const [, owner, ...rest] = segments;
+	const size = Number(url.searchParams.get("size") || "96");
+	if (rest.length > 0 || !isValidName(owner) || !Number.isInteger(size) || size < 16 || size > 256) {
+		return { ok: false as const, status: 400, message: "Invalid GitHub avatar request." };
+	}
+	return { ok: true as const, route: { kind: "avatar" as const, owner, size } };
+}
+
+function buildGithubUrl(route: Route): URL {
+	if (route.kind === "avatar") {
+		const url = new URL(`/${encodeURIComponent(route.owner)}.png`, githubAvatarBase);
+		url.searchParams.set("size", String(route.size));
+		return url;
+	}
+
+	const base = `/repos/${encodeURIComponent(route.owner)}/${encodeURIComponent(route.repo)}`;
+	if (route.kind === "repo") return new URL(base, githubApiBase);
+	if (route.kind === "contents") {
+		const url = new URL(`${base}/contents/${route.path.split("/").map(encodeURIComponent).join("/")}`, githubApiBase);
+		if (route.ref) url.searchParams.set("ref", route.ref);
+		return url;
+	}
+
+	const url = new URL(`${base}/commits`, githubApiBase);
+	url.searchParams.set("path", route.path);
+	url.searchParams.set("per_page", "1");
+	if (route.sha) url.searchParams.set("sha", route.sha);
+	return url;
+}
+
+function buildGithubHeaders(route: Route): Headers {
+	const headers = new Headers({ "User-Agent": "KIRARI-GHCard-Adapter" });
+	if (route.kind === "avatar") {
+		headers.set("Accept", "image/png,image/*;q=0.8,*/*;q=0.5");
+		return headers;
+	}
+
+	headers.set("Accept", "application/vnd.github+json");
+	headers.set("X-GitHub-Api-Version", "2022-11-28");
+	if (process.env.GITHUB_TOKEN) {
+		headers.set("Authorization", `Bearer ${process.env.GITHUB_TOKEN}`);
+	}
+	return headers;
+}
+
+async function normalizeResponse(request: Request, upstream: Response, route: Route): Promise<Response> {
+	const contentType = upstream.headers.get("Content-Type") || (route.kind === "avatar" ? "image/png" : "application/json; charset=utf-8");
+	const body = route.kind === "avatar" ? await upstream.arrayBuffer() : await upstream.text();
+	const headers = corsHeaders(request);
+	headers.set("Content-Type", contentType);
+	headers.set("Cache-Control", getCacheControl(route, upstream.status));
+	headers.set("X-Cache", "VERCEL-CDN");
+	headers.set("X-Cache-Key", buildCacheKey(route));
+
+	const rateLimitRemaining = upstream.headers.get("X-RateLimit-Remaining");
+	const rateLimitReset = upstream.headers.get("X-RateLimit-Reset");
+	if (rateLimitRemaining) headers.set("X-Upstream-RateLimit-Remaining", rateLimitRemaining);
+	if (rateLimitReset) headers.set("X-Upstream-RateLimit-Reset", rateLimitReset);
+
+	if (route.kind === "repo" && contentType.toLowerCase().includes("application/json")) {
+		return new Response(rewriteAvatarUrl(body, new URL(request.url).origin), { status: upstream.status, headers });
+	}
+
+	return new Response(body, { status: upstream.status, headers });
+}
+
+function rewriteAvatarUrl(body: string, origin: string): string {
+	try {
+		const parsed = JSON.parse(body);
+		const login = parsed?.owner?.login;
+		if (typeof login !== "string" || login.length === 0) return body;
+		parsed.owner.avatar_url = `${origin}${routePrefix}/avatar/${encodeURIComponent(login)}?size=96`;
+		return JSON.stringify(parsed);
+	} catch {
+		return body;
+	}
+}
+
+function getCacheControl(route: Route, status: number): string {
+	if (status === 404) return "public, s-maxage=600, stale-while-revalidate=86400";
+	if (status !== 200) return "no-store";
+	if (route.kind === "repo") return "public, s-maxage=21600, stale-while-revalidate=604800";
+	if (route.kind === "contents") return "public, s-maxage=86400, stale-while-revalidate=1209600";
+	if (route.kind === "commits") return "public, s-maxage=3600, stale-while-revalidate=604800";
+	return "public, s-maxage=604800, stale-while-revalidate=2592000";
+}
+
+function buildCacheKey(route: Route): string {
+	const parts = route.kind === "repo"
+		? [route.kind, route.owner, route.repo]
+		: route.kind === "contents"
+			? [route.kind, route.owner, route.repo, route.path, route.ref || ""]
+			: route.kind === "commits"
+				? [route.kind, route.owner, route.repo, route.path, route.sha || ""]
+				: [route.kind, route.owner, String(route.size)];
+	return ["ghcard", cacheNamespaceVersion, ...parts].map(encodeURIComponent).join(":");
+}
+
+function corsHeaders(request: Request): Headers {
+	const headers = new Headers();
+	const origin = request.headers.get("Origin");
+	const allowed = (process.env.GHC_ALLOWED_ORIGINS || "")
+		.split(",")
+		.map((item) => item.trim())
+		.filter(Boolean);
+
+	if (allowed.length === 0) {
+		headers.set("Access-Control-Allow-Origin", "*");
+	} else if (origin && allowed.includes(origin)) {
+		headers.set("Access-Control-Allow-Origin", origin);
+		headers.set("Vary", "Origin");
+	}
+
+	headers.set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+	headers.set("Access-Control-Allow-Headers", "Content-Type, If-None-Match, If-Modified-Since");
+	headers.set("Access-Control-Max-Age", "86400");
+	return headers;
+}
+
+function jsonResponse(request: Request, value: unknown, status: number): Response {
+	const headers = corsHeaders(request);
+	headers.set("Content-Type", "application/json; charset=utf-8");
+	return new Response(JSON.stringify(value), { status, headers });
+}
+
+function isValidName(value: string | undefined): value is string {
+	return typeof value === "string" && namePattern.test(value);
+}
+
+function isValidPath(path: string): boolean {
+	return !!path && path.length <= 512 && !/[\u0000-\u001f\u007f\\]/.test(path) && !path.split("/").some((part) => part === "" || part === "." || part === "..");
+}

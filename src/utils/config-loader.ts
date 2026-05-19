@@ -271,6 +271,13 @@ type TomlConfig = {
 	githubCard?: {
 		/** GitHub REST API base for markdown cards / Markdown GitHub 卡片 API 基础路径 */
 		apiBase?: unknown;
+		/** Optional runtime adapter / 可选运行时适配器 */
+		adapter?: {
+			enabled?: unknown;
+			provider?: unknown;
+			route?: unknown;
+			serviceBinding?: unknown;
+		};
 	};
 	/** Landing page configuration / Landing Page 配置 */
 	landingPage?: {
@@ -540,6 +547,12 @@ const DEFAULT_CONFIG: Config = {
 	},
 	githubCard: {
 		apiBase: "https://api.github.com",
+		adapter: {
+			enabled: false,
+			provider: "none",
+			route: "/ghc",
+			serviceBinding: "GHCARD_CACHE",
+		},
 	},
 	landingPage: {
 		enable: false,
@@ -1020,6 +1033,14 @@ export const loadConfig = (): Config => {
 		if (!trimmed) return DEFAULT_CONFIG.githubCard.apiBase;
 		return trimmed.replace(/\/+$/, "");
 	};
+	const validateGithubCardAdapterProvider = (value: unknown): Config["githubCard"]["adapter"]["provider"] => {
+		if (value === "cloudflare" || value === "vercel" || value === "auto") return value;
+		return DEFAULT_CONFIG.githubCard.adapter.provider;
+	};
+	const validateGithubCardAdapterRoute = (value: unknown): string => {
+		const route = getString(value, DEFAULT_CONFIG.githubCard.adapter.route).trim().replace(/\/+$/, "");
+		return /^\/[A-Za-z0-9_-]+$/.test(route) ? route : DEFAULT_CONFIG.githubCard.adapter.route;
+	};
 	const validateLandingFeatures = (value: unknown): Config["landingPage"]["features"] => {
 		const fallback = DEFAULT_CONFIG.landingPage.features;
 
@@ -1194,6 +1215,15 @@ export const loadConfig = (): Config => {
 					getString(githubCard?.apiBase, DEFAULT_CONFIG.githubCard.apiBase),
 				),
 			),
+			adapter: {
+				enabled: getBoolean(githubCard?.adapter?.enabled, DEFAULT_CONFIG.githubCard.adapter.enabled),
+				provider: validateGithubCardAdapterProvider(githubCard?.adapter?.provider),
+				route: validateGithubCardAdapterRoute(githubCard?.adapter?.route),
+				serviceBinding: getString(
+					githubCard?.adapter?.serviceBinding,
+					DEFAULT_CONFIG.githubCard.adapter.serviceBinding,
+				),
+			},
 		},
 		landingPage: {
 			enable: getBoolean(landingPage?.enable, DEFAULT_CONFIG.landingPage.enable),

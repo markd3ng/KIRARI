@@ -9,8 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added configurable GitHub Card API base with Cloudflare Pages `/ghc` Service Binding proxy support.
-- Added a Pages Function route for `/ghc/*` to call the private `kirari-ghcard-cache` Worker via `GHCARD_CACHE`.
+- Added opt-in GitHub Card runtime adapters for Cloudflare Pages Service Binding and Vercel same-project Functions.
+- Added a build-time materializer so `/ghc/*` routes are generated only when `githubCard.adapter.enabled = true`.
+
+### Changed
+
+- Changed the default GitHub Card behavior back to direct `https://api.github.com` access for pure static builds.
 
 ### Fixed
 

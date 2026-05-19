@@ -621,11 +621,35 @@ url = "https://github.com/saicaca/fuwari"
 # Type: string / 类型: 字符串
 # Default: "https://api.github.com"
 # 默认值: "https://api.github.com"
-# Note: Use "/ghc" when KIRARI is deployed on Cloudflare Pages with the
-# GHCARD_CACHE Service Binding to KIRARI-GHCard-Cache.
-# 注意: 当 KIRARI 部署到 Cloudflare Pages 并绑定 KIRARI-GHCard-Cache
-# 的 GHCARD_CACHE Service Binding 时，推荐使用 "/ghc"。
-apiBase = "/ghc"
+# Note: Keep the default for pure static builds. Use "/ghc" only after enabling
+# githubCard.adapter for Cloudflare Pages or Vercel.
+# 注意: 纯静态构建保持默认值。仅在启用 githubCard.adapter 后才使用 "/ghc"。
+apiBase = "https://api.github.com"
+
+[githubCard.adapter]
+# Enable same-origin runtime adapter / 启用同源运行时适配器
+# Type: boolean / 类型: 布尔值
+# Default: false / 默认值: false
+enabled = false
+
+# Runtime adapter provider / 运行时适配器平台
+# Type: "none" | "cloudflare" | "vercel" | "auto"
+# 类型: "none" | "cloudflare" | "vercel" | "auto"
+# Default: "none" / 默认值: "none"
+# Note: Production should explicitly use "cloudflare" or "vercel". "auto" only
+# works in hosted platform builds with VERCEL=1 or CF_PAGES=1.
+# 注意: 生产建议显式设置为 "cloudflare" 或 "vercel"。"auto" 只在平台构建环境中检测。
+provider = "none"
+
+# Same-origin adapter route / 同源适配器路由
+# Type: string / 类型: 字符串
+# Default: "/ghc" / 默认值: "/ghc"
+route = "/ghc"
+
+# Cloudflare Pages Service Binding name / Cloudflare Pages Service Binding 名称
+# Type: string / 类型: 字符串
+# Default: "GHCARD_CACHE" / 默认值: "GHCARD_CACHE"
+serviceBinding = "GHCARD_CACHE"
 
 # =============================================================================
 # END OF CONFIGURATION / 配置结束

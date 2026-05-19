@@ -96,7 +96,12 @@ indexName = ""
 filterByLanguage = true        # 使用 docsearch:language meta tags
 
 [githubCard]
-apiBase = "/ghc"                # 使用 Cloudflare Pages Service Binding 代理；默认值为 https://api.github.com
+apiBase = "https://api.github.com" # 仅在启用运行时适配器后使用 "/ghc"
+
+[githubCard.adapter]
+enabled = false                 # true 会在构建前生成可选 /ghc 运行时路由
+provider = "none"               # "cloudflare"、"vercel"、"auto" 或 "none"
+route = "/ghc"
 
 [landingPage]
 enable = true                  # false 恢复经典文章列表首页
@@ -323,13 +328,21 @@ PUBLIC_BING_VERIFICATION=your-verification-code
 | 生产环境（敏感）| 在 Vercel/Netlify 控制台设置环境变量 |
 | 默认回退 | 使用 `src/utils/config-loader.ts` 中的值 |
 
-### Cloudflare Pages GitHub Card Cache
+### GitHub Card Cache 适配器
 
-Markdown GitHub 卡片（`::github` 和 `::githubfile`）可以通过 Pages Function 走私有 Worker 缓存：
+Markdown GitHub 卡片（`::github` 和 `::githubfile`）默认使用 `https://api.github.com`。运行时适配器为显式开启：未启用时，KIRARI 不生成 `/ghc` route，仍适合纯静态部署。
+
+Cloudflare Pages + `KIRARI-GHCard-Cache`：
 
 ```toml
 [githubCard]
 apiBase = "/ghc"
+
+[githubCard.adapter]
+enabled = true
+provider = "cloudflare"
+route = "/ghc"
+serviceBinding = "GHCARD_CACHE"
 ```
 
 生产请求链路：
@@ -347,11 +360,29 @@ Cloudflare Pages 需要配置 Service Binding：
 
 Dashboard 路径：**Workers & Pages → KIRARI Pages Project → Settings → Bindings → Add binding → Service binding**。
 
-如果不部署 Worker 缓存，删除 `[githubCard]` 或改回：
+Vercel 免费版同项目适配器：
+
+```toml
+[githubCard]
+apiBase = "/ghc"
+
+[githubCard.adapter]
+enabled = true
+provider = "vercel"
+route = "/ghc"
+```
+
+Vercel 适配器默认只使用同项目 Function 和 HTTP 缓存头，不要求 Vercel KV、Upstash、Supabase、Firewall 或 Deployment Protection。
+
+回滚到直连 GitHub：
 
 ```toml
 [githubCard]
 apiBase = "https://api.github.com"
+
+[githubCard.adapter]
+enabled = false
+provider = "none"
 ```
 
 

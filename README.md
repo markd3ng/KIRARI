@@ -96,7 +96,12 @@ indexName = ""
 filterByLanguage = true        # Uses docsearch:language meta tags
 
 [githubCard]
-apiBase = "/ghc"                # Use Cloudflare Pages Service Binding proxy; default is https://api.github.com
+apiBase = "https://api.github.com" # Use "/ghc" only after enabling a runtime adapter
+
+[githubCard.adapter]
+enabled = false                 # true generates an opt-in /ghc runtime route before build
+provider = "none"               # "cloudflare", "vercel", "auto", or "none"
+route = "/ghc"
 
 [landingPage]
 enable = true                  # false restores the classic post-list homepage
@@ -335,13 +340,21 @@ PUBLIC_BING_VERIFICATION=your-verification-code
 | Production (sensitive) | Set environment variables in Vercel/Netlify dashboard |
 | Default fallback | Values in `src/utils/config-loader.ts` |
 
-### GitHub Card Cache on Cloudflare Pages
+### GitHub Card Cache Adapters
 
-Markdown GitHub cards (`::github` and `::githubfile`) can use a private Cloudflare Worker cache through a Pages Function route:
+Markdown GitHub cards (`::github` and `::githubfile`) use `https://api.github.com` by default. Runtime adapters are opt-in: when disabled, KIRARI does not generate a `/ghc` route and remains friendly to pure static hosts.
+
+Cloudflare Pages with `KIRARI-GHCard-Cache`:
 
 ```toml
 [githubCard]
 apiBase = "/ghc"
+
+[githubCard.adapter]
+enabled = true
+provider = "cloudflare"
+route = "/ghc"
+serviceBinding = "GHCARD_CACHE"
 ```
 
 Production request flow:
@@ -359,11 +372,29 @@ Configure the Cloudflare Pages Service Binding:
 
 Dashboard path: **Workers & Pages → KIRARI Pages Project → Settings → Bindings → Add binding → Service binding**.
 
-If you do not deploy the Worker cache, remove `[githubCard]` or set:
+Vercel free-tier same-project adapter:
+
+```toml
+[githubCard]
+apiBase = "/ghc"
+
+[githubCard.adapter]
+enabled = true
+provider = "vercel"
+route = "/ghc"
+```
+
+The Vercel adapter uses only same-project Functions plus HTTP cache headers by default. It does not require Vercel KV, Upstash, Supabase, Firewall, or Deployment Protection.
+
+Rollback to direct GitHub:
 
 ```toml
 [githubCard]
 apiBase = "https://api.github.com"
+
+[githubCard.adapter]
+enabled = false
+provider = "none"
 ```
 
 
