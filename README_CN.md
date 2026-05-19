@@ -325,7 +325,7 @@ PUBLIC_BING_VERIFICATION=your-verification-code
 |------|----------|
 | 本地开发 | 直接编辑 `kirari.config.toml` |
 | 生产环境（非敏感）| 编辑 `kirari.config.toml` 并提交 |
-| 生产环境（敏感）| 在 Vercel/Netlify 控制台设置环境变量 |
+| 生产环境（敏感）| 在对应托管平台控制台设置环境变量，例如 Vercel、Cloudflare Pages 或 Netlify |
 | 默认回退 | 使用 `src/utils/config-loader.ts` 中的值 |
 
 ### GitHub Card Cache 适配器
@@ -360,6 +360,8 @@ Cloudflare Pages 需要配置 Service Binding：
 
 Dashboard 路径：**Workers & Pages → KIRARI Pages Project → Settings → Bindings → Add binding → Service binding**。
 
+Cloudflare 注意：这条路径下 KIRARI 本身不需要配置 `GITHUB_TOKEN`。可选的 GitHub API token 应配置在 `KIRARI-GHCard-Cache` Worker 项目中，位置是 Cloudflare Worker Secret。
+
 Vercel 免费版同项目适配器：
 
 ```toml
@@ -373,6 +375,8 @@ route = "/ghc"
 ```
 
 Vercel 适配器默认只使用同项目 Function 和 HTTP 缓存头，不要求 Vercel KV、Upstash、Supabase、Firewall 或 Deployment Protection。
+
+Vercel 注意：如果希望提高 GitHub API rate limit，需要在 **Vercel Project → Settings → Environment Variables** 里添加 `GITHUB_TOKEN`。不要把真实 token 写入 `kirari.config.toml` 或仓库文件。
 
 回滚到直连 GitHub：
 

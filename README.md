@@ -337,7 +337,7 @@ PUBLIC_BING_VERIFICATION=your-verification-code
 |-------------|---------------------|
 | Local development | Edit `kirari.config.toml` directly |
 | Production (non-sensitive) | Edit `kirari.config.toml` and commit |
-| Production (sensitive) | Set environment variables in Vercel/Netlify dashboard |
+| Production (sensitive) | Set environment variables in your hosting dashboard, such as Vercel, Cloudflare Pages, or Netlify |
 | Default fallback | Values in `src/utils/config-loader.ts` |
 
 ### GitHub Card Cache Adapters
@@ -372,6 +372,8 @@ Configure the Cloudflare Pages Service Binding:
 
 Dashboard path: **Workers & Pages → KIRARI Pages Project → Settings → Bindings → Add binding → Service binding**.
 
+Cloudflare note: KIRARI itself does not need a `GITHUB_TOKEN` for this path. Configure the optional GitHub API token in the `KIRARI-GHCard-Cache` Worker as a Cloudflare Worker Secret.
+
 Vercel free-tier same-project adapter:
 
 ```toml
@@ -385,6 +387,8 @@ route = "/ghc"
 ```
 
 The Vercel adapter uses only same-project Functions plus HTTP cache headers by default. It does not require Vercel KV, Upstash, Supabase, Firewall, or Deployment Protection.
+
+Vercel note: if you want to raise GitHub API rate limits for this same-project adapter, add `GITHUB_TOKEN` in **Vercel Project → Settings → Environment Variables**. Do not commit real tokens to `kirari.config.toml` or repository files.
 
 Rollback to direct GitHub:
 
