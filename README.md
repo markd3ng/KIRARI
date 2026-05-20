@@ -47,6 +47,33 @@ pnpm build
 pnpm preview
 ```
 
+## Fork Checklist
+
+KIRARI is designed to work like a ready-to-run example site. After forking, you can keep the code structure and replace only the site content, assets, and basic configuration first.
+
+Minimum files to edit:
+
+| File or directory | What to change | Required? |
+|-------------------|----------------|-----------|
+| `kirari.config.toml` | Site URL, title, subtitle, language, navbar, profile, banner, landing page text, social links, SEO, and optional integrations | Yes |
+| `src/content/posts/` | Delete the demo posts and add your Markdown or MDX posts | Yes |
+| `src/content/spec/about.md` | Replace the About page content | Recommended |
+| `src/content/spec/friends.md` | Replace the Friends page description, or remove the Friends nav item in `kirari.config.toml` | Optional |
+| `src/_data/friends.json` | Replace friend-link data used by the Friends page | Optional |
+| `src/assets/images/` | Replace local avatar, banner, and other imported images referenced by `kirari.config.toml` | Recommended |
+| `public/favicon/` | Replace favicon files | Recommended |
+| `public/og/default.png` | Replace the default Open Graph image | Recommended |
+
+Recommended first run after editing:
+
+```bash
+pnpm type-check
+pnpm astro check
+pnpm build
+```
+
+You do not need to touch `src/components/`, `src/layouts/`, `src/styles/`, or `src/utils/` for a normal personal blog fork.
+
 ## Configuration
 
 All settings are configured via **`kirari.config.toml`** (Hugo-style, recommended).
@@ -749,6 +776,7 @@ KIRARI/
 │   ├── components/       # UI components
 │   ├── content/posts/    # Blog posts (Markdown)
 │   ├── content/spec/     # Static pages content
+│   ├── _data/            # Data files such as friends.json
 │   ├── i18n/             # Translations (10 languages)
 │   ├── layouts/          # Page layouts
 │   ├── pages/            # Routes
@@ -760,8 +788,7 @@ KIRARI/
 │   └── config.ts         # Exported config modules
 
 ├── public/               # Static assets
-├── scripts/              # Build scripts
-└── _data/                # Data files (friends.json)
+└── scripts/              # Build scripts
 ```
 
 ## Changelog

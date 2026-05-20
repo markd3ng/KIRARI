@@ -47,6 +47,33 @@ pnpm build
 pnpm preview
 ```
 
+## Fork 后最小修改清单
+
+KIRARI 当前仓库本身就是一个可以直接运行的示例站点。Fork 后一般不需要改代码结构，优先替换站点配置、内容和资源即可。
+
+最小修改文件：
+
+| 文件或目录 | 需要修改什么 | 是否必改 |
+|------------|--------------|----------|
+| `kirari.config.toml` | 站点 URL、标题、副标题、语言、导航、个人资料、横幅、Landing Page 文案、社交链接、SEO 和可选集成 | 必改 |
+| `src/content/posts/` | 删除示例文章，添加自己的 Markdown 或 MDX 文章 | 必改 |
+| `src/content/spec/about.md` | 替换 About 页面内容 | 推荐 |
+| `src/content/spec/friends.md` | 替换 Friends 页面说明，或在 `kirari.config.toml` 中移除 Friends 导航 | 可选 |
+| `src/_data/friends.json` | 替换 Friends 页面使用的友链数据 | 可选 |
+| `src/assets/images/` | 替换 `kirari.config.toml` 引用的头像、横幅和其它本地图片 | 推荐 |
+| `public/favicon/` | 替换 favicon 文件 | 推荐 |
+| `public/og/default.png` | 替换默认 Open Graph 图片 | 推荐 |
+
+修改后建议先跑：
+
+```bash
+pnpm type-check
+pnpm astro check
+pnpm build
+```
+
+普通个人博客 fork 不需要修改 `src/components/`、`src/layouts/`、`src/styles/` 或 `src/utils/`。
+
 ## 配置
 
 所有设置通过 **`kirari.config.toml`** 配置（Hugo 风格，推荐）。
@@ -736,6 +763,7 @@ KIRARI/
 │   ├── components/       # UI 组件
 │   ├── content/posts/    # 博客文章（Markdown）
 │   ├── content/spec/     # 静态页面内容
+│   ├── _data/            # 数据文件，例如 friends.json
 │   ├── i18n/             # 翻译文件（10 种语言）
 │   ├── layouts/          # 页面布局
 │   ├── pages/            # 路由
@@ -747,8 +775,7 @@ KIRARI/
 │   └── config.ts         # 配置模块导出
 
 ├── public/               # 静态资源
-├── scripts/              # 构建脚本
-└── _data/                # 数据文件（friends.json）
+└── scripts/              # 构建脚本
 ```
 
 ## 更新日志
