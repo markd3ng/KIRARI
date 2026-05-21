@@ -12,6 +12,9 @@ rewrite Astro islands as React-style app shells.
 - Preserve the config pipeline:
   `kirari.config.toml` -> `src/types/config.ts` -> `src/utils/config-loader.ts`
   -> `Config` -> `@config` section exports.
+- KIRARI is TOML-first. Normal public configuration belongs in TOML; env is for
+  secrets, deployment overrides, and provider credentials that should not be
+  committed.
 - Search and Theme Toggle hydrate with `client:idle`.
 - Display Settings uses `client:only="svelte"` because it reads `localStorage`.
 - SEO-critical content must stay in `.astro` output and must not depend on
@@ -25,11 +28,13 @@ rewrite Astro islands as React-style app shells.
 
 ## Forbidden Patterns
 
-- Adding `client:load` to static content without a measured interaction need.
+- Adding eager hydration to static content without a measured interaction need.
 - Moving navigation, post cards, metadata, RSS, or canonical content into a
   client-only island.
 - Importing Node.js builtins from client code or Edge-compatible runtime code.
 - Bypassing `kirari.config.toml` for new public settings.
+- Re-splitting search or SEO providers across ad hoc env-only or TS-only
+  configuration.
 - Feeding visitor, comment, CMS, or other untrusted user input into `set:html`.
 - Deleting seemingly duplicated transition or language logic without checking
   the related architecture docs.
@@ -46,4 +51,3 @@ pnpm astro check
 pnpm build
 pnpm audit --audit-level moderate
 ```
-

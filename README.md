@@ -17,13 +17,13 @@ Static blog theme — Astro 6.3.6 + Svelte 5 + Tailwind CSS v4. Single TOML conf
 
 ```
 kirari.config.toml  ──→  smol-toml parse  ──→  config-loader.ts (type guards + defaults)
-                                                        │
-                          ENV vars (PUBLIC_*)  ─────────┘
                                                         ↓
                                               Config singleton (@constants)
                                               ↓ per-section re-exports (@config)
                                               ↓ consumed by astro.config.mjs + all components
 ```
+
+Configuration is **TOML-first**: edit `kirari.config.toml` for normal site settings. Environment variables are reserved for secrets, deployment overrides, and provider credentials that should not be committed.
 
 **Islands**: Only 3 Svelte components hydrate on the client — Search (`client:idle`), Theme Toggle (`client:idle`), Display Settings (`client:only="svelte"`). Everything else is static `.astro`.
 
@@ -227,11 +227,21 @@ external = true
 
 ### Search
 
-**Pagefind** (default): indexed at postbuild with `exportLength: 20`. Language-filtered at query time — no cross-language results.
-
-**Algolia DocSearch** (opt-in): Pagefind is disabled at both build and runtime when valid credentials exist.
+KIRARI supports three search providers. Pick one in TOML:
 
 ```toml
+[search]
+provider = "pagefind" # pagefind | docsearch | google
+```
+
+**Pagefind** (default): local static index generated at postbuild. Language-filtered at query time, so cross-language results are avoided.
+
+**Algolia DocSearch**: external hosted docs search. Pagefind is disabled at build and runtime when this provider is active.
+
+```toml
+[search]
+provider = "docsearch"
+
 [search.docsearch]
 enable = true
 appId = "..."
@@ -242,7 +252,20 @@ filterByLanguage = true
 version = "latest"
 ```
 
-All four credential fields support `PUBLIC_DOCSEARCH_*` env vars.
+**Google Programmable Search**: external Google search for your site. Pagefind is disabled when this provider is active. `cx` is a public search engine ID, not a secret.
+
+```toml
+[search]
+provider = "google"
+
+[search.google]
+cx = "YOUR_PROGRAMMABLE_SEARCH_ENGINE_ID"
+adsense = false
+resultSetSize = "filtered_cse"
+safeSearch = "active"
+```
+
+When `adsense = false`, KIRARI renders Google results in the existing search panel style via the Programmable Search Element callbacks. When `adsense = true`, Google renders the result area so AdSense search ads and Google labels are not hidden or rewritten; ad display is controlled by Google/AdSense.
 
 ### Analytics
 
@@ -302,7 +325,10 @@ serviceBinding = "GHCARD_CACHE"
 | Robots.txt | Generated in postbuild from `site.url` |
 | Canonical + hreflang | Per-page, auto-derived |
 | Search verification | `head.verification.{google,bing,yandex,naver}` |
-| IndexNow | `seo.indexNow = true` → submits on every build |
+| IndexNow | `seo.indexNow = true` → submits to participating engines on every build |
+| Google indexing | `seo.google.indexingApi = true` → optional advanced Google Indexing API submit |
+
+IndexNow covers participating engines such as Bing, Yandex, Naver, Seznam.cz, and Yep. Google does not support IndexNow; use sitemap/Search Console, or the optional Google Indexing API for eligible content. Google Indexing API is mainly intended for JobPosting and BroadcastEvent URLs, so ordinary blog pages are not guaranteed to benefit.
 
 ### LLMs.txt
 

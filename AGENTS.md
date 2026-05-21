@@ -50,17 +50,18 @@ During swap, `<html>` state (theme mode, hue, code theme) is restored from `loca
 
 ```
 kirari.config.toml → smol-toml parse → config-loader.ts → Config singleton
-                         ↑                            ↓
-              ENV vars (PUBLIC_*)     re-exported by @config per section
+                                                 ↓
+                                  re-exported by @config per section
 ```
 
 - Hardcoding config values in components is **forbidden**.
+- KIRARI is TOML-first: normal user-facing configuration belongs in `kirari.config.toml`; env is reserved for secrets, deployment overrides, and provider credentials that should not be committed.
 - Every new config field must go through: `kirari.config.toml` (with bilingual comments) → `src/types/config.ts` (type) → `src/utils/config-loader.ts` (parse + type guard + default).
 - Type guards used: `getString`, `getBoolean`, `getNumber`, `getStringArray`, `getStringRecord`.
-- Priority: ENV > TOML > hardcoded default.
 - `config-loader.ts` uses `import.meta.glob("../../kirari.config.toml", { eager: true, query: "?raw" })` — the TOML is loaded as raw string at build time.
 - Custom Head/Footer snippet files use `import.meta.glob("../snippets/*.{html,js}", { eager: true, query: "?raw", import: "default" })`.
 - `set:html` is allowed only for trusted maintainer-owned config, snippet files, and generated structured data. Never feed visitor, comment, or CMS user input into it.
+- Search and SEO provider changes must preserve the TOML-first model, skip Pagefind when an external provider is active, and must not break SSG output.
 
 ### 4. Style Layers
 
@@ -150,3 +151,4 @@ One change per commit. Do not mix style tweaks, logic fixes, and new features.
 | Modified `transition-manager.ts` | This file (Transition System section) |
 | Modified build pipeline | `README.md` Build Pipeline section |
 | Modified Custom Head/Footer snippets | `SECURITY_MODEL.md`, `HYDRATION_GUIDE.md` when hydration or trust boundaries change |
+| Modified search/SEO provider | `kirari.config.toml`, `README.md`, `README_CN.md`, `AI_CONTEXT.md`, `SECURITY_MODEL.md` |

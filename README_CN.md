@@ -17,13 +17,13 @@
 
 ```
 kirari.config.toml  ──→  smol-toml 解析  ──→  config-loader.ts（类型守卫 + 默认值）
-                                                        │
-                          环境变量 (PUBLIC_*)  ─────────┘
                                                         ↓
                                               Config 单例 (@constants)
                                               ↓ 按模块拆分导出 (@config)
                                               ↓ 供 astro.config.mjs + 各组件消费
 ```
+
+配置采用 **TOML-first**：普通站点配置写在 `kirari.config.toml`。环境变量只用于密钥、部署差异，以及不适合提交到仓库的服务凭据。
 
 **Islands**：仅 3 个 Svelte 组件在客户端水合 — 搜索（`client:idle`）、主题切换（`client:idle`）、显示设置（`client:only="svelte"`）。其余全部为静态 `.astro`。
 
@@ -227,11 +227,21 @@ external = true
 
 ### 搜索
 
-**Pagefind**（默认）：postbuild 阶段生成索引，`exportLength: 20`。查询时按语言过滤 — 不会出现跨语言结果。
-
-**Algolia DocSearch**（可选）：凭证有效时，构建和运行时均禁用 Pagefind。
+KIRARI 支持三种搜索提供方，在 TOML 中选择：
 
 ```toml
+[search]
+provider = "pagefind" # pagefind | docsearch | google
+```
+
+**Pagefind**（默认）：postbuild 阶段生成本地静态索引。查询时按语言过滤，避免跨语言结果。
+
+**Algolia DocSearch**：外部托管文档搜索。启用该 provider 时，构建和运行时均禁用 Pagefind。
+
+```toml
+[search]
+provider = "docsearch"
+
 [search.docsearch]
 enable = true
 appId = "..."
@@ -242,7 +252,20 @@ filterByLanguage = true
 version = "latest"
 ```
 
-全部四个凭证字段均支持 `PUBLIC_DOCSEARCH_*` 环境变量。
+**Google Programmable Search**：使用 Google 搜索当前站点。启用该 provider 时会禁用 Pagefind。`cx` 是公开搜索引擎 ID，不是密钥。
+
+```toml
+[search]
+provider = "google"
+
+[search.google]
+cx = "YOUR_PROGRAMMABLE_SEARCH_ENGINE_ID"
+adsense = false
+resultSetSize = "filtered_cse"
+safeSearch = "active"
+```
+
+`adsense = false` 时，KIRARI 通过 Programmable Search Element callbacks 把 Google 结果渲染成现有搜索面板风格。`adsense = true` 时，结果区域交给 Google 官方元素渲染，避免隐藏或改写 AdSense 搜索广告和 Google 标识；广告是否展示由 Google/AdSense 控制。
 
 ### 统计分析
 
@@ -302,7 +325,10 @@ serviceBinding = "GHCARD_CACHE"
 | Robots.txt | postbuild 阶段从 `site.url` 生成 |
 | Canonical + hreflang | 每页自动推导 |
 | 搜索验证 | `head.verification.{google,bing,yandex,naver}` |
-| IndexNow | `seo.indexNow = true` → 每次构建提交 |
+| IndexNow | `seo.indexNow = true` → 每次构建提交到参与协议的搜索引擎 |
+| Google 索引 | `seo.google.indexingApi = true` → 可选高级 Google Indexing API 提交 |
+
+IndexNow 覆盖 Bing、Yandex、Naver、Seznam.cz、Yep 等参与方。Google 不支持 IndexNow；Google 仍依赖 sitemap/Search Console，或针对适用内容使用可选 Google Indexing API。Google Indexing API 主要面向 JobPosting 和 BroadcastEvent URL，普通博客页面不保证受益。
 
 ### LLMs.txt
 

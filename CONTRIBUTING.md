@@ -50,8 +50,9 @@ CI must use `--frozen-lockfile`.
 ### Configuration
 
 - New config fields must flow through: `kirari.config.toml` → `src/types/config.ts` → `src/utils/config-loader.ts` (type guard + default).
-- Priority: ENV vars > TOML > defaults.
+- KIRARI is TOML-first: normal user-facing configuration belongs in `kirari.config.toml`; env is reserved for secrets, deployment overrides, and provider credentials that should not be committed.
 - `set:html` is only allowed for trusted maintainer-owned config, snippet files, and generated structured data. Do not connect it to visitor, comment, or CMS user input.
+- Search, ads, and SEO provider changes must sync config, docs, and build/runtime behavior.
 
 ### Styles
 
@@ -72,3 +73,4 @@ CI must use `--frozen-lockfile`.
 | Modified `transition-manager.ts` | `AGENTS.md` Transition System section |
 | Modified build pipeline scripts | `README.md` Build Pipeline section |
 | Modified Custom Head/Footer snippets | `SECURITY_MODEL.md` and snippet docs |
+| Modified search/SEO provider | `kirari.config.toml`, `README.md`, `README_CN.md`, `AI_CONTEXT.md`, `SECURITY_MODEL.md` |

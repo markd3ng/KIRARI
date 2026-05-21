@@ -27,15 +27,36 @@ small scripts. Snippet file names must be basenames such as `head.html` or
 
 ## Public Environment Variables
 
-Only `PUBLIC_*` environment variables are exposed to browser/build-visible
-configuration. Treat every `PUBLIC_*` value as non-secret. Do not store private
-tokens, database URLs, or write-capable API keys in public config.
+KIRARI is TOML-first for normal public settings. Environment variables are for
+secrets, deployment overrides, and provider credentials that should not be
+committed. Treat every `PUBLIC_*` value as browser/build-visible and non-secret.
+Do not store private tokens, database URLs, or write-capable API keys in public
+config.
+
+## Search Providers
+
+`search.google.cx` is a public Google Programmable Search Engine ID, not a
+secret. When `search.google.adsense` is enabled, the Google-rendered result area
+must not be hidden, rewritten, covered, or styled in a way that obscures ads or
+Google labels. The ad inventory and final display are controlled by Google and
+AdSense.
 
 ## IndexNow
 
 `seo.indexNowKey` can be supplied by `PUBLIC_INDEXNOW_KEY`. It is used during the
 postbuild submission step and should be rotated if accidentally committed as a
 real private value.
+
+IndexNow covers participating engines such as Bing, Yandex, Naver, Seznam.cz,
+and Yep. Google does not support IndexNow.
+
+## Google Indexing API
+
+Google Indexing API is optional, advanced, and disabled by default. It mainly
+targets JobPosting and BroadcastEvent URLs; ordinary blog pages are not
+guaranteed to benefit. Service account JSON must be read from the env var named
+by `seo.google.serviceAccountJsonEnv`. Never put service account JSON in TOML,
+snippets, `PUBLIC_*`, or committed files.
 
 ## GitHub Card Adapter
 
