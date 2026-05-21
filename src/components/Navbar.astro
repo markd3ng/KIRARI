@@ -43,16 +43,36 @@ const resolveNavUrl = (link: NavBarLink) => {
 const searchLabel = i18n(I18nKey.search, lang);
 const themeLabel = `${i18n(I18nKey.lightMode, lang)} / ${i18n(I18nKey.darkMode, lang)}`;
 const displaySettingsLabel = i18n(I18nKey.themeColor, lang);
-const docsearchConfig = {
-	enable: !!searchConfig.docsearch.enable &&
-		!!searchConfig.docsearch.appId &&
-		!!searchConfig.docsearch.apiKey &&
-		!!searchConfig.docsearch.indexName,
-	appId: searchConfig.docsearch.appId,
-	apiKey: searchConfig.docsearch.apiKey,
-	indexName: searchConfig.docsearch.indexName,
-	filterByLanguage: searchConfig.docsearch.filterByLanguage,
+const searchProvider: "pagefind" | "docsearch" | "google" = searchConfig.provider === "docsearch" &&
+	!!searchConfig.docsearch.enable &&
+	!!searchConfig.docsearch.appId &&
+	!!searchConfig.docsearch.apiKey &&
+	!!searchConfig.docsearch.indexName
+	? "docsearch"
+	: searchConfig.provider === "google" && !!searchConfig.google.cx
+		? "google"
+		: "pagefind";
+const searchProviderConfig = {
+	provider: searchProvider,
+	docsearch: {
+		enable: searchProvider === "docsearch",
+		appId: searchConfig.docsearch.appId,
+		apiKey: searchConfig.docsearch.apiKey,
+		indexName: searchConfig.docsearch.indexName,
+		filterByLanguage: searchConfig.docsearch.filterByLanguage,
+	},
+	google: {
+		cx: searchConfig.google.cx,
+		adsense: searchConfig.google.adsense,
+		resultSetSize: searchConfig.google.resultSetSize,
+		safeSearch: searchConfig.google.safeSearch,
+	},
 };
+const searchUsesOwnModal = searchProvider === "docsearch";
+const searchInputReadonly = searchUsesOwnModal ? true : undefined;
+const searchInputAriaHaspopup = searchUsesOwnModal ? "dialog" : undefined;
+const searchInputAriaExpanded = searchUsesOwnModal ? "false" : undefined;
+const searchInputInputMode = searchProvider === "google" && searchConfig.google.adsense ? "search" : undefined;
 ---
 <div id="navbar" class="z-50 onload-animation">
     <div class:list={[
@@ -92,6 +112,10 @@ const docsearchConfig = {
             ]}>
                 <Icon name="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30" />
                 <input id="search-input-desktop" placeholder={searchLabel} aria-label={searchLabel}
+                    readonly={searchInputReadonly}
+                    aria-haspopup={searchInputAriaHaspopup}
+                    aria-expanded={searchInputAriaExpanded}
+                    inputmode={searchInputInputMode}
                     class="transition-all pl-10 text-sm bg-transparent outline-0
                     h-full w-40 active:w-60 focus:w-60 text-black/50 dark:text-white/50"
                 />
@@ -105,7 +129,7 @@ const docsearchConfig = {
                 </button>
             )}
 
-            {showSearch && <Search lang={lang} docsearch={docsearchConfig} client:idle></Search>}
+            {showSearch && <Search lang={lang} search={searchProviderConfig} client:idle></Search>}
             {!siteConfig.themeColor.fixed && (
                     <button type="button" aria-label={displaySettingsLabel} aria-controls="display-setting" aria-expanded="false" aria-haspopup="dialog" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
                         <Icon name="material-symbols:palette-outline" class="text-[1.25rem]"></Icon>

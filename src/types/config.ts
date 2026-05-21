@@ -185,9 +185,19 @@ export type SeoConfig = {
 	indexNow?: boolean;
 	/** IndexNow API key. Required when indexNow is enabled */
 	indexNowKey?: string;
+	google: {
+		/** Enable Google Indexing API notifications. Advanced and off by default. */
+		indexingApi: boolean;
+		/** Environment variable name that stores the service account JSON. */
+		serviceAccountJsonEnv: string;
+	};
 };
 
+export type SearchProvider = "pagefind" | "docsearch" | "google";
+
 export type SearchConfig = {
+	/** Active search provider. Pagefind remains the default local search. */
+	provider: SearchProvider;
 	docsearch: {
 		/** Enable Algolia DocSearch. When true, Pagefind is not loaded or indexed. */
 		enable: boolean;
@@ -201,6 +211,16 @@ export type SearchConfig = {
 		filterByLanguage: boolean;
 		/** Extra docsearch:* meta tags, such as version = "latest". */
 		metaTags: Record<string, string>;
+	};
+	google: {
+		/** Google Programmable Search Engine ID. Public ID, not a secret. */
+		cx: string;
+		/** Use the official Google-rendered result element to preserve AdSense ads. */
+		adsense: boolean;
+		/** Google webSearchResultSetSize attribute. */
+		resultSetSize: string;
+		/** Google webSearchSafesearch attribute. */
+		safeSearch: "active" | "off";
 	};
 };
 

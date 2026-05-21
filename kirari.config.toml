@@ -118,13 +118,24 @@ contentDir = "src/content/posts/zh-HK"
 # -----------------------------------------------------------------------------
 # Search / 搜索
 # -----------------------------------------------------------------------------
+[search]
+# Active search provider / 当前搜索提供方
+# Type: string / 类型: 字符串
+# Options / 可选值: pagefind, docsearch, google
+# pagefind: local static search index generated after build
+# pagefind：构建后生成本地静态搜索索引
+# docsearch: Algolia DocSearch, disables Pagefind
+# docsearch：Algolia DocSearch，会禁用 Pagefind
+# google: Google Programmable Search Element, disables Pagefind
+# google：Google Programmable Search Element，会禁用 Pagefind
+provider = "pagefind"
+
 [search.docsearch]
-# Enable Algolia DocSearch. When enabled, Pagefind is disabled at build/runtime.
-# 启用 Algolia DocSearch。启用后，构建和运行时都会禁用 Pagefind。
+# Enable Algolia DocSearch. Kept for compatibility; prefer [search].provider.
+# 启用 Algolia DocSearch。为兼容保留；推荐优先使用 [search].provider。
 enable = false
 
-# Algolia DocSearch credentials. Prefer PUBLIC_DOCSEARCH_* env vars for deploys.
-# Algolia DocSearch 凭据。部署时建议使用 PUBLIC_DOCSEARCH_* 环境变量。
+# Algolia DocSearch public credentials / Algolia DocSearch 公开凭据
 appId = ""
 apiKey = ""
 indexName = ""
@@ -137,6 +148,22 @@ filterByLanguage = true
 # 给爬虫使用的额外 <meta name="docsearch:*"> 标签，例如 version = "latest"。
 [search.docsearch.metaTags]
 # version = "latest"
+
+[search.google]
+# Google Programmable Search Engine ID. This is a public ID, not a secret.
+# Google Programmable Search Engine ID。这是公开 ID，不是密钥。
+cx = ""
+
+# Use Google-rendered results so AdSense search ads can appear when enabled in
+# Programmable Search Engine / AdSense. Ads are controlled by Google.
+# 使用 Google 官方结果渲染，使 Programmable Search Engine / AdSense 中启用的
+# 搜索广告可以展示。广告是否展示由 Google 控制。
+adsense = false
+
+# Google result set size and SafeSearch options.
+# Google 结果集大小和 SafeSearch 选项。
+resultSetSize = "filtered_cse"
+safeSearch = "active"
 
 # -----------------------------------------------------------------------------
 # Landing Page / 首页 Landing Page
@@ -636,6 +663,19 @@ url = "https://github.com/saicaca/fuwari"
 # Get your key at https://www.indexnow.org
 # 在 https://www.indexnow.org 获取你的密钥
 # indexNowKey = ""
+
+[seo.google]
+# Optional Google Indexing API integration. Advanced and disabled by default.
+# Google Indexing API 可选集成。高级功能，默认关闭。
+# Google Indexing API mainly targets JobPosting and BroadcastEvent content.
+# 普通博客页面不保证适用，Google 官方主要支持 JobPosting 和 BroadcastEvent。
+indexingApi = false
+
+# Env var name that stores the Google service account JSON. Do not put service
+# account JSON in TOML or commit it to git.
+# 存放 Google service account JSON 的环境变量名。不要把服务账号 JSON 写入 TOML
+# 或提交到 git。
+serviceAccountJsonEnv = "GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON"
 
 # -----------------------------------------------------------------------------
 # GitHub Card Configuration / GitHub 卡片配置

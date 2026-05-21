@@ -14,12 +14,42 @@ declare global {
 			}>;
 			options?: (options: Record<string, unknown>) => Promise<void>;
 		};
+		__gcse?: {
+			parsetags?: "explicit" | "onload";
+			searchCallbacks?: {
+				web?: {
+					ready?: (
+						name: string,
+						query: string,
+						promotions: GoogleSearchResult[],
+						results: GoogleSearchResult[],
+					) => boolean | void;
+				};
+			};
+		};
+		google?: {
+			search?: {
+				cse?: {
+					element?: {
+						render: (options: {
+							div: HTMLElement;
+							tag: "searchresults-only";
+							gname: string;
+							attributes?: Record<string, string | boolean>;
+						}) => void;
+						getElement: (name: string) => {
+							execute?: (query: string) => void;
+						} | undefined;
+					};
+				};
+			};
+		};
 	}
 }
 
 export {};
 
-interface SearchResult {
+export interface SearchResult {
 	url: string;
 	meta: {
 		title: string;
@@ -43,4 +73,13 @@ interface SearchResult {
 	raw_content?: string;
 	raw_url?: string;
 	sub_results?: SearchResult[];
+}
+
+export interface GoogleSearchResult {
+	title?: string;
+	titleNoFormatting?: string;
+	content?: string;
+	url?: string;
+	unescapedUrl?: string;
+	visibleUrl?: string;
 }

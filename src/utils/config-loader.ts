@@ -256,9 +256,18 @@ type TomlConfig = {
 		indexNow?: unknown;
 		/** IndexNow API key / IndexNow API 密钥 */
 		indexNowKey?: unknown;
+		/** Google indexing configuration / Google 索引配置 */
+		google?: {
+			/** Enable Google Indexing API / 启用 Google Indexing API */
+			indexingApi?: unknown;
+			/** Env var name for service account JSON / 服务账号 JSON 的环境变量名 */
+			serviceAccountJsonEnv?: unknown;
+		};
 	};
 	/** Search configuration / 搜索配置 */
 	search?: {
+		/** Active search provider / 当前搜索提供方 */
+		provider?: unknown;
 		/** Algolia DocSearch configuration / Algolia DocSearch 配置 */
 		docsearch?: {
 			/** Enable DocSearch and disable Pagefind / 启用 DocSearch 并禁用 Pagefind */
@@ -273,6 +282,17 @@ type TomlConfig = {
 			filterByLanguage?: unknown;
 			/** Extra docsearch:* meta tags / 额外 docsearch:* meta 标签 */
 			metaTags?: unknown;
+		};
+		/** Google Programmable Search configuration / Google Programmable Search 配置 */
+		google?: {
+			/** Search engine ID / 搜索引擎 ID */
+			cx?: unknown;
+			/** Preserve Google-rendered AdSense results / 保留 Google 官方 AdSense 结果渲染 */
+			adsense?: unknown;
+			/** Result set size / 结果集大小 */
+			resultSetSize?: unknown;
+			/** SafeSearch mode / SafeSearch 模式 */
+			safeSearch?: unknown;
 		};
 	};
 	/** GitHub card configuration / GitHub 卡片配置 */
@@ -546,8 +566,13 @@ const DEFAULT_CONFIG: Config = {
 	seo: {
 		indexNow: false,
 		indexNowKey: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+		google: {
+			indexingApi: false,
+			serviceAccountJsonEnv: "GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON",
+		},
 	},
 	search: {
+		provider: "pagefind",
 		docsearch: {
 			enable: false,
 			appId: "",
@@ -555,6 +580,12 @@ const DEFAULT_CONFIG: Config = {
 			indexName: "",
 			filterByLanguage: true,
 			metaTags: {},
+		},
+		google: {
+			cx: "",
+			adsense: false,
+			resultSetSize: "filtered_cse",
+			safeSearch: "active",
 		},
 	},
 	githubCard: {
@@ -1072,6 +1103,18 @@ export const loadConfig = (): Config => {
 		if (value === "file" || value === "crc32") return value;
 		return DEFAULT_CONFIG.posts.slugStrategy;
 	};
+	const validateSearchProvider = (value: unknown): Config["search"]["provider"] => {
+		if (value === "pagefind" || value === "docsearch" || value === "google") return value;
+		const legacyDocSearchEnabled =
+			getBoolean(search?.docsearch?.enable, DEFAULT_CONFIG.search.docsearch.enable) &&
+			!!getString(search?.docsearch?.appId, DEFAULT_CONFIG.search.docsearch.appId) &&
+			!!getString(search?.docsearch?.apiKey, DEFAULT_CONFIG.search.docsearch.apiKey) &&
+			!!getString(search?.docsearch?.indexName, DEFAULT_CONFIG.search.docsearch.indexName);
+		return legacyDocSearchEnabled ? "docsearch" : DEFAULT_CONFIG.search.provider;
+	};
+	const validateGoogleSafeSearch = (value: unknown): Config["search"]["google"]["safeSearch"] => {
+		return value === "off" ? "off" : DEFAULT_CONFIG.search.google.safeSearch;
+	};
 	const validateLatestCount = (value: unknown): number => {
 		const count = Math.trunc(getNumber(value, DEFAULT_CONFIG.landingPage.latestCount));
 		if (count < 1) return DEFAULT_CONFIG.landingPage.latestCount;
@@ -1254,8 +1297,16 @@ export const loadConfig = (): Config => {
 		seo: {
 			indexNow: getEnvBoolean("PUBLIC_INDEXNOW_ENABLE", getBoolean(seo?.indexNow, DEFAULT_CONFIG.seo.indexNow || false)),
 			indexNowKey: getEnvString("PUBLIC_INDEXNOW_KEY", getString(seo?.indexNowKey, DEFAULT_CONFIG.seo.indexNowKey || "")),
+			google: {
+				indexingApi: getBoolean(seo?.google?.indexingApi, DEFAULT_CONFIG.seo.google.indexingApi),
+				serviceAccountJsonEnv: getString(
+					seo?.google?.serviceAccountJsonEnv,
+					DEFAULT_CONFIG.seo.google.serviceAccountJsonEnv,
+				),
+			},
 		},
 		search: {
+			provider: validateSearchProvider(search?.provider),
 			docsearch: {
 				enable: getEnvBoolean("PUBLIC_DOCSEARCH_ENABLE", getBoolean(search?.docsearch?.enable, DEFAULT_CONFIG.search.docsearch.enable)),
 				appId: getEnvString("PUBLIC_DOCSEARCH_APP_ID", getString(search?.docsearch?.appId, DEFAULT_CONFIG.search.docsearch.appId)),
@@ -1263,6 +1314,12 @@ export const loadConfig = (): Config => {
 				indexName: getEnvString("PUBLIC_DOCSEARCH_INDEX_NAME", getString(search?.docsearch?.indexName, DEFAULT_CONFIG.search.docsearch.indexName)),
 				filterByLanguage: getEnvBoolean("PUBLIC_DOCSEARCH_FILTER_BY_LANGUAGE", getBoolean(search?.docsearch?.filterByLanguage, DEFAULT_CONFIG.search.docsearch.filterByLanguage)),
 				metaTags: getStringRecord(search?.docsearch?.metaTags, DEFAULT_CONFIG.search.docsearch.metaTags),
+			},
+			google: {
+				cx: getString(search?.google?.cx, DEFAULT_CONFIG.search.google.cx),
+				adsense: getBoolean(search?.google?.adsense, DEFAULT_CONFIG.search.google.adsense),
+				resultSetSize: getString(search?.google?.resultSetSize, DEFAULT_CONFIG.search.google.resultSetSize),
+				safeSearch: validateGoogleSafeSearch(search?.google?.safeSearch),
 			},
 		},
 		githubCard: {

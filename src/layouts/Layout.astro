@@ -112,11 +112,17 @@ const absoluteUrl = (path: string) => new URL(path, Astro.site || Astro.url.orig
 const canonicalHref = canonicalUrl ? absoluteUrl(canonicalUrl) : Astro.url.href;
 const rssHref = absoluteUrl(getLangHomeUrl(pageLang).replace(/\/$/, "/rss.xml"));
 const xDefaultHref = absoluteUrl(getLangHomeUrl(Config.i18n.defaultLang));
-const docsearchEnabled =
+const activeSearchProvider =
+	searchConfig.provider === "docsearch" &&
 	!!searchConfig.docsearch.enable &&
 	!!searchConfig.docsearch.appId &&
 	!!searchConfig.docsearch.apiKey &&
-	!!searchConfig.docsearch.indexName;
+	!!searchConfig.docsearch.indexName
+		? "docsearch"
+		: searchConfig.provider === "google" && !!searchConfig.google.cx
+			? "google"
+			: "pagefind";
+const pagefindEnabled = activeSearchProvider === "pagefind";
 const docsearchMetaTags = Object.entries(searchConfig.docsearch.metaTags || {})
 	.filter(([key]) => key !== "language");
 const isHomePage =
@@ -204,7 +210,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 			/>
 		))}
 
-		{import.meta.env.PROD && !docsearchEnabled && (
+		{import.meta.env.PROD && pagefindEnabled && (
 			<link rel="modulepreload" href={url('/pagefind/pagefind.js')} />
 		)}
 
@@ -278,7 +284,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 			} catch {}
 		</script>
 		
-		{import.meta.env.PROD && !docsearchEnabled && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
+		{import.meta.env.PROD && pagefindEnabled && <script is:inline define:vars={{scriptUrl: url('/pagefind/pagefind.js')}}>
 		async function loadPagefind() {
 			try {
 				const response = await fetch(scriptUrl, { method: 'HEAD' });

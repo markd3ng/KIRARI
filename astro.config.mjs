@@ -35,11 +35,16 @@ import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 
 // https://astro.build/config
 
-const docsearchEnabled =
-	!!Config.search?.docsearch?.enable &&
+const activeSearchProvider =
+	Config.search?.provider === "docsearch" &&
+	!!Config.search.docsearch.enable &&
 	!!Config.search.docsearch.appId &&
 	!!Config.search.docsearch.apiKey &&
-	!!Config.search.docsearch.indexName;
+	!!Config.search.docsearch.indexName
+		? "docsearch"
+		: Config.search?.provider === "google" && !!Config.search.google.cx
+			? "google"
+			: "pagefind";
 
 export default defineConfig({
 	site: Config.site.url,
