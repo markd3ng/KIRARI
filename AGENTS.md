@@ -3,66 +3,94 @@ Before modifying code, check .agents/skills/ for relevant skills.
 Read the SKILL.md for any matching package before proceeding.
 <!-- /skilld -->
 
-# KIRARI 项目开发规范与审计基准
+# KIRARI 开发规范
 
-## 1. 核心技术栈定位与基准
+## 架构不可变规则
 
-本项目是一个高度集成化、侧重内容展示与极速体验的现代化 Web 应用。基于 **Astro 6** 框架构建，前端交互由 **Svelte 5** 驱动，样式引擎采用 **Tailwind CSS v4** 配合 **Stylus**，并针对 **Cloudflare Pages / Workers (含 D1/KV)** 等边缘网络环境进行了深度优化。
+### Astro Islands
 
-本规范为最高基准，任何 AI Agent 和人工开发必须严格遵循。
+| 组件类型 | 实现方式 | Hydration 指令 |
+|----------|---------|---------------|
+| 静态展示（文章卡片、导航、布局） | `.astro` | 无 |
+| 搜索 | Svelte `Search.svelte` | `client:load` |
+| 主题切换/色相选择器 | Svelte `ThemeToggle.svelte` / `DisplaySettings.svelte` | `client:load` / `client:only` |
 
-### 1.1 审计基准视角
+`client:only` 仅限读取 `localStorage` 的纯客户端组件。不允许用于含有 SEO 内容的组件。
 
-- **代码质量**：核心业务逻辑（如 `transition-manager.ts` 和 `config-loader.ts`）必须具备高度鲁棒性，严禁无意义的隐式 `any`。
-- **性能与打包基准**：
-  - Lighthouse 性能分数必须维持在 95+。
-  - 必须遵守项目现有的 Vite 优化策略，例如 `astro.config.mjs` 中拦截 `@iconify-json` 以防止包体积膨胀。
-  - 第三方分析脚本和非关键逻辑必须控制加载时机，减少主线程阻塞。
-- **边缘网络兼容性**：
-  - 客户端或边缘服务端点严禁执行依赖 Node.js 原生模块的代码。
-  - 如果未来引入 Cloudflare D1/KV，查询必须参数化，KV 必须明确生命周期。
+### 页面过渡系统
 
-## 2. 目录架构与配置规范
-
-```text
-/
-├── kirari.config.toml
-├── src/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   ├── styles/
-│   │   └── markdown-extend.styl
-│   ├── utils/
-│   │   └── transition-manager.ts
-│   └── pages/
-```
-
-强制约束：
-
-- **配置驱动设计**：禁止在组件中硬编码可配置项。新增站点功能必须先进入 `kirari.config.toml`，并在 `src/utils/config-loader.ts` 中解析、默认化。
-- **样式解耦**：组件级外观使用 Tailwind CSS v4；Markdown 编译生成的深层结构样式放在 `src/styles/markdown-extend.styl`。
-
-## 3. 架构硬性约束
-
-### 3.1 Astro Islands 架构原则
-
-- 默认使用 `.astro` 编写静态展示组件。
-- 只有搜索、主题切换等强交互组件才使用 Svelte。
-- Svelte island 必须使用合适的 hydration 指令，避免不必要的 `client:load`。
-
-### 3.2 统一路由与过渡系统
-
-由于项目实现了 View Transitions 和 Swup 降级双系统，页面切换后的初始化逻辑必须注册到 `transitionManager`：
+所有 DOM 初始化逻辑必须挂载到 `TransitionManager`，禁止裸用 `DOMContentLoaded`：
 
 ```ts
 import { transitionManager } from "@utils/transition-manager";
 
-transitionManager.on("transition:after-swap", yourInitFunction);
+// 正确
+transitionManager.on("transition:after-swap", init);
+
+// 错误 — 仅在硬加载时触发
+document.addEventListener("DOMContentLoaded", init);
 ```
 
-不要在新增代码中依赖裸 `DOMContentLoaded` 或 `window.onload` 来处理可跨页面切换的 DOM 初始化。
+原因：KIRARI 在支持 View Transitions API 的浏览器中使用 Astro `ClientRouter`，在不支持的浏览器中动态加载 Swup。两种路径下页面切换都是 SPA 风格，`DOMContentLoaded` 不会再次触发。
 
-### 3.3 工作流入口
+`TransitionManager` 单例暴露四个统一事件：`transition:start`、`transition:before-swap`、`transition:after-swap`、`transition:end`。Swup 模式下事件映射：`visit:start` → `start`，`content:replace` → `before-swap`，`page:view` → `after-swap`，`visit:end` → `end`。
 
-本仓库的项目级执行技能位于 `.agents/skills/kirari-project/SKILL.md`。后续开发、审计、提交前检查必须同时遵循本文件和该技能文件。
+### 配置驱动
+
+```
+kirari.config.toml → smol-toml 解析 → config-loader.ts → Config 对象
+                                                              ↓
+环境变量（PUBLIC_*）─────────────┘         astro.config.mjs、各组件通过 @constants 导入
+```
+
+- **禁止**在组件中硬编码可配置值。
+- 新增配置字段必须：`kirari.config.toml`（含注释）→ `src/types/config.ts`（类型）→ `src/utils/config-loader.ts`（解析 + 默认值）。
+- 配置加载时对每个字段做运行时类型守卫（`getString`、`getBoolean`、`getNumber`、`getStringArray`）。
+
+### 样式
+
+| 层级 | 技术 | 用途 |
+|------|------|------|
+| 组件外观 | Tailwind CSS v4 | 布局、间距、颜色、响应式 |
+| Markdown 编译产物 | Stylus (`markdown-extend.styl`) | 深层 DOM 结构（admonitions、GitHub cards、KaTeX 渲染输出） |
+| 代码高亮 | Expressive Code + CSS 变量 | 通过 `styleOverrides` 注入主题变量 |
+
+不要在组件中写 Stylus，不要在 `markdown-extend.styl` 中写组件样式。
+
+## 开发工作流
+
+### 提交前清单
+
+```bash
+pnpm type-check    # tsc --noEmit
+pnpm astro check   # .astro 模板类型检查
+pnpm build         # 完整构建（materialize → astro → postbuild）
+```
+
+### Conventional Commits
+
+```
+feat(scope): 描述
+fix(scope): 描述
+docs: 描述
+chore: 描述
+```
+
+一事一交。以下类型可用：`feat`、`fix`、`docs`、`style`、`refactor`、`perf`、`chore`、`test`。
+
+### CI/CD
+
+- 必须使用 `pnpm install --frozen-lockfile`
+- `@astrojs/check` 是 devDependency，CI 中通过 `pnpm astro check` 调用
+
+### 边缘兼容
+
+- 客户端或边缘 Functions 代码不得依赖 Node.js 原生模块（`fs`、`path`、`crypto` 等）
+- 如果引入 Cloudflare D1/KV：查询必须参数化，KV 必须明确生命周期
+
+## 性能基准
+
+- Lighthouse Performance ≥ 95
+- `@iconify-json` 包被 Vite 插件完全阻止 — 仅 `astro.config.mjs` 中注册的图标被打包
+- 第三方脚本（analytics）仅在 `PROD && analytics.enable` 条件下加载
+- `prefetchAll: false`；导航 hover 预取，移动端 tap 预取

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Rewrote README.md, README_CN.md, AGENTS.md, and CONTRIBUTING.md for higher information density: eliminated redundancy, corrected obsolete `src/constants.ts` references, added architecture invariants, transition system documentation, and concrete performance data.
+
 ### Added
 
 - Added opt-in GitHub Card runtime adapters for Cloudflare Pages Service Binding and Vercel same-project Functions.

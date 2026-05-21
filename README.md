@@ -11,724 +11,214 @@
 
 # KIRARI
 
-A modern, high-performance static blog theme built with **Astro 6** + **Svelte 5** + **TailwindCSS 4**. Features configurable OG images, full-text search, smooth page transitions, and LLM-ready documentation support.
+Static blog theme. **Astro 6** + **Svelte 5** + **Tailwind CSS v4**. Configurable via `kirari.config.toml`. Targets Cloudflare Pages, Vercel, Netlify, and EdgeOne Pages.
 
-## Features
+## Tech Stack
 
-- **Configurable OG Images** - Per-post `frontmatter.og` override with global fallback via `og.defaultImage`
-
-- **Full-text Search** - Powered by Pagefind, with debounce and concurrent request handling
-- **Mermaid Diagrams** - Flowcharts, sequence diagrams, and more with client-side rendering
-- **Math Equations** - KaTeX for LaTeX rendering
-- **Hugo-like i18n** - Language-prefixed URLs, per-post `translationKey`, language switch, canonical and `hreflang` links
-- **LLM-Ready** - Auto-generates `llms.txt` for AI indexing
-- **Dark Mode** - System preference detection + manual toggle
-- **Smooth Transitions** - View Transitions API with Swup fallback for older browsers
-- **Security Hardened** - All external links include `rel="noopener noreferrer"`
-- **Code Hygiene** - Removed unused props/files/dependencies and reduced debug log noise (no functional behavior change)
+| Category | Dependency | Version |
+|----------|-----------|---------|
+| Framework | astro | `^6.0.8` |
+| UI Islands | svelte | `^5.55.5` |
+| CSS | tailwindcss, stylus | `^4.2.4`, `^0.64.0` |
+| Search (default) | pagefind | `^1.5.2` |
+| Search (optional) | @docsearch/js (Algolia) | `^4.6.3` |
+| Code Highlight | astro-expressive-code | `^0.41.7` |
+| Math | rehype-katex, remark-math, katex | — |
+| Diagrams | mermaid | `^11.14.0` |
+| Icons | astro-icon, @iconify/svelte | — |
+| Fonts | @fontsource/roboto, @fontsource-variable/jetbrains-mono | — |
+| Transitions | View Transitions API (native) \| swup (fallback) | `^4.9.0` |
+| Image | sharp, photoswipe | — |
+| Content | @astrojs/mdx, remark/rehype plugin chain | — |
+| Feeds | @astrojs/rss, @astrojs/sitemap | — |
 
 ## Quick Start
 
 ```bash
-# Clone the repository
 git clone https://github.com/markd3ng/KIRARI.git
 cd KIRARI
-
-# Install dependencies
-pnpm install
-
-# Start development server
-pnpm dev
-
-# Build for production
-pnpm build
-
-# Preview production build
-pnpm preview
+pnpm install          # pnpm only; preinstall hook enforces this
+pnpm dev              # astro dev
+pnpm build            # astro build + postbuild pipeline
+pnpm preview          # astro preview
 ```
+
+> **pnpm ≥ 9.14.4 required.** `preinstall` hook blocks npm/yarn. `packageManager` field in `package.json` enforced.
 
 ## Fork Checklist
 
-KIRARI is designed to work like a ready-to-run example site. After forking, you can keep the code structure and replace only the site content, assets, and basic configuration first.
+KIRARI repository is a working demo site. Fork, replace content/config, deploy.
 
-Minimum files to edit:
-
-| File or directory | What to change | Required? |
-|-------------------|----------------|-----------|
-| `kirari.config.toml` | Site URL, title, subtitle, language, navbar, profile, banner, landing page text, social links, SEO, and optional integrations | Yes |
-| `src/content/posts/` | Delete the demo posts and add your Markdown or MDX posts | Yes |
-| `src/content/spec/about.md` | Replace the About page content | Recommended |
-| `src/content/spec/friends.md` | Replace the Friends page description, or remove the Friends nav item in `kirari.config.toml` | Optional |
-| `src/_data/friends.json` | Replace friend-link data used by the Friends page | Optional |
-| `src/assets/images/` | Replace local avatar, banner, and other imported images referenced by `kirari.config.toml` | Recommended |
+| Path | Action | Required |
+|------|--------|----------|
+| `kirari.config.toml` | Set `site.url`, `site.title`, `profile.*`, `navBar.*`, `landingPage.*` | Yes |
+| `src/content/posts/` | Delete demo posts, add your own `.md`/`.mdx` | Yes |
+| `src/content/spec/about.md` | Replace About content | Recommended |
+| `src/content/spec/friends.md` | Replace or remove Friends nav in config | Optional |
+| `src/_data/friends.json` | Replace friend-link data | Optional |
+| `src/assets/images/` | Replace avatar, banner, landing hero | Recommended |
 | `public/favicon/` | Replace favicon files | Recommended |
-| `public/og/default.png` | Replace the default Open Graph image | Recommended |
+| `public/og/default.png` | Replace default OG image | Recommended |
 
-Recommended first run after editing:
+Post-fork validation:
 
 ```bash
-pnpm type-check
-pnpm astro check
-pnpm build
+pnpm type-check && pnpm astro check && pnpm build
 ```
 
-You do not need to touch `src/components/`, `src/layouts/`, `src/styles/`, or `src/utils/` for a normal personal blog fork.
+Do not modify `src/components/`, `src/layouts/`, `src/styles/`, or `src/utils/` for standard use.
 
 ## Configuration
 
-All settings are configured via **`kirari.config.toml`** (Hugo-style, recommended).
+Single source: **`kirari.config.toml`** at project root. No `src/constants.ts` editing required.
 
-Configuration priority: **Environment Variables** → **`kirari.config.toml`** → **Default values**
-
-### Quick Start
-
-Edit `kirari.config.toml` in the project root:
+**Priority chain:** Environment Variables → `kirari.config.toml` → `src/utils/config-loader.ts` defaults
 
 ```toml
 [site]
-url = "https://your-domain.com"
-title = "Your Site"
-subtitle = "Your Tagline"
-lang = "en-US"                 # en-US, zh-CN, zh-TW, zh-HK, ja-JP, ko-KR, es-ES, th-TH, vi-VN, tr-TR, id-ID
-base = "/"                     # Base path (e.g., "/blog" for subdirectory)
+url = "https://example.com"
+title = "Site Title"
+lang = "en-US"
+base = "/"
 
 [i18n]
 enable = true
-default-language = "en-US"     # Root / serves the default language
-default-language-in-subdir = false # false: /, true: /en-US/
-disable-default-language-redirect = false # Redirect /en-US/... to /...
-fallbackToDefault = true       # Missing translations switch to the target language homepage
+default-language = "en-US"
 
 [i18n.languages.en-US]
 label = "English"
 locale = "en-US"
-direction = "ltr"
-weight = 1
-disabled = false
 contentDir = "src/content/posts"
 
 [i18n.languages.zh-CN]
 label = "简体中文"
 locale = "zh-CN"
-direction = "ltr"
-weight = 2
-disabled = false
 contentDir = "src/content/posts/zh-CN"
-
-[search.docsearch]
-enable = false                 # When true, Pagefind is disabled
-appId = ""
-apiKey = ""
-indexName = ""
-filterByLanguage = true        # Uses docsearch:language meta tags
-
-[githubCard]
-apiBase = "https://api.github.com" # Use "/ghc" only after enabling a runtime adapter
-
-[githubCard.adapter]
-enabled = false                 # true generates an opt-in /ghc runtime route before build
-provider = "none"               # "cloudflare", "vercel", "auto", or "none"
-route = "/ghc"
-
-[landingPage]
-enable = true                  # false restores the classic post-list homepage
-latestCount = 3                # Number of recent posts on the landing page
-heroImage = "assets/images/demo-banner.png"
-eyebrow = "WELCOME TO KIRARI"
-title = "Documenting Ideas."
-highlight = "Sharing Knowledge."
-description = "A space for notes, tutorials, and thoughts on technology and development."
-primaryCtaLabel = "Explore Articles"
-secondaryCtaLabel = "Learn More"
-# When enabled, / is the landing page and the full post-list homepage is /blog/.
-
-[landingPage.features]
-enable = true                  # false hides the feature cards section
-
-[[landingPage.features.items]]
-icon = "material-symbols:electric-bolt-rounded"
-title = "Technical Articles"
-description = "In-depth guides and tutorials for developers."
-
-[[landingPage.features.items]]
-icon = "material-symbols:menu-book-outline-rounded"
-title = "Learning Notes"
-description = "Record and share the learning journey."
-
-[site.themeColor]
-hue = 250                      # 0-360 (red: 0, teal: 200, cyan: 250, pink: 345)
-fixed = false                  # Hide theme color picker
-
-[site.banner]
-enable = true
-src = "assets/images/banner.png"
-position = "center"            # 'top', 'center', 'bottom'
-
-[site.banner.credit]
-enable = false
-text = ""
-url = ""
-
-[site.toc]
-enable = true                  # Display table of contents
-depth = 3                      # Maximum heading depth (1-3)
-
-[[site.favicon]]
-src = "/favicon/icon.png"
-theme = "light"                # Optional: 'light' or 'dark'
-sizes = "32x32"                # Optional: favicon size
 
 [profile]
 avatar = "assets/images/avatar.png"
-name = "Your Name"
-bio = "Your bio"
+name = "Author Name"
+bio = "Short bio"
 
 [[profile.links]]
 name = "GitHub"
-icon = "fa6-brands:github"     # Visit https://icones.js.org/ for icon codes
+icon = "fa6-brands:github"
 url = "https://github.com/you"
 
-[license]
-enable = true
-name = "CC BY-NC-SA 4.0"
-url = "https://creativecommons.org/licenses/by-nc-sa/4.0/"
-
-[head.verification]
-google = ""                    # Google Search Console verification code
-bing = ""                      # Bing Webmaster Tools verification code
-
-[og]
-defaultImage = "/og/default.png"
-
-[llms]
-enable = true
-sitemap = true
-title = "Your Site"
-description = "Your site description"
-i18n = true
-
-[seo]
-indexNow = false               # Enable IndexNow for instant search engine indexing
-indexNowKey = ""               # IndexNow API key
-```
-
-### Internationalization
-
-KIRARI uses BCP 47 public routes. By default, the configured `default-language` is served without a prefix, so `en-US` uses `/`, `/archive/`, and `/posts/.../`; non-default languages use prefixed URLs such as `/zh-CN/`. Set `default-language-in-subdir = true` to also put the default language under `/en-US/`.
-
-Languages can be configured as Hugo-like objects with `label`, `locale`, `direction`, `weight`, `disabled`, and `contentDir`. The old array form, `languages = ["en-US", "zh-CN"]`, is still supported.
-
-Posts can be connected across languages with `translationKey`; if it is omitted, KIRARI also infers translations from language filename suffixes and language content directories:
-
-```yaml
----
-title: Markdown Example
-lang: en-US
-translationKey: markdown
----
-```
-
-If the current page has a matching translation, the navbar language switch links to that translated page. Otherwise it falls back to the target language homepage.
-
-Static spec pages can be localized by adding files under `src/content/spec/<lang-slug>/`, for example `src/content/spec/zh-CN/about.md`. Missing localized files fall back to the default `src/content/spec/about.md` or `friends.md` content.
-
-### Search
-
-Pagefind is the default local search engine. KIRARI adds a language filter to each generated page and searches only the active language, so `/zh-CN/` does not mix English results into Chinese queries.
-
-Algolia DocSearch can be enabled with `[search.docsearch]` or `PUBLIC_DOCSEARCH_*` environment variables. When DocSearch is enabled and `appId`, `apiKey`, and `indexName` are present, Pagefind is disabled at build/runtime. Pages emit `docsearch:language` plus optional `[search.docsearch.metaTags]` entries as `<meta name="docsearch:*">` tags for crawler facets.
-
-### Performance Strategy
-
-- Roboto is self-hosted through `@fontsource/roboto`; only the Latin `400`, `500`, and `700` weights are loaded by default.
-- Responsive image widths are generated for banner, avatar, and post covers to reduce mobile transfer size while preserving display quality.
-- Public or external images rendered through the fallback `<img>` path preserve caller-provided `width` and `height`; layout-sensitive callers should provide dimensions or a stable wrapper aspect ratio to avoid CLS.
-- Astro prefetch is selective: navigation links use `hover`, mobile/menu links use `tap`, and `prefetchAll` stays disabled.
-- Svelte islands should use Svelte 5 Runes (`$props`, `$state`, `$effect`) for local state and effects. Display settings remain a `client:only` island by design because the panel reads browser-only state (`localStorage` and document theme variables) and does not contain SEO content.
-- View Transition swaps must restore `<html>` appearance state from the semantic source (`localStorage` plus config defaults), not by copying the previous DOM. Theme mode, effective theme, Expressive Code theme, and Hue are applied during Astro swap hooks so client-side navigation matches a fresh page load.
-- SVG icons rendered through the shared sprite are refreshed after client-side swaps to guard against browser/runtime cases where dynamic `<use>` references need to be re-resolved.
-- `pnpm build` generates `dist/_headers` and `dist/_redirects` for Cloudflare Pages and Netlify, while `vercel.json` and `edgeone.json` define immutable caching for `/_astro/*` on Vercel and EdgeOne.
-- `/_astro/*` is immutable because filenames are content-hashed; HTML, Pagefind assets, and non-hashed public files stay revalidation-friendly.
-
-### Release Maintenance
-
-- Release checks should run `pnpm install --frozen-lockfile`, `pnpm type-check`, `pnpm astro check`, and `pnpm build`.
-- CI/CD providers should use the committed `pnpm-lock.yaml`; avoid unfrozen installs for release builds.
-- Dependency refreshes are intended to stay inside the declared semver ranges for release patches unless a migration release explicitly opts into major upgrades.
-- `@astrojs/check` is kept in `devDependencies`; production behavior still uses the same `pnpm astro check` workflow during validation.
-
-### Navigation Bar
-
-Configure navigation links (supports presets and custom links):
-
-```toml
 [[navBar.links]]
-preset = "Home"                # Presets: Home, Archive, About, Friends
+preset = "Home"
 
 [[navBar.links]]
 preset = "Archive"
 
-[[navBar.links]]
-name = "GitHub"                # Custom link
-url = "https://github.com/you"
-external = true                # Open in new tab with external icon
+[og]
+defaultImage = "/og/default.png"
 ```
 
-### Analytics
+Full reference: read `kirari.config.toml` in the repository — every key is documented with bilingual comments.
 
-Configure analytics services:
+### Environment Variables
 
-```toml
-[analytics]
-enable = true                  # Master switch (default: false)
-googleAnalyticsId = "G-XXXXXXXXXX"
-clarityProjectId = "your-project-id"
-fathomSiteId = "your-site-id"
-simpleAnalyticsDomain = "example.com"
-amplitudeApiKey = "your-api-key"
+For secrets (API keys, analytics IDs). `.env.local` is `.gitignore`d.
 
-[analytics.umami]
-id = "your-website-id"
-src = "https://analytics.umami.is/script.js"
-integrity = ""                 # Optional SRI hash for pinned/self-hosted scripts
+| Env Variable | Overrides TOML Key |
+|-------------|-------------------|
+| `PUBLIC_SITE_URL` | `site.url` |
+| `PUBLIC_SITE_TITLE` | `site.title` |
+| `PUBLIC_ANALYTICS_ENABLE` | `analytics.enable` |
+| `PUBLIC_GOOGLE_ANALYTICS_ID` | `analytics.googleAnalyticsId` |
+| `PUBLIC_UMAMI_ID` | `analytics.umami.id` |
+| `PUBLIC_DOCSEARCH_APP_ID` | `search.docsearch.appId` |
+| `PUBLIC_DOCSEARCH_API_KEY` | `search.docsearch.apiKey` |
+| `PUBLIC_DOCSEARCH_INDEX_NAME` | `search.docsearch.indexName` |
+| `PUBLIC_INDEXNOW_ENABLE` | `seo.indexNow` |
+| `PUBLIC_INDEXNOW_KEY` | `seo.indexNowKey` |
+| `PUBLIC_GITHUB_CARD_API_BASE` | `githubCard.apiBase` |
 
-[analytics.plausible]
-domain = "example.com"
-src = "https://plausible.io/js/script.js"
-integrity = ""                 # Optional SRI hash for pinned/self-hosted scripts
+## Content Authoring
 
-[analytics.matomo]
-siteId = "1"
-src = "https://matomo.example.com/piwik.js"
-integrity = ""                 # Optional SRI hash for pinned/self-hosted scripts
-```
+### Frontmatter
 
-For analytics script security, prefer self-hosting a pinned script asset when possible, or use a same-origin proxy when that matches your deployment model. Use `integrity` only for pinned assets that do not change without a matching hash update; hot-updating SaaS loader scripts should rely on a strict provider allowlist/CSP plan instead of forced SRI.
-
-**Analytics services table:**
-
-| Service | Configuration |
-|---------|--------------|
-| Google Analytics | `googleAnalyticsId` |
-| Umami | `umami.id`, `umami.src` (optional) |
-| Plausible | `plausible.domain`, `plausible.src` (optional) |
-| Microsoft Clarity | `clarityProjectId` |
-| Fathom | `fathomSiteId` |
-| Simple Analytics | `simpleAnalyticsDomain` |
-| Matomo | `matomo.siteId`, `matomo.src` |
-| Amplitude | `amplitudeApiKey` |
-
-Analytics load only when both conditions are met:
-1. `analytics.enable = true`
-2. Production build (`import.meta.env.PROD`)
-
-### Environment Variables (Sensitive Data Only)
-
-For sensitive data (API keys, analytics IDs), use environment variables instead of TOML:
-
-**Create `.env.local` in project root:**
-
-```bash
-# Analytics (recommended for production)
-PUBLIC_ANALYTICS_ENABLE=true
-PUBLIC_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
-PUBLIC_UMAMI_ID=your-website-id
-PUBLIC_UMAMI_SRC=https://analytics.umami.is/script.js
-PUBLIC_UMAMI_INTEGRITY=
-PUBLIC_PLAUSIBLE_DOMAIN=example.com
-PUBLIC_PLAUSIBLE_INTEGRITY=
-PUBLIC_CLARITY_PROJECT_ID=your-project-id
-PUBLIC_FATHOM_SITE_ID=your-site-id
-PUBLIC_SIMPLE_ANALYTICS_DOMAIN=example.com
-PUBLIC_MATOMO_SITE_ID=1
-PUBLIC_MATOMO_SRC=https://matomo.example.com/piwik.js
-PUBLIC_MATOMO_INTEGRITY=
-PUBLIC_AMPLITUDE_API_KEY=your-api-key
-
-# SEO
-PUBLIC_INDEXNOW_ENABLE=false
-PUBLIC_INDEXNOW_KEY=your-indexnow-key
-
-# Search Engine Verification (sensitive)
-PUBLIC_GOOGLE_VERIFICATION=your-verification-code
-PUBLIC_BING_VERIFICATION=your-verification-code
-```
-
-**Priority:** Environment variables override TOML values.
-
-> **Note**: `.env.local` is already in `.gitignore`, so your sensitive data won't be committed.
-
-### Deployment Configuration
-
-| Environment | Configuration Method |
-|-------------|---------------------|
-| Local development | Edit `kirari.config.toml` directly |
-| Production (non-sensitive) | Edit `kirari.config.toml` and commit |
-| Production (sensitive) | Set environment variables in your hosting dashboard, such as Vercel, Cloudflare Pages, or Netlify |
-| Default fallback | Values in `src/utils/config-loader.ts` |
-
-### GitHub Card Cache Adapters
-
-Markdown GitHub cards (`::github` and `::githubfile`) use `https://api.github.com` by default. Runtime adapters are opt-in. If the adapter is disabled, KIRARI does not generate a `/ghc` runtime route and remains compatible with pure static hosting.
-
-Choose the mode first:
-
-| Hosting mode | `apiBase` | Adapter | Runtime route generated by KIRARI | Token location |
-|--------------|-----------|---------|-----------------------------------|----------------|
-| Pure static or no cache service | `https://api.github.com` | Disabled | None | No KIRARI token needed |
-| Cloudflare Pages + `KIRARI-GHCard-Cache` Worker | `/ghc` | `provider = "cloudflare"` | `functions/ghc/[[path]].ts` | Optional `GITHUB_TOKEN` belongs to the external Worker Secret |
-| Vercel same-project Function | `/ghc` | `provider = "vercel"` | `api/ghc/[...path].ts` | Optional `GITHUB_TOKEN` belongs to Vercel Project Environment Variables |
-
-Default direct GitHub mode:
-
-```toml
-[githubCard]
-apiBase = "https://api.github.com"
-
-[githubCard.adapter]
-enabled = false
-provider = "none"
-route = "/ghc"
-serviceBinding = "GHCARD_CACHE"
-```
-
-Cloudflare Pages with `KIRARI-GHCard-Cache`:
-
-```toml
-[githubCard]
-apiBase = "/ghc"
-
-[githubCard.adapter]
-enabled = true
-provider = "cloudflare"
-route = "/ghc"
-serviceBinding = "GHCARD_CACHE"
-```
-
-Production request flow:
-
-```text
-Browser -> KIRARI Pages /ghc/* -> Pages Function -> GHCARD_CACHE Service Binding -> kirari-ghcard-cache Worker
-```
-
-Configure the Cloudflare Pages Service Binding:
-
-| Field | Value |
-|-------|-------|
-| Binding name | `GHCARD_CACHE` |
-| Service | `kirari-ghcard-cache` |
-
-Dashboard path: **Workers & Pages → KIRARI Pages Project → Settings → Bindings → Add binding → Service binding**.
-
-Cloudflare token ownership:
-
-| Token | Configure where | Why |
-|-------|-----------------|-----|
-| `GITHUB_TOKEN` | `KIRARI-GHCard-Cache` Cloudflare Worker Secret | Runtime token used by the Worker to call GitHub REST API |
-| `CLOUDFLARE_API_TOKEN` | `KIRARI-GHCard-Cache` GitHub Repository Secrets | CI deploy token for the Worker project |
-| `CLOUDFLARE_ACCOUNT_ID` | `KIRARI-GHCard-Cache` GitHub Repository Secrets | Cloudflare account used by the Worker deploy workflow |
-
-KIRARI itself does not need a `GITHUB_TOKEN` for the Cloudflare Service Binding path.
-
-Vercel free-tier same-project adapter:
-
-```toml
-[githubCard]
-apiBase = "/ghc"
-
-[githubCard.adapter]
-enabled = true
-provider = "vercel"
-route = "/ghc"
-```
-
-The Vercel adapter uses only same-project Functions plus HTTP cache headers by default. It does not require Vercel KV, Upstash, Supabase, Firewall, Deployment Protection, or a custom domain.
-
-Vercel token ownership:
-
-| Token | Configure where | Why |
-|-------|-----------------|-----|
-| `GITHUB_TOKEN` | Vercel Project → Settings → Environment Variables | Runtime token used by the generated Vercel Function to call GitHub REST API |
-| `CLOUDFLARE_API_TOKEN` | Not used | Vercel path does not deploy a Cloudflare Worker |
-| `CLOUDFLARE_ACCOUNT_ID` | Not used | Vercel path does not deploy a Cloudflare Worker |
-
-Do not commit real tokens to `kirari.config.toml` or repository files.
-
-Verification:
-
-| Check | Expected result |
-|-------|-----------------|
-| Adapter disabled | No generated `functions/ghc` or `api/ghc` route |
-| Cloudflare adapter enabled | KIRARI generates `functions/ghc/[[path]].ts` before build |
-| Vercel adapter enabled | KIRARI generates `api/ghc/[...path].ts` before build |
-| Browser Network with adapter enabled | GitHub card requests use `/ghc/repos/...` and `/ghc/avatar/...` |
-
-Rollback to direct GitHub:
-
-```toml
-[githubCard]
-apiBase = "https://api.github.com"
-
-[githubCard.adapter]
-enabled = false
-provider = "none"
-```
-
-
-## Key Features
-
-
-### Writing Posts
-
-Create Markdown files in `src/content/posts/`:
-
-```markdown
+```yaml
 ---
 title: Post Title
 published: 2024-05-01
-updated: 2024-05-02      # Optional
-description: Short desc  # Optional
-image: /cover.png        # Optional banner image
-og: /og/custom.png       # Optional custom OG image for this post
-slug: custom-post-url    # Optional custom URL slug
-tags: [tag1, tag2]       # Optional
-category: Guides         # Optional
-draft: false             # Hide in production
-lang: en-US              # BCP 47 language tag
-mermaid: true            # Enable Mermaid diagrams
+updated: 2024-05-02           # Optional; displayed alongside published
+description: Short summary    # Used in meta description and post cards
+image: /cover.png             # Relative to /public; displayed as banner
+og: /og/custom.png            # Per-post OG image override
+slug: custom-post-url         # Overrides auto-generated slug
+tags: [tag1, tag2]
+tagLabels:                    # Optional: display names differing from slug
+  tag1: "Tag One"
+category: Guides
+categoryLabel: "Guide Series" # Optional
+draft: false                  # true hides from production
+lang: en-US                   # BCP 47; required for i18n
+mermaid: true                 # Enables client-side Mermaid rendering
 ---
-
-Your content here.
 ```
 
-Post URLs use this order:
+### URL Generation
 
-- `slug` in frontmatter, when provided.
-- The configured `[posts].slug-strategy` fallback.
-- `file` keeps the current file path based route, for example `markdown.md` -> `/posts/markdown/`.
-- `crc32` generates an 8-character hex slug from the Astro content entry id.
+`slug` in frontmatter → `posts.slugStrategy` in config. Strategy options:
 
-KIRARI intentionally keeps pretty URLs such as `/posts/example/`; `.html` pseudo-static URLs do not improve modern SEO and would make canonical, RSS, sitemap, and i18n routing more fragile.
+| Strategy | Behavior | Example |
+|----------|----------|---------|
+| `file` (default) | File-path-derived | `posts/hello/world.md` → `/posts/hello/world/` |
+| `crc32` | 8-char hex from content entry ID | → `/posts/a1b2c3d4/` |
+
+KIRARI enforces trailing slashes (`trailingSlash: "always"` in `astro.config.mjs`). `.html` pseudo-static URLs are not supported — they break canonical, RSS, sitemap, and i18n, with no SEO benefit.
 
 ### Tag & Category Display Names
 
-Tags and categories use their slug (lowercase, trimmed) as URL identifiers. You can optionally specify display names that differ from the slug:
+Tags/categories use slug (lowercased, trimmed) as URL identifiers: `/tags/tag1/`. `tagLabels` and `categoryLabel` in frontmatter provide display names for the UI.
 
-```markdown
----
-tags: [demo, tutorial]
-tagLabels:
-  demo: "演示 Demo"
-  tutorial: "Tutorial Guide"
-category: devops
-categoryLabel: "DevOps 运维"
----
-```
-
-**How it works:**
-- URL remains `/tags/demo/` (uses slug)
-- Display shows "演示 Demo" (uses `tagLabels`)
-- If no label is declared, the original slug value is displayed
-
-**Conflict Detection:**
-When multiple posts declare different display names for the same slug, a warning is logged during build:
+When multiple posts declare conflicting display names for the same slug, build emits a warning:
 
 ```
-[DisplayName Conflict] tag "demo": existing="演示" vs new="Demo示例" (source: posts/another-post.md)
+[DisplayName Conflict] tag "demo": existing="Demo" vs new="演示示例" (source: posts/another-post.md)
 ```
 
-The later value overwrites the earlier one. Use this log to identify and fix naming inconsistencies.
-
-### OG Images
-
-- **Posts**: Prefer `frontmatter.og`
-- **Fallback**: If `frontmatter.og` is not set, use `og.defaultImage`
-- **Other pages**: Use `og.defaultImage`
-
+Last-write-wins. Use this log to identify inconsistencies.
 
 ### Mermaid Diagrams
 
-Add `mermaid: true` to frontmatter:
-
-````markdown
+```markdown
 ---
 mermaid: true
 ---
 
-```mermaid
+\`\`\`mermaid
 graph TD;
     A --> B;
-```
-````
-
-### Friends Page
-
-Edit `src/_data/friends.json`:
-
-```json
-[
-  {
-    "siteTitle": "Friend's Blog",
-    "siteDesc": "Description",
-    "siteUrl": "https://example.com",
-    "siteIcon": "https://example.com/avatar.png"
-  }
-]
+\`\`\`
 ```
 
-### Custom Head/Footer
+Mermaid rendering is client-side only. `mermaid: true` in frontmatter injects the Mermaid runtime for that page.
 
-```typescript
-// src/constants.ts
-head: {
-  verification: {
-    google: "your-verification-code",
-    bing: "your-verification-code"
-  },
-  customHtml: "",
-  customScript: ""
-},
-footer: {
-  customHtml: "",
-  customScript: ""
-}
-```
+### Math (KaTeX)
 
-**`customScript`** - Third-party scripts (analytics, ads) are rendered inline in `<head>`. Just provide the script **content** (no `<script>` tags needed):
+`remark-math` + `rehype-katex` in the plugin chain. Write LaTeX inline or block — no frontmatter flag needed.
 
-```typescript
-footer: {
-  customScript: `(function(c,l,a,r,i,t,y){
-    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-  })(window, document, "clarity", "script", "YOUR_PROJECT_ID");`
-}
-```
+### GitHub Cards & Admonitions
 
-**`customHtml`** - For full control over HTML/script tags. Use this if you need custom attributes:
-
-```typescript
-head: {
-  customHtml: `<script type="text/javascript" src="https://example.com/script.js"></script>`
-}
-```
-
-### LLMs Documentation
-
-Generated by KIRARI's internal postbuild pipeline. Build generates:
-- `llms.txt` - Main index (Markdown summary for LLMs)
-- `llms-full.txt` - Complete content in one file
-- `llms-small.txt` - Condensed version
-- `llms-en.txt`, `llms-zh.txt` - Language-specific files (when `i18n: true`)
-
-**Configuration** in `src/constants.ts`:
-
-```typescript
-llms: {
-  enable: true,        // Enable/disable generation
-  sitemap: true,       // Add llms.txt files to sitemap
-  title: "Your Site",  // Site title in llms.txt
-  description: "Your site description for LLMs",
-  i18n: true           // Generate language-specific files
-}
-```
-
-**Usage for LLMs**: AI assistants can fetch `https://yoursite.com/llms.txt` to understand your site structure and content, enabling better contextual responses about your documentation or blog.
-
-### Analytics
-
-Rendered by KIRARI's internal `Analytics.astro` component, supporting multiple analytics services. Configure in `kirari.config.toml` or via environment variables.
-
-Analytics are loaded only when both conditions are met:
-1. `analytics.enable` (or `PUBLIC_ANALYTICS_ENABLE`) is `true`
-2. Build/runtime is production (`import.meta.env.PROD`)
-
-
-
-```typescript
-// src/constants.ts
-analytics: {
-  enable: true,                            // Master switch (default: false)
-  googleAnalyticsId: "G-XXXXXXXXXX",       // Google Analytics
-  umami: { id: "your-id", src: "https://...", integrity: "" },  // Umami
-  plausible: { domain: "example.com", integrity: "" },     // Plausible
-  clarityProjectId: "your-project-id",     // Microsoft Clarity
-  fathomSiteId: "your-site-id",            // Fathom
-  simpleAnalyticsDomain: "example.com",    // Simple Analytics
-  matomo: { siteId: "1", src: "https://...", integrity: "" },  // Matomo
-  amplitudeApiKey: "your-api-key"          // Amplitude
-}
-```
-
-**Supported Services:**
-
-| Service | Config Key | Env Variable |
-|---------|-----------|--------------|
-| **Master Switch** | `enable` | `PUBLIC_ANALYTICS_ENABLE` |
-| Google Analytics | `googleAnalyticsId` | `PUBLIC_GOOGLE_ANALYTICS_ID` |
-| Umami | `umami.id`, `umami.src`, `umami.integrity` | `PUBLIC_UMAMI_ID`, `PUBLIC_UMAMI_SRC`, `PUBLIC_UMAMI_INTEGRITY` |
-| Plausible | `plausible.domain`, `plausible.src`, `plausible.integrity` | `PUBLIC_PLAUSIBLE_DOMAIN`, `PUBLIC_PLAUSIBLE_SRC`, `PUBLIC_PLAUSIBLE_INTEGRITY` |
-| Microsoft Clarity | `clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` (preferred), `PUBLIC_CLARITY_ID` (alias) |
-| Fathom | `fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
-| Simple Analytics | `simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
-| Matomo | `matomo.siteId`, `matomo.src`, `matomo.integrity` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC`, `PUBLIC_MATOMO_INTEGRITY` |
-| Amplitude | `amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
-
-> **Note**: Scripts are rendered directly in `<head>` only in production when analytics are enabled. External analytics scripts include a strict referrer policy. Optional SRI is supported for Umami, Plausible, and Matomo when you pin or self-host the script asset; do not attach stale hashes to provider-managed scripts that update in place.
->
-> **Compatibility**: `PUBLIC_CLARITY_PROJECT_ID` has higher priority; `PUBLIC_CLARITY_ID` is kept as a backward-compatible alias.
-
-
-### SEO & Indexing
-
-### SEO & Indexing
-
-The theme includes integrated SEO and indexing utilities:
-
-**Robots.txt** - Auto-generated by KIRARI's postbuild pipeline. No manual configuration needed; uses your `site.url` from config.
-
-**IndexNow** - Instant search engine indexing. **Disabled by default**. Enable in `src/constants.ts`:
-
-```typescript
-seo: {
-  indexNow: true,              // Enable IndexNow integration (default: false)
-  indexNowKey: "your-api-key" // Or set PUBLIC_INDEXNOW_KEY env var
-}
+Markdown directive syntax, processed by remark→rehype plugin chain:
 
 ```
+::github{repo="owner/repo"}
+::githubfile{repo="owner/repo" path="src/main.ts"}
 
-The key file is served at `/{key}.txt` for search engine verification. To get a key, visit [indexnow.org](https://www.indexnow.org).
-You can also use env overrides: `PUBLIC_INDEXNOW_ENABLE=true` and `PUBLIC_INDEXNOW_KEY=...`.
-
-
-> **Note**: IndexNow sends requests to search engines on every build. Keep it disabled if you don't need instant indexing.
-
-**Sitemap** - Auto-generated by `@astrojs/sitemap`. Includes LLMs files when `llms.sitemap: true`.
-
-## Internal Build Utilities
-
-| Utility | Purpose |
-|--------|---------|
-| KIRARI postbuild | Generates `_headers`, `_redirects`, `robots.txt`, LLM files, and Pagefind index |
-| KIRARI IndexNow | Submits URLs to search engines for instant indexing when enabled |
-| KIRARI Analytics | Multi-service analytics (GA, Umami, Plausible, Clarity, etc.) |
-| `@astrojs/sitemap` | XML sitemap generation |
-| KIRARI mail obfuscation | Obfuscates mailto links to prevent email harvesting |
-
-### Mail Obfuscation
-
-The postbuild pipeline automatically encodes `mailto:` links to prevent email harvesters. Usage:
-
-```markdown
-For inquiries, email [contact@example.com](mailto:contact@example.com).
+:::note
+Admonition content
+:::
 ```
 
-The build encodes the address in generated HTML.
+GitHub cards use `https://api.github.com` by default. For runtime proxying via Cloudflare Service Binding or Vercel Functions, set `githubCard.adapter.enabled = true` and `githubCard.apiBase = "/ghc"`. See `kirari.config.toml` `[githubCard]` section.
 
-### Video Embeds
+Available admonition types: `note`, `tip`, `important`, `caution`, `warning`. GitHub-style `[!NOTE]` syntax is also supported via `remark-github-admonitions-to-directives`.
 
-Use custom components for full-width responsive videos:
+### Video Embeds (MDX)
 
 ```mdx
 import YouTube from "../../components/embed/YouTube.astro";
@@ -738,69 +228,259 @@ import Bilibili from "../../components/embed/Bilibili.astro";
 <Bilibili bvid="BV1234567890" />
 ```
 
-Both components use `w-full aspect-video` for responsive 16:9 display.
+Both use `w-full aspect-video` for 16:9 responsive. `.mdx` extension required.
 
-| Category | Technology |
-|----------|------------|
-| Framework | Astro 6.0 |
-| UI | Svelte 5 |
-| Styling | TailwindCSS 4 |
-| Search | Pagefind by default, optional Algolia DocSearch |
-| Code Highlight | Expressive Code |
-| Math | KaTeX |
-| Diagrams | Mermaid |
-| OG Images | Per-post `frontmatter.og` + global `og.defaultImage` fallback |
-| SEO | KIRARI postbuild, @astrojs/sitemap |
+### Mail Obfuscation
 
-| Transitions | View Transitions API / Swup |
-| Scrollbars | OverlayScrollbars |
+`mailto:` links in Markdown are automatically encoded in build output by the postbuild pipeline:
+
+```markdown
+[contact@example.com](mailto:contact@example.com)
+```
+
+### Custom Head / Footer
+
+Inject via `kirari.config.toml`:
+
+```toml
+[head]
+customHtml = '<link rel="stylesheet" href="/custom.css">'
+customScript = '(function(){ /* inline JS, no <script> tag */ })()'
+
+[footer]
+customHtml = '<a href="https://beian.miit.gov.cn/">ICP备xxxxxxxx号</a>'
+customScript = ''
+```
+
+## i18n
+
+BCP 47 public routes. `default-language` in config is served at `/`. Non-default languages use prefixed URLs:
+
+| Language | URL Pattern |
+|----------|-----------|
+| `en-US` (default) | `/posts/hello/`, `/archive/`, `/about/` |
+| `zh-CN` | `/zh-CN/posts/hello/`, `/zh-CN/archive/` |
+
+Key behaviors:
+
+- **`translationKey`** in frontmatter links posts across languages. Omitted → KIRARI infers translations from filename suffixes and content directory structure.
+- **Missing translation**: language switcher falls back to target language homepage (`fallbackToDefault: true`).
+- **Spec pages**: localized content goes in `src/content/spec/<lang>/`. Missing files fall back to default `src/content/spec/`.
+- **`default-language-in-subdir: true`**: puts default language under `/en-US/` too (Hugo-compatible).
+
+Language objects in config:
+
+```toml
+[i18n.languages.zh-CN]
+label = "简体中文"
+locale = "zh-CN"
+direction = "ltr"
+weight = 2
+disabled = false
+contentDir = "src/content/posts/zh-CN"
+```
+
+Legacy array form `languages = ["en-US", "zh-CN"]` still supported; language details fall back to built-in defaults for the 11 known BCP 47 tags.
+
+## Search
+
+**Default**: [Pagefind](https://pagefind.app/), generated during postbuild. Each page receives a language filter — `/zh-CN/` search queries never return English results.
+
+**Optional**: [Algolia DocSearch](https://docsearch.algolia.com/). Enable in config:
+
+```toml
+[search.docsearch]
+enable = true
+appId = "..."
+apiKey = "..."
+indexName = "..."
+filterByLanguage = true
+```
+
+When DocSearch is enabled with valid credentials, Pagefind is disabled at both build and runtime. Pages emit `docsearch:language` meta tags for crawler facets.
+
+## Analytics
+
+8 providers supported. Configure via `kirari.config.toml` or environment variables.
+
+| Provider | TOML Key | Env Variable |
+|----------|----------|-------------|
+| Master switch | `analytics.enable` | `PUBLIC_ANALYTICS_ENABLE` |
+| Google Analytics | `analytics.googleAnalyticsId` | `PUBLIC_GOOGLE_ANALYTICS_ID` |
+| Umami | `analytics.umami.id` | `PUBLIC_UMAMI_ID` |
+| Plausible | `analytics.plausible.domain` | `PUBLIC_PLAUSIBLE_DOMAIN` |
+| Microsoft Clarity | `analytics.clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` |
+| Fathom | `analytics.fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
+| Simple Analytics | `analytics.simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
+| Matomo | `analytics.matomo.siteId` | `PUBLIC_MATOMO_SITE_ID` |
+| Amplitude | `analytics.amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
+
+**Loading condition**: analytics scripts render only when `analytics.enable === true` **and** `import.meta.env.PROD === true`. Development builds never load analytics.
+
+Umami, Plausible, and Matomo support optional `integrity` (SRI) for pinned/self-hosted scripts. Do not attach SRI to provider-managed scripts that update in place — stale hashes will break loading.
+
+## LLM Documentation
+
+Postbuild generates `llms.txt`, `llms-full.txt`, `llms-small.txt` at site root. When `llms.i18n = true`, language-specific files (`llms-en.txt`, `llms-zh.txt`) are also generated.
+
+```toml
+[llms]
+enable = true
+sitemap = true        # Add llms.txt files to sitemap.xml
+title = "Site Name"
+description = "Site description for AI indexing"
+i18n = true
+```
+
+LLMs can fetch `https://yoursite.com/llms.txt` for site structure and content indexing.
+
+## SEO
+
+| Feature | Mechanism | Config |
+|---------|-----------|--------|
+| Sitemap | `@astrojs/sitemap` (auto) | — |
+| Robots.txt | Postbuild pipeline (auto) | Uses `site.url` |
+| IndexNow | Postbuild pipeline | `seo.indexNow = true`, `seo.indexNowKey = "..."` |
+| Search verification | `<meta>` tags | `head.verification.google`, `.bing`, `.yandex`, `.naver` |
+| Canonical URLs | Per-page | Auto-generated from `site.url` |
+| hreflang | Per-page | Auto-generated for i18n pages |
+
+> IndexNow submits URLs to search engines on every build. Disabled by default. Keep it off unless instant indexing is required.
+
+## Architecture
+
+### Astro Islands
+
+Static content → `.astro` components. Interactive UI → `.svelte` components with explicit hydration:
+
+| Component | Framework | Hydration |
+|-----------|-----------|-----------|
+| Search | Svelte | `client:load` (Pagefind) / conditional (DocSearch) |
+| Theme toggle | Svelte | `client:load` |
+| Theme color picker | Svelte | `client:only` (browser-localStorage) |
+| Post cards, layouts, nav | Astro | Static (no hydration) |
+
+`client:only` is reserved for the display settings panel — it reads `localStorage` and CSS custom properties and contains no SEO content.
+
+### Page Transition System
+
+Two-path strategy, unified via `TransitionManager` singleton (`src/utils/transition-manager.ts`):
+
+| Browser | Mechanism | Load Strategy |
+|---------|-----------|---------------|
+| Has View Transitions API | Astro `ClientRouter` | Built-in, zero extra bytes |
+| No View Transitions API | Swup + Preload plugin | Dynamic `import()` on first navigation |
+
+**Unified event API** — components register against the same four events regardless of backend:
+
+```ts
+import { transitionManager } from "@utils/transition-manager";
+
+transitionManager.on("transition:after-swap", () => {
+  // Re-initialize DOM-dependent code after navigation
+});
+```
+
+**Critical rule**: do not use `DOMContentLoaded` or `window.onload` for post-navigation init. Those fire only on hard page loads, not on SPA-style transitions.
+
+On `transition:after-swap`, the system restores `<html>` appearance state (theme mode, hue, Expressive Code theme) from `localStorage` + config defaults — not by copying previous DOM.
+
+### Performance
+
+| Technique | Detail |
+|-----------|--------|
+| Font self-hosting | Roboto via `@fontsource/roboto`; only Latin `400/500/700` weights loaded |
+| Responsive images | Banner, avatar, post covers → multi-width srcset via Astro Image / sharp |
+| Icon tree-shaking | Vite plugin blocks all `@iconify-json` JSON imports; only manually registered icons in `astro.config.mjs` are bundled; runtime icons use CDN |
+| Prefetch strategy | `prefetchAll: false`; hover on nav links, tap on mobile menu |
+| Immutable caching | `/_astro/*` — content-hashed filenames → `Cache-Control: public, max-age=31536000, immutable` |
+| HTML caching | Revalidation-friendly (no hash in filename) |
+| Build minification | `esbuild` minifier, `cssCodeSplit: true`, `target: "esnext"` |
+| Chunk size | Warning threshold 700 KB |
+| View Transition state | Restored from `localStorage` + config defaults, not stale DOM copies |
+
+### Caching Headers by Platform
+
+| Platform | File | Rule |
+|----------|------|------|
+| Cloudflare Pages | `dist/_headers` (postbuild) | `/_astro/*` immutable |
+| Netlify | `dist/_headers` (postbuild) | `/_astro/*` immutable |
+| Vercel | `vercel.json` (static) | `/_astro/*` immutable |
+| EdgeOne Pages | `edgeone.json` (static) | `/_astro/*` immutable |
+
+## Build Pipeline
+
+`pnpm build` executes sequentially:
+
+```
+materialize-ghc-adapter.mjs → astro build → postbuild.mjs
+```
+
+1. **`materialize-ghc-adapter.mjs`**: generates `functions/ghc/[[path]].ts` (Cloudflare) or `api/ghc/[...path].ts` (Vercel) only when `githubCard.adapter.enabled = true`
+2. **`astro build`**: standard Astro SSG → `dist/`
+3. **`postbuild.mjs`**: generates `_headers`, `_redirects`, `robots.txt`, Pagefind index, `llms.txt` files, and IndexNow submission
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server |
-| `pnpm build` | Build + generate search index |
-| `pnpm preview` | Preview build locally |
-| `pnpm check` | Astro diagnostics |
-| `pnpm type-check` | TypeScript check |
-| `pnpm new-post` | Create new post from template |
+| Command | Purpose |
+|---------|---------|
+| `pnpm dev` | `astro dev` |
+| `pnpm build` | materialize → astro build → postbuild |
+| `pnpm preview` | `astro preview` |
+| `pnpm check` | `astro check` (type-check `.astro` files) |
+| `pnpm type-check` | `tsc --noEmit` |
+| `pnpm new-post` | Interactive new-post wizard |
 
 ## Directory Structure
 
 ```
 KIRARI/
-├── kirari.config.toml    # Optional readable TOML config
+├── kirari.config.toml          # Site configuration (TOML)
+├── astro.config.mjs            # Astro + integrations + Vite
+├── svelte.config.js            # Svelte compiler options
+├── tsconfig.json
+├── package.json
 ├── src/
-
-│   ├── components/       # UI components
-│   ├── content/posts/    # Blog posts (Markdown)
-│   ├── content/spec/     # Static pages content
-│   ├── _data/            # Data files such as friends.json
-│   ├── i18n/             # Translations (10 languages)
-│   ├── layouts/          # Page layouts
-│   ├── pages/            # Routes
-│   │   └── rss.xml.ts           # RSS feed
-│   ├── plugins/          # Custom rehype/remark plugins
-│   ├── styles/           # CSS/Stylus
-│   ├── utils/            # Helper functions (including env utilities)
-│   ├── constants.ts      # Main configuration
-│   └── config.ts         # Exported config modules
-
-├── public/               # Static assets
-└── scripts/              # Build scripts
+│   ├── constants.ts            # Loads config via config-loader.ts
+│   ├── config.ts               # Re-exports Config, deprecated getConfig
+│   ├── types/config.ts         # TypeScript type definitions for Config
+│   ├── components/             # .astro and .svelte components
+│   ├── content/
+│   │   ├── config.ts           # Zod schema for content collections
+│   │   ├── posts/              # Blog posts (Markdown/MDX)
+│   │   └── spec/               # Static pages (about, friends)
+│   ├── _data/                  # JSON data (friends.json)
+│   ├── i18n/                   # Translation dictionaries (11 languages)
+│   ├── layouts/                # Page layouts
+│   ├── pages/                  # File-based routes
+│   ├── plugins/                # remark/rehype/Expressive Code plugins
+│   ├── styles/                 # CSS, Stylus (markdown-extend.styl)
+│   └── utils/                  # config-loader, transition-manager, env
+├── scripts/                    # Build pipeline scripts
+├── adapters/                   # Adapter templates (ghc-card)
+├── public/                     # Static assets
+└── dist/                       # Build output (gitignored)
 ```
+
+## Release Validation
+
+```bash
+pnpm install --frozen-lockfile
+pnpm type-check
+pnpm astro check
+pnpm build
+```
+
+CI/CD providers must use the committed `pnpm-lock.yaml`. Dependency refreshes stay within declared semver ranges for patch releases. `@astrojs/check` is dev-only.
 
 ## Changelog
 
-See [CHANGELOG.md](./CHANGELOG.md) for release history.
+[CHANGELOG.md](./CHANGELOG.md)
 
 ## Credits
 
-This project pays tribute to:
-
-- [saicaca/fuwari](https://github.com/saicaca/fuwari) - Original theme
-- [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) - Enhanced fork
+- [saicaca/fuwari](https://github.com/saicaca/fuwari) — original theme
+- [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) — enhanced fork
 
 ## License
 

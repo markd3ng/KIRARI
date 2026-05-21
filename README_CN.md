@@ -11,710 +11,214 @@
 
 # KIRARI
 
-一个基于 **Astro 6** + **Svelte 5** + **TailwindCSS 4** 构建的现代化、高性能静态博客主题。支持可配置 OG 图片、全文搜索、流畅的页面过渡以及 LLM 文档支持。
+静态博客主题。**Astro 6** + **Svelte 5** + **Tailwind CSS v4**。通过 `kirari.config.toml` 配置。支持 Cloudflare Pages、Vercel、Netlify、EdgeOne Pages 部署。
 
-## 特性
+## 技术栈
 
-- **可配置 OG 图片** - 支持单篇 `frontmatter.og` 自定义，未设置时回退到 `og.defaultImage`
-
-- **全文搜索** - 基于 Pagefind，支持防抖和并发请求处理
-- **Mermaid 图表** - 流程图、时序图等，客户端渲染
-- **数学公式** - 使用 KaTeX 渲染 LaTeX
-- **Hugo-like i18n** - 语言前缀 URL、文章 `translationKey`、语言切换、canonical 与 `hreflang`
-- **LLM 就绪** - 自动生成 `llms.txt` 供 AI 索引
-- **深色模式** - 支持系统偏好检测 + 手动切换
-- **平滑过渡** - View Transitions API，旧浏览器自动降级到 Swup
-- **安全加固** - 所有外链均包含 `rel="noopener noreferrer"`
-- **代码整洁** - 清理未使用参数/文件/依赖，并减少调试日志噪音（不改变功能行为）
+| 类别 | 依赖 | 版本 |
+|------|------|------|
+| 框架 | astro | `^6.0.8` |
+| UI Islands | svelte | `^5.55.5` |
+| CSS | tailwindcss, stylus | `^4.2.4`, `^0.64.0` |
+| 搜索（默认） | pagefind | `^1.5.2` |
+| 搜索（可选） | @docsearch/js (Algolia) | `^4.6.3` |
+| 代码高亮 | astro-expressive-code | `^0.41.7` |
+| 数学公式 | rehype-katex, remark-math, katex | — |
+| 图表 | mermaid | `^11.14.0` |
+| 图标 | astro-icon, @iconify/svelte | — |
+| 字体 | @fontsource/roboto, @fontsource-variable/jetbrains-mono | — |
+| 页面过渡 | View Transitions API（原生）\| swup（降级） | `^4.9.0` |
+| 图片 | sharp, photoswipe | — |
+| 内容 | @astrojs/mdx, remark/rehype 插件链 | — |
+| 订阅 | @astrojs/rss, @astrojs/sitemap | — |
 
 ## 快速开始
 
 ```bash
-# 克隆仓库
 git clone https://github.com/markd3ng/KIRARI.git
 cd KIRARI
-
-# 安装依赖
-pnpm install
-
-# 启动开发服务器
-pnpm dev
-
-# 生产构建
-pnpm build
-
-# 预览构建结果
-pnpm preview
+pnpm install          # 仅支持 pnpm；preinstall 钩子会阻止 npm/yarn
+pnpm dev              # astro dev
+pnpm build            # astro build + postbuild 管线
+pnpm preview          # astro preview
 ```
+
+> **pnpm ≥ 9.14.4 必装。** `preinstall` 钩子阻止 npm/yarn。`package.json` 中 `packageManager` 字段强制。
 
 ## Fork 后最小修改清单
 
-KIRARI 当前仓库本身就是一个可以直接运行的示例站点。Fork 后一般不需要改代码结构，优先替换站点配置、内容和资源即可。
+KIRARI 仓库本身是可直接运行的示例站点。Fork 后只需替换配置和内容。
 
-最小修改文件：
-
-| 文件或目录 | 需要修改什么 | 是否必改 |
-|------------|--------------|----------|
-| `kirari.config.toml` | 站点 URL、标题、副标题、语言、导航、个人资料、横幅、Landing Page 文案、社交链接、SEO 和可选集成 | 必改 |
-| `src/content/posts/` | 删除示例文章，添加自己的 Markdown 或 MDX 文章 | 必改 |
-| `src/content/spec/about.md` | 替换 About 页面内容 | 推荐 |
-| `src/content/spec/friends.md` | 替换 Friends 页面说明，或在 `kirari.config.toml` 中移除 Friends 导航 | 可选 |
-| `src/_data/friends.json` | 替换 Friends 页面使用的友链数据 | 可选 |
-| `src/assets/images/` | 替换 `kirari.config.toml` 引用的头像、横幅和其它本地图片 | 推荐 |
+| 路径 | 操作 | 必改 |
+|------|------|------|
+| `kirari.config.toml` | 设置 `site.url`、`site.title`、`profile.*`、`navBar.*`、`landingPage.*` | 是 |
+| `src/content/posts/` | 删除示例文章，添加自己的 `.md`/`.mdx` | 是 |
+| `src/content/spec/about.md` | 替换关于页内容 | 推荐 |
+| `src/content/spec/friends.md` | 替换友链说明，或在配置中移除 Friends 导航 | 可选 |
+| `src/_data/friends.json` | 替换友链数据 | 可选 |
+| `src/assets/images/` | 替换头像、横幅、Landing Hero 图 | 推荐 |
 | `public/favicon/` | 替换 favicon 文件 | 推荐 |
-| `public/og/default.png` | 替换默认 Open Graph 图片 | 推荐 |
+| `public/og/default.png` | 替换默认 OG 图片 | 推荐 |
 
-修改后建议先跑：
+Fork 后验证：
 
 ```bash
-pnpm type-check
-pnpm astro check
-pnpm build
+pnpm type-check && pnpm astro check && pnpm build
 ```
 
-普通个人博客 fork 不需要修改 `src/components/`、`src/layouts/`、`src/styles/` 或 `src/utils/`。
+普通博客 fork 不需要修改 `src/components/`、`src/layouts/`、`src/styles/` 或 `src/utils/`。
 
 ## 配置
 
-所有设置通过 **`kirari.config.toml`** 配置（Hugo 风格，推荐）。
+统一入口：**项目根目录的 `kirari.config.toml`**。无需编辑 `src/constants.ts`。
 
-配置优先级：**环境变量** → **`kirari.config.toml`** → **默认值**
-
-### 快速开始
-
-编辑项目根目录的 `kirari.config.toml`：
+**优先级链：** 环境变量 → `kirari.config.toml` → `src/utils/config-loader.ts` 默认值
 
 ```toml
 [site]
-url = "https://your-domain.com"
-title = "你的站点"
-subtitle = "你的标语"
-lang = "zh-CN"                 # en-US, zh-CN, zh-TW, zh-HK, ja-JP, ko-KR, es-ES, th-TH, vi-VN, tr-TR, id-ID
-base = "/"                     # 基础路径（例如子目录用 "/blog"）
+url = "https://example.com"
+title = "站点标题"
+lang = "zh-CN"
+base = "/"
 
 [i18n]
 enable = true
-default-language = "en-US"     # 根路径 / 直接作为默认语言
-default-language-in-subdir = false # false: /，true: /en-US/
-disable-default-language-redirect = false # 将 /en-US/... 重定向到 /...
-fallbackToDefault = true       # 缺少翻译时切换到目标语言首页
+default-language = "en-US"
 
 [i18n.languages.en-US]
 label = "English"
 locale = "en-US"
-direction = "ltr"
-weight = 1
-disabled = false
 contentDir = "src/content/posts"
 
 [i18n.languages.zh-CN]
 label = "简体中文"
 locale = "zh-CN"
-direction = "ltr"
-weight = 2
-disabled = false
 contentDir = "src/content/posts/zh-CN"
-
-[search.docsearch]
-enable = false                 # 开启后禁用 Pagefind
-appId = ""
-apiKey = ""
-indexName = ""
-filterByLanguage = true        # 使用 docsearch:language meta tags
-
-[githubCard]
-apiBase = "https://api.github.com" # 仅在启用运行时适配器后使用 "/ghc"
-
-[githubCard.adapter]
-enabled = false                 # true 会在构建前生成可选 /ghc 运行时路由
-provider = "none"               # "cloudflare"、"vercel"、"auto" 或 "none"
-route = "/ghc"
-
-[landingPage]
-enable = true                  # false 恢复经典文章列表首页
-latestCount = 3                # Landing Page 展示的最新文章数量
-heroImage = "assets/images/demo-banner.png"
-eyebrow = "WELCOME TO KIRARI"
-title = "Documenting Ideas."
-highlight = "Sharing Knowledge."
-description = "A space for notes, tutorials, and thoughts on technology and development."
-primaryCtaLabel = "Explore Articles"
-secondaryCtaLabel = "Learn More"
-# 开启后，/ 为 Landing Page，完整文章列表首页保留在 /blog/。
-
-[landingPage.features]
-enable = true                  # false 隐藏特性卡片模块
-
-[[landingPage.features.items]]
-icon = "material-symbols:electric-bolt-rounded"
-title = "Technical Articles"
-description = "In-depth guides and tutorials for developers."
-
-[[landingPage.features.items]]
-icon = "material-symbols:menu-book-outline-rounded"
-title = "Learning Notes"
-description = "Record and share the learning journey."
-
-[site.themeColor]
-hue = 250                      # 0-360（红色: 0, 青色: 200, 天蓝: 250, 粉色: 345）
-fixed = false                  # 隐藏主题色选择器
-
-[site.banner]
-enable = true
-src = "assets/images/banner.png"
-position = "center"            # 'top', 'center', 'bottom'
-
-[site.banner.credit]
-enable = false
-text = ""
-url = ""
-
-[site.toc]
-enable = true                  # 显示目录
-depth = 3                      # 最大标题深度 (1-3)
-
-[[site.favicon]]
-src = "/favicon/icon.png"
-theme = "light"                # 可选: 'light' 或 'dark'
-sizes = "32x32"                # 可选: favicon 尺寸
 
 [profile]
 avatar = "assets/images/avatar.png"
-name = "你的名字"
-bio = "你的简介"
+name = "作者名"
+bio = "个人简介"
 
 [[profile.links]]
 name = "GitHub"
-icon = "fa6-brands:github"     # 访问 https://icones.js.org/ 查看图标代码
+icon = "fa6-brands:github"
 url = "https://github.com/you"
 
-[license]
-enable = true
-name = "CC BY-NC-SA 4.0"
-url = "https://creativecommons.org/licenses/by-nc-sa/4.0/"
-
-[head.verification]
-google = ""                    # Google 搜索控制台验证码
-bing = ""                      # Bing 网站管理员工具验证码
-
-[og]
-defaultImage = "/og/default.png"
-
-[llms]
-enable = true
-sitemap = true
-title = "你的站点"
-description = "站点描述"
-i18n = true
-
-[seo]
-indexNow = false               # 启用 IndexNow 即时搜索引擎索引
-indexNowKey = ""               # IndexNow API 密钥
-```
-
-### 国际化
-
-KIRARI 使用 BCP 47 公开路由。默认情况下，配置项 `default-language` 对应语言不带前缀，例如 `en-US` 使用 `/`、`/archive/`、`/posts/.../`；非默认语言使用 `/zh-CN/` 等前缀。设置 `default-language-in-subdir = true` 后，默认语言也会放到 `/en-US/` 下。
-
-语言可使用 Hugo-like 对象配置 `label`、`locale`、`direction`、`weight`、`disabled`、`contentDir`。旧数组写法 `languages = ["en-US", "zh-CN"]` 仍然兼容。
-
-文章可通过 `translationKey` 建立跨语言关联；未提供时，KIRARI 也会根据语言文件名后缀和语言内容目录自动推断翻译关系：
-
-```yaml
----
-title: Markdown Example
-lang: en-US
-translationKey: markdown
----
-```
-
-如果当前页面存在目标语言翻译，导航栏语言切换会跳转到对应文章；否则回退到目标语言首页。
-
-静态说明页可以放在 `src/content/spec/<lang-slug>/` 下做本地化，例如 `src/content/spec/zh-CN/about.md`。如果目标语言文件不存在，会回退到默认的 `src/content/spec/about.md` 或 `friends.md`。
-
-### 搜索
-
-Pagefind 是默认本地搜索。KIRARI 会为每个生成页面写入语言过滤信息，并在当前语言范围内搜索，所以 `/zh-CN/` 不会混入英文结果。
-
-可以通过 `[search.docsearch]` 或 `PUBLIC_DOCSEARCH_*` 环境变量启用 Algolia DocSearch。当 DocSearch 开启且 `appId`、`apiKey`、`indexName` 都存在时，Pagefind 会在构建和运行时禁用。页面会输出 `docsearch:language`，并把可选的 `[search.docsearch.metaTags]` 写成 `<meta name="docsearch:*">`，供爬虫生成 facet。
-
-### 性能策略
-
-- Roboto 通过 `@fontsource/roboto` 自托管，默认仅加载 Latin `400`、`500`、`700` 字重。
-- Banner、头像、文章封面继续生成响应式图片宽度，降低移动端传输体积并保留显示效果。
-- 通过 fallback `<img>` 渲染的 public 或外部图片会保留调用方传入的 `width` / `height`，让关键布局图片可以避免 CLS，同时不强制所有远程图片必须写死尺寸。
-- Astro prefetch 使用 selective 策略：主导航使用 `hover`，移动/菜单链接使用 `tap`，不启用 `prefetchAll`。
-- `pnpm build` 会生成供 Cloudflare Pages 与 Netlify 使用的 `dist/_headers` 与 `dist/_redirects`，同时通过 `vercel.json` 与 `edgeone.json` 为 Vercel、EdgeOne 设置缓存头。
-- `/_astro/*` 使用 immutable 强缓存，因为文件名带内容 hash；HTML、Pagefind 与非 hash public 文件保持可安全更新。
-
-### 发版维护
-
-- 发版前建议依次运行 `pnpm install --frozen-lockfile`、`pnpm type-check`、`pnpm astro check`、`pnpm build`。
-- patch 发版的依赖刷新默认保持在已声明 semver 范围内；跨 major 升级应作为单独迁移版本处理。
-- `@astrojs/check` 保持在 `devDependencies` 中；验证流程仍继续使用 `pnpm astro check`。
-
-### 导航栏
-
-配置导航链接（支持预设和自定义链接）：
-
-```toml
 [[navBar.links]]
-preset = "Home"                # 预设: Home, Archive, About, Friends
+preset = "Home"
 
 [[navBar.links]]
 preset = "Archive"
 
-[[navBar.links]]
-name = "GitHub"                # 自定义链接
-url = "https://github.com/you"
-external = true                # 新标签页打开，显示外链图标
+[og]
+defaultImage = "/og/default.png"
 ```
 
-### 统计分析
+完整配置参考：直接阅读仓库中的 `kirari.config.toml` — 每个键都带有中英双语注释。
 
-配置分析服务：
+### 环境变量
 
-```toml
-[analytics]
-enable = true                  # 总开关（默认: false）
-googleAnalyticsId = "G-XXXXXXXXXX"
-clarityProjectId = "your-project-id"
-fathomSiteId = "your-site-id"
-simpleAnalyticsDomain = "example.com"
-amplitudeApiKey = "your-api-key"
+敏感信息（API 密钥、分析 ID）请使用环境变量。`.env.local` 已加入 `.gitignore`。
 
-[analytics.umami]
-id = "your-website-id"
-src = "https://analytics.umami.is/script.js"
+| 环境变量 | 覆盖 TOML 键 |
+|---------|------------|
+| `PUBLIC_SITE_URL` | `site.url` |
+| `PUBLIC_SITE_TITLE` | `site.title` |
+| `PUBLIC_ANALYTICS_ENABLE` | `analytics.enable` |
+| `PUBLIC_GOOGLE_ANALYTICS_ID` | `analytics.googleAnalyticsId` |
+| `PUBLIC_UMAMI_ID` | `analytics.umami.id` |
+| `PUBLIC_DOCSEARCH_APP_ID` | `search.docsearch.appId` |
+| `PUBLIC_DOCSEARCH_API_KEY` | `search.docsearch.apiKey` |
+| `PUBLIC_DOCSEARCH_INDEX_NAME` | `search.docsearch.indexName` |
+| `PUBLIC_INDEXNOW_ENABLE` | `seo.indexNow` |
+| `PUBLIC_INDEXNOW_KEY` | `seo.indexNowKey` |
+| `PUBLIC_GITHUB_CARD_API_BASE` | `githubCard.apiBase` |
 
-[analytics.plausible]
-domain = "example.com"
-src = "https://plausible.io/js/script.js"
+## 内容创作
 
-[analytics.matomo]
-siteId = "1"
-src = "https://matomo.example.com/piwik.js"
-```
+### Frontmatter
 
-**分析服务表格：**
-
-| 服务 | 配置 |
-|------|------|
-| Google Analytics | `googleAnalyticsId` |
-| Umami | `umami.id`, `umami.src`（可选）|
-| Plausible | `plausible.domain`, `plausible.src`（可选）|
-| Microsoft Clarity | `clarityProjectId` |
-| Fathom | `fathomSiteId` |
-| Simple Analytics | `simpleAnalyticsDomain` |
-| Matomo | `matomo.siteId`, `matomo.src` |
-| Amplitude | `amplitudeApiKey` |
-
-分析脚本仅在同时满足以下条件时加载：
-1. `analytics.enable = true`
-2. 生产环境构建（`import.meta.env.PROD`）
-
-### 环境变量（仅敏感数据）
-
-对于敏感数据（API 密钥、分析 ID），建议使用环境变量而非 TOML：
-
-**在项目根目录创建 `.env.local`：**
-
-```bash
-# 统计分析（生产环境推荐）
-PUBLIC_ANALYTICS_ENABLE=true
-PUBLIC_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
-PUBLIC_UMAMI_ID=your-website-id
-PUBLIC_UMAMI_SRC=https://analytics.umami.is/script.js
-PUBLIC_PLAUSIBLE_DOMAIN=example.com
-PUBLIC_CLARITY_PROJECT_ID=your-project-id
-PUBLIC_FATHOM_SITE_ID=your-site-id
-PUBLIC_SIMPLE_ANALYTICS_DOMAIN=example.com
-PUBLIC_MATOMO_SITE_ID=1
-PUBLIC_MATOMO_SRC=https://matomo.example.com/piwik.js
-PUBLIC_AMPLITUDE_API_KEY=your-api-key
-
-# SEO
-PUBLIC_INDEXNOW_ENABLE=false
-PUBLIC_INDEXNOW_KEY=your-indexnow-key
-
-# 搜索引擎验证（敏感）
-PUBLIC_GOOGLE_VERIFICATION=your-verification-code
-PUBLIC_BING_VERIFICATION=your-verification-code
-```
-
-**优先级：** 环境变量覆盖 TOML 配置。
-
-> **注意**：`.env.local` 已在 `.gitignore` 中，你的敏感数据不会被提交。
-
-### 部署配置
-
-| 环境 | 配置方式 |
-|------|----------|
-| 本地开发 | 直接编辑 `kirari.config.toml` |
-| 生产环境（非敏感）| 编辑 `kirari.config.toml` 并提交 |
-| 生产环境（敏感）| 在对应托管平台控制台设置环境变量，例如 Vercel、Cloudflare Pages 或 Netlify |
-| 默认回退 | 使用 `src/utils/config-loader.ts` 中的值 |
-
-### GitHub Card Cache 适配器
-
-Markdown GitHub 卡片（`::github` 和 `::githubfile`）默认使用 `https://api.github.com`。运行时适配器必须显式开启。未启用时，KIRARI 不生成 `/ghc` 运行时 route，仍适合纯静态部署。
-
-先选择模式：
-
-| 托管模式 | `apiBase` | Adapter | KIRARI 构建时生成的运行时 route | Token 位置 |
-|----------|-----------|---------|----------------------------------|------------|
-| 纯静态或不部署缓存服务 | `https://api.github.com` | 关闭 | 不生成 | KIRARI 不需要 token |
-| Cloudflare Pages + `KIRARI-GHCard-Cache` Worker | `/ghc` | `provider = "cloudflare"` | `functions/ghc/[[path]].ts` | 可选 `GITHUB_TOKEN` 配在外部 Worker Secret |
-| Vercel 同项目 Function | `/ghc` | `provider = "vercel"` | `api/ghc/[...path].ts` | 可选 `GITHUB_TOKEN` 配在 Vercel Project Environment Variables |
-
-默认直连 GitHub：
-
-```toml
-[githubCard]
-apiBase = "https://api.github.com"
-
-[githubCard.adapter]
-enabled = false
-provider = "none"
-route = "/ghc"
-serviceBinding = "GHCARD_CACHE"
-```
-
-Cloudflare Pages + `KIRARI-GHCard-Cache`：
-
-```toml
-[githubCard]
-apiBase = "/ghc"
-
-[githubCard.adapter]
-enabled = true
-provider = "cloudflare"
-route = "/ghc"
-serviceBinding = "GHCARD_CACHE"
-```
-
-生产请求链路：
-
-```text
-Browser -> KIRARI Pages /ghc/* -> Pages Function -> GHCARD_CACHE Service Binding -> kirari-ghcard-cache Worker
-```
-
-Cloudflare Pages 需要配置 Service Binding：
-
-| 字段 | 值 |
-|------|----|
-| Binding name | `GHCARD_CACHE` |
-| Service | `kirari-ghcard-cache` |
-
-Dashboard 路径：**Workers & Pages → KIRARI Pages Project → Settings → Bindings → Add binding → Service binding**。
-
-Cloudflare token 归属：
-
-| Token | 配置位置 | 用途 |
-|-------|----------|------|
-| `GITHUB_TOKEN` | `KIRARI-GHCard-Cache` Cloudflare Worker Secret | Worker 运行时请求 GitHub REST API |
-| `CLOUDFLARE_API_TOKEN` | `KIRARI-GHCard-Cache` GitHub Repository Secrets | Worker 项目 GitHub Actions 部署用 |
-| `CLOUDFLARE_ACCOUNT_ID` | `KIRARI-GHCard-Cache` GitHub Repository Secrets | Worker 部署目标 Cloudflare account |
-
-Cloudflare Service Binding 路径下，KIRARI 本身不需要配置 `GITHUB_TOKEN`。
-
-Vercel 免费版同项目适配器：
-
-```toml
-[githubCard]
-apiBase = "/ghc"
-
-[githubCard.adapter]
-enabled = true
-provider = "vercel"
-route = "/ghc"
-```
-
-Vercel 适配器默认只使用同项目 Function 和 HTTP 缓存头，不要求 Vercel KV、Upstash、Supabase、Firewall、Deployment Protection 或 custom domain。
-
-Vercel token 归属：
-
-| Token | 配置位置 | 用途 |
-|-------|----------|------|
-| `GITHUB_TOKEN` | Vercel Project → Settings → Environment Variables | 生成的 Vercel Function 运行时请求 GitHub REST API |
-| `CLOUDFLARE_API_TOKEN` | 不使用 | Vercel 路径不部署 Cloudflare Worker |
-| `CLOUDFLARE_ACCOUNT_ID` | 不使用 | Vercel 路径不部署 Cloudflare Worker |
-
-不要把真实 token 写入 `kirari.config.toml` 或仓库文件。
-
-验证：
-
-| 检查项 | 预期结果 |
-|--------|----------|
-| Adapter 关闭 | 不生成 `functions/ghc` 或 `api/ghc` route |
-| Cloudflare adapter 开启 | 构建前生成 `functions/ghc/[[path]].ts` |
-| Vercel adapter 开启 | 构建前生成 `api/ghc/[...path].ts` |
-| Adapter 开启后的 Browser Network | GitHub card 请求走 `/ghc/repos/...` 和 `/ghc/avatar/...` |
-
-回滚到直连 GitHub：
-
-```toml
-[githubCard]
-apiBase = "https://api.github.com"
-
-[githubCard.adapter]
-enabled = false
-provider = "none"
-```
-
-
-## 主要功能
-
-
-### 撰写文章
-
-在 `src/content/posts/` 中创建 Markdown 文件：
-
-```markdown
+```yaml
 ---
 title: 文章标题
 published: 2024-05-01
-updated: 2024-05-02      # 可选
-description: 简短描述    # 可选
-image: /cover.png        # 可选，横幅图片
-og: /og/custom.png       # 可选，当前文章专用 OG 图片
-slug: custom-post-url    # 可选，自定义 URL slug
-tags: [标签1, 标签2]     # 可选
-category: Guides         # 可选
-draft: false             # 在生产环境隐藏
-lang: zh-CN              # BCP 47 语言标签
-mermaid: true            # 启用 Mermaid 图表
+updated: 2024-05-02           # 可选；与发布时间并列显示
+description: 简短摘要        # 用于 meta description 和文章卡片
+image: /cover.png             # 相对于 /public；作为横幅显示
+og: /og/custom.png            # 单篇文章 OG 图片覆盖
+slug: custom-post-url         # 覆盖自动生成的 slug
+tags: [标签1, 标签2]
+tagLabels:                    # 可选：与 slug 不同的显示名
+  标签1: "标签一"
+category: Guides
+categoryLabel: "教程系列"     # 可选
+draft: false                  # true 在生产环境隐藏
+lang: zh-CN                   # BCP 47；i18n 必须
+mermaid: true                 # 启用客户端 Mermaid 渲染
 ---
-
-你的内容在这里。
 ```
 
-文章 URL 按以下优先级生成：
+### URL 生成
 
-- 优先使用 frontmatter 中的 `slug`。
-- 未提供时使用 `[posts].slug-strategy` 配置的回退策略。
-- `file` 保持当前基于文件路径的路由，例如 `markdown.md` -> `/posts/markdown/`。
-- `crc32` 根据 Astro content entry id 生成 8 位十六进制 slug。
+优先级：frontmatter `slug` → `posts.slugStrategy` 配置。
 
-KIRARI 默认保留 `/posts/example/` 这种 pretty URL；`.html` 伪静态 URL 对现代 SEO 没有实质收益，还会让 canonical、RSS、sitemap 和 i18n 路由更容易产生重复或不一致。
+| 策略 | 行为 | 示例 |
+|------|------|------|
+| `file`（默认） | 基于文件路径 | `posts/hello/world.md` → `/posts/hello/world/` |
+| `crc32` | content entry ID 的 8 位十六进制 | → `/posts/a1b2c3d4/` |
+
+KIRARI 强制 trailing slash（`astro.config.mjs` 中 `trailingSlash: "always"`）。不支持 `.html` 伪静态 URL — 会导致 canonical、RSS、sitemap 和 i18n 路由不一致。
 
 ### 标签与分类显示名
 
-标签和分类使用 slug（小写、去除首尾空格）作为 URL 标识符。你可以选择性指定与 slug 不同的显示名称：
+标签/分类使用 slug（小写、去空格）作为 URL 标识符：`/tags/标签1/`。`tagLabels` 和 `categoryLabel` 提供 UI 显示名。
 
-```markdown
----
-tags: [demo, tutorial]
-tagLabels:
-  demo: "演示 Demo"
-  tutorial: "Tutorial Guide"
-category: devops
-categoryLabel: "DevOps 运维"
----
-```
-
-**工作原理：**
-- URL 保持 `/tags/demo/`（使用 slug）
-- 页面显示 "演示 Demo"（使用 `tagLabels`）
-- 若未声明标签名，则显示原始 slug 值
-
-**冲突检测日志：**
-当多篇文章为同一 slug 声明了不同的显示名时，构建时会输出警告：
+多篇文章为同一 slug 声明不同显示名时，构建会输出警告：
 
 ```
 [DisplayName Conflict] tag "demo": existing="演示" vs new="Demo示例" (source: posts/another-post.md)
 ```
 
-后声明的值会覆盖先前的值。通过此日志可发现并修复命名不一致问题。
-
-### OG 图片
-
-- **文章页面**：优先使用 `frontmatter.og`
-- **回退规则**：未设置 `frontmatter.og` 时使用 `og.defaultImage`
-- **其他页面**：使用 `og.defaultImage` 配置的默认图片
-
+后写入覆盖先写入。通过此日志可发现命名不一致。
 
 ### Mermaid 图表
 
-在 frontmatter 中添加 `mermaid: true`：
-
-````markdown
+```markdown
 ---
 mermaid: true
 ---
 
-```mermaid
+\`\`\`mermaid
 graph TD;
     A --> B;
-```
-````
-
-### 友链页面
-
-编辑 `src/_data/friends.json`：
-
-```json
-[
-  {
-    "siteTitle": "朋友的博客",
-    "siteDesc": "描述",
-    "siteUrl": "https://example.com",
-    "siteIcon": "https://example.com/avatar.png"
-  }
-]
+\`\`\`
 ```
 
-### 自定义 Head/Footer
+Mermaid 渲染仅在客户端执行。`mermaid: true` 为该页面注入 Mermaid 运行时。
 
-```typescript
-// src/constants.ts
-head: {
-  verification: {
-    google: "你的验证码",
-    bing: "你的验证码"
-  },
-  customHtml: "",
-  customScript: ""
-},
-footer: {
-  customHtml: "",
-  customScript: ""
-}
+### 数学公式（KaTeX）
+
+插件链中已配置 `remark-math` + `rehype-katex`。直接写 LaTeX 行内或块级公式，无需 frontmatter 标记。
+
+### GitHub 卡片与 Admonitions
+
+Markdown 指令语法，由 remark→rehype 插件链处理：
+
+```
+::github{repo="owner/repo"}
+::githubfile{repo="owner/repo" path="src/main.ts"}
+
+:::note
+Admonition 内容
+:::
 ```
 
-**`customScript`** - 第三方脚本（分析、广告）会以内联方式渲染在 `<head>` 中。只需提供脚本**内容**（无需 `<script>` 标签）：
+GitHub 卡片默认使用 `https://api.github.com`。如需通过 Cloudflare Service Binding 或 Vercel Functions 进行运行时代理，设置 `githubCard.adapter.enabled = true` 和 `githubCard.apiBase = "/ghc"`。参见 `kirari.config.toml` 的 `[githubCard]` 节。
 
-```typescript
-footer: {
-  customScript: `(function(c,l,a,r,i,t,y){
-    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-  })(window, document, "clarity", "script", "YOUR_PROJECT_ID");`
-}
-```
+可用 admonition 类型：`note`、`tip`、`important`、`caution`、`warning`。同时支持 GitHub 风格 `[!NOTE]` 语法（`remark-github-admonitions-to-directives` 转换）。
 
-**`customHtml`** - 用于完全控制 HTML/脚本标签。如果你需要自定义属性，请使用此选项：
-
-```typescript
-head: {
-  customHtml: `<script type="text/javascript" src="https://example.com/script.js"></script>`
-}
-```
-
-### LLM 文档
-
-由 KIRARI 内置 postbuild 管线生成。构建时生成：
-- `llms.txt` - 主索引（Markdown 格式供 LLM 使用）
-- `llms-full.txt` - 完整内容合并文件
-- `llms-small.txt` - 精简版本
-- `llms-en.txt`、`llms-zh.txt` - 按语言分类的文件（当 `i18n: true` 时）
-
-**配置** 在 `src/constants.ts` 中：
-
-```typescript
-llms: {
-  enable: true,        // 启用/禁用生成
-  sitemap: true,       // 将 llms.txt 文件添加到 sitemap
-  title: "你的站点",   // llms.txt 中的站点标题
-  description: "供 LLM 使用的站点描述",
-  i18n: true           // 生成按语言分类的文件
-}
-```
-
-**LLM 使用方式**：AI 助手可以获取 `https://yoursite.com/llms.txt` 来了解你的站点结构和内容，从而更好地回答关于你文档或博客的问题。
-
-### 统计分析
-
-通过 KIRARI 内置 `Analytics.astro` 组件渲染，支持多种分析服务。在 `kirari.config.toml` 中配置或通过环境变量设置。
-
-分析脚本仅在同时满足以下条件时加载：
-1. `analytics.enable`（或 `PUBLIC_ANALYTICS_ENABLE`）为 `true`
-2. 当前为生产环境（`import.meta.env.PROD`）
-
-
-
-```typescript
-// src/constants.ts
-analytics: {
-  enable: true,                            // 总开关（默认：false）
-  googleAnalyticsId: "G-XXXXXXXXXX",       // Google Analytics
-  umami: { id: "your-id", src: "https://..." },  // Umami
-  plausible: { domain: "example.com" },     // Plausible
-  clarityProjectId: "your-project-id",     // Microsoft Clarity
-  fathomSiteId: "your-site-id",            // Fathom
-  simpleAnalyticsDomain: "example.com",    // Simple Analytics
-  matomo: { siteId: "1", src: "https://..." },  // Matomo
-  amplitudeApiKey: "your-api-key"          // Amplitude
-}
-```
-
-**支持的服务：**
-
-| 服务 | 配置键 | 环境变量 |
-|------|--------|----------|
-| **总开关** | `enable` | `PUBLIC_ANALYTICS_ENABLE` |
-| Google Analytics | `googleAnalyticsId` | `PUBLIC_GOOGLE_ANALYTICS_ID` |
-| Umami | `umami.id`, `umami.src` | `PUBLIC_UMAMI_ID`, `PUBLIC_UMAMI_SRC` |
-| Plausible | `plausible.domain`, `plausible.src` | `PUBLIC_PLAUSIBLE_DOMAIN`, `PUBLIC_PLAUSIBLE_SRC` |
-| Microsoft Clarity | `clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID`（推荐）, `PUBLIC_CLARITY_ID`（别名） |
-
-| Fathom | `fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
-| Simple Analytics | `simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
-| Matomo | `matomo.siteId`, `matomo.src` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC` |
-| Amplitude | `amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
-
-> **注意**：脚本直接渲染在 `<head>` 中。
->
-> **兼容说明**：`PUBLIC_CLARITY_PROJECT_ID` 优先级更高；`PUBLIC_CLARITY_ID` 作为向后兼容别名保留。
-
-
-### SEO 与索引
-
-主题内置了 SEO 与索引工具：
-
-**Robots.txt** - 通过 KIRARI postbuild 管线自动生成。无需手动配置；使用你配置中的 `site.url`。
-
-**IndexNow** - 即时搜索引擎索引。**默认关闭**。在 `src/constants.ts` 中启用：
-
-```typescript
-seo: {
-  indexNow: true,              // 启用 IndexNow 集成（默认：false）
-  indexNowKey: "your-api-key"  // 或设置 PUBLIC_INDEXNOW_KEY 环境变量
-}
-```
-
-密钥文件会部署在 `/{key}.txt` 供搜索引擎验证。获取密钥请访问 [indexnow.org](https://www.indexnow.org)。
-也可以通过环境变量覆盖：`PUBLIC_INDEXNOW_ENABLE=true` 与 `PUBLIC_INDEXNOW_KEY=...`。
-
-
-> **注意**：IndexNow 会在每次构建时向搜索引擎发送请求。如果不需要即时索引功能，建议保持关闭。
-
-**Sitemap** - 由 `@astrojs/sitemap` 自动生成。当 `llms.sitemap: true` 时包含 LLMs 文件。
-
-## 内置构建工具
-
-| 工具 | 用途 |
-|------|------|
-| KIRARI postbuild | 生成 `_headers`、`_redirects`、`robots.txt`、LLM 文件和 Pagefind 索引 |
-| KIRARI IndexNow | 启用后向搜索引擎提交 URL 实现即时索引 |
-| KIRARI Analytics | 多服务统计分析（GA、Umami、Plausible、Clarity 等） |
-| `@astrojs/sitemap` | XML sitemap 生成 |
-| KIRARI 邮箱混淆 | 混淆 mailto 链接防止邮箱被采集 |
-
-### 邮箱混淆
-
-自动编码 `mailto:` 链接防止邮箱采集器。使用方式：
-
-```markdown
-如有咨询，请发邮件至 [contact@example.com](mailto:contact@example.com)。
-```
-
-构建会在生成的 HTML 中编码邮箱地址。
-
-### 视频嵌入
-
-使用自定义组件实现全宽响应式视频：
+### 视频嵌入（MDX）
 
 ```mdx
 import YouTube from "../../components/embed/YouTube.astro";
@@ -724,70 +228,259 @@ import Bilibili from "../../components/embed/Bilibili.astro";
 <Bilibili bvid="BV1234567890" />
 ```
 
-两个组件都使用 `w-full aspect-video` 实现 16:9 响应式显示。
+两者均使用 `w-full aspect-video` 实现 16:9 响应式。需要使用 `.mdx` 扩展名。
 
-## 技术栈
+### 邮箱混淆
 
-| 类别 | 技术 |
+Markdown 中的 `mailto:` 链接在构建输出中自动编码（postbuild 管线）：
+
+```markdown
+[contact@example.com](mailto:contact@example.com)
+```
+
+### 自定义 Head / Footer
+
+通过 `kirari.config.toml` 注入：
+
+```toml
+[head]
+customHtml = '<link rel="stylesheet" href="/custom.css">'
+customScript = '(function(){ /* 内联 JS，无需 <script> 标签 */ })()'
+
+[footer]
+customHtml = '<a href="https://beian.miit.gov.cn/">京ICP备xxxxxxxx号</a>'
+customScript = ''
+```
+
+## 国际化
+
+BCP 47 公开路由。配置中的 `default-language` 直接在 `/` 提供服务。非默认语言使用前缀 URL：
+
+| 语言 | URL 模式 |
+|------|---------|
+| `en-US`（默认） | `/posts/hello/`、`/archive/`、`/about/` |
+| `zh-CN` | `/zh-CN/posts/hello/`、`/zh-CN/archive/` |
+
+关键行为：
+
+- **`translationKey`** 在 frontmatter 中建立跨语言文章关联。省略时，KIRARI 根据文件名后缀和内容目录结构自动推断。
+- **缺失翻译**：语言切换回退到目标语言首页（`fallbackToDefault: true`）。
+- **说明页**：本地化内容放在 `src/content/spec/<lang>/`。缺失文件回退到默认 `src/content/spec/`。
+- **`default-language-in-subdir: true`**：默认语言也放到 `/en-US/` 下（兼容 Hugo）。
+
+语言对象配置：
+
+```toml
+[i18n.languages.zh-CN]
+label = "简体中文"
+locale = "zh-CN"
+direction = "ltr"
+weight = 2
+disabled = false
+contentDir = "src/content/posts/zh-CN"
+```
+
+旧版数组写法 `languages = ["en-US", "zh-CN"]` 仍支持；语言细节回退到 11 个已知 BCP 47 标签的内置默认值。
+
+## 搜索
+
+**默认**：[Pagefind](https://pagefind.app/)，在 postbuild 阶段生成。每个页面写入语言过滤信息 — `/zh-CN/` 下搜索不会混入英文结果。
+
+**可选**：[Algolia DocSearch](https://docsearch.algolia.com/)。在配置中启用：
+
+```toml
+[search.docsearch]
+enable = true
+appId = "..."
+apiKey = "..."
+indexName = "..."
+filterByLanguage = true
+```
+
+当 DocSearch 启用且凭证有效时，Pagefind 在构建和运行时均被禁用。页面会输出 `docsearch:language` meta 标签供爬虫分面。
+
+## 统计分析
+
+支持 8 种统计服务。通过 `kirari.config.toml` 或环境变量配置。
+
+| 服务 | TOML 键 | 环境变量 |
+|------|---------|---------|
+| 总开关 | `analytics.enable` | `PUBLIC_ANALYTICS_ENABLE` |
+| Google Analytics | `analytics.googleAnalyticsId` | `PUBLIC_GOOGLE_ANALYTICS_ID` |
+| Umami | `analytics.umami.id` | `PUBLIC_UMAMI_ID` |
+| Plausible | `analytics.plausible.domain` | `PUBLIC_PLAUSIBLE_DOMAIN` |
+| Microsoft Clarity | `analytics.clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` |
+| Fathom | `analytics.fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
+| Simple Analytics | `analytics.simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
+| Matomo | `analytics.matomo.siteId` | `PUBLIC_MATOMO_SITE_ID` |
+| Amplitude | `analytics.amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
+
+**加载条件**：统计脚本仅在 `analytics.enable === true` **且** `import.meta.env.PROD === true` 时渲染。开发构建永不加载统计。
+
+Umami、Plausible、Matomo 支持可选 `integrity`（SRI），适用于固定版本或自托管脚本。不要对供应商托管、会原地更新的脚本配置 SRI — 过期哈希会导致加载失败。
+
+## LLM 文档
+
+Postbuild 在站点根目录生成 `llms.txt`、`llms-full.txt`、`llms-small.txt`。当 `llms.i18n = true` 时，还会生成按语言分类的文件（`llms-en.txt`、`llms-zh.txt`）。
+
+```toml
+[llms]
+enable = true
+sitemap = true        # 将 llms.txt 文件加入 sitemap.xml
+title = "站点名称"
+description = "供 AI 索引的站点描述"
+i18n = true
+```
+
+LLM 可通过 `https://yoursite.com/llms.txt` 获取站点结构和内容索引。
+
+## SEO
+
+| 功能 | 机制 | 配置 |
+|------|------|------|
+| Sitemap | `@astrojs/sitemap`（自动） | — |
+| Robots.txt | Postbuild 管线（自动） | 使用 `site.url` |
+| IndexNow | Postbuild 管线 | `seo.indexNow = true`，`seo.indexNowKey = "..."` |
+| 搜索验证 | `<meta>` 标签 | `head.verification.google`、`.bing`、`.yandex`、`.naver` |
+| Canonical URL | 每页 | 基于 `site.url` 自动生成 |
+| hreflang | 每页 | i18n 页面自动生成 |
+
+> IndexNow 在每次构建时向搜索引擎提交 URL。默认关闭。除非需要即时索引，否则保持关闭。
+
+## 架构
+
+### Astro Islands
+
+静态内容 → `.astro` 组件。交互 UI → `.svelte` 组件，使用精确 hydration 指令：
+
+| 组件 | 框架 | Hydration |
+|------|------|-----------|
+| 搜索 | Svelte | `client:load`（Pagefind）/ 条件加载（DocSearch） |
+| 主题切换 | Svelte | `client:load` |
+| 主题色选择器 | Svelte | `client:only`（浏览器 localStorage） |
+| 文章卡片、布局、导航 | Astro | 静态（无 hydration） |
+
+`client:only` 仅用于显示设置面板 — 该组件读取 `localStorage` 和 CSS 自定义属性，不包含 SEO 内容。
+
+### 页面过渡系统
+
+双路径策略，通过 `TransitionManager` 单例（`src/utils/transition-manager.ts`）统一调度：
+
+| 浏览器 | 机制 | 加载策略 |
+|--------|------|---------|
+| 支持 View Transitions API | Astro `ClientRouter` | 内置，零额外体积 |
+| 不支持 View Transitions API | Swup + Preload 插件 | 首次导航时动态 `import()` |
+
+**统一事件 API** — 无论底层实现如何，组件都注册相同的四个事件：
+
+```ts
+import { transitionManager } from "@utils/transition-manager";
+
+transitionManager.on("transition:after-swap", () => {
+  // 导航后重新初始化 DOM 依赖代码
+});
+```
+
+**关键规则**：不要使用 `DOMContentLoaded` 或 `window.onload` 处理导航后初始化。这些事件仅在硬页面加载时触发，不会在 SPA 风格过渡中触发。
+
+`transition:after-swap` 时，系统从 `localStorage` + 配置默认值恢复 `<html>` 外观状态（主题模式、色相、Expressive Code 主题）— 而非复制旧 DOM。
+
+### 性能
+
+| 技术 | 细节 |
 |------|------|
-| 框架 | Astro 6.0 |
-| UI | Svelte 5 |
-| 样式 | TailwindCSS 4 |
-| 搜索 | 默认 Pagefind，可选 Algolia DocSearch |
-| 代码高亮 | Expressive Code |
-| 数学 | KaTeX |
-| 图表 | Mermaid |
-| OG 图片 | 单篇 `frontmatter.og` + 全站 `og.defaultImage` 回退 |
-| SEO | KIRARI postbuild, @astrojs/sitemap |
-| 过渡动画 | View Transitions API / Swup |
-| 滚动条 | OverlayScrollbars |
+| 字体自托管 | Roboto 通过 `@fontsource/roboto` 加载，仅 Latin `400/500/700` 字重 |
+| 响应式图片 | Banner、头像、文章封面 → 多宽度 srcset（Astro Image / sharp） |
+| 图标 Tree-Shaking | Vite 插件拦截所有 `@iconify-json` JSON 导入；仅 `astro.config.mjs` 中手动注册的图标被打包；运行时图标使用 CDN |
+| Prefetch 策略 | `prefetchAll: false`；导航链接 hover，移动菜单 tap |
+| 不可变缓存 | `/_astro/*` — 文件名含内容哈希 → `Cache-Control: public, max-age=31536000, immutable` |
+| HTML 缓存 | 支持 revalidation（文件名不含哈希） |
+| 构建压缩 | `esbuild` 压缩器，`cssCodeSplit: true`，`target: "esnext"` |
+| 分块大小 | 警告阈值 700 KB |
+| View Transition 状态 | 从 `localStorage` + 配置默认值恢复，不复制过期 DOM |
+
+### 各平台缓存规则
+
+| 平台 | 文件 | 规则 |
+|------|------|------|
+| Cloudflare Pages | `dist/_headers`（postbuild 生成） | `/_astro/*` immutable |
+| Netlify | `dist/_headers`（postbuild 生成） | `/_astro/*` immutable |
+| Vercel | `vercel.json`（静态文件） | `/_astro/*` immutable |
+| EdgeOne Pages | `edgeone.json`（静态文件） | `/_astro/*` immutable |
+
+## 构建管线
+
+`pnpm build` 顺序执行：
+
+```
+materialize-ghc-adapter.mjs → astro build → postbuild.mjs
+```
+
+1. **`materialize-ghc-adapter.mjs`**：仅当 `githubCard.adapter.enabled = true` 时，生成 `functions/ghc/[[path]].ts`（Cloudflare）或 `api/ghc/[...path].ts`（Vercel）
+2. **`astro build`**：标准 Astro SSG → `dist/`
+3. **`postbuild.mjs`**：生成 `_headers`、`_redirects`、`robots.txt`、Pagefind 索引、`llms.txt` 文件及 IndexNow 提交
 
 ## 脚本命令
 
-| 命令 | 描述 |
+| 命令 | 用途 |
 |------|------|
-| `pnpm dev` | 启动开发服务器 |
-| `pnpm build` | 构建 + 生成搜索索引 |
-| `pnpm preview` | 本地预览构建结果 |
-| `pnpm check` | Astro 诊断检查 |
-| `pnpm type-check` | TypeScript 类型检查 |
-| `pnpm new-post` | 从模板创建新文章 |
+| `pnpm dev` | `astro dev` |
+| `pnpm build` | materialize → astro build → postbuild |
+| `pnpm preview` | `astro preview` |
+| `pnpm check` | `astro check`（检查 `.astro` 文件） |
+| `pnpm type-check` | `tsc --noEmit` |
+| `pnpm new-post` | 交互式创建新文章 |
 
 ## 目录结构
 
 ```
 KIRARI/
-├── kirari.config.toml    # 可选 TOML 可读配置
+├── kirari.config.toml          # 站点配置（TOML）
+├── astro.config.mjs            # Astro + 集成 + Vite
+├── svelte.config.js            # Svelte 编译器选项
+├── tsconfig.json
+├── package.json
 ├── src/
-
-│   ├── components/       # UI 组件
-│   ├── content/posts/    # 博客文章（Markdown）
-│   ├── content/spec/     # 静态页面内容
-│   ├── _data/            # 数据文件，例如 friends.json
-│   ├── i18n/             # 翻译文件（10 种语言）
-│   ├── layouts/          # 页面布局
-│   ├── pages/            # 路由
-│   │   └── rss.xml.ts           # RSS 订阅
-│   ├── plugins/          # 自定义 rehype/remark 插件
-│   ├── styles/           # CSS/Stylus
-│   ├── utils/            # 工具函数（含环境变量读取工具）
-│   ├── constants.ts      # 主配置文件
-│   └── config.ts         # 配置模块导出
-
-├── public/               # 静态资源
-└── scripts/              # 构建脚本
+│   ├── constants.ts            # 通过 config-loader.ts 加载配置
+│   ├── config.ts               # 再导出 Config、废弃的 getConfig
+│   ├── types/config.ts         # Config 的 TypeScript 类型定义
+│   ├── components/             # .astro 和 .svelte 组件
+│   ├── content/
+│   │   ├── config.ts           # 内容集合 Zod schema
+│   │   ├── posts/              # 博客文章（Markdown/MDX）
+│   │   └── spec/               # 静态页面（about、friends）
+│   ├── _data/                  # JSON 数据（friends.json）
+│   ├── i18n/                   # 翻译字典（11 种语言）
+│   ├── layouts/                # 页面布局
+│   ├── pages/                  # 基于文件的路由
+│   ├── plugins/                # remark/rehype/Expressive Code 插件
+│   ├── styles/                 # CSS、Stylus（markdown-extend.styl）
+│   └── utils/                  # config-loader、transition-manager、env
+├── scripts/                    # 构建管线脚本
+├── adapters/                   # 适配器模板（ghc-card）
+├── public/                     # 静态资源
+└── dist/                       # 构建输出（gitignored）
 ```
+
+## 发版验证
+
+```bash
+pnpm install --frozen-lockfile
+pnpm type-check
+pnpm astro check
+pnpm build
+```
+
+CI/CD 必须使用仓库中的 `pnpm-lock.yaml`。Patch 发版的依赖刷新保持在声明的 semver 范围内。`@astrojs/check` 仅用于开发。
 
 ## 更新日志
 
-参见 [CHANGELOG.md](./CHANGELOG.md) 了解版本历史。
+[CHANGELOG.md](./CHANGELOG.md)
 
 ## 致谢
 
-本项目致敬以下项目：
-
-- [saicaca/fuwari](https://github.com/saicaca/fuwari) - 原始主题
-- [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) - 增强分支
+- [saicaca/fuwari](https://github.com/saicaca/fuwari) — 原始主题
+- [JoeyC-Dev/saicaca-fuwari](https://github.com/JoeyC-Dev/saicaca-fuwari) — 增强分支
 
 ## 许可证
 
