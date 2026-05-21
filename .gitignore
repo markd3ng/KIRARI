@@ -20,6 +20,7 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+**/.DS_Store
 
 .vercel
 
@@ -33,13 +34,22 @@ yarn.lock
 .vscode/
 _content_repo/
 
-# codebuddy
+# AI/local assistant state
 .codebuddy/
+.workbuddy/
+.cursor/
+.claude/
+.codex/
 
 # Skilld cache references (recreated by `skilld install`)
 .skilld
 
 # local performance reports
+coverage/
+playwright-report/
+test-results/
+screenshots/
+recordings/
 artifacts/psi/
 artifacts/lighthouse/
 lighthouse*.json
