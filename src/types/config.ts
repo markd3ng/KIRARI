@@ -99,12 +99,16 @@ export type HeadConfig = {
 		naver: string;
 	};
 	customHtml: string;
+	customHtmlFile: string;
 	customScript: string;
+	customScriptFile: string;
 };
 
 export type FooterConfig = {
 	customHtml: string;
+	customHtmlFile: string;
 	customScript: string;
+	customScriptFile: string;
 };
 
 export type LIGHT_DARK_MODE =

@@ -414,16 +414,22 @@ url = "https://github.com/saicaca/fuwari"
 [head]
 # Custom HTML injected into <head> / 注入到 <head> 的自定义 HTML
 # Type: string / 类型: 字符串
-# Use this for external CSS/JS, custom meta tags, etc.
-# 用于外部 CSS/JS、自定义 meta 标签等
+# Use this only for short trusted snippets. Prefer customHtmlFile for pasted HTML.
+# 仅用于简短可信片段。粘贴较长 HTML 时推荐使用 customHtmlFile。
 # Example / 示例: 
 #   customHtml = '<script type="text/javascript" src="https://example.com/script.js"></script>'
 # customHtml = ""
 
+# Trusted HTML snippet file under src/snippets. Basename only, no directories.
+# src/snippets 下的可信 HTML 片段文件。只允许文件名，不允许目录路径。
+# File content is injected raw into <head>; do not connect it to visitor/CMS input.
+# 文件内容会原样注入 <head>；不要接入访客或 CMS 用户输入。
+# customHtmlFile = "head.html"
+
 # Custom JavaScript content (no <script> tags needed) / 自定义 JavaScript 内容（无需 <script> 标签）
 # Type: string / 类型: 字符串
-# Note: Rendered inline in <head>; prefer async/defer scripts when possible.
-# 注意: 会以内联方式渲染在 <head> 中；尽量使用 async/defer 脚本。
+# Use this only for short trusted snippets. Prefer customScriptFile for pasted JS.
+# 仅用于简短可信片段。粘贴较长 JS 时推荐使用 customScriptFile。
 # Example / 示例:
 #   customScript = `(function(c,l,a,r,i,t,y){
 #     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -432,23 +438,41 @@ url = "https://github.com/saicaca/fuwari"
 #   })(window, document, "clarity", "script", "YOUR_PROJECT_ID");`
 # customScript = ""
 
+# Trusted JavaScript snippet file under src/snippets. Do not include <script> tags.
+# src/snippets 下的可信 JavaScript 片段文件。不要包含 <script> 标签。
+# The file content is wrapped in an inline <script> in <head>.
+# 文件内容会在 <head> 内被包裹为 inline <script>。
+# customScriptFile = "head.js"
+
 # -----------------------------------------------------------------------------
 # Footer Configuration / Footer 配置
 # -----------------------------------------------------------------------------
 [footer]
 # Custom HTML rendered in footer / 在 footer 渲染的自定义 HTML
 # Type: string / 类型: 字符串
-# Use this for ICP filing, public security filing, badges, etc.
-# 用于 ICP 备案、公安备案、徽章等
+# Use this only for short trusted snippets. Prefer customHtmlFile for pasted HTML.
+# 仅用于简短可信片段。粘贴较长 HTML 时推荐使用 customHtmlFile。
 # Example / 示例:
 #   customHtml = '<a href="https://beian.miit.gov.cn/">京ICP备xxxxxxxx号</a>'
 # customHtml = ""
+
+# Trusted HTML snippet file under src/snippets. Basename only, no directories.
+# src/snippets 下的可信 HTML 片段文件。只允许文件名，不允许目录路径。
+# File content is rendered raw in footer. Keep visitor/CMS input out of snippets.
+# 文件内容会原样渲染到 footer。不要接入访客或 CMS 用户输入。
+# customHtmlFile = "footer.html"
 
 # Custom JavaScript content (no <script> tags needed) / 自定义 JavaScript 内容（无需 <script> 标签）
 # Type: string / 类型: 字符串
 # Note: Rendered inline near the footer.
 # 注意: 会以内联方式渲染在页脚附近。
 # customScript = ""
+
+# Trusted JavaScript snippet file under src/snippets. Do not include <script> tags.
+# src/snippets 下的可信 JavaScript 片段文件。不要包含 <script> 标签。
+# The file content is wrapped in an inline <script> near the footer.
+# 文件内容会在页脚附近被包裹为 inline <script>。
+# customScriptFile = "footer.js"
 
 # -----------------------------------------------------------------------------
 # Analytics Configuration / 统计分析配置

@@ -149,15 +149,23 @@ type TomlConfig = {
 		};
 		/** Custom HTML in <head> / 头部自定义 HTML */
 		customHtml?: unknown;
+		/** Trusted HTML snippet file in src/snippets / src/snippets 中的可信 HTML 片段文件 */
+		customHtmlFile?: unknown;
 		/** Custom JavaScript in <head> / 头部自定义 JavaScript */
 		customScript?: unknown;
+		/** Trusted JavaScript snippet file in src/snippets / src/snippets 中的可信 JavaScript 片段文件 */
+		customScriptFile?: unknown;
 	};
 	/** Footer configuration / 页脚配置 */
 	footer?: {
 		/** Custom HTML in footer / 页脚自定义 HTML */
 		customHtml?: unknown;
+		/** Trusted HTML snippet file in src/snippets / src/snippets 中的可信 HTML 片段文件 */
+		customHtmlFile?: unknown;
 		/** Custom JavaScript in footer / 页脚自定义 JavaScript */
 		customScript?: unknown;
+		/** Trusted JavaScript snippet file in src/snippets / src/snippets 中的可信 JavaScript 片段文件 */
+		customScriptFile?: unknown;
 	};
 	/** Analytics configuration / 分析配置 */
 	analytics?: {
@@ -392,11 +400,15 @@ const DEFAULT_CONFIG: Config = {
 			naver: "",
 		},
 		customHtml: "",
+		customHtmlFile: "",
 		customScript: "",
+		customScriptFile: "",
 	},
 	footer: {
 		customHtml: "",
+		customHtmlFile: "",
 		customScript: "",
+		customScriptFile: "",
 	},
 	analytics: {
 		enable: false,
@@ -638,6 +650,16 @@ const tomlModules = import.meta.glob("../../kirari.config.toml", {
 }) as Record<string, string>;
 
 /**
+ * Trusted custom head/footer snippets from src/snippets.
+ * 来自 src/snippets 的可信 head/footer 片段。
+ */
+const snippetModules = import.meta.glob("../snippets/*.{html,js}", {
+	eager: true,
+	query: "?raw",
+	import: "default",
+}) as Record<string, string>;
+
+/**
  * Load and parse TOML configuration file
  * 加载并解析 TOML 配置文件
  * 
@@ -674,6 +696,33 @@ const loadTomlConfig = (): TomlConfig => {
  */
 const getString = (value: unknown, fallback: string): string => {
 	return typeof value === "string" ? value : fallback;
+};
+
+const SAFE_SNIPPET_FILE_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*\.(html|js)$/;
+
+const getSnippetFileName = (value: unknown): string => {
+	const fileName = getString(value, "").trim();
+	if (!fileName) return "";
+	if (!SAFE_SNIPPET_FILE_RE.test(fileName)) {
+		console.warn(`[config-loader] Ignored unsafe snippet file name: "${fileName}"`);
+		return "";
+	}
+	return fileName;
+};
+
+const getSnippetContent = (fileName: string): string => {
+	if (!fileName) return "";
+	const content = snippetModules[`../snippets/${fileName}`];
+	if (typeof content !== "string") {
+		console.warn(`[config-loader] Snippet file not found: "${fileName}"`);
+		return "";
+	}
+	return content;
+};
+
+const combineTrustedSnippets = (inlineContent: string, fileName: string): string => {
+	const fileContent = getSnippetContent(fileName);
+	return [inlineContent, fileContent].filter((item) => item.length > 0).join("\n");
 };
 
 /**
@@ -1080,6 +1129,10 @@ export const loadConfig = (): Config => {
 			items: items.length > 0 ? items : fallback.items,
 		};
 	};
+	const headCustomHtmlFile = getSnippetFileName(head?.customHtmlFile);
+	const headCustomScriptFile = getSnippetFileName(head?.customScriptFile);
+	const footerCustomHtmlFile = getSnippetFileName(footer?.customHtmlFile);
+	const footerCustomScriptFile = getSnippetFileName(footer?.customScriptFile);
 
 	// Build config with validation
 	const config: Config = {
@@ -1139,12 +1192,16 @@ export const loadConfig = (): Config => {
 				yandex: getString(head?.verification?.yandex, DEFAULT_CONFIG.head.verification.yandex),
 				naver: getString(head?.verification?.naver, DEFAULT_CONFIG.head.verification.naver),
 			},
-			customHtml: getString(head?.customHtml, DEFAULT_CONFIG.head.customHtml),
-			customScript: getString(head?.customScript, DEFAULT_CONFIG.head.customScript),
+			customHtml: combineTrustedSnippets(getString(head?.customHtml, DEFAULT_CONFIG.head.customHtml), headCustomHtmlFile),
+			customHtmlFile: headCustomHtmlFile,
+			customScript: combineTrustedSnippets(getString(head?.customScript, DEFAULT_CONFIG.head.customScript), headCustomScriptFile),
+			customScriptFile: headCustomScriptFile,
 		},
 		footer: {
-			customHtml: getString(footer?.customHtml, DEFAULT_CONFIG.footer.customHtml),
-			customScript: getString(footer?.customScript, DEFAULT_CONFIG.footer.customScript),
+			customHtml: combineTrustedSnippets(getString(footer?.customHtml, DEFAULT_CONFIG.footer.customHtml), footerCustomHtmlFile),
+			customHtmlFile: footerCustomHtmlFile,
+			customScript: combineTrustedSnippets(getString(footer?.customScript, DEFAULT_CONFIG.footer.customScript), footerCustomScriptFile),
+			customScriptFile: footerCustomScriptFile,
 		},
 		analytics: {
 			enable: getEnvBoolean("PUBLIC_ANALYTICS_ENABLE", getBoolean(analytics?.enable, DEFAULT_CONFIG.analytics.enable || false)),
