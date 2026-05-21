@@ -11,7 +11,7 @@
 
 # KIRARI
 
-Static blog theme — Astro 6.0.8 + Svelte 5 + Tailwind CSS v4. Single TOML config file. Targets Cloudflare Pages, Vercel, Netlify, EdgeOne Pages.
+Static blog theme — Astro 6.3.6 + Svelte 5 + Tailwind CSS v4. Single TOML config file. Targets Cloudflare Pages, Vercel, Netlify, EdgeOne Pages.
 
 ## Architecture
 
@@ -25,7 +25,7 @@ kirari.config.toml  ──→  smol-toml parse  ──→  config-loader.ts (typ
                                               ↓ consumed by astro.config.mjs + all components
 ```
 
-**Islands**: Only 3 Svelte components hydrate on the client — Search (`client:load`), Theme Toggle (`client:load`), Display Settings (`client:only`). Everything else is static `.astro`.
+**Islands**: Only 3 Svelte components hydrate on the client — Search (`client:idle`), Theme Toggle (`client:idle`), Display Settings (`client:only="svelte"`). Everything else is static `.astro`.
 
 **Transitions**: `TransitionManager` singleton (see `src/utils/transition-manager.ts`) wraps a dual-path strategy:
 
@@ -81,13 +81,13 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 
 | Category | Package | Version |
 |---|---|---|
-| Framework | astro | 6.0.8 |
-| Islands | svelte | ^5.55.5 |
+| Framework | astro | 6.3.6 |
+| Islands | svelte | ^5.55.9 |
 | CSS | tailwindcss, @tailwindcss/vite, stylus | ^4.2.4, ^0.64.0 |
 | Search | pagefind (default), @docsearch/js (Algolia) | ^1.5.2, ^4.6.3 |
-| Code highlight | astro-expressive-code + 4 plugins | ^0.41.7 |
-| Math | remark-math, rehype-katex, katex | ^0.16.45 |
-| Diagrams | mermaid (client-side) | ^11.14.0 |
+| Code highlight | astro-expressive-code + 4 plugins | ^0.42.0 |
+| Math | remark-math, rehype-katex, katex | ^0.16.47 |
+| Diagrams | mermaid (client-side) | ^11.15.0 |
 | Icons | astro-icon, @iconify/svelte | — |
 | Transitions | Astro ClientRouter / swup fallback | ^4.9.0 |
 | Image viewer | photoswipe | ^5.4.4 |
@@ -128,7 +128,11 @@ Only edit files listed below. Do not modify `src/components/`, `src/layouts/`, `
 Validation:
 
 ```bash
-pnpm type-check && pnpm astro check && pnpm build
+pnpm install --frozen-lockfile
+pnpm type-check
+pnpm astro check
+pnpm build
+pnpm audit --audit-level moderate
 ```
 
 ## Configuration
@@ -315,14 +319,27 @@ i18n = true
 
 ### Custom Head / Footer
 
+For pasted HTML or JavaScript, prefer trusted files under `src/snippets/`. This
+avoids TOML escaping problems with quotes, backslashes, and template strings.
+Inline TOML fields remain supported for short snippets.
+
 ```toml
 [head]
 customHtml = '<link rel="stylesheet" href="/custom.css">'
 customScript = '(function(){ /* no <script> tag needed */ })()'
+customHtmlFile = "head.html"      # src/snippets/head.html, raw <head> HTML
+customScriptFile = "head.js"      # src/snippets/head.js, no <script> tag
 
 [footer]
 customHtml = '<a href="https://beian.miit.gov.cn/">ICP备xxxxxxxx号</a>'
+customHtmlFile = "footer.html"    # src/snippets/footer.html
+customScriptFile = "footer.js"    # src/snippets/footer.js, no <script> tag
 ```
+
+Snippet file names must be basenames such as `head.html`; paths like
+`../secret.html`, `/tmp/x.html`, and subdirectories are ignored. Snippets are
+trusted maintainer input and are rendered with `set:html`; never feed visitor,
+comment, or CMS user content into them.
 
 ## Content Authoring
 

@@ -33,6 +33,7 @@ pnpm install --frozen-lockfile
 pnpm type-check
 pnpm astro check
 pnpm build
+pnpm audit --audit-level moderate
 ```
 
 CI must use `--frozen-lockfile`.
@@ -42,13 +43,15 @@ CI must use `--frozen-lockfile`.
 ### Astro Components
 
 - Default to `.astro` static rendering. Use Svelte islands only when client state is required.
-- Hydration directives must be precise — `client:load` for always-hydrate, `client:only` for `localStorage`-only panels.
+- Hydration directives must be precise — Search and Theme Toggle use `client:idle`; `client:only="svelte"` is reserved for `localStorage`-only panels.
+- Do not change Search or Theme Toggle to eager hydration without a measured first-paint interaction requirement.
 - Post-navigation DOM init → `transitionManager.on("transition:after-swap", ...)`. Never `DOMContentLoaded`.
 
 ### Configuration
 
 - New config fields must flow through: `kirari.config.toml` → `src/types/config.ts` → `src/utils/config-loader.ts` (type guard + default).
 - Priority: ENV vars > TOML > defaults.
+- `set:html` is only allowed for trusted maintainer-owned config, snippet files, and generated structured data. Do not connect it to visitor, comment, or CMS user input.
 
 ### Styles
 
@@ -68,3 +71,4 @@ CI must use `--frozen-lockfile`.
 | New Astro/Svelte dependency | `README.md` tech stack table |
 | Modified `transition-manager.ts` | `AGENTS.md` Transition System section |
 | Modified build pipeline scripts | `README.md` Build Pipeline section |
+| Modified Custom Head/Footer snippets | `SECURITY_MODEL.md` and snippet docs |

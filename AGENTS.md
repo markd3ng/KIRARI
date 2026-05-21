@@ -12,11 +12,12 @@ Read the SKILL.md for any matching package before proceeding.
 | Component type | File | Hydration |
 |---|---|---|
 | Static (post cards, nav, layouts) | `.astro` | None |
-| Search | `Search.svelte` | `client:load` |
-| Theme toggle | `ThemeToggle.svelte` | `client:load` |
-| Theme color picker | `DisplaySettings.svelte` | `client:only` |
+| Search | `Search.svelte` | `client:idle` |
+| Theme toggle | `ThemeToggle.svelte` | `client:idle` |
+| Theme color picker | `DisplaySettings.svelte` | `client:only="svelte"` |
 
 `client:only` is reserved for `localStorage`-reading panels. Must not contain SEO-critical content.
+Do not change Search or Theme Toggle to eager hydration unless a measured first-paint interaction requirement explicitly needs it.
 
 ### 2. Transition System
 
@@ -58,6 +59,8 @@ kirari.config.toml → smol-toml parse → config-loader.ts → Config singleton
 - Type guards used: `getString`, `getBoolean`, `getNumber`, `getStringArray`, `getStringRecord`.
 - Priority: ENV > TOML > hardcoded default.
 - `config-loader.ts` uses `import.meta.glob("../../kirari.config.toml", { eager: true, query: "?raw" })` — the TOML is loaded as raw string at build time.
+- Custom Head/Footer snippet files use `import.meta.glob("../snippets/*.{html,js}", { eager: true, query: "?raw", import: "default" })`.
+- `set:html` is allowed only for trusted maintainer-owned config, snippet files, and generated structured data. Never feed visitor, comment, or CMS user input into it.
 
 ### 4. Style Layers
 
@@ -113,9 +116,11 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 ### Pre-Commit Checklist
 
 ```bash
+pnpm install --frozen-lockfile
 pnpm type-check    # tsc --noEmit
 pnpm astro check   # .astro template type checking
 pnpm build         # Full build (materialize → astro → postbuild)
+pnpm audit --audit-level moderate
 ```
 
 ### Conventional Commits 1.0.0
@@ -144,3 +149,4 @@ One change per commit. Do not mix style tweaks, logic fixes, and new features.
 | New Astro/Svelte dependency | `README.md` tech stack table |
 | Modified `transition-manager.ts` | This file (Transition System section) |
 | Modified build pipeline | `README.md` Build Pipeline section |
+| Modified Custom Head/Footer snippets | `SECURITY_MODEL.md`, `HYDRATION_GUIDE.md` when hydration or trust boundaries change |
