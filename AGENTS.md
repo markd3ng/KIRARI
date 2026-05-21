@@ -1,96 +1,146 @@
 <!-- skilld -->
-Before modifying code, check .agents/skills/ for relevant skills.
+Before modifying code, check `.agents/skills/` for relevant skills.
 Read the SKILL.md for any matching package before proceeding.
 <!-- /skilld -->
 
-# KIRARI 开发规范
+# KIRARI Development Constraints
 
-## 架构不可变规则
+## Architecture Invariants
 
-### Astro Islands
+### 1. Astro Islands
 
-| 组件类型 | 实现方式 | Hydration 指令 |
-|----------|---------|---------------|
-| 静态展示（文章卡片、导航、布局） | `.astro` | 无 |
-| 搜索 | Svelte `Search.svelte` | `client:load` |
-| 主题切换/色相选择器 | Svelte `ThemeToggle.svelte` / `DisplaySettings.svelte` | `client:load` / `client:only` |
+| Component type | File | Hydration |
+|---|---|---|
+| Static (post cards, nav, layouts) | `.astro` | None |
+| Search | `Search.svelte` | `client:load` |
+| Theme toggle | `ThemeToggle.svelte` | `client:load` |
+| Theme color picker | `DisplaySettings.svelte` | `client:only` |
 
-`client:only` 仅限读取 `localStorage` 的纯客户端组件。不允许用于含有 SEO 内容的组件。
+`client:only` is reserved for `localStorage`-reading panels. Must not contain SEO-critical content.
 
-### 页面过渡系统
+### 2. Transition System
 
-所有 DOM 初始化逻辑必须挂载到 `TransitionManager`，禁止裸用 `DOMContentLoaded`：
+All post-navigation DOM initialization **must** register on `transitionManager`, not `DOMContentLoaded`:
 
 ```ts
 import { transitionManager } from "@utils/transition-manager";
 
-// 正确
+// Correct
 transitionManager.on("transition:after-swap", init);
 
-// 错误 — 仅在硬加载时触发
+// Wrong — fires only on hard loads
 document.addEventListener("DOMContentLoaded", init);
 ```
 
-原因：KIRARI 在支持 View Transitions API 的浏览器中使用 Astro `ClientRouter`，在不支持的浏览器中动态加载 Swup。两种路径下页面切换都是 SPA 风格，`DOMContentLoaded` 不会再次触发。
+`TransitionManager` is a singleton (module-level `new TransitionManager()`). It exposes four events that map to both Astro `ClientRouter` and Swup backends:
 
-`TransitionManager` 单例暴露四个统一事件：`transition:start`、`transition:before-swap`、`transition:after-swap`、`transition:end`。Swup 模式下事件映射：`visit:start` → `start`，`content:replace` → `before-swap`，`page:view` → `after-swap`，`visit:end` → `end`。
+| Unified event | Astro event | Swup hook |
+|---|---|---|
+| `transition:start` | `astro:before-preparation` | `visit:start` |
+| `transition:before-swap` | `astro:before-swap` | `content:replace` |
+| `transition:after-swap` | `astro:after-swap` | `page:view` |
+| `transition:end` | `astro:page-load` | `visit:end` |
 
-### 配置驱动
+`init()` is idempotent. Feature detection: `'startViewTransition' in document`. On unsupported browsers, Swup is loaded dynamically — zero cost on modern browsers.
+
+During swap, `<html>` state (theme mode, hue, code theme) is restored from `localStorage` + config defaults — not stale DOM.
+
+### 3. Configuration Pipeline
 
 ```
-kirari.config.toml → smol-toml 解析 → config-loader.ts → Config 对象
-                                                              ↓
-环境变量（PUBLIC_*）─────────────┘         astro.config.mjs、各组件通过 @constants 导入
+kirari.config.toml → smol-toml parse → config-loader.ts → Config singleton
+                         ↑                            ↓
+              ENV vars (PUBLIC_*)     re-exported by @config per section
 ```
 
-- **禁止**在组件中硬编码可配置值。
-- 新增配置字段必须：`kirari.config.toml`（含注释）→ `src/types/config.ts`（类型）→ `src/utils/config-loader.ts`（解析 + 默认值）。
-- 配置加载时对每个字段做运行时类型守卫（`getString`、`getBoolean`、`getNumber`、`getStringArray`）。
+- Hardcoding config values in components is **forbidden**.
+- Every new config field must go through: `kirari.config.toml` (with bilingual comments) → `src/types/config.ts` (type) → `src/utils/config-loader.ts` (parse + type guard + default).
+- Type guards used: `getString`, `getBoolean`, `getNumber`, `getStringArray`, `getStringRecord`.
+- Priority: ENV > TOML > hardcoded default.
+- `config-loader.ts` uses `import.meta.glob("../../kirari.config.toml", { eager: true, query: "?raw" })` — the TOML is loaded as raw string at build time.
 
-### 样式
+### 4. Style Layers
 
-| 层级 | 技术 | 用途 |
-|------|------|------|
-| 组件外观 | Tailwind CSS v4 | 布局、间距、颜色、响应式 |
-| Markdown 编译产物 | Stylus (`markdown-extend.styl`) | 深层 DOM 结构（admonitions、GitHub cards、KaTeX 渲染输出） |
-| 代码高亮 | Expressive Code + CSS 变量 | 通过 `styleOverrides` 注入主题变量 |
+| Layer | Tech | Scope |
+|---|---|---|
+| Component appearance | Tailwind CSS v4 | Layout, spacing, colors, responsive |
+| Markdown deep DOM | Stylus (`markdown-extend.styl`) | Admonitions, GitHub cards, KaTeX output |
+| Code highlight | Expressive Code + CSS variables | Injected via `styleOverrides` in astro config |
 
-不要在组件中写 Stylus，不要在 `markdown-extend.styl` 中写组件样式。
+> Do not write Stylus in components. Do not write component styles in `markdown-extend.styl`.
 
-## 开发工作流
+### 5. Edge Compatibility
 
-### 提交前清单
+Client-side and Edge Function code must not import Node.js builtins (`fs`, `path`, `crypto`, etc.). If adding Cloudflare D1/KV: queries must be parameterized, KV must declare explicit lifecycles.
+
+### 6. Plugin Chain (Markdown)
+
+Order matters — each plugin feeds the next:
+
+**Remark (parse → AST)**:
+1. `remark-math` — `$...$` / `$$...$$`
+2. `remark-reading-time` — `words`, `minutes` fields
+3. `remark-excerpt` — first paragraph → `excerpt`
+4. `remark-github-admonitions-to-directives` — `[!NOTE]` → `:::note`
+5. `remark-directive` — `:::name{key=value}`
+6. `remark-sectionize` — headings → `<section>`
+7. `parseDirectiveNode` — convert directive nodes to hast
+
+**Rehype (hast → HTML)**:
+1. `rehype-katex` — math → HTML/CSS
+2. `rehype-mermaid-pre` — `<pre><code class="language-mermaid">` → `<pre class="mermaid">`
+3. `rehype-slug` — heading IDs
+4. `rehype-lazy-load-image` — `loading="lazy"`
+5. `rehype-components` — dispatch `:::name` to custom components
+6. `rehype-autolink-headings` — `#` anchor links
+
+### 7. Build Pipeline
+
+```
+materialize-ghc-adapter.mjs → astro build → postbuild.mjs
+```
+
+`postbuild.mjs` runs 6 sequential tasks on `dist/`:
+1. Generate `_headers` + `_redirects` (platform caching, language redirects)
+2. Generate `robots.txt`
+3. Obfuscate `mailto:` links
+4. Index with Pagefind (skipped if DocSearch enabled)
+5. Generate `llms.txt` files
+6. Submit to IndexNow (if enabled)
+
+## Commit Workflow
+
+### Pre-Commit Checklist
 
 ```bash
 pnpm type-check    # tsc --noEmit
-pnpm astro check   # .astro 模板类型检查
-pnpm build         # 完整构建（materialize → astro → postbuild）
+pnpm astro check   # .astro template type checking
+pnpm build         # Full build (materialize → astro → postbuild)
 ```
 
-### Conventional Commits
+### Conventional Commits 1.0.0
 
 ```
-feat(scope): 描述
-fix(scope): 描述
-docs: 描述
-chore: 描述
+feat(scope): what
+fix(scope): what
+docs: what
+chore: what
 ```
 
-一事一交。以下类型可用：`feat`、`fix`、`docs`、`style`、`refactor`、`perf`、`chore`、`test`。
+Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `chore`, `test`.
+
+One change per commit. Do not mix style tweaks, logic fixes, and new features.
 
 ### CI/CD
 
-- 必须使用 `pnpm install --frozen-lockfile`
-- `@astrojs/check` 是 devDependency，CI 中通过 `pnpm astro check` 调用
+- Must use `pnpm install --frozen-lockfile`
+- `@astrojs/check` is devDependency; invoked via `pnpm astro check`
 
-### 边缘兼容
+## Documentation Sync
 
-- 客户端或边缘 Functions 代码不得依赖 Node.js 原生模块（`fs`、`path`、`crypto` 等）
-- 如果引入 Cloudflare D1/KV：查询必须参数化，KV 必须明确生命周期
-
-## 性能基准
-
-- Lighthouse Performance ≥ 95
-- `@iconify-json` 包被 Vite 插件完全阻止 — 仅 `astro.config.mjs` 中注册的图标被打包
-- 第三方脚本（analytics）仅在 `PROD && analytics.enable` 条件下加载
-- `prefetchAll: false`；导航 hover 预取，移动端 tap 预取
+| Change | Update |
+|---|---|
+| New/modified config field | `kirari.config.toml` comments, `README.md`, `README_CN.md` |
+| New Astro/Svelte dependency | `README.md` tech stack table |
+| Modified `transition-manager.ts` | This file (Transition System section) |
+| Modified build pipeline | `README.md` Build Pipeline section |

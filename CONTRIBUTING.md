@@ -1,29 +1,32 @@
 # Contributing
 
+## Environment
+
+- **Package manager**: pnpm ≥ 9.14.4 only. `preinstall` hook blocks npm/yarn.
+- **Node.js**: Match `engines` field in `package.json`.
+
 ## Commit Convention
 
 [Conventional Commits](https://www.conventionalcommits.org/) 1.0.0.
 
 ```
-feat(scope): 描述
-fix(scope): 描述
-docs: 描述
-chore: 描述
+feat(scope): description
+fix(scope): description
+docs: description
+chore: description
 ```
 
-允许类型：`feat`、`fix`、`docs`、`style`、`refactor`、`perf`、`chore`、`test`。
+Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `chore`, `test`.
 
-## PR 原则
+One change per commit. Separate style, logic, and feature work.
 
-- 一 PR 一事。不要混合不相关的样式、重构和新功能。
-- 涉及架构变更（新增依赖、修改 `transition-manager.ts`、新增配置字段）的 PR 必须同步更新对应文档。
+## PR Guidelines
 
-## 开发环境
+- One PR, one concern. Do not bundle unrelated refactors, style changes, and features.
+- PRs that touch architecture (new dependencies, `transition-manager.ts`, new config schema) must sync the corresponding docs (see sync table in [AGENTS.md](./AGENTS.md)).
+- Use the PR template (`.github/pull_request_template.md`).
 
-- **包管理器**：仅 `pnpm ≥ 9.14.4`。`preinstall` 钩子会阻止其他管理器。
-- **Node.js**：与 `package.json` 中 `engines` 字段一致。
-
-## 发版前验证
+## Pre-Release Validation
 
 ```bash
 pnpm install --frozen-lockfile
@@ -32,37 +35,36 @@ pnpm astro check
 pnpm build
 ```
 
-CI/CD 必须使用 `--frozen-lockfile`。
+CI must use `--frozen-lockfile`.
 
-## 代码规范
+## Code Standards
 
-### Astro 组件
+### Astro Components
 
-- 默认使用 `.astro` 静态渲染。
-- 仅在需要客户端交互时使用 Svelte island，并标注精确 hydration 指令。
-- 导航后 DOM 初始化必须注册到 `transitionManager.on("transition:after-swap", ...)`，不得依赖 `DOMContentLoaded`。
+- Default to `.astro` static rendering. Use Svelte islands only when client state is required.
+- Hydration directives must be precise — `client:load` for always-hydrate, `client:only` for `localStorage`-only panels.
+- Post-navigation DOM init → `transitionManager.on("transition:after-swap", ...)`. Never `DOMContentLoaded`.
 
-### 配置
+### Configuration
 
-- 新增可配置项必须经过：`kirari.config.toml` → `src/types/config.ts` → `src/utils/config-loader.ts`（含类型守卫和默认值）。
-- 配置优先级：环境变量 > TOML > 默认值。
+- New config fields must flow through: `kirari.config.toml` → `src/types/config.ts` → `src/utils/config-loader.ts` (type guard + default).
+- Priority: ENV vars > TOML > defaults.
 
-### 样式
+### Styles
 
-- 组件外观：Tailwind CSS v4。
-- Markdown 编译产物（admonitions、代码块等）的深层样式：`src/styles/markdown-extend.styl`。
+- Component look-and-feel: Tailwind CSS v4.
+- Markdown deep-DOM (admonitions, GitHub cards, KaTeX): `src/styles/markdown-extend.styl`.
 
-### 边缘兼容
+### Edge Compatibility
 
-- 客户端和边缘 Functions 代码不得依赖 Node.js 原生模块。
+- Client and Edge Function code: no Node.js builtins (`fs`, `path`, `crypto`).
+- Cloudflare D1/KV additions: parameterized queries, explicit KV lifecycles.
 
-## 架构文档同步
+## Architecture Sync Table
 
-修改以下内容时，对应文档同步更新：
-
-| 变更 | 同步文档 |
-|------|---------|
-| 新增/修改配置字段 | `kirari.config.toml` 注释、`README.md`、`README_CN.md` |
-| 新增 Astro/Svelte 依赖 | `README.md` 技术栈表格 |
-| 修改 `transition-manager.ts` | `AGENTS.md` 过渡系统部分 |
-| 修改构建管线 | `README.md` 构建管线部分 |
+| Change | Sync target |
+|---|---|
+| New/modified config field | `kirari.config.toml` comments, `README.md`, `README_CN.md` |
+| New Astro/Svelte dependency | `README.md` tech stack table |
+| Modified `transition-manager.ts` | `AGENTS.md` Transition System section |
+| Modified build pipeline scripts | `README.md` Build Pipeline section |

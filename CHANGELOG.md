@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Rewrote README.md, README_CN.md, AGENTS.md, and CONTRIBUTING.md for higher information density: eliminated redundancy, corrected obsolete `src/constants.ts` references, added architecture invariants, transition system documentation, and concrete performance data.
+- Rewrote all project documentation (README.md, README_CN.md, AGENTS.md, CONTRIBUTING.md, SKILL.md) with hard technical specificity: architecture diagrams, transition system event mapping, full plugin chain ordering, config pipeline internals, type guard documentation, and platform-specific caching rules. Eliminated filler language, unified terminology across files, and removed SKILL.md/AGENTS.md content duplication.
 
 ### Added
 
