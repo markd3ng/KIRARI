@@ -185,11 +185,7 @@ export function GithubFileCardComponent(properties, children, githubCardApiBase)
 	          cardEl.classList.remove("fetch-waiting");
 	        });
 	      }
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initGithubFileCard, { once: true });
-	      } else {
-	        initGithubFileCard();
-	      }
+      requestAnimationFrame(initGithubFileCard);
 	      document.addEventListener("transition:after-swap", initGithubFileCard);
 	    `,
 	);

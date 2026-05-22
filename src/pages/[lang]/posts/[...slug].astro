@@ -198,9 +198,7 @@ function lazyLoadImages() {
 	}
 }
 
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", lazyLoadImages);
-else lazyLoadImages();
-
+lazyLoadImages();
 transitionManager.on("transition:after-swap", lazyLoadImages);
 </script>
 
@@ -224,9 +222,7 @@ transitionManager.on("transition:after-swap", lazyLoadImages);
 		await mermaid.run({ querySelector: "pre.mermaid" });
 	}
 
-	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initMermaid);
-	else initMermaid();
-
+	initMermaid();
 	transitionManager.on("transition:after-swap", initMermaid);
 	</script>
 )}
