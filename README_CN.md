@@ -467,7 +467,11 @@ KIRARI/
 ## 发版验证
 
 ```bash
-pnpm install --frozen-lockfile && pnpm type-check && pnpm astro check && pnpm build
+pnpm install --frozen-lockfile
+pnpm type-check
+pnpm astro check
+pnpm build
+pnpm audit --audit-level moderate
 ```
 
 CI 必须使用 `--frozen-lockfile`。`@astrojs/check` 仅 devDependency。

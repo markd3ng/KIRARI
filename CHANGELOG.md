@@ -7,25 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- Rewrote all project documentation (README.md, README_CN.md, AGENTS.md, CONTRIBUTING.md, SKILL.md) with hard technical specificity: architecture diagrams, transition system event mapping, full plugin chain ordering, config pipeline internals, type guard documentation, and platform-specific caching rules. Eliminated filler language, unified terminology across files, and removed SKILL.md/AGENTS.md content duplication.
+## [0.3.0] - 2026-05-22
 
 ### Added
 
+- Added Google Programmable Search as a first-class search provider, including TOML configuration, Google CSE runtime loading, KIRARI-styled no-ads results, and AdSense-compatible rendering mode.
+- Added optional Google Indexing API submission after build, with service account JSON restricted to environment variables and non-blocking warning behavior on submission failures.
+- Added trusted Custom Head/Footer snippet files under `src/snippets/` so maintainers can inject multiline HTML and JavaScript without TOML escaping pain.
+- Added AI and architecture governance documents covering TOML-first configuration, Astro Islands, hydration rules, transition initialization, public repo hygiene, security boundaries, and release validation.
 - Added opt-in GitHub Card runtime adapters for Cloudflare Pages Service Binding and Vercel same-project Functions.
 - Added a build-time materializer so `/ghc/*` routes are generated only when `githubCard.adapter.enabled = true`.
 
 ### Changed
 
+- Rewrote all project documentation (README.md, README_CN.md, AGENTS.md, CONTRIBUTING.md, SKILL.md) with hard technical specificity: architecture diagrams, transition system event mapping, full plugin chain ordering, config pipeline internals, type guard documentation, and platform-specific caching rules. Eliminated filler language, unified terminology across files, and removed SKILL.md/AGENTS.md content duplication.
+- Adopted TOML-first configuration governance: site behavior belongs in `kirari.config.toml`, TypeScript stays responsible for defaults/types/loading, and environment variables are reserved for secrets and deployment-specific values.
+- Changed Search and Theme Toggle hydration guidance to `client:idle`, while keeping Display Settings as `client:only="svelte"`.
+- Updated Astro to 6.3.6 and refreshed related dependencies, including Svelte, Mermaid, Expressive Code, KaTeX, Pagefind, and security-sensitive transitive overrides.
 - Changed the default GitHub Card behavior back to direct `https://api.github.com` access for pure static builds.
 - Added a fork checklist to README and README_CN so new users know which config, content, and asset files to edit first.
 - Reworked GitHub Card adapter documentation with explicit mode selection, generated route behavior, token ownership tables, and verification checks.
 - Clarified GitHub Card adapter token placement for Cloudflare Worker Secret versus Vercel Project Environment Variables.
+- Tightened `.gitignore` for public repo hygiene, including local AI assistant state, browser/test artifacts, build output, coverage, and OS metadata.
 
 ### Fixed
 
 - Backported selected upstream Fuwari PR fixes: GitHub admonition type mapping, nullable blank frontmatter handling, centered post card covers, and conditional pagination rendering.
+- Removed page-level `DOMContentLoaded` initialization paths for post image lazy loading, Mermaid rendering, and GitHub File Card hydration-adjacent DOM initialization; these now use immediate initialization plus transition events.
+- Fixed Mermaid and related dependency audit exposure by upgrading to the current safe 11.x release line and keeping lockfile state synchronized.
 
 ## [0.2.1] - 2026-05-08
 

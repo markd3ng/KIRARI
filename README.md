@@ -468,7 +468,11 @@ KIRARI/
 ## Release Validation
 
 ```bash
-pnpm install --frozen-lockfile && pnpm type-check && pnpm astro check && pnpm build
+pnpm install --frozen-lockfile
+pnpm type-check
+pnpm astro check
+pnpm build
+pnpm audit --audit-level moderate
 ```
 
 CI must use `--frozen-lockfile`. `@astrojs/check` is devDependency only.
