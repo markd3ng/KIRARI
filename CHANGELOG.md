@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated Astro to 6.3.7 and refreshed the current dependency set for Tailwind CSS, `@tailwindcss/vite`, OverlayScrollbars, `@types/node`, and related lockfile-only transitive packages.
+
 ## [0.3.0] - 2026-05-22
 
 ### Added

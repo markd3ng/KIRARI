@@ -11,7 +11,7 @@
 
 # KIRARI
 
-静态博客主题 — Astro 6.3.6 + Svelte 5 + Tailwind CSS v4。单一 TOML 配置驱动。支持 Cloudflare Pages、Vercel、Netlify、EdgeOne Pages 部署。
+静态博客主题 — Astro 6.3.7 + Svelte 5 + Tailwind CSS v4。单一 TOML 配置驱动。支持 Cloudflare Pages、Vercel、Netlify、EdgeOne Pages 部署。
 
 ## 架构
 
@@ -81,9 +81,9 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 
 | 类别 | 包 | 版本 |
 |---|---|---|
-| 框架 | astro | 6.3.6 |
+| 框架 | astro | 6.3.7 |
 | Islands | svelte | ^5.55.9 |
-| CSS | tailwindcss、@tailwindcss/vite、stylus | ^4.2.4、^0.64.0 |
+| CSS | tailwindcss、@tailwindcss/vite、stylus | ^4.3.0、^0.64.0 |
 | 搜索 | pagefind（默认）、@docsearch/js（Algolia） | ^1.5.2、^4.6.3 |
 | 代码高亮 | astro-expressive-code + 4 插件 | ^0.42.0 |
 | 公式 | remark-math、rehype-katex、katex | ^0.16.47 |
@@ -92,7 +92,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 | 过渡 | Astro ClientRouter / swup 降级 | ^4.9.0 |
 | 图片灯箱 | photoswipe | ^5.4.4 |
 | 图片处理 | sharp | ^0.34.5 |
-| 滚动条 | overlayscrollbars | ^2.15.1 |
+| 滚动条 | overlayscrollbars | ^2.16.0 |
 | 内容 | @astrojs/mdx + remark/rehype 链 | ^5.0.4 |
 | 订阅 | @astrojs/rss、@astrojs/sitemap | — |
 | OG 图片 | satori | ^0.26.0 |
