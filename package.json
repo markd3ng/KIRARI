@@ -18,6 +18,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "type-check": "tsc --noEmit",
+    "audit": "pnpm audit --audit-level moderate",
     "new-post": "node scripts/new-post.js",
     "preinstall": "node scripts/ensure-pnpm.mjs",
     "prepare": "node scripts/prepare-skilld.mjs"

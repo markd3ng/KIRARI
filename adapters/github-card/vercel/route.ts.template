@@ -15,6 +15,9 @@ const namePattern = /^[A-Za-z0-9_.-]{1,100}$/;
 export default {
 	async fetch(request: Request): Promise<Response> {
 		if (request.method === "OPTIONS") {
+			if (!isCorsAllowed(request)) {
+				return new Response(null, { status: 403, headers: corsHeaders(request) });
+			}
 			return new Response(null, { status: 204, headers: corsHeaders(request) });
 		}
 
@@ -212,9 +215,7 @@ function corsHeaders(request: Request): Headers {
 		.map((item) => item.trim())
 		.filter(Boolean);
 
-	if (allowed.length === 0) {
-		headers.set("Access-Control-Allow-Origin", "*");
-	} else if (origin && allowed.includes(origin)) {
+	if (origin && allowed.includes(origin)) {
 		headers.set("Access-Control-Allow-Origin", origin);
 		headers.set("Vary", "Origin");
 	}
@@ -223,6 +224,16 @@ function corsHeaders(request: Request): Headers {
 	headers.set("Access-Control-Allow-Headers", "Content-Type, If-None-Match, If-Modified-Since");
 	headers.set("Access-Control-Max-Age", "86400");
 	return headers;
+}
+
+function isCorsAllowed(request: Request): boolean {
+	const origin = request.headers.get("Origin");
+	if (!origin) return true;
+	const allowed = (process.env.GHC_ALLOWED_ORIGINS || "")
+		.split(",")
+		.map((item) => item.trim())
+		.filter(Boolean);
+	return allowed.includes(origin);
 }
 
 function jsonResponse(request: Request, value: unknown, status: number): Response {

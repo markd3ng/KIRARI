@@ -443,6 +443,8 @@ url = "https://github.com/saicaca/fuwari"
 # Type: string / 类型: 字符串
 # Use this only for short trusted snippets. Prefer customHtmlFile for pasted HTML.
 # 仅用于简短可信片段。粘贴较长 HTML 时推荐使用 customHtmlFile。
+# Owner-level only: snippets render raw and the default CSP permits inline use.
+# 仅限站点维护者使用：片段会原样渲染，默认 CSP 允许 inline 用法。
 # Example / 示例: 
 #   customHtml = '<script type="text/javascript" src="https://example.com/script.js"></script>'
 # customHtml = ""
@@ -469,6 +471,8 @@ url = "https://github.com/saicaca/fuwari"
 # src/snippets 下的可信 JavaScript 片段文件。不要包含 <script> 标签。
 # The file content is wrapped in an inline <script> in <head>.
 # 文件内容会在 <head> 内被包裹为 inline <script>。
+# Keep visitor/comment/CMS input out of snippets.
+# 不要把访客、评论或 CMS 用户输入接入片段。
 # customScriptFile = "head.js"
 
 # -----------------------------------------------------------------------------
@@ -606,6 +610,10 @@ url = "https://github.com/saicaca/fuwari"
 #   - llms-full.txt: Complete content in one file
 #   - llms-small.txt: Condensed version
 #   - llms-en.txt, llms-zh.txt: Language-specific files (when i18n: true)
+# Note: llms-full.txt is public aggregation. Postbuild adds robots Disallow
+# and no-store headers as mitigation, not access control.
+# 注意: llms-full.txt 是公开聚合文件。postbuild 会添加 robots Disallow
+# 和 no-store headers 作为缓解措施，不是访问控制。
 
 [llms]
 # Enable llms.txt generation / 启用 llms.txt 生成
@@ -660,6 +668,8 @@ url = "https://github.com/saicaca/fuwari"
 # Type: string / 类型: 字符串
 # Note: The key file is served at /{key}.txt for verification
 # 注意: 密钥文件部署在 /{key}.txt 供搜索引擎验证
+# This is a public verification key only; do not reuse private secrets.
+# 这只是公开验证 key；不要复用私密 secret。
 # Get your key at https://www.indexnow.org
 # 在 https://www.indexnow.org 获取你的密钥
 # indexNowKey = ""
@@ -709,12 +719,18 @@ enabled = false
 # - Vercel provider: optional GITHUB_TOKEN belongs to Vercel Project
 #   Environment Variables, not this file.
 # - Never commit real tokens to kirari.config.toml.
+# - Vercel provider: set GHC_ALLOWED_ORIGINS in Vercel env to comma-separated
+#   exact origins allowed for CORS. Empty means no browser Origin is granted
+#   ACAO; no-Origin requests still work without ACAO.
 # Token 配置位置:
 # - Cloudflare provider: 可选 GITHUB_TOKEN 配在外部 KIRARI-GHCard-Cache
 #   Worker Secret，不写在这里。
 # - Vercel provider: 可选 GITHUB_TOKEN 配在 Vercel Project Environment
 #   Variables，不写在这里。
 # - 不要把真实 token 提交到 kirari.config.toml。
+# - Vercel provider: 在 Vercel env 中设置 GHC_ALLOWED_ORIGINS，逗号分隔允许
+#   CORS 的精确 origin。留空表示不给浏览器 Origin 授予 ACAO；no-Origin
+#   请求仍可在无 ACAO 的情况下工作。
 provider = "none"
 
 # Same-origin adapter route / 同源适配器路由

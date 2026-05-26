@@ -25,6 +25,12 @@ owner-level escape hatch for analytics, verification tags, filing links, and
 small scripts. Snippet file names must be basenames such as `head.html` or
 `footer.js`; traversal, absolute paths, and subdirectories are ignored.
 
+The default deployment CSP is a first-phase policy that remains compatible with
+owner-level inline snippets and Astro inline boot scripts by allowing inline
+script/style. Do not treat that CSP as a sanitizer for visitor, comment, or CMS
+HTML. Tightening CSP should happen together with moving custom snippets to
+nonce/hash-aware or external assets.
+
 ## Public Environment Variables
 
 KIRARI is TOML-first for normal public settings. Environment variables are for
@@ -43,9 +49,10 @@ AdSense.
 
 ## IndexNow
 
-`seo.indexNowKey` can be supplied by `PUBLIC_INDEXNOW_KEY`. It is used during the
-postbuild submission step and should be rotated if accidentally committed as a
-real private value.
+`seo.indexNowKey` can be supplied by `PUBLIC_INDEXNOW_KEY`. It is a public
+verification key that is served at `/{key}.txt` during postbuild. Do not reuse
+passwords, write-capable tokens, service-account material, or other private
+secrets as the IndexNow key.
 
 IndexNow covers participating engines such as Bing, Yandex, Naver, Seznam.cz,
 and Yep. Google does not support IndexNow.
@@ -63,6 +70,18 @@ snippets, `PUBLIC_*`, or committed files.
 The generated GitHub card runtime adapter must not expose private GitHub tokens
 to the client. If a token is needed by a platform runtime, keep it in provider
 secrets and avoid adding it to TOML, `PUBLIC_*`, snippets, or committed files.
+
+For the Vercel adapter, set `GHC_ALLOWED_ORIGINS` to comma-separated exact
+origins that may call the adapter cross-origin. When it is empty, no-Origin
+requests are allowed without `Access-Control-Allow-Origin`, and browser Origin
+requests receive no ACAO. Disallowed preflight requests return 403.
+
+## LLM Aggregation Files
+
+`llms-full.txt` is a public aggregation of page text intended for AI/LLM
+consumption. It is not an access-controlled archive. Postbuild mitigates broad
+crawling and caching by adding `Disallow: /llms-full.txt` to `robots.txt` and
+`Cache-Control: no-store` for that file in generated deployment headers.
 
 ## Dependency Governance
 

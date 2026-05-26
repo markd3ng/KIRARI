@@ -8,6 +8,10 @@ import { siteConfig } from "@/config";
 import { fromLangSlug, getPrefixedLanguages, toHreflang, toLangSlug } from "../../utils/i18n-utils";
 
 const parser = new MarkdownIt();
+const allowedAttributes = {
+	...sanitizeHtml.defaults.allowedAttributes,
+	img: ["src", "alt", "title", "width", "height", "loading", "decoding"],
+};
 
 function stripInvalidXmlChars(str: string): string {
 	return str.replace(
@@ -42,6 +46,10 @@ export async function GET(context: APIContext): Promise<Response> {
 				link: getPostUrl(post, lang),
 				content: sanitizeHtml(parser.render(cleanedContent), {
 					allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
+					allowedAttributes,
+					allowedSchemesByTag: {
+						img: ["https"],
+					},
 				}),
 			};
 		}),

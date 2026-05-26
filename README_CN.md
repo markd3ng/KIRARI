@@ -315,7 +315,7 @@ serviceBinding = "GHCARD_CACHE"
 ```
 
 - **Cloudflare Pages**：部署独立 Worker，GitHub token 设为 Secret。`serviceBinding` 设为 binding 名称。
-- **Vercel**：在 Project Environment Variables 中设置 `GITHUB_TOKEN`。
+- **Vercel**：在 Project Environment Variables 中设置 `GITHUB_TOKEN`。将 `GHC_ALLOWED_ORIGINS` 设为允许调用适配器的精确 origin 列表（逗号分隔）。留空时不会给浏览器 Origin 请求授予 CORS；同源/no-Origin 服务端请求仍可工作，但不返回 `Access-Control-Allow-Origin`。
 
 ### SEO
 
@@ -328,11 +328,11 @@ serviceBinding = "GHCARD_CACHE"
 | IndexNow | `seo.indexNow = true` → 每次构建提交到参与协议的搜索引擎 |
 | Google 索引 | `seo.google.indexingApi = true` → 可选高级 Google Indexing API 提交 |
 
-IndexNow 覆盖 Bing、Yandex、Naver、Seznam.cz、Yep 等参与方。Google 不支持 IndexNow；Google 仍依赖 sitemap/Search Console，或针对适用内容使用可选 Google Indexing API。Google Indexing API 主要面向 JobPosting 和 BroadcastEvent URL，普通博客页面不保证受益。
+IndexNow 覆盖 Bing、Yandex、Naver、Seznam.cz、Yep 等参与方。Google 不支持 IndexNow；Google 仍依赖 sitemap/Search Console，或针对适用内容使用可选 Google Indexing API。IndexNow key 是部署到 `/{key}.txt` 的公开验证 key；不要复用密码、token 或其他私密 secret。Google Indexing API 主要面向 JobPosting 和 BroadcastEvent URL，普通博客页面不保证受益。
 
 ### LLMs.txt
 
-postbuild 生成 `llms.txt`、`llms-small.txt`、`llms-full.txt`。`llms.i18n = true` 时额外生成按语言分类文件（`llms-en.txt`、`llms-zh.txt`）。全文文件每页上限 20,000 字符。
+postbuild 生成 `llms.txt`、`llms-small.txt`、`llms-full.txt`。`llms.i18n = true` 时额外生成按语言分类文件（`llms-en.txt`、`llms-zh.txt`）。`llms-full.txt` 是公开的页面文本聚合文件，每页上限 20,000 字符；postbuild 会在 `robots.txt` 加入 `Disallow: /llms-full.txt`，并在部署 headers 中为它设置 `Cache-Control: no-store`。这些是缓解措施，不是访问控制。
 
 ```toml
 [llms]
@@ -364,7 +364,9 @@ customScriptFile = "footer.js"    # src/snippets/footer.js，不要写 <script> 
 
 片段文件名只能是 `head.html` 这类 basename；`../secret.html`、`/tmp/x.html`
 和子目录路径会被忽略。片段属于可信站点维护者输入，会通过 `set:html` 渲染；
-不要把访客、评论或 CMS 用户输入接入这些字段。
+不要把访客、评论或 CMS 用户输入接入这些字段。默认 CSP 为兼容这些 owner-level
+inline 片段，仍允许 inline script/style；若要收紧 CSP，需要先把片段迁移为支持
+nonce/hash 的外部资源。
 
 ## 内容创作
 

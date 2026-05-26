@@ -71,6 +71,7 @@ function writeGeneratedFile(templatePath, targetPath) {
 
 function removeGeneratedRoute(routeDir) {
 	if (!existsSync(routeDir)) return;
+	assertWithinRoot(routeDir);
 
 	const files = collectFiles(routeDir);
 	if (files.length === 0) {
@@ -88,10 +89,11 @@ function removeGeneratedRoute(routeDir) {
 
 function removeGeneratedRoutes(baseDir) {
 	if (!existsSync(baseDir)) return;
+	assertWithinRoot(baseDir);
 	for (const name of readdir(baseDir)) {
 		const routeDir = path.join(baseDir, name);
 		if (lstat(routeDir).isDirectory()) {
-			removeGeneratedRoute(routeDir);
+			removeGeneratedRoute(assertWithinBase(routeDir, baseDir));
 		}
 	}
 }
@@ -116,4 +118,22 @@ function readdir(dir) {
 
 function lstat(file) {
 	return statCache.get(file) || statCache.set(file, statSync(file)).get(file);
+}
+
+function assertWithinRoot(targetPath) {
+	const resolvedRoot = path.resolve(rootDir);
+	const resolvedTarget = path.resolve(targetPath);
+	if (resolvedTarget !== resolvedRoot && !resolvedTarget.startsWith(`${resolvedRoot}${path.sep}`)) {
+		throw new Error(`Refusing to operate outside project root: ${targetPath}`);
+	}
+	return targetPath;
+}
+
+function assertWithinBase(targetPath, baseDir) {
+	const resolvedBase = path.resolve(baseDir);
+	const resolvedTarget = path.resolve(targetPath);
+	if (resolvedTarget !== resolvedBase && !resolvedTarget.startsWith(`${resolvedBase}${path.sep}`)) {
+		throw new Error(`Refusing to remove route outside ${path.relative(rootDir, baseDir)}: ${targetPath}`);
+	}
+	return targetPath;
 }

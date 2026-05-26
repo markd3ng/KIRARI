@@ -64,6 +64,14 @@ export function GithubCardComponent(properties, children, githubCardApiBase) {
 		`script#${cardUuid}-script`,
 		{ type: "text/javascript", defer: true },
 		`
+	      const safeHttpsUrl = (raw) => {
+	        try {
+	          const url = new URL(String(raw));
+	          return url.protocol === "https:" ? url.href : "";
+	        } catch {
+	          return "";
+	        }
+	      };
 	      const initGithubCard = () => {
 	        const card = document.getElementById('${cardUuid}-card');
 	        if (!card || card.dataset.loaded === "true") return;
@@ -73,8 +81,11 @@ export function GithubCardComponent(properties, children, githubCardApiBase) {
 	          document.getElementById('${cardUuid}-forks').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.forks).replaceAll("\u202f", '');
 	          document.getElementById('${cardUuid}-stars').innerText = Intl.NumberFormat('en-us', { notation: "compact", maximumFractionDigits: 1 }).format(data.stargazers_count).replaceAll("\u202f", '');
 	          const avatarEl = document.getElementById('${cardUuid}-avatar');
-	          avatarEl.style.backgroundImage = 'url(' + data.owner.avatar_url + ')';
-	          avatarEl.style.backgroundColor = 'transparent';
+	          const safeUrl = safeHttpsUrl(data.owner?.avatar_url);
+	          if (safeUrl) {
+	            avatarEl.style.backgroundImage = \`url(\${JSON.stringify(safeUrl)})\`;
+	            avatarEl.style.backgroundColor = 'transparent';
+	          }
 	          document.getElementById('${cardUuid}-license').innerText = data.license?.spdx_id || "no-license";
 	          card.dataset.loaded = "true";
 	          card.classList.remove("fetch-waiting");
@@ -83,7 +94,6 @@ export function GithubCardComponent(properties, children, githubCardApiBase) {
 	        })
 	      };
 	      initGithubCard();
-	      document.addEventListener("transition:after-swap", initGithubCard);
 	    `,
 	);
 

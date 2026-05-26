@@ -3,6 +3,7 @@ import { basename, join, relative, sep } from "node:path";
 import { spawnSync } from "node:child_process";
 import { webcrypto } from "node:crypto";
 import { parse } from "smol-toml";
+import sanitizeHtml from "sanitize-html";
 
 const crypto = globalThis.crypto || webcrypto;
 const distDir = new URL("../dist", import.meta.url).pathname;
@@ -15,6 +16,20 @@ function readConfigText() {
 
 const configText = readConfigText();
 const config = configText ? parse(configText) : {};
+const contentSecurityPolicy = [
+	"default-src 'self'",
+	"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://analytics.umami.is https://plausible.io https://www.clarity.ms https://scripts.simpleanalyticscdn.com https://www.google.com https://cse.google.com https://www.gstatic.com",
+	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.google.com https://www.gstatic.com",
+	"img-src 'self' data: blob: https:",
+	"font-src 'self' data: https://fonts.gstatic.com",
+	"connect-src 'self' https://api.github.com https://github.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://*.clarity.ms https://*.algolia.net https://*.algolianet.com https://api.indexnow.org https://indexing.googleapis.com",
+	"frame-src https://www.google.com https://cse.google.com",
+	"object-src 'none'",
+	"base-uri 'self'",
+	"form-action 'self'",
+	"frame-ancestors 'none'",
+	"upgrade-insecure-requests",
+].join("; ");
 
 function toPublicPath(filePath) {
 	return `/${relative(distDir, filePath).split(sep).join("/")}`;
@@ -80,10 +95,11 @@ function siteTitle() {
 }
 
 function stripTags(html) {
-	return html
-		.replace(/<script[\s\S]*?<\/script>/gi, "")
-		.replace(/<style[\s\S]*?<\/style>/gi, "")
-		.replace(/<[^>]+>/g, " ")
+	return sanitizeHtml(html, {
+		allowedTags: [],
+		allowedAttributes: {},
+		textFilter: (text) => `${text} `,
+	})
 		.replace(/&nbsp;/g, " ")
 		.replace(/&amp;/g, "&")
 		.replace(/&lt;/g, "<")
@@ -166,8 +182,11 @@ function generateHeadersAndRedirects() {
 
 	const headers = [
 		"/*",
+		`  Content-Security-Policy: ${contentSecurityPolicy}`,
+		"  X-Frame-Options: DENY",
 		"  X-Content-Type-Options: nosniff",
 		"  Referrer-Policy: strict-origin-when-cross-origin",
+		"  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
 		"",
 		"/",
 		linkHeaders,
@@ -181,6 +200,9 @@ function generateHeadersAndRedirects() {
 		"",
 		"/favicon/*",
 		"  Cache-Control: public, max-age=86400",
+		"",
+		"/llms-full.txt",
+		"  Cache-Control: no-store",
 		"",
 	]
 		.filter((line, index, lines) => line !== "" || lines[index - 1] !== "")
@@ -197,7 +219,7 @@ function generateHeadersAndRedirects() {
 
 function generateRobots() {
 	const sitemapUrl = `${siteUrl()}${basePath()}sitemap-index.xml`.replace(/([^:]\/)\/+/g, "$1");
-	writeFileSync(join(distDir, "robots.txt"), `User-agent: *\nAllow: /\n\nSitemap: ${sitemapUrl}\n`);
+	writeFileSync(join(distDir, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /llms-full.txt\n\nSitemap: ${sitemapUrl}\n`);
 }
 
 function obfuscateMailtoLinks() {

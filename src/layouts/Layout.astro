@@ -201,7 +201,6 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 		{resolvedOgImage && <meta property="twitter:image" content={resolvedOgImage} />}
 
 		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
 		{favicons.map(favicon => (
 			<link rel="icon"
 				  href={favicon.src.startsWith('/') ? url(favicon.src) : favicon.src}

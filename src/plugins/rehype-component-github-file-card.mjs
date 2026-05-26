@@ -115,6 +115,14 @@ export function GithubFileCardComponent(properties, children, githubCardApiBase)
 		`script#${cardUuid}-script`,
 		{ type: "text/javascript", defer: true },
 		`
+      const safeHttpsUrl = (raw) => {
+        try {
+          const url = new URL(String(raw));
+          return url.protocol === "https:" ? url.href : "";
+        } catch {
+          return "";
+        }
+      };
       const initGithubFileCard = () => {
 	        const cardEl = document.getElementById('${cardUuid}-card');
 	        const avatarEl = document.getElementById('${cardUuid}-avatar');
@@ -156,8 +164,11 @@ export function GithubFileCardComponent(properties, children, githubCardApiBase)
           .then(response => response.json())
           .then(data => {
             const avatarUrl = data?.owner?.avatar_url || ${toScriptLiteral(avatarFallbackUrl)};
-            avatarEl.style.backgroundImage = 'url(' + avatarUrl + ')';
-            avatarEl.style.backgroundColor = 'transparent';
+            const safeUrl = safeHttpsUrl(avatarUrl);
+            if (safeUrl) {
+              avatarEl.style.backgroundImage = \`url(\${JSON.stringify(safeUrl)})\`;
+              avatarEl.style.backgroundColor = 'transparent';
+            }
           })
           .catch(() => {});
 
@@ -186,7 +197,6 @@ export function GithubFileCardComponent(properties, children, githubCardApiBase)
 	        });
 	      }
       requestAnimationFrame(initGithubFileCard);
-	      document.addEventListener("transition:after-swap", initGithubFileCard);
 	    `,
 	);
 

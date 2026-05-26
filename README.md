@@ -315,7 +315,7 @@ serviceBinding = "GHCARD_CACHE"
 ```
 
 - **Cloudflare Pages**: Deploy a separate Worker with a GitHub token as Secret. Set `serviceBinding` to the binding name.
-- **Vercel**: Set `GITHUB_TOKEN` in Project Environment Variables.
+- **Vercel**: Set `GITHUB_TOKEN` in Project Environment Variables. Set `GHC_ALLOWED_ORIGINS` to a comma-separated list of exact origins allowed to call the adapter. When empty, browser Origin requests are not granted CORS; same-origin/no-Origin server requests still work without `Access-Control-Allow-Origin`.
 
 ### SEO
 
@@ -328,11 +328,11 @@ serviceBinding = "GHCARD_CACHE"
 | IndexNow | `seo.indexNow = true` → submits to participating engines on every build |
 | Google indexing | `seo.google.indexingApi = true` → optional advanced Google Indexing API submit |
 
-IndexNow covers participating engines such as Bing, Yandex, Naver, Seznam.cz, and Yep. Google does not support IndexNow; use sitemap/Search Console, or the optional Google Indexing API for eligible content. Google Indexing API is mainly intended for JobPosting and BroadcastEvent URLs, so ordinary blog pages are not guaranteed to benefit.
+IndexNow covers participating engines such as Bing, Yandex, Naver, Seznam.cz, and Yep. Google does not support IndexNow; use sitemap/Search Console, or the optional Google Indexing API for eligible content. The IndexNow key is a public verification key served at `/{key}.txt`; do not reuse passwords, tokens, or other private secrets as the key. Google Indexing API is mainly intended for JobPosting and BroadcastEvent URLs, so ordinary blog pages are not guaranteed to benefit.
 
 ### LLMs.txt
 
-Postbuild generates `llms.txt`, `llms-small.txt`, `llms-full.txt`. With `llms.i18n = true`, per-language files (`llms-en.txt`, `llms-zh.txt`) are also emitted. Full-text file caps at 20,000 chars per page.
+Postbuild generates `llms.txt`, `llms-small.txt`, `llms-full.txt`. With `llms.i18n = true`, per-language files (`llms-en.txt`, `llms-zh.txt`) are also emitted. `llms-full.txt` is a public aggregation of page text with a 20,000-character cap per page; postbuild adds `Disallow: /llms-full.txt` to `robots.txt` and `Cache-Control: no-store` to deployment headers as mitigation, not access control.
 
 ```toml
 [llms]
@@ -365,7 +365,9 @@ customScriptFile = "footer.js"    # src/snippets/footer.js, no <script> tag
 Snippet file names must be basenames such as `head.html`; paths like
 `../secret.html`, `/tmp/x.html`, and subdirectories are ignored. Snippets are
 trusted maintainer input and are rendered with `set:html`; never feed visitor,
-comment, or CMS user content into them.
+comment, or CMS user content into them. The default CSP remains compatible with
+these owner-level inline snippets by allowing inline script/style; tightening CSP
+requires moving snippets to nonce/hash-aware external assets first.
 
 ## Content Authoring
 
