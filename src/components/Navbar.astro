@@ -90,7 +90,7 @@ const searchInputInputMode = searchProvider === "google" && searchConfig.google.
                 {siteConfig.title}
             </div>
         </a>
-        <div class="hidden md:flex">
+        {!isLandingVariant && <div class="hidden md:flex">
             {links.map((l) => {
                 return <a href={resolveNavUrl(l)} target={l.external ? "_blank" : null}
                           aria-label={l.name}
@@ -103,7 +103,7 @@ const searchInputInputMode = searchProvider === "google" && searchConfig.google.
                     </div>
                 </a>;
             })}
-        </div>
+        </div>}
         <div class="flex">
             <!-- Search bar for desktop - instant display with Astro icons -->
             <div id="search-bar" class:list={[
@@ -147,11 +147,11 @@ const searchInputInputMode = searchProvider === "google" && searchConfig.google.
                 <LightDarkSwitch lang={lang} client:idle></LightDarkSwitch>
             </div>
             <LanguageSwitch currentLang={lang} alternates={alternates}></LanguageSwitch>
-            <button type="button" aria-label="Menu" name="Nav Menu" aria-controls="nav-menu-panel" aria-expanded="false" aria-haspopup="menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
+            {!isLandingVariant && <button type="button" aria-label="Menu" name="Nav Menu" aria-controls="nav-menu-panel" aria-expanded="false" aria-haspopup="menu" class="btn-plain scale-animation rounded-lg w-11 h-11 active:scale-90 md:!hidden" id="nav-menu-switch">
                 <Icon name="material-symbols:menu-rounded" class="text-[1.25rem]"></Icon>
-            </button>
+            </button>}
         </div>
-        <NavMenuPanel links={links} lang={lang}></NavMenuPanel>
+        {!isLandingVariant && <NavMenuPanel links={links} lang={lang}></NavMenuPanel>}
         <DisplaySettings lang={lang} client:only="svelte"></DisplaySettings>
     </div>
 </div>
