@@ -19,6 +19,7 @@ category: frontend
 categoryLabel: 前端开发
 draft: false
 lang: en-US
+notbyai: true
 ---
 
 ## Mapping Test
