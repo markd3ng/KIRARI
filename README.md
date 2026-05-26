@@ -388,9 +388,12 @@ categoryLabel: "Guide Series"
 draft: false                   # Hidden in production
 lang: en-US                    # Required for i18n
 mermaid: true                  # Injects Mermaid runtime (client-side only)
+notbyai: true                  # Shows a localized Not By AI badge in the license area
 translationKey: my-post        # Cross-language post linking
 ---
 ```
+
+Set `notbyai: true` to show the localized Not By AI "Written By Human" badge in the post license area.
 
 ### Admonitions
 

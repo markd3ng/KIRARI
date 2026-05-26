@@ -29,6 +29,7 @@ image: ./cover.jpg
 tags: [Foo, Bar]
 category: Front-end
 draft: false
+notbyai: true
 ---
 ```
 
@@ -41,6 +42,7 @@ draft: false
 | `tags`        | The tags of the post.                                                                                                                                                                                       |
 | `category`    | The category of the post.                                                                                                                                                                                   |
 | `draft`        | If this post is still a draft, which won't be displayed.                                                                                                                                                    |
+| `notbyai`      | Set to `true` to show a localized Not By AI "Written By Human" badge in the post license area.                                                                                                              |
 
 ## Where to Place the Post Files
 

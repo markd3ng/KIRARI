@@ -387,9 +387,12 @@ categoryLabel: "教程系列"
 draft: false                   # 生产环境隐藏
 lang: zh-CN                    # i18n 必须
 mermaid: true                  # 注入 Mermaid 运行时（仅客户端）
+notbyai: true                  # 在 license 区域显示本地化 Not By AI badge
 translationKey: my-post        # 跨语言文章关联
 ---
 ```
+
+设置 `notbyai: true` 后，文章页 license 区域会显示对应语言的 Not By AI “Written By Human” badge。
 
 ### Admonitions
 

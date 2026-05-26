@@ -4,6 +4,7 @@ import { licenseConfig, profileConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
+import NotByAiBadge from "./NotByAiBadge.astro";
 
 interface Props {
 	title: string;
@@ -11,9 +12,10 @@ interface Props {
 	lastUpdated?: Date;
 	class: string;
 	lang?: string;
+	notByAi?: boolean;
 }
 
-const { title, pubDate, lastUpdated, lang } = Astro.props;
+const { title, pubDate, lastUpdated, lang, notByAi = false } = Astro.props;
 const className = Astro.props.class;
 const profileConf = profileConfig;
 const licenseConf = licenseConfig;
@@ -26,7 +28,7 @@ const postUrl = decodeURIComponent(Astro.url.toString());
     <a href={postUrl} class="link text-[var(--primary)]">
         {postUrl}
     </a>
-    <div class="flex gap-6 mt-2">
+    <div class="flex flex-wrap items-end gap-6 mt-2">
         <div>
             <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.author, lang)}</div>
             <div class="transition text-black/75 dark:text-white/75 line-clamp-2">{profileConf.name}</div>
@@ -45,6 +47,11 @@ const postUrl = decodeURIComponent(Astro.url.toString());
             <div class="transition text-black/30 dark:text-white/30 text-sm">{i18n(I18nKey.license, lang)}</div>
             <a href={licenseConf.url} target="_blank" rel="noopener noreferrer" class="link text-[var(--primary)] line-clamp-2">{licenseConf.name}</a>
         </div>
+        {notByAi && (
+        <div class="flex flex-col gap-1">
+            <NotByAiBadge lang={lang}></NotByAiBadge>
+        </div>
+        )}
     </div>
     <Icon name="fa6-brands:creative-commons" class="transition text-[15rem] absolute pointer-events-none right-6 top-1/2 -translate-y-1/2 text-black/5 dark:text-white/5"></Icon>
 </div>

@@ -1,0 +1,43 @@
+---
+import { normalizeLangCode } from "@utils/i18n-utils";
+import { url } from "@utils/url-utils";
+
+interface Props {
+	lang?: string;
+}
+
+const { lang } = Astro.props;
+const normalizedLang = normalizeLangCode(lang);
+const badgeLang = normalizedLang === "zh-HK" ? "zh-TW" : normalizedLang;
+const badgeByLang: Record<string, string> = {
+	"en-US": "/notbyai/en-US.svg",
+	"zh-CN": "/notbyai/zh-CN.svg",
+	"zh-TW": "/notbyai/zh-TW.svg",
+	"ja-JP": "/notbyai/ja-JP.svg",
+	"ko-KR": "/notbyai/ko-KR.svg",
+	"es-ES": "/notbyai/es-ES.svg",
+	"th-TH": "/notbyai/th-TH.svg",
+	"vi-VN": "/notbyai/vi-VN.svg",
+	"tr-TR": "/notbyai/tr-TR.svg",
+	"id-ID": "/notbyai/id-ID.svg",
+};
+const badgeSrc = badgeByLang[badgeLang] || badgeByLang["en-US"];
+---
+
+<a
+	href="https://notbyai.fyi/"
+	target="_blank"
+	rel="noopener noreferrer"
+	aria-label="Not By AI: Written By Human"
+	class="inline-flex shrink-0"
+>
+	<img
+		src={url(badgeSrc)}
+		alt="Written By Human, Not By AI"
+		width="131"
+		height="42"
+		loading="lazy"
+		decoding="async"
+		class="block h-[42px] w-auto"
+	/>
+</a>

@@ -40,6 +40,7 @@ _content_repo/
 .cursor/
 .claude/
 .codex/
+ignore-temp/
 
 # Skilld cache references (recreated by `skilld install`)
 .skilld
