@@ -98,6 +98,10 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 | OG images | satori | ^0.26.0 |
 | Config | smol-toml | ^1.6.1 |
 
+## Deployment
+
+> **New to KIRARI?** Read the [Deployment Guide (step-by-step)](./DEPLOY.md) — covers Cloudflare Pages, Vercel, Netlify, EdgeOne Pages, Cloudflare API Token setup, and GitHub Card cache proxy deployment.
+
 ## Quick Start
 
 ```bash

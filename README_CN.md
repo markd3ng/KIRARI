@@ -98,7 +98,11 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 | OG 图片 | satori | ^0.26.0 |
 | 配置 | smol-toml | ^1.6.1 |
 
-## 快速开始
+## 部署
+
+> **新手？** 直接看 [部署指南（手把手）](./DEPLOY.md)：从零到上线，每一步都有说明，包括 Cloudflare API Token 怎么创建、权限怎么选。
+
+## 本地开发
 
 ```bash
 git clone https://github.com/markd3ng/KIRARI.git
