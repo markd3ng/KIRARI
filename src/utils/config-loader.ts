@@ -377,6 +377,7 @@ const DEFAULT_CONFIG: Config = {
 			LinkPreset.Archive,
 			LinkPreset.About,
 			LinkPreset.Friends,
+			LinkPreset.Projects,
 		],
 	},
 	profile: {
@@ -849,13 +850,14 @@ const validateNavBarLinks = (
 	for (const link of links) {
 		if (typeof link !== "object" || link === null) continue;
 		
-		// Preset link: { preset: "Home" | "Archive" | "About" | "Friends" }
+		// Preset link: { preset: "Home" | "Archive" | "About" | "Friends" | "Projects" }
 		if ("preset" in link && typeof link.preset === "string") {
 			const presetMap: Record<string, LinkPresetType> = {
 				"Home": LinkPreset.Home,
 				"Archive": LinkPreset.Archive,
 				"About": LinkPreset.About,
 				"Friends": LinkPreset.Friends,
+				"Projects": LinkPreset.Projects,
 			};
 			
 			const presetValue = presetMap[link.preset];

@@ -7,6 +7,7 @@ export const tr: Translation = {
 	[Key.archive]: "Arşiv",
 	[Key.search]: "Ara",
 	[Key.friends]: "Arkadaşlar",
+	[Key.projects]: "Projeler",
 
 	[Key.tags]: "Taglar",
 	[Key.categories]: "Katagoriler",

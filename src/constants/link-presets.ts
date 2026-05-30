@@ -23,6 +23,10 @@ export const LinkPresets: { [key in LinkPresetType]: NavBarLink } = {
 		name: i18n(I18nKey.friends),
 		url: "/friends/",
 	},
+	[LinkPreset.Projects]: {
+		name: i18n(I18nKey.projects),
+		url: "/projects/",
+	},
 };
 
 export function getLinkPreset(preset: LinkPresetType, lang?: string): NavBarLink {
@@ -32,6 +36,7 @@ export function getLinkPreset(preset: LinkPresetType, lang?: string): NavBarLink
 		[LinkPreset.About]: I18nKey.about,
 		[LinkPreset.Archive]: I18nKey.archive,
 		[LinkPreset.Friends]: I18nKey.friends,
+		[LinkPreset.Projects]: I18nKey.projects,
 	};
 	const key = keyByPreset[preset];
 	return {

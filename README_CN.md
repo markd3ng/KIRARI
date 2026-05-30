@@ -123,6 +123,7 @@ pnpm build
 | `public/favicon/` | 替换 favicon | 推荐 |
 | `public/og/default.png` | 替换默认 OG 图片 | 推荐 |
 | `src/content/spec/friends.md` | 替换或移除 Friends 导航 | 可选 |
+| `src/content/spec/projects.md` | 替换 GitHub 项目卡片或移除 Projects 导航 | 可选 |
 | `src/_data/friends.json` | 替换友链数据 | 可选 |
 
 验证：
@@ -213,7 +214,7 @@ contentDir = "src/content/posts/en-US"
 
 ### 导航
 
-4 个预设项：`Home`、`Archive`、`About`、`Friends`。支持自定义链接：
+5 个预设项：`Home`、`Archive`、`About`、`Friends`、`Projects`。支持自定义链接：
 
 ```toml
 [[navBar.links]]
@@ -456,7 +457,7 @@ KIRARI/
 │   │   └── widget/             # SideBar、TOC、Profile、Categories、Tags
 │   ├── content/
 │   │   ├── posts/              # .md / .mdx 博客文章
-│   │   └── spec/               # 静态页面（about、friends）
+│   │   └── spec/               # 静态页面（about、friends、projects）
 │   ├── layouts/                # Layout.astro（~1310 行）、MainGridLayout.astro
 │   ├── pages/                  # 基于文件的路由 + [lang]/ 变体
 │   ├── plugins/                # Remark/rehype 适配器、expressive-code 插件

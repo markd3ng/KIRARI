@@ -123,6 +123,7 @@ Only edit files listed below. Do not modify `src/components/`, `src/layouts/`, `
 | `public/favicon/` | Replace favicon | Recommended |
 | `public/og/default.png` | Replace default OG image | Recommended |
 | `src/content/spec/friends.md` | Replace or remove Friends nav in config | Optional |
+| `src/content/spec/projects.md` | Replace GitHub project cards or remove Projects nav in config | Optional |
 | `src/_data/friends.json` | Replace friend-link data | Optional |
 
 Validation:
@@ -213,7 +214,7 @@ contentDir = "src/content/posts/zh-CN"
 
 ### Navigation
 
-4 presets: `Home`, `Archive`, `About`, `Friends`. Custom links supported:
+5 presets: `Home`, `Archive`, `About`, `Friends`, `Projects`. Custom links supported:
 
 ```toml
 [[navBar.links]]
@@ -457,7 +458,7 @@ KIRARI/
 │   │   └── widget/             # SideBar, TOC, Profile, Categories, Tags
 │   ├── content/
 │   │   ├── posts/              # .md / .mdx blog posts
-│   │   └── spec/               # Static pages (about, friends)
+│   │   └── spec/               # Static pages (about, friends, projects)
 │   ├── layouts/                # Layout.astro (~1310 lines), MainGridLayout.astro
 │   ├── pages/                  # File-based routes + [lang]/ variants
 │   ├── plugins/                # Remark/rehype adapters, expressive-code plugins

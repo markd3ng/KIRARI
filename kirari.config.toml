@@ -309,6 +309,7 @@ description = "Connect and grow together."
 #   - Archive / 归档
 #   - About / 关于
 #   - Friends / 友链
+#   - Projects / 项目
 #
 # Custom links support: name, url, external (optional)
 # 自定义链接支持: name（名称）, url（链接）, external（可选，是否外链）
@@ -325,6 +326,9 @@ preset = "About"
 
 [[navBar.links]]
 preset = "Friends"
+
+[[navBar.links]]
+preset = "Projects"
 
 # Custom link example / 自定义链接示例
 # [[navBar.links]]
