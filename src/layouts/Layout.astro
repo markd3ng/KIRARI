@@ -1197,14 +1197,6 @@ function scrollFunction() {
 				}
 			}
 
-			if (bannerEnabled && toc) {
-				if (scrollTop > bannerHeight) {
-					toc.classList.remove('toc-hide')
-				} else {
-					toc.classList.add('toc-hide')
-				}
-			}
-
 			if (bannerEnabled && navbar) {
 				if (scrollTop >= navbarThreshold) {
 					navbar.classList.add('navbar-hidden')
