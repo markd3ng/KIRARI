@@ -127,7 +127,7 @@
     }
 
     /* Performance: Apply to all direct children for better granularity */
-    > p, > h1, > h2, > h3, > h4, > h5, > h6, > ul, > ol, > blockquote, > table {
+    > p, > h1, > h2, > h3, > h4, > h5, > h6, > ul, > ol, > blockquote, > .markdown-table-wrapper {
         content-visibility: auto;
         contain-intrinsic-size: auto 100px;
     }
@@ -168,24 +168,19 @@
         contain-intrinsic-size: auto 80px;
     }
 
+    .markdown-table-wrapper {
+        @apply my-4 w-full overflow-x-auto;
+    }
+
     table {
-        @apply w-full border-collapse my-4;
-        display: block;
-        overflow-x: auto;
+        @apply w-full border-collapse;
+        min-width: max-content;
+        table-layout: auto;
         white-space: nowrap;
     }
 
-    thead, tbody {
-        display: table;
-        min-width: 100%;
-    }
-
-    tr {
-        display: table-row;
-    }
-
     th, td {
-        @apply border border-[var(--line-color)] px-3 py-2 text-left;
+        @apply border border-[var(--line-color)] px-3 py-2 text-center align-middle;
         min-width: 120px;
     }
 
@@ -207,7 +202,7 @@
     &.cv-force-visible {
         .expressive-code,
         pre,
-        > p, > h1, > h2, > h3, > h4, > h5, > h6, > ul, > ol, > blockquote, > table,
+        > p, > h1, > h2, > h3, > h4, > h5, > h6, > ul, > ol, > blockquote, > .markdown-table-wrapper,
         .katex-display-container,
         .katex-display {
             content-visibility: visible !important;
