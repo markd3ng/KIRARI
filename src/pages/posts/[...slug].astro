@@ -91,6 +91,7 @@ const jsonLd = {
 	articlePublished={entry.data.published}
 	articleUpdated={entry.data.updated}
 	articleTags={entry.data.tags}
+	toc={entry.data.toc}
 >
 	<script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
 	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4">

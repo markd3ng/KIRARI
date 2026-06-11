@@ -9,6 +9,7 @@ tagLabels:
 category: Examples
 categoryLabel: 示例
 draft: false
+toc: true
 lang: zh-CN
 translationKey: expressive-code
 ---

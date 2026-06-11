@@ -12,6 +12,7 @@ tagLabels:
 category: 'Examples'
 categoryLabel: 示例
 draft: false
+toc: true
 lang: en-US
 translationKey: markdown-extended
 ---

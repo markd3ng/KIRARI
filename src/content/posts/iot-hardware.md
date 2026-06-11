@@ -14,6 +14,7 @@ tagLabels:
 category: hardware_and_diy
 categoryLabel: 硬件与DIY
 draft: false
+toc: true
 lang: en-US
 ---
 

@@ -9,6 +9,7 @@ tagLabels:
 category: examples
 categoryLabel: 示例
 draft: false
+toc: true
 lang: zh-CN
 translationKey: mermaid-test
 mermaid: true

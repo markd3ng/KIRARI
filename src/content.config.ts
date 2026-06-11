@@ -12,6 +12,7 @@ const postsCollection = defineCollection({
 		published: z.date(),
 		updated: z.date().optional(),
 		draft: z.boolean().optional().default(false),
+		toc: z.boolean().optional().default(true),
 		description: z
 			.string()
 			.optional()
@@ -72,6 +73,5 @@ export const collections = {
 	posts: postsCollection,
 	spec: specCollection,
 };
-
 
 

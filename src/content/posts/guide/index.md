@@ -9,6 +9,7 @@ tagLabels: {}
 category: Guides
 categoryLabel: 指南
 draft: false
+toc: true
 lang: en-US
 translationKey: guide
 ---
