@@ -821,9 +821,6 @@ function init() {
 	}
 }
 
-/* Load settings when entering the site */
-init();
-
 // ============================================================
 // Unified Transition Event Handlers
 // Works with both View Transitions API (Astro ClientRouter) and Swup fallback
@@ -893,6 +890,7 @@ function onTransitionAfterSwap() {
 
 	// Refresh DOM references after View Transition (old refs are stale)
 	refreshDomReferences();
+	updateTocPosition();
 
 	// Ensure navbar is visible after navigation. The page scrolls to top
 	// but no scroll event fires during VT, so navbar-hidden from the
@@ -1117,8 +1115,6 @@ function restoreHashScrollAfterTransition() {
 		transitionManager.init();
 	}
 
-setupTransitionHandlers();
-
 // Save scroll position before unload so we can restore it on F5 refresh.
 // Reads from OverlayScrollbars viewport (the actual scroll container) if active.
 window.addEventListener('beforeunload', () => {
@@ -1182,6 +1178,17 @@ function updateThresholds() {
 }
 updateThresholds()
 
+function updateTocPosition() {
+	const tocInnerEl = document.getElementById('toc-inner-wrapper')
+	if (!tocInnerEl) return
+	const mainGrid = document.getElementById('main-grid')
+	if (!mainGrid) return
+
+	const NAVBAR_CLEARANCE = 80
+	const mainGridTop = Math.round(mainGrid.getBoundingClientRect().top)
+	tocInnerEl.style.setProperty('--toc-top', `${Math.max(NAVBAR_CLEARANCE, mainGridTop)}px`)
+}
+
 function scrollFunction() {
 	if (!ticking) {
 		window.requestAnimationFrame(() => {
@@ -1205,12 +1212,15 @@ function scrollFunction() {
 				}
 			}
 
+			updateTocPosition()
+
 			ticking = false
 		})
 		ticking = true
 	}
 }
 window.addEventListener('scroll', scrollFunction, { passive: true })
+updateTocPosition()
 
 let resizeTicking = false
 let lastBannerViewportWidth = window.innerWidth
@@ -1232,6 +1242,7 @@ window.onresize = () => {
 
 			// Recalculate thresholds with new viewport dimensions
 			updateThresholds()
+			updateTocPosition()
 
 			// Ignore mobile browser UI chrome collapse/expand (height-only minor resize)
 			// to avoid shifting banner translate and causing CLS spikes.
@@ -1252,6 +1263,10 @@ window.onresize = () => {
 		resizeTicking = true
 	}
 }
+
+/* Load settings when entering the site */
+init();
+setupTransitionHandlers();
 
 </script>
 
