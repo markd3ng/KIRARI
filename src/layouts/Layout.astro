@@ -618,8 +618,9 @@ function initCustomScrollbar() {
 	if (!bodyElement) return;
 
 	const existingBodyOs = OverlayScrollbars(bodyElement);
+	let bodyOs = existingBodyOs;
 	if (!existingBodyOs) {
-		OverlayScrollbars(
+		bodyOs = OverlayScrollbars(
 			// docs say that a initialization to the body element would affect native functionality like window.scrollTo
 			// but just leave it here for now
 			{
@@ -638,6 +639,10 @@ function initCustomScrollbar() {
 	} else {
 		existingBodyOs.update();
 	}
+
+	bodyScrollCleanup?.();
+	bodyScrollCleanup = bodyOs?.on('scroll', scrollFunction) || null;
+	scrollFunction();
 
 	const katexElements = document.querySelectorAll('.katex-display') as NodeListOf<HTMLElement>;
 
@@ -1133,12 +1138,20 @@ window.addEventListener('beforeunload', () => {
 let backToTopBtn: HTMLElement | null = document.getElementById('back-to-top-btn');
 let toc: HTMLElement | null = document.getElementById('toc-wrapper');
 let navbar: HTMLElement | null = document.getElementById('navbar-wrapper');
+let bodyScrollCleanup: (() => void) | null = null;
 
 // Re-query DOM elements after View Transitions (old references become stale)
 function refreshDomReferences() {
 	backToTopBtn = document.getElementById('back-to-top-btn');
 	toc = document.getElementById('toc-wrapper');
 	navbar = document.getElementById('navbar-wrapper');
+}
+
+function getScrollTop() {
+	const bodyOs = OverlayScrollbars(document.body);
+	return bodyOs
+		? bodyOs.elements().viewport.scrollTop
+		: (document.documentElement.scrollTop || document.body.scrollTop);
 }
 
 // Cache viewport dimensions and page state to avoid forced reflows
@@ -1173,7 +1186,7 @@ function scrollFunction() {
 	if (!ticking) {
 		window.requestAnimationFrame(() => {
 			// Single DOM read - all writes happen after
-			const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+			const scrollTop = getScrollTop()
 
 			// Batch all DOM writes together
 			if (backToTopBtn) {
@@ -1205,7 +1218,7 @@ function scrollFunction() {
 		ticking = true
 	}
 }
-window.onscroll = scrollFunction
+window.addEventListener('scroll', scrollFunction, { passive: true })
 
 let resizeTicking = false
 let lastBannerViewportWidth = window.innerWidth
