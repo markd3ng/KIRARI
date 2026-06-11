@@ -447,6 +447,8 @@ const DEFAULT_CONFIG: Config = {
 		sitemap: true,
 		title: "KIRARI",
 		description: "Documentation for KIRARI",
+		includePatterns: ["*"],
+		excludePatterns: ["*/categories/*", "*/tags/*", "*/archive/*", "*/page/*"],
 		i18n: true,
 	},
 	posts: {
@@ -1276,6 +1278,8 @@ export const loadConfig = (): Config => {
 			sitemap: getBoolean(llms?.sitemap, DEFAULT_CONFIG.llms.sitemap || false),
 			title: getString(llms?.title, DEFAULT_CONFIG.llms.title || ""),
 			description: getString(llms?.description, DEFAULT_CONFIG.llms.description || ""),
+			includePatterns: getStringArray(llms?.includePatterns, DEFAULT_CONFIG.llms.includePatterns || ["*"]),
+			excludePatterns: getStringArray(llms?.excludePatterns, DEFAULT_CONFIG.llms.excludePatterns || []),
 			i18n: getBoolean(llms?.i18n, DEFAULT_CONFIG.llms.i18n || false),
 		},
 		i18n: {

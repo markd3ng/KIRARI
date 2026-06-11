@@ -636,6 +636,14 @@ url = "https://github.com/saicaca/fuwari"
 # Type: string / 类型: 字符串
 # description = "Documentation for KIRARI"
 
+# Include URL patterns in llms.txt / llms.txt 包含的 URL 模式
+# Type: string[] / 类型: 字符串数组
+# includePatterns = ["*"]
+
+# Exclude low-signal index pages from llms.txt / 从 llms.txt 排除低信号索引页
+# Type: string[] / 类型: 字符串数组
+# excludePatterns = ["*/categories/*", "*/tags/*", "*/archive/*", "*/page/*"]
+
 # Generate language-specific files / 生成按语言分类的文件
 # Type: boolean / 类型: 布尔值
 # Note: Requires multi-language setup

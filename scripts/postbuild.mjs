@@ -60,6 +60,11 @@ function getTomlString(section, key, fallback = "") {
 	return typeof value === "string" ? value : fallback;
 }
 
+function getTomlStringArray(section, key, fallback = []) {
+	const value = getTomlValue(section, key);
+	return Array.isArray(value) && value.every((item) => typeof item === "string") ? value : fallback;
+}
+
 function getTomlValue(section, key) {
 	let current = config;
 	for (const part of section.split(".")) {
@@ -127,6 +132,105 @@ function pageInfo(file) {
 		lang,
 		text: stripTags(html),
 	};
+}
+
+function pagePath(page) {
+	try {
+		return new URL(page.canonical).pathname;
+	} catch {
+		return "";
+	}
+}
+
+function cleanPageTitle(page, title = siteTitle()) {
+	const value = page.title || page.canonical;
+	return value.replace(new RegExp(`\\s[-|]\\s${escapeRegExp(title)}$`), "").trim();
+}
+
+function escapeRegExp(value) {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function globToRegExp(pattern) {
+	const escaped = pattern.split("*").map(escapeRegExp).join(".*");
+	return new RegExp(`^${escaped}$`);
+}
+
+function matchesAny(value, patterns) {
+	return patterns.some((pattern) => globToRegExp(pattern).test(value));
+}
+
+function isArticlePage(page) {
+	return /\/posts\/[^/]+\/$/.test(pagePath(page));
+}
+
+function isNavigationPage(page) {
+	return /^\/(?:[a-z]{2}(?:-[A-Z]{2})?\/)?(?:|blog\/|archive\/|categories\/|tags\/|projects\/|about\/|friends\/)$/.test(pagePath(page));
+}
+
+function sortByCanonical(a, b) {
+	return a.canonical.localeCompare(b.canonical);
+}
+
+function llmsLine(page, title = siteTitle(), includeDescription = true) {
+	const label = cleanPageTitle(page, title);
+	const description = includeDescription && page.description ? `: ${page.description}` : "";
+	return `- [${label}](${page.canonical})${description}`;
+}
+
+function llmsFileUrl(pages, filename) {
+	const origin = pages.find((page) => page.canonical)?.canonical;
+	try {
+		return `${new URL(origin).origin}${basePath()}${filename}`.replace(/([^:]\/)\/+/g, "$1");
+	} catch {
+		return `${siteUrl()}${basePath()}${filename}`.replace(/([^:]\/)\/+/g, "$1");
+	}
+}
+
+function buildLlmsIndex({ title, description, pages, lang, small = false }) {
+	const includePatterns = getTomlStringArray("llms", "includePatterns", ["*"]);
+	const excludePatterns = getTomlStringArray("llms", "excludePatterns", [
+		"*/categories/*",
+		"*/tags/*",
+		"*/archive/*",
+		"*/page/*",
+	]);
+	const scopedPages = pages
+		.filter((page) => !lang || page.lang === lang)
+		.filter((page) => matchesAny(page.canonical, includePatterns))
+		.filter((page) => !matchesAny(page.canonical, excludePatterns) || isNavigationPage(page));
+	const articles = scopedPages.filter(isArticlePage).sort(sortByCanonical);
+	const navigation = scopedPages.filter(isNavigationPage).sort(sortByCanonical);
+	const articleLimit = small ? 30 : articles.length;
+	const lines = [
+		`# ${lang ? `${title} (${lang})` : title}`,
+		"",
+		`> ${description}`,
+		"",
+		`This file is a curated LLM entry point for ${title}. Use the article links for technical content; navigation links provide site structure and discovery.`,
+		"",
+	];
+
+	if (articles.length > 0) {
+		lines.push("## Articles", "");
+		for (const page of articles.slice(0, articleLimit)) lines.push(llmsLine(page, title));
+		lines.push("");
+	}
+
+	if (navigation.length > 0 && !small) {
+		lines.push("## Navigation", "");
+		for (const page of navigation) lines.push(llmsLine(page, title));
+		lines.push("");
+	}
+
+	lines.push(
+		"## Optional",
+		"",
+		`- [Full extracted content](${llmsFileUrl(pages, "llms-full.txt")}): Full text aggregation generated from built HTML pages.`,
+		`- [Condensed entry point](${llmsFileUrl(pages, "llms-small.txt")}): Shorter version of this LLM entry point.`,
+	);
+
+	return lines.join("\n").replace(/\n{3,}/g, "\n\n");
 }
 
 function findCriticalCss() {
@@ -252,18 +356,13 @@ function generateLlms() {
 	const pages = htmlFiles().map(pageInfo).filter((page) => page.canonical);
 	const title = getTomlString("llms", "title", siteTitle());
 	const description = getTomlString("llms", "description", `Documentation for ${title}`);
-	const summary = [`# ${title}`, "", description, "", "## Pages", ""];
-	for (const page of pages) {
-		summary.push(`- [${page.title || page.canonical}](${page.canonical})${page.description ? `: ${page.description}` : ""}`);
-	}
-	writeFileSync(join(distDir, "llms.txt"), `${summary.join("\n")}\n`);
 
-	const small = summary.slice(0, 250).join("\n");
-	writeFileSync(join(distDir, "llms-small.txt"), `${small}\n`);
+	writeFileSync(join(distDir, "llms.txt"), `${buildLlmsIndex({ title, description, pages })}\n`);
+	writeFileSync(join(distDir, "llms-small.txt"), `${buildLlmsIndex({ title, description, pages, small: true })}\n`);
 
-	const full = [`# ${title}`, "", description, ""];
+	const full = [`# ${title}`, "", `> ${description}`, ""];
 	for (const page of pages) {
-		full.push(`## ${page.title || page.canonical}`, "", page.canonical, "", page.text.slice(0, 20000), "");
+		full.push(`## ${cleanPageTitle(page, title)}`, "", page.canonical, "", page.text.slice(0, 20000), "");
 	}
 	writeFileSync(join(distDir, "llms-full.txt"), `${full.join("\n")}\n`);
 
@@ -273,10 +372,8 @@ function generateLlms() {
 			const lang = page.lang || "unknown";
 			groups.set(lang, [...(groups.get(lang) || []), page]);
 		}
-		for (const [lang, items] of groups.entries()) {
-			const lines = [`# ${title} (${lang})`, "", description, "", "## Pages", ""];
-			for (const page of items) lines.push(`- [${page.title || page.canonical}](${page.canonical})`);
-			writeFileSync(join(distDir, `llms-${lang}.txt`), `${lines.join("\n")}\n`);
+		for (const lang of groups.keys()) {
+			writeFileSync(join(distDir, `llms-${lang}.txt`), `${buildLlmsIndex({ title, description, pages, lang })}\n`);
 		}
 	}
 }
