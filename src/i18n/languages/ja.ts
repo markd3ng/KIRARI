@@ -8,6 +8,7 @@ export const ja: Translation = {
 	[Key.search]: "検索",
 	[Key.friends]: "友達",
 	[Key.projects]: "プロジェクト",
+	[Key.articles]: "記事",
 
 	[Key.tags]: "タグ",
 	[Key.categories]: "カテゴリ",

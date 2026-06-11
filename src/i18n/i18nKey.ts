@@ -5,6 +5,7 @@ enum I18nKey {
 	search = "search",
 	friends = "friends",
 	projects = "projects",
+	articles = "articles",
 
 	tags = "tags",
 	categories = "categories",

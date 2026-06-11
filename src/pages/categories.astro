@@ -1,0 +1,36 @@
+---
+import ButtonLink from "@components/control/ButtonLink.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import {
+	getCategoryList,
+	getTaxonomyDisplayMappings,
+} from "../utils/content-utils";
+import { Config } from "../constants";
+import { getPathAlternates, withLangPrefix } from "../utils/i18n-utils";
+import { getCategoryName } from "../utils/url-utils";
+
+const lang = Config.i18n.defaultLang;
+const categories = await getCategoryList(lang);
+const { categories: categoryDisplayMap } = await getTaxonomyDisplayMappings(lang);
+const categoriesUrl = withLangPrefix("/categories/", lang);
+const alternates = getPathAlternates((itemLang) => withLangPrefix("/categories/", itemLang));
+---
+
+<MainGridLayout title={i18n(I18nKey.categories, lang)} lang={lang} alternates={alternates} canonicalUrl={categoriesUrl}>
+	<div class="card-base px-8 py-6">
+		<h1 class="text-3xl font-bold mb-6 text-black/90 dark:text-white/90">{i18n(I18nKey.categories, lang)}</h1>
+		<div class="grid gap-2">
+			{categories.map((category) => (
+				<ButtonLink
+					url={category.url}
+					badge={String(category.count)}
+					label={`${i18n(I18nKey.categories, lang)}: ${getCategoryName(category.name, categoryDisplayMap)}`}
+				>
+					{getCategoryName(category.name, categoryDisplayMap)}
+				</ButtonLink>
+			))}
+		</div>
+	</div>
+</MainGridLayout>

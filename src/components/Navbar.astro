@@ -30,6 +30,24 @@ let links: NavBarLink[] = navBarConfig.links.map(
 	},
 );
 
+function getNavDisplayName(link: NavBarLink): string {
+	if (link.external) return link.name;
+
+	const path = link.url.replace(/\/+$/, "/");
+	const keyByPath: Record<string, I18nKey> = {
+		"/blog/": I18nKey.articles,
+		"/categories/": I18nKey.categories,
+		"/tags/": I18nKey.tags,
+	};
+	const key = keyByPath[path];
+	return key ? i18n(key, lang) : link.name;
+}
+
+links = links.map((link) => ({
+	...link,
+	name: getNavDisplayName(link),
+}));
+
 const themeIcons = [
 	{ mode: "light", icon: "material-symbols:wb-sunny-outline-rounded" },
 	{ mode: "dark", icon: "material-symbols:dark-mode-outline-rounded" },

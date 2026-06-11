@@ -1,0 +1,32 @@
+---
+import ButtonTag from "@components/control/ButtonTag.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import {
+	getTagList,
+	getTaxonomyDisplayMappings,
+} from "../utils/content-utils";
+import { Config } from "../constants";
+import { getPathAlternates, withLangPrefix } from "../utils/i18n-utils";
+import { getTagName, getTagUrl } from "../utils/url-utils";
+
+const lang = Config.i18n.defaultLang;
+const tags = await getTagList(lang);
+const { tags: tagDisplayMap } = await getTaxonomyDisplayMappings(lang);
+const tagsUrl = withLangPrefix("/tags/", lang);
+const alternates = getPathAlternates((itemLang) => withLangPrefix("/tags/", itemLang));
+---
+
+<MainGridLayout title={i18n(I18nKey.tags, lang)} lang={lang} alternates={alternates} canonicalUrl={tagsUrl}>
+	<div class="card-base px-8 py-6">
+		<h1 class="text-3xl font-bold mb-6 text-black/90 dark:text-white/90">{i18n(I18nKey.tags, lang)}</h1>
+		<div class="flex flex-wrap gap-2">
+			{tags.map((tag) => (
+				<ButtonTag href={getTagUrl(tag.name, lang)} label={`${i18n(I18nKey.tags, lang)}: ${getTagName(tag.name, tagDisplayMap)}`}>
+					{getTagName(tag.name, tagDisplayMap)}
+				</ButtonTag>
+			))}
+		</div>
+	</div>
+</MainGridLayout>
