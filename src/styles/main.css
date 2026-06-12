@@ -139,7 +139,14 @@ h1, h2, h3, h4, h5, h6, p, blockquote, code, pre, table, th, td {
     overflow-anchor: auto;
 }
 
-.custom-md img, #post-cover img {
+.custom-md img {
+    @apply cursor-zoom-in;
+    width: auto;
+    max-width: min(100%, 720px);
+    height: auto;
+}
+
+#post-cover img {
     @apply cursor-zoom-in;
 }
 
