@@ -7,6 +7,8 @@ import { url } from "../utils/url-utils";
 const currentYear = new Date().getFullYear();
 const lang = Astro.props.lang;
 const rssUrl = lang ? getLangHomeUrl(lang).replace(/\/$/, "/rss.xml") : url("rss.xml");
+const kirariCommit = import.meta.env.PUBLIC_KIRARI_COMMIT || "unknown";
+const kirariCommitUrl = `https://github.com/markd3ng/KIRARI/commit/${kirariCommit}`;
 ---
 
 <div class="transition border-t border-black/10 dark:border-white/15 my-10 border-dashed mx-32"></div>
@@ -20,8 +22,9 @@ const rssUrl = lang ? getLangHomeUrl(lang).replace(/\/$/, "/rss.xml") : url("rss
         )}
         <br>
         Powered by
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://astro.build">Astro</a> &middot;
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/markd3ng/KIRARI">KIRARI</a> &middot;
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://astro.build/">Astro</a> &middot;
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/markd3ng/KIRARI">KIRARI</a>
+        @ <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={kirariCommitUrl}>{kirariCommit}</a> &middot;
         Based on
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/JoeyC-Dev/saicaca-fuwari">JoeyC-Dev/saicaca-fuwari</a> &
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/saicaca/fuwari">saicaca/fuwari</a>
