@@ -345,6 +345,8 @@ enable = true
 sitemap = true
 title = "Site Name"
 description = "Site description for AI indexing"
+includePatterns = ["*"]
+excludePatterns = ["*/categories/*", "*/tags/*", "*/archive/*", "*/page/*"]
 i18n = true
 ```
 

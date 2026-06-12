@@ -219,6 +219,10 @@ type TomlConfig = {
 		title?: unknown;
 		/** Document description / 文档描述 */
 		description?: unknown;
+		/** URL include patterns / URL 包含模式 */
+		includePatterns?: unknown;
+		/** URL exclude patterns / URL 排除模式 */
+		excludePatterns?: unknown;
 		/** Enable i18n support / 启用国际化支持 */
 		i18n?: unknown;
 	};

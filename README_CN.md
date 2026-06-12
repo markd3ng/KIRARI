@@ -345,6 +345,8 @@ enable = true
 sitemap = true
 title = "站点名称"
 description = "供 AI 索引的站点描述"
+includePatterns = ["*"]
+excludePatterns = ["*/categories/*", "*/tags/*", "*/archive/*", "*/page/*"]
 i18n = true
 ```
 
