@@ -73,6 +73,7 @@ export type NavBarConfig = {
 
 export type ProfileConfig = {
 	avatar?: string;
+	avatarRounded?: boolean;
 	name: string;
 	bio?: string;
 	links: {

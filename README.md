@@ -179,6 +179,16 @@ slug-strategy = "file"   # file (path-derived) | crc32 (8-char hex from content 
 
 When `frontmatter.slug` is set, it overrides the strategy. Trailing slash always enforced.
 
+### Profile
+
+```toml
+[profile]
+avatar = "assets/images/demo-avatar.png"
+avatarRounded = false   # true renders the profile avatar as a circle
+name = "Lorem Ipsum"
+bio = "Lorem ipsum dolor sit amet."
+```
+
 ### i18n
 
 BCP 47 routes with Hugo-compatible `default-language-in-subdir`:

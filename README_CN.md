@@ -179,6 +179,16 @@ slug-strategy = "file"   # file（路径派生）| crc32（content entry ID → 
 
 `frontmatter.slug` 优先于策略。始终强制 trailing slash。
 
+### 个人资料
+
+```toml
+[profile]
+avatar = "assets/images/demo-avatar.png"
+avatarRounded = false   # true 时头像显示为圆形
+name = "Lorem Ipsum"
+bio = "Lorem ipsum dolor sit amet."
+```
+
 ### 国际化
 
 BCP 47 路由，兼容 Hugo 的 `default-language-in-subdir`：

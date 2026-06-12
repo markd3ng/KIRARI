@@ -346,6 +346,10 @@ preset = "Projects"
 # 注意: 相对于 /src 目录，若以 '/' 开头则相对于 /public 目录
 # avatar = "assets/images/demo-avatar.png"
 
+# Round avatar image / 圆形头像
+# Type: boolean / 类型: 布尔值
+# avatarRounded = false
+
 # Display name / 显示名称
 # Type: string / 类型: 字符串
 # name = "Lorem Ipsum"

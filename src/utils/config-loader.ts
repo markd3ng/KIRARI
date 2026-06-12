@@ -108,6 +108,8 @@ type TomlConfig = {
 	profile?: {
 		/** Avatar image path / 头像路径 */
 		avatar?: unknown;
+		/** Display avatar as a circle / 圆形头像 */
+		avatarRounded?: unknown;
 		/** Profile name / 名称 */
 		name?: unknown;
 		/** Profile bio / 简介 */
@@ -386,6 +388,7 @@ const DEFAULT_CONFIG: Config = {
 	},
 	profile: {
 		avatar: "assets/images/demo-avatar.png",
+		avatarRounded: false,
 		name: "Lorem Ipsum",
 		bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
 		links: [
@@ -1221,6 +1224,7 @@ export const loadConfig = (): Config => {
 		},
 		profile: {
 			avatar: getString(profile?.avatar, DEFAULT_CONFIG.profile.avatar || ""),
+			avatarRounded: getBoolean(profile?.avatarRounded, DEFAULT_CONFIG.profile.avatarRounded || false),
 			name: getString(profile?.name, DEFAULT_CONFIG.profile.name),
 			bio: getString(profile?.bio, DEFAULT_CONFIG.profile.bio || ""),
 			links: validateProfileLinks(profile?.links, DEFAULT_CONFIG.profile.links),
