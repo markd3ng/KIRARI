@@ -1159,6 +1159,7 @@ let ticking = false
 // Pre-calculate thresholds to avoid calculations during scroll
 let bannerHeight = viewportHeight * (BANNER_HEIGHT / 100)
 let navbarThreshold = 0
+let lastScrollTop = 0
 function getBannerHeightPercent() {
 	return viewportWidth >= 1024 ? BANNER_HEIGHT : BANNER_HEIGHT_MOBILE
 }
@@ -1194,6 +1195,7 @@ function scrollFunction() {
 		window.requestAnimationFrame(() => {
 			// Single DOM read - all writes happen after
 			const scrollTop = getScrollTop()
+			const isScrollingUp = scrollTop < lastScrollTop
 
 			// Batch all DOM writes together
 			if (backToTopBtn) {
@@ -1205,7 +1207,7 @@ function scrollFunction() {
 			}
 
 			if (bannerEnabled && navbar) {
-				if (scrollTop >= navbarThreshold) {
+				if (scrollTop >= navbarThreshold && !isScrollingUp) {
 					navbar.classList.add('navbar-hidden')
 				} else {
 					navbar.classList.remove('navbar-hidden')
@@ -1213,6 +1215,7 @@ function scrollFunction() {
 			}
 
 			updateTocPosition()
+			lastScrollTop = Math.max(scrollTop, 0)
 
 			ticking = false
 		})
