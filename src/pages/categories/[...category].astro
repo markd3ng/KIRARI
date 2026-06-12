@@ -14,15 +14,22 @@ export const getStaticPaths = (async () => {
 	const lang = Config.i18n.defaultLang;
 	const posts = await getSortedPostsList(lang);
 	const allCategories = new Set<string>();
+	function addCategoryAndParents(category: string) {
+		const segments = category.split("/").filter(Boolean);
+		segments.forEach((_, index) => allCategories.add(segments.slice(0, index + 1).join("/")));
+	}
 	posts.forEach((post) => {
 		const category = post.data.category;
-		if (category && normalizeMappingKey(category) !== "") allCategories.add(normalizeMappingKey(category));
+		if (category && normalizeMappingKey(category) !== "") addCategoryAndParents(normalizeMappingKey(category));
 		else allCategories.add("uncategorized");
 	});
-	return Array.from(allCategories).map((category) => ({
-		params: { category },
-		props: { lang, category },
-	}));
+	return Array.from(allCategories).map((category) => {
+		const categorySegments = category;
+		return {
+			params: { category: categorySegments },
+			props: { lang, category },
+		};
+	});
 }) satisfies GetStaticPaths;
 
 const lang = Config.i18n.defaultLang;
@@ -30,11 +37,15 @@ const category = Astro.params.category as string;
 const posts = await getSortedPostsList(lang);
 const { categories: categoryDisplayMap, tags: tagDisplayMap } = await getTaxonomyDisplayMappings(lang);
 const normalizedCategory = normalizeMappingKey(category);
-const filteredPosts = posts.filter((post) => {
-	const postCat = post.data.category;
-	if (normalizedCategory === "uncategorized") return !postCat || normalizeMappingKey(postCat) === "";
-	return postCat && normalizeMappingKey(postCat) === normalizedCategory;
-});
+
+function isPostInCategoryTree(postCategory: string | null | undefined): boolean {
+	if (normalizedCategory === "uncategorized") return !postCategory || normalizeMappingKey(postCategory) === "";
+	if (!postCategory) return false;
+	const normalizedPostCategory = normalizeMappingKey(postCategory);
+	return normalizedPostCategory === normalizedCategory || normalizedPostCategory.startsWith(normalizedCategory + "/");
+}
+
+const filteredPosts = posts.filter((post) => isPostInCategoryTree(post.data.category));
 
 const categoryName = normalizedCategory === "uncategorized"
 	? i18n(I18nKey.uncategorized, lang)

@@ -2,12 +2,11 @@
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import {
-	getCategoryList,
+	getNestedCategoryList,
 	getTaxonomyDisplayMappings,
 } from "../../utils/content-utils";
-import { getCategoryName } from "../../utils/url-utils";
 
-import ButtonLink from "../control/ButtonLink.astro";
+import CategoryBranch from "./CategoryBranch.astro";
 import WidgetLayout from "./WidgetLayout.astro";
 
 const COLLAPSED_HEIGHT = "7.5rem";
@@ -21,7 +20,7 @@ interface Props {
 const className = Astro.props.class;
 const style = Astro.props.style;
 const lang = Astro.props.lang;
-const categories = await getCategoryList(lang);
+const categories = await getNestedCategoryList(lang);
 const { categories: categoryDisplayMap } = await getTaxonomyDisplayMappings(lang);
 
 const isCollapsed = categories.length >= COLLAPSE_THRESHOLD;
@@ -31,14 +30,7 @@ const isCollapsed = categories.length >= COLLAPSE_THRESHOLD;
                 class={className} style={style}
                 lang={lang}
 >
-    {categories.map((c) =>
-        <ButtonLink
-            url={c.url}
-            badge={String(c.count)}
-            label={`View all posts in the ${c.name.trim()} category`}
-        >
-            {getCategoryName(c.name.trim(), categoryDisplayMap)}
-
-        </ButtonLink>
-    )}
+    {categories.map((category) => (
+        <CategoryBranch node={category} categoryDisplayMap={categoryDisplayMap} />
+    ))}
 </WidgetLayout>

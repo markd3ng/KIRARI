@@ -180,6 +180,8 @@ slug-strategy = "file"   # file（路径派生）| crc32（content entry ID → 
 
 `frontmatter.slug` 优先于策略。始终强制 trailing slash。
 
+文章分类支持用斜杠表示层级，例如 `category: "frontend/react"`。父分类页面会包含其子分类文章。
+
 ### 个人资料
 
 ```toml

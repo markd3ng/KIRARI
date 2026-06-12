@@ -2,6 +2,14 @@ import { readFileSync } from "node:fs";
 
 const checks = [];
 
+function readOptional(path) {
+	try {
+		return readFileSync(new URL(path, import.meta.url), "utf8");
+	} catch {
+		return "";
+	}
+}
+
 function addCheck(name, passed, detail) {
 	checks.push({ name, passed, detail });
 }
@@ -11,6 +19,13 @@ const configTypes = readFileSync(new URL("../src/types/config.ts", import.meta.u
 const kirariConfig = readFileSync(new URL("../kirari.config.toml", import.meta.url), "utf8");
 const markdownCss = readFileSync(new URL("../src/styles/markdown.css", import.meta.url), "utf8");
 const layout = readFileSync(new URL("../src/layouts/Layout.astro", import.meta.url), "utf8");
+const mainGridLayout = readFileSync(new URL("../src/layouts/MainGridLayout.astro", import.meta.url), "utf8");
+const sidebarWidget = readFileSync(new URL("../src/components/widget/SideBar.astro", import.meta.url), "utf8");
+const tocWidget = readFileSync(new URL("../src/components/widget/TOC.astro", import.meta.url), "utf8");
+const i18nKey = readFileSync(new URL("../src/i18n/i18nKey.ts", import.meta.url), "utf8");
+const contentUtils = readFileSync(new URL("../src/utils/content-utils.ts", import.meta.url), "utf8");
+const categoryPage = readOptional("../src/pages/categories/[...category].astro");
+const localizedCategoryPage = readOptional("../src/pages/[lang]/categories/[...category].astro");
 const profileWidget = readFileSync(new URL("../src/components/widget/Profile.astro", import.meta.url), "utf8");
 
 const llmsTypeBlock = configLoader.match(/llms\?: \{[\s\S]*?\n\t\t\};/)?.[0] || "";
@@ -76,6 +91,98 @@ addCheck(
 	"profile widget switches rounded avatar classes",
 	/avatarRounded/.test(profileWidget) && /rounded-full/.test(profileWidget) && /object-cover/.test(profileWidget),
 	"src/components/widget/Profile.astro must use avatarRounded to apply rounded-full and object-cover",
+);
+
+const tocTypeBlock = configTypes.match(/toc: \{[\s\S]*?\n\t\};/)?.[0] || "";
+const tomlTocBlock = configLoader.match(/toc\?: \{[\s\S]*?\n\t\t\};/)?.[0] || "";
+const defaultTocBlock = configLoader.match(/toc: \{[\s\S]*?\n\t\t\},/)?.[0] || "";
+const tocConfigBlock = kirariConfig.match(/\[site\.toc\][\s\S]*?(?=\n\[|\n# Favicon Configuration)/)?.[0] || "";
+
+addCheck(
+	"TOC config documents floating layout",
+	/layout\s*=\s*"floating"/.test(tocConfigBlock) && /floating/.test(tocConfigBlock) && /sidebar/.test(tocConfigBlock),
+	"kirari.config.toml [site.toc] must document layout = \"floating\" with floating/sidebar options",
+);
+addCheck(
+	"SiteConfig toc declares layout union",
+	/layout:\s*"floating"\s*\|\s*"sidebar"/.test(tocTypeBlock),
+	"src/types/config.ts SiteConfig.toc must include layout: \"floating\" | \"sidebar\"",
+);
+addCheck(
+	"TomlConfig toc declares layout",
+	/layout\?: unknown/.test(tomlTocBlock),
+	"src/utils/config-loader.ts TomlConfig.site.toc must include layout?: unknown",
+);
+addCheck(
+	"default TOC layout stays floating",
+	/layout:\s*"floating"/.test(defaultTocBlock),
+	"src/utils/config-loader.ts DEFAULT_CONFIG.site.toc must set layout: \"floating\"",
+);
+addCheck(
+	"TOC loader validates layout",
+	/validateTocLayout/.test(configLoader) && /layout:\s*validateTocLayout\(site\?\.toc\?\.layout\)/.test(configLoader),
+	"src/utils/config-loader.ts must validate site.toc.layout",
+);
+addCheck(
+	"floating TOC only renders for floating layout",
+	/useFloatingToc\s*=\s*siteConfig\.toc\.enable\s*&&\s*toc\s*&&\s*tocLayout\s*===\s*"floating"/.test(mainGridLayout) &&
+		/<TOC[^>]+layout="floating"/.test(mainGridLayout),
+	"src/layouts/MainGridLayout.astro must gate right-side TOC on toc=true and layout=\"floating\"",
+);
+addCheck(
+	"sidebar TOC renders in sidebar layout",
+	/useSidebarToc\s*=\s*siteConfig\.toc\.enable\s*&&\s*toc\s*&&\s*tocLayout\s*===\s*"sidebar"/.test(mainGridLayout) &&
+		/<SideBar[^>]+toc=\{useSidebarToc\}/.test(mainGridLayout) &&
+		/toc\s*&&\s*tocLayout\s*===\s*"sidebar"/.test(sidebarWidget) &&
+		/<TOC[^>]+layout="sidebar"/.test(sidebarWidget),
+	"src/components/widget/SideBar.astro must render TOC only when toc=true in sidebar mode",
+);
+addCheck(
+	"TOC widget supports sidebar layout title",
+	/layout/.test(tocWidget) && /WidgetLayout/.test(tocWidget) && /I18nKey\.toc/.test(tocWidget),
+	"src/components/widget/TOC.astro must support layout=\"sidebar\" with WidgetLayout and i18n title",
+);
+addCheck(
+	"TOC i18n key exists",
+	/toc\s*=\s*"toc"/.test(i18nKey),
+	"src/i18n/i18nKey.ts must include toc",
+);
+
+addCheck(
+	"nested category node type exists",
+	/export interface CategoryNode/.test(contentUtils) && /children:\s*CategoryNode\[\]/.test(contentUtils),
+	"src/utils/content-utils.ts must export CategoryNode with children",
+);
+addCheck(
+	"nested category list builder exists",
+	/export async function getNestedCategoryList/.test(contentUtils) && /buildCategoryTree/.test(contentUtils),
+	"src/utils/content-utils.ts must export getNestedCategoryList and build a category tree",
+);
+addCheck(
+	"category routes use rest parameters",
+	/params:\s*\{\s*category:\s*categorySegments/.test(categoryPage) &&
+		/Astro\.params\.category/.test(categoryPage) &&
+		/addCategoryAndParents/.test(categoryPage) &&
+		/slice\(0,\s*index \+ 1\)\.join\("\/"\)/.test(categoryPage),
+	"src/pages/categories/[...category].astro must use rest category routes and generate parent category paths",
+);
+addCheck(
+	"localized category routes use rest parameters",
+	/params:\s*\{\s*lang:\s*toLangSlug\(lang\),\s*category:\s*categorySegments/.test(localizedCategoryPage) &&
+		/addCategoryAndParents/.test(localizedCategoryPage) &&
+		/slice\(0,\s*index \+ 1\)\.join\("\/"\)/.test(localizedCategoryPage),
+	"src/pages/[lang]/categories/[...category].astro must use rest category routes and generate parent category paths",
+);
+addCheck(
+	"category page includes child category posts",
+	/isPostInCategoryTree/.test(categoryPage) && /startsWith\(normalizedCategory \+ ["']\/["']\)/.test(categoryPage),
+	"category detail pages must include child categories for parent category routes",
+);
+addCheck(
+	"category widgets use nested category list",
+	/getNestedCategoryList/.test(readFileSync(new URL("../src/components/widget/Categories.astro", import.meta.url), "utf8")) &&
+		/getNestedCategoryList/.test(readFileSync(new URL("../src/pages/categories.astro", import.meta.url), "utf8")),
+	"category widget and category index page must use getNestedCategoryList",
 );
 
 const failed = checks.filter((check) => !check.passed);

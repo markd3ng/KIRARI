@@ -1,11 +1,11 @@
 ---
 import type { GetStaticPaths } from "astro";
-import ButtonLink from "@components/control/ButtonLink.astro";
+import CategoryBranch from "@components/widget/CategoryBranch.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import {
-	getCategoryList,
+	getNestedCategoryList,
 	getTaxonomyDisplayMappings,
 } from "../../utils/content-utils";
 import {
@@ -15,7 +15,6 @@ import {
 	toLangSlug,
 	withLangPrefix,
 } from "../../utils/i18n-utils";
-import { getCategoryName } from "../../utils/url-utils";
 
 export const getStaticPaths = (() =>
 	getPrefixedLanguages().map((lang) => ({
@@ -24,7 +23,7 @@ export const getStaticPaths = (() =>
 	}))) satisfies GetStaticPaths;
 
 const lang = fromLangSlug(Astro.params.lang);
-const categories = await getCategoryList(lang);
+const categories = await getNestedCategoryList(lang);
 const { categories: categoryDisplayMap } = await getTaxonomyDisplayMappings(lang);
 const categoriesUrl = withLangPrefix("/categories/", lang);
 const alternates = getPathAlternates((itemLang) => withLangPrefix("/categories/", itemLang));
@@ -35,13 +34,7 @@ const alternates = getPathAlternates((itemLang) => withLangPrefix("/categories/"
 		<h1 class="text-3xl font-bold mb-6 text-black/90 dark:text-white/90">{i18n(I18nKey.categories, lang)}</h1>
 		<div class="grid gap-2">
 			{categories.map((category) => (
-				<ButtonLink
-					url={category.url}
-					badge={String(category.count)}
-					label={`${i18n(I18nKey.categories, lang)}: ${getCategoryName(category.name, categoryDisplayMap)}`}
-				>
-					{getCategoryName(category.name, categoryDisplayMap)}
-				</ButtonLink>
+				<CategoryBranch node={category} categoryDisplayMap={categoryDisplayMap} />
 			))}
 		</div>
 	</div>

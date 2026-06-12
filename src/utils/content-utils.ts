@@ -215,6 +215,15 @@ export type Category = {
 	url: string;
 };
 
+export interface CategoryNode {
+	name: string;
+	count: number;
+	directCount: number;
+	url: string;
+	fullPath: string;
+	children: CategoryNode[];
+}
+
 export async function getCategoryList(lang?: string): Promise<Category[]> {
 	const allBlogPosts = lang
 		? filterPostsByLang(await getAllPosts(), lang)
@@ -245,6 +254,70 @@ export async function getCategoryList(lang?: string): Promise<Category[]> {
 		});
 	}
 	return ret;
+}
+
+export async function getNestedCategoryList(lang?: string): Promise<CategoryNode[]> {
+	const categories = await getCategoryList(lang);
+	return buildCategoryTree(categories, lang);
+}
+
+function buildCategoryTree(categories: Category[], lang?: string): CategoryNode[] {
+	const root: CategoryNode[] = [];
+	const nodeMap = new Map<string, CategoryNode>();
+
+	for (const category of categories) {
+		if (category.name === "uncategorized") {
+			root.push({
+				name: category.name,
+				count: category.count,
+				directCount: category.count,
+				url: category.url,
+				fullPath: category.name,
+				children: [],
+			});
+			continue;
+		}
+
+		const parts = category.name.split("/").map((part) => part.trim()).filter(Boolean);
+		let currentPath = "";
+		for (let index = 0; index < parts.length; index++) {
+			const part = parts[index];
+			const parentPath = currentPath;
+			currentPath = currentPath ? `${currentPath}/${part}` : part;
+			let node = nodeMap.get(currentPath);
+			if (!node) {
+				node = {
+					name: part,
+					count: 0,
+					directCount: 0,
+					url: getCategoryUrl(currentPath, lang),
+					fullPath: currentPath,
+					children: [],
+				};
+				nodeMap.set(currentPath, node);
+
+				if (parentPath) {
+					nodeMap.get(parentPath)?.children.push(node);
+				} else {
+					root.push(node);
+				}
+			}
+
+			if (index === parts.length - 1) {
+				node.directCount = category.count;
+			}
+		}
+	}
+
+	const aggregateCount = (node: CategoryNode): number => {
+		node.children.sort((a, b) => a.fullPath.localeCompare(b.fullPath));
+		node.count = node.directCount + node.children.reduce((sum, child) => sum + aggregateCount(child), 0);
+		return node.count;
+	};
+	root.forEach(aggregateCount);
+	root.sort((a, b) => a.fullPath.localeCompare(b.fullPath));
+
+	return root;
 }
 
 export async function getPostTranslations(

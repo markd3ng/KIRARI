@@ -180,6 +180,8 @@ slug-strategy = "file"   # file (path-derived) | crc32 (8-char hex from content 
 
 When `frontmatter.slug` is set, it overrides the strategy. Trailing slash always enforced.
 
+Post categories support slash-delimited nesting, for example `category: "frontend/react"`. Parent category pages include posts from their child categories.
+
 ### Profile
 
 ```toml

@@ -1,0 +1,31 @@
+---
+import type { CategoryNode } from "../../utils/content-utils";
+import { getCategoryName } from "../../utils/url-utils";
+import ButtonLink from "../control/ButtonLink.astro";
+import CategoryBranchRecursive from "./CategoryBranch.astro";
+
+interface Props {
+	node: CategoryNode;
+	categoryDisplayMap?: Record<string, string>;
+}
+
+const { node, categoryDisplayMap = {} } = Astro.props;
+const mappedName = getCategoryName(node.fullPath, categoryDisplayMap);
+const displayName = mappedName === node.fullPath ? node.name : mappedName;
+---
+<div class="category-node">
+    <ButtonLink
+        url={node.url}
+        badge={String(node.count)}
+        label={`View all posts in the ${displayName} category`}
+    >
+        {displayName}
+    </ButtonLink>
+    {node.children.length > 0 && (
+        <div class="ml-4 border-l border-[var(--line-divider)] pl-2">
+            {node.children.map((child) => (
+                <CategoryBranchRecursive node={child} categoryDisplayMap={categoryDisplayMap} />
+            ))}
+        </div>
+    )}
+</div>
