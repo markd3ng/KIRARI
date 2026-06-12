@@ -168,6 +168,7 @@ position = "center"                      # top | center | bottom
 [site.toc]
 enable = true
 depth = 3            # 1 | 2 | 3
+layout = "floating" # floating | sidebar
 ```
 
 ### 文章

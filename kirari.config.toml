@@ -275,6 +275,11 @@ description = "Connect and grow together."
 # Options / 可选值: 1, 2, 3
 # depth = 3
 
+# TOC layout / 目录布局
+# Type: string / 类型: 字符串
+# Options / 可选值: "floating" (right-side floating TOC / 右侧悬浮目录), "sidebar" (sidebar widget / 侧边栏组件)
+# layout = "floating"
+
 # Favicon configuration / Favicon 配置
 # Note: Leave empty array to use default favicon / 注意: 留空数组使用默认 favicon
 # Each entry is a favicon definition / 每个条目定义一个 favicon

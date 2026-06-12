@@ -10,6 +10,7 @@ export const zhCN: Translation = {
 	[Key.projects]: "项目",
 	[Key.articles]: "文章",
 
+	[Key.toc]: "目录",
 	[Key.tags]: "标签",
 	[Key.categories]: "分类",
 	[Key.recentPosts]: "最新文章",

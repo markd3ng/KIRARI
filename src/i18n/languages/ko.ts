@@ -10,6 +10,7 @@ export const ko: Translation = {
 	[Key.projects]: "프로젝트",
 	[Key.articles]: "글",
 
+	[Key.toc]: "목차",
 	[Key.tags]: "태그",
 	[Key.categories]: "카테고리",
 	[Key.recentPosts]: "최근 게시물",

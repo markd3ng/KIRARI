@@ -88,6 +88,8 @@ type TomlConfig = {
 			enable?: unknown;
 			/** TOC depth (1-3) / 目录深度 */
 			depth?: unknown;
+			/** TOC layout ("floating", "sidebar") / 目录布局 */
+			layout?: unknown;
 		};
 		/** Favicon array / 图标数组 */
 		favicon?: unknown; // Array type, will be validated at runtime
@@ -374,6 +376,7 @@ const DEFAULT_CONFIG: Config = {
 		toc: {
 			enable: true,
 			depth: 3,
+			layout: "floating",
 		},
 		favicon: [],
 	},
@@ -1096,6 +1099,10 @@ export const loadConfig = (): Config => {
 		return DEFAULT_CONFIG.site.toc.depth;
 	};
 
+	const validateTocLayout = (value: unknown): "floating" | "sidebar" => {
+		return value === "sidebar" ? "sidebar" : DEFAULT_CONFIG.site.toc.layout;
+	};
+
 	// Helper: validate banner position
 	const validateBannerPosition = (value: unknown): "top" | "center" | "bottom" => {
 		if (value === "top" || value === "center" || value === "bottom") {
@@ -1213,6 +1220,7 @@ export const loadConfig = (): Config => {
 			toc: {
 				enable: getBoolean(site?.toc?.enable, DEFAULT_CONFIG.site.toc.enable),
 				depth: validateTocDepth(site?.toc?.depth),
+				layout: validateTocLayout(site?.toc?.layout),
 			},
 			favicon: validateFavicons(site?.favicon),
 		},

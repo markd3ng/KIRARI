@@ -10,6 +10,7 @@ export const zhTW: Translation = {
 	[Key.projects]: "專案",
 	[Key.articles]: "文章",
 
+	[Key.toc]: "目錄",
 	[Key.tags]: "標籤",
 	[Key.categories]: "分類",
 	[Key.recentPosts]: "最新文章",

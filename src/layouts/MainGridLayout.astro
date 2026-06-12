@@ -59,6 +59,9 @@ const pageLang = normalizeLangCode(lang || siteConfig.lang);
 const hasBannerCredit =
 	siteConfig.banner.enable && siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
+const tocLayout = siteConfig.toc.layout;
+const useFloatingToc = siteConfig.toc.enable && toc && tocLayout === "floating";
+const useSidebarToc = siteConfig.toc.enable && toc && tocLayout === "sidebar";
 const mainPanelTop = siteConfig.banner.enable
 	? `calc(${BANNER_HEIGHT}vh - ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem)`
 	: "5.5rem";
@@ -128,7 +131,7 @@ const mainPanelTop = siteConfig.banner.enable
 
 
             <div transition:name="sidebar">
-                <SideBar class="mb-4 row-start-2 row-end-3 col-span-1 lg:row-start-1 lg:row-end-2 lg:col-span-1 lg:max-w-[17.5rem] onload-animation" headings={headings} lang={pageLang}></SideBar>
+                <SideBar class="mb-4 row-start-2 row-end-3 col-span-1 lg:row-start-1 lg:row-end-2 lg:col-span-1 lg:max-w-[17.5rem] onload-animation" headings={headings} toc={useSidebarToc} lang={pageLang}></SideBar>
             </div>
 
             <main id="swup-container" class="transition-swup-fade row-start-1 row-end-2 col-span-1 lg:col-start-2 lg:col-span-1 overflow-hidden" transition:name="main-content">
@@ -155,20 +158,20 @@ const mainPanelTop = siteConfig.banner.enable
 <div class="absolute w-full z-40 hidden min-[1440px]:block pointer-events-none" style={`top: ${mainPanelTop}; bottom: 0;`}>
 	<div class="relative max-w-[var(--page-width)] mx-auto">
 		<!-- TOC component -->
-		{siteConfig.toc.enable && toc && <div id="toc-wrapper" class="pointer-events-auto transition absolute top-0 -right-[var(--toc-width)] w-[var(--toc-width)] items-center"
+		{useFloatingToc && <div id="toc-wrapper" class="pointer-events-auto transition absolute top-0 -right-[var(--toc-width)] w-[var(--toc-width)] items-center"
 		>
             <div id="toc-inner-wrapper" class="fixed w-[var(--toc-width)] max-h-[calc(100vh_-_6rem)] overflow-y-scroll overflow-x-hidden hide-scrollbar" style={`top: var(--toc-top, ${mainPanelTop});`}>
                 <div id="toc" class="w-full h-full transition-swup-fade" transition:name="toc-content">
                     <div class="h-8 w-full"></div>
-                    <TOC headings={headings}></TOC>
+                    <TOC headings={headings} layout="floating"></TOC>
                     <div class="h-8 w-full"></div>
                 </div>
             </div>
         </div>}
 
         <!-- #toc needs to exist for Swup to work normally -->
-        {(!siteConfig.toc.enable || !toc) && <div id="toc"></div>}
-    </div>
+        {!useFloatingToc && !useSidebarToc && <div id="toc"></div>}
+	</div>
 </div>
 </Layout>
 

@@ -10,6 +10,7 @@ export const es: Translation = {
 	[Key.projects]: "Proyectos",
 	[Key.articles]: "Artículos",
 
+	[Key.toc]: "Índice",
 	[Key.tags]: "Etiquetas",
 	[Key.categories]: "Categorías",
 	[Key.recentPosts]: "Publicaciones recientes",

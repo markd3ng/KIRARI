@@ -39,6 +39,7 @@ export type SiteConfig = {
 	toc: {
 		enable: boolean;
 		depth: 1 | 2 | 3;
+		layout: "floating" | "sidebar";
 	};
 
 	favicon: Favicon[];
