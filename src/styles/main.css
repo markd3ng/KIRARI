@@ -108,6 +108,10 @@ h1, h2, h3, h4, h5, h6, p, blockquote, code, pre, table, th, td {
 }
 
 #toc-inner-wrapper {
+    @apply rounded-[var(--radius-large)] bg-[var(--card-bg)] border border-black/5 dark:border-white/10 shadow-xl dark:shadow-none;
+}
+
+#toc-inner-wrapper #toc {
     mask-image: linear-gradient(to bottom, transparent 0%, black 2rem, black calc(100% - 2rem), transparent 100%);
 }
 
