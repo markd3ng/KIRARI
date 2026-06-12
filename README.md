@@ -62,7 +62,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 
 | Stage | Output |
 |---|---|
-| materialize | `functions/ghc/` or `api/ghc/` (only when `githubCard.adapter.enabled`) |
+| materialize | `functions/ghc/` or `api/ghc/` (only when `githubCard.adapter.enabled`; Cloudflare output is written to the deployment root, including `apps/site` monorepos) |
 | astro build | `dist/` (SSG) |
 | postbuild | `_headers`, `_redirects`, `robots.txt`, Pagefind index, `llms.txt`, IndexNow submit |
 

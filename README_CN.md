@@ -62,7 +62,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 
 | 阶段 | 产物 |
 |---|---|
-| materialize | `functions/ghc/` 或 `api/ghc/`（仅 `githubCard.adapter.enabled` 时） |
+| materialize | `functions/ghc/` 或 `api/ghc/`（仅 `githubCard.adapter.enabled` 时；Cloudflare 产物会写入部署根目录，兼容 `apps/site` monorepo） |
 | astro build | `dist/`（SSG） |
 | postbuild | `_headers`、`_redirects`、`robots.txt`、Pagefind 索引、`llms.txt`、IndexNow 提交 |
 

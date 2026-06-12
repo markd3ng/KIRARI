@@ -3,6 +3,7 @@ import path from "node:path";
 import { parse } from "smol-toml";
 
 const rootDir = process.cwd();
+const deployRootDir = resolveDeployRoot(rootDir);
 const generatedMarker = "@kirari-generated-ghc-adapter";
 const configPath = path.join(rootDir, "kirari.config.toml");
 const statCache = new Map();
@@ -17,6 +18,10 @@ const serviceBinding = normalizeIdentifier(String(adapter.serviceBinding || "GHC
 
 removeGeneratedRoutes(path.join(rootDir, "functions"));
 removeGeneratedRoutes(path.join(rootDir, "api"));
+if (deployRootDir !== rootDir) {
+	removeGeneratedRoutes(path.join(deployRootDir, "functions"));
+	removeGeneratedRoutes(path.join(deployRootDir, "api"));
+}
 
 if (!enabled) {
 	process.exit(0);
@@ -25,7 +30,7 @@ if (!enabled) {
 if (provider === "cloudflare") {
 	writeGeneratedFile(
 		path.join(rootDir, "adapters/github-card/cloudflare/route.ts.template"),
-		path.join(rootDir, "functions", routeSegment, "[[path]].ts"),
+		path.join(deployRootDir, "functions", routeSegment, "[[path]].ts"),
 	);
 } else if (provider === "vercel") {
 	writeGeneratedFile(
@@ -61,6 +66,15 @@ function normalizeIdentifier(value) {
 	return value;
 }
 
+function resolveDeployRoot(siteRoot) {
+	const parent = path.dirname(siteRoot);
+	const grandparent = path.dirname(parent);
+	if (path.basename(siteRoot) === "site" && path.basename(parent) === "apps") {
+		return grandparent;
+	}
+	return siteRoot;
+}
+
 function writeGeneratedFile(templatePath, targetPath) {
 	const source = readFileSync(templatePath, "utf8")
 		.replaceAll("__GHC_ROUTE__", route)
@@ -71,7 +85,7 @@ function writeGeneratedFile(templatePath, targetPath) {
 
 function removeGeneratedRoute(routeDir) {
 	if (!existsSync(routeDir)) return;
-	assertWithinRoot(routeDir);
+	assertWithinAllowedRoot(routeDir);
 
 	const files = collectFiles(routeDir);
 	if (files.length === 0) {
@@ -89,7 +103,7 @@ function removeGeneratedRoute(routeDir) {
 
 function removeGeneratedRoutes(baseDir) {
 	if (!existsSync(baseDir)) return;
-	assertWithinRoot(baseDir);
+	assertWithinAllowedRoot(baseDir);
 	for (const name of readdir(baseDir)) {
 		const routeDir = path.join(baseDir, name);
 		if (lstat(routeDir).isDirectory()) {
@@ -120,11 +134,14 @@ function lstat(file) {
 	return statCache.get(file) || statCache.set(file, statSync(file)).get(file);
 }
 
-function assertWithinRoot(targetPath) {
-	const resolvedRoot = path.resolve(rootDir);
+function assertWithinAllowedRoot(targetPath) {
 	const resolvedTarget = path.resolve(targetPath);
-	if (resolvedTarget !== resolvedRoot && !resolvedTarget.startsWith(`${resolvedRoot}${path.sep}`)) {
-		throw new Error(`Refusing to operate outside project root: ${targetPath}`);
+	const allowedRoots = Array.from(new Set([rootDir, deployRootDir])).map((dir) => path.resolve(dir));
+	const isAllowed = allowedRoots.some(
+		(allowedRoot) => resolvedTarget === allowedRoot || resolvedTarget.startsWith(`${allowedRoot}${path.sep}`),
+	);
+	if (!isAllowed) {
+		throw new Error(`Refusing to operate outside allowed roots: ${targetPath}`);
 	}
 	return targetPath;
 }
