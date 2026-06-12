@@ -1,8 +1,3 @@
-<!-- skilld -->
-Before modifying code, check `.agents/skills/` for relevant skills.
-Read the SKILL.md for any matching package before proceeding.
-<!-- /skilld -->
-
 # KIRARI Development Constraints
 
 ## Architecture Invariants
@@ -111,6 +106,29 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 4. Index with Pagefind (skipped if DocSearch enabled)
 5. Generate `llms.txt` files
 6. Submit to IndexNow (if enabled)
+
+## Agent Workflow Checklist
+
+### Before Starting
+
+- Scope boundary must be clear before editing.
+- Prefer static `.astro` components when interactivity is not required.
+- If a feature needs user-facing configuration, follow the TOML-first configuration pipeline.
+- Client-side and Edge code must not import Node.js builtins.
+- Use pnpm only; Node.js must satisfy `package.json` `engines`.
+
+### During Development
+
+- Preserve the Astro Islands hydration table above.
+- Register post-navigation DOM initialization on `transitionManager`, not `DOMContentLoaded`.
+- Keep Markdown deep-DOM styles in the Markdown style layer.
+- Keep component appearance in Tailwind/component files.
+
+### Before Merge
+
+- Config and documentation sync is blocking.
+- Run the pre-commit checklist below.
+- Use one Conventional Commit per logical change.
 
 ## Commit Workflow
 
