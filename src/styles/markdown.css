@@ -127,7 +127,8 @@
     }
 
     /* Performance: Apply to all direct children for better granularity */
-    > p, > h1, > h2, > h3, > h4, > h5, > h6, > ul, > ol, > blockquote, > .markdown-table-wrapper {
+    > p, > h1, > h2, > h3, > h4, > h5, > h6, > ul, > ol, > blockquote, > .markdown-table-wrapper,
+    section > .markdown-table-wrapper {
         content-visibility: auto;
         contain-intrinsic-size: auto 100px;
     }
@@ -203,6 +204,7 @@
         .expressive-code,
         pre,
         > p, > h1, > h2, > h3, > h4, > h5, > h6, > ul, > ol, > blockquote, > .markdown-table-wrapper,
+        section > .markdown-table-wrapper,
         .katex-display-container,
         .katex-display {
             content-visibility: visible !important;
