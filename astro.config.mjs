@@ -1,6 +1,4 @@
 import mdx from "@astrojs/mdx";
-import { execSync } from "node:child_process";
-
 import sitemap from "@astrojs/sitemap";
 import svelte from "@astrojs/svelte";
 
@@ -37,20 +35,6 @@ import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 
 // https://astro.build/config
 
-const gitCommit =
-	process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ||
-	process.env.CF_PAGES_COMMIT_SHA?.slice(0, 7) ||
-	process.env.GITHUB_SHA?.slice(0, 7) ||
-	getLocalGitCommit();
-
-function getLocalGitCommit() {
-	try {
-		return execSync("git rev-parse --short=7 HEAD", { encoding: "utf8" }).trim();
-	} catch {
-		return "unknown";
-	}
-}
-
 const activeSearchProvider =
 	Config.search?.provider === "docsearch" &&
 	!!Config.search.docsearch.enable &&
@@ -72,11 +56,6 @@ export default defineConfig({
 	prefetch: {
 		prefetchAll: false,
 		defaultStrategy: "hover",
-	},
-	vite: {
-		define: {
-			"import.meta.env.PUBLIC_KIRARI_COMMIT": JSON.stringify(gitCommit),
-		},
 	},
 	integrations: [
 		// Swup integration removed, using Astro's native ClientRouter

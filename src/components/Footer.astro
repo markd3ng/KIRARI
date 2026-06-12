@@ -3,12 +3,16 @@
 import { footerConfig, llmsConfig, profileConfig } from "../config";
 import { getLangHomeUrl } from "../utils/i18n-utils";
 import { url } from "../utils/url-utils";
+import { resolveBuildCommit } from "../../scripts/build-commit.mjs";
 
 const currentYear = new Date().getFullYear();
 const lang = Astro.props.lang;
 const rssUrl = lang ? getLangHomeUrl(lang).replace(/\/$/, "/rss.xml") : url("rss.xml");
-const kirariCommit = import.meta.env.PUBLIC_KIRARI_COMMIT || "unknown";
-const kirariCommitUrl = `https://github.com/markd3ng/KIRARI/commit/${kirariCommit}`;
+const buildCommit = resolveBuildCommit();
+const kirariCommit = buildCommit.short;
+const kirariCommitUrl = buildCommit.full
+    ? `https://github.com/markd3ng/KIRARI/commit/${buildCommit.full}`
+    : "https://github.com/markd3ng/KIRARI";
 ---
 
 <div class="transition border-t border-black/10 dark:border-white/15 my-10 border-dashed mx-32"></div>
