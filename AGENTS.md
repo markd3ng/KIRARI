@@ -155,6 +155,12 @@ Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `chore`, `tes
 
 One change per commit. Do not mix style tweaks, logic fixes, and new features.
 
+### Changelog Policy
+
+- Do not update `CHANGELOG.md` for every commit by default; Conventional Commit messages are the per-commit change record.
+- Update `CHANGELOG.md` only for releases, tags, explicit release-note requests, breaking changes, migrations, or cohesive user-facing feature batches.
+- When a change requires `CHANGELOG.md`, keep the entry user-facing and group related commits by release or unreleased section instead of duplicating individual commit messages verbatim.
+
 ### CI/CD
 
 - Must use `pnpm install --frozen-lockfile`
