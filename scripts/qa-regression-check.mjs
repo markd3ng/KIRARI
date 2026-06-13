@@ -253,11 +253,15 @@ addCheck(
 addCheck(
 	"dedicated search pages exist",
 	/searchParams/.test(searchPage) &&
+		/URLSearchParams/.test(searchPage) &&
+		/location\.search/.test(searchPage) &&
 		/pagefind/.test(searchPage) &&
 		/docsearch/.test(searchPage) &&
 		/google/.test(searchPage) &&
-		/searchParams/.test(localizedSearchPage),
-	"root and localized /search/ pages must read ?q= and respect active search provider",
+		/searchParams/.test(localizedSearchPage) &&
+		/URLSearchParams/.test(localizedSearchPage) &&
+		/location\.search/.test(localizedSearchPage),
+	"root and localized /search/ pages must read runtime ?q= and respect active search provider",
 );
 
 addCheck(

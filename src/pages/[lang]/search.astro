@@ -50,6 +50,8 @@ const scriptUrl = url("/pagefind/pagefind.js");
 			var providerEl = document.querySelector("[data-search-provider]");
 			if (!form || !input || !status || !results || !providerEl) return;
 			providerEl.textContent = "Provider: " + provider;
+			var runtimeQuery = new URLSearchParams(location.search).get("q") || initialQuery || "";
+			input.value = runtimeQuery;
 
 			function setStatus(text) {
 				status.textContent = text;
@@ -110,7 +112,7 @@ const scriptUrl = url("/pagefind/pagefind.js");
 				run(query);
 			});
 
-			run(initialQuery);
+			run(runtimeQuery);
 		})();
 	</script>
 </MainGridLayout>
