@@ -1,0 +1,57 @@
+---
+import { widgetsConfig } from "../../config";
+import WidgetLayout from "./WidgetLayout.astro";
+
+interface Props {
+	class?: string;
+	style?: string;
+	lang?: string;
+}
+
+const { style } = Astro.props;
+const className = Astro.props.class;
+const componentName = "Announcement";
+const config = widgetsConfig.announcement;
+const storageKey = `kirari-widget-closed:${config.id}`;
+const shouldRender = config.enabled && config.content.trim().length > 0;
+---
+
+{shouldRender && (
+	<WidgetLayout id={config.id} name={config.title || componentName} class={className} style={style}>
+		<div data-announcement-widget data-storage-key={storageKey} class="space-y-3 text-sm">
+			<p class="text-75 leading-relaxed whitespace-pre-wrap">{config.content}</p>
+			<div class="flex items-center justify-between gap-3">
+				{config.linkText && config.linkUrl && (
+					<a class="btn-regular rounded-lg px-3 py-1.5 font-medium" href={config.linkUrl}>
+						{config.linkText}
+					</a>
+				)}
+				{config.closable && (
+					<button type="button" data-close-announcement class="btn-regular rounded-lg px-3 py-1.5 text-sm">
+						Close
+					</button>
+				)}
+			</div>
+		</div>
+	</WidgetLayout>
+)}
+
+<script>
+	function initAnnouncementWidgets() {
+		document.querySelectorAll<HTMLElement>("[data-announcement-widget]").forEach((widget) => {
+			const key = widget.dataset.storageKey;
+			if (!key) return;
+			const root = widget.closest("widget-layout") as HTMLElement | null;
+			if (localStorage.getItem(key) === "1") {
+				if (root) root.hidden = true;
+				return;
+			}
+			widget.querySelector("[data-close-announcement]")?.addEventListener("click", () => {
+				localStorage.setItem(key, "1");
+				if (root) root.hidden = true;
+			}, { once: true });
+		});
+	}
+
+	initAnnouncementWidgets();
+</script>

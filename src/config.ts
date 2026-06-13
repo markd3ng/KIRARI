@@ -16,6 +16,7 @@ import type {
 	SearchConfig,
 	SidebarConfig,
 	SiteConfig,
+	WidgetsConfig,
 } from "./types/config";
 
 // Export individual configs for backward compatibility with the theme
@@ -41,6 +42,8 @@ export const expressiveCodeConfig: ExpressiveCodeConfig =
 export const mermaidConfig: MermaidConfig = Config.mermaid as MermaidConfig;
 
 export const sidebarConfig: SidebarConfig = Config.sidebar as SidebarConfig;
+
+export const widgetsConfig: WidgetsConfig = Config.widgets as WidgetsConfig;
 
 // Head configuration
 export const headConfig: HeadConfig = Config.head as HeadConfig;

@@ -151,6 +151,42 @@ type TomlConfig = {
 		/** Mobile bottom widgets / 移动端底部组件 */
 		mobileWidgets?: unknown;
 	};
+	/** Optional sidebar widget content configuration / 可选侧边栏组件内容配置 */
+	widgets?: {
+		announcement?: {
+			enabled?: unknown;
+			id?: unknown;
+			title?: unknown;
+			content?: unknown;
+			linkText?: unknown;
+			linkUrl?: unknown;
+			closable?: unknown;
+		};
+		advertisement?: {
+			enabled?: unknown;
+			id?: unknown;
+			title?: unknown;
+			content?: unknown;
+			imageSrc?: unknown;
+			imageAlt?: unknown;
+			linkText?: unknown;
+			linkUrl?: unknown;
+			expireDate?: unknown;
+			displayCount?: unknown;
+			closable?: unknown;
+		};
+		siteStats?: {
+			enabled?: unknown;
+			siteStartDate?: unknown;
+		};
+		siteInfo?: {
+			enabled?: unknown;
+		};
+		calendar?: {
+			enabled?: unknown;
+			showHeatmap?: unknown;
+		};
+	};
 	/** Head configuration / 头部配置 */
 	head?: {
 		/** Search engine verification codes / 搜索引擎验证码 */
@@ -471,6 +507,41 @@ const DEFAULT_CONFIG: Config = {
 		],
 		rightWidgets: [],
 		mobileWidgets: [],
+	},
+	widgets: {
+		announcement: {
+			enabled: false,
+			id: "announcement",
+			title: "Announcement",
+			content: "",
+			linkText: "",
+			linkUrl: "",
+			closable: true,
+		},
+		advertisement: {
+			enabled: false,
+			id: "advertisement",
+			title: "Advertisement",
+			content: "",
+			imageSrc: "",
+			imageAlt: "Advertisement",
+			linkText: "",
+			linkUrl: "",
+			expireDate: "",
+			displayCount: -1,
+			closable: true,
+		},
+		siteStats: {
+			enabled: true,
+			siteStartDate: "2025-01-01",
+		},
+		siteInfo: {
+			enabled: true,
+		},
+		calendar: {
+			enabled: true,
+			showHeatmap: true,
+		},
 	},
 	head: {
 		verification: {
@@ -1065,6 +1136,7 @@ export const loadConfig = (): Config => {
 	const analytics = toml.analytics;
 	const llms = toml.llms;
 	const sidebar = toml.sidebar;
+	const widgets = toml.widgets;
 	const i18n = toml.i18n;
 	const og = toml.og;
 	const seo = toml.seo;
@@ -1184,7 +1256,17 @@ export const loadConfig = (): Config => {
 		return value === "off" ? "off" : DEFAULT_CONFIG.search.google.safeSearch;
 	};
 	const validateSidebarWidgetType = (value: unknown): Config["sidebar"]["leftWidgets"][number]["type"] | undefined => {
-		if (value === "profile" || value === "toc" || value === "categories" || value === "tags") return value;
+		if (
+			value === "profile" ||
+			value === "toc" ||
+			value === "categories" ||
+			value === "tags" ||
+			value === "announcement" ||
+			value === "advertisement" ||
+			value === "siteStats" ||
+			value === "siteInfo" ||
+			value === "calendar"
+		) return value;
 		return undefined;
 	};
 	const validateSidebarWidgetPosition = (value: unknown): Config["sidebar"]["leftWidgets"][number]["position"] => {
@@ -1332,6 +1414,41 @@ export const loadConfig = (): Config => {
 			leftWidgets: validateSidebarWidgets(sidebar?.leftWidgets, DEFAULT_CONFIG.sidebar.leftWidgets),
 			rightWidgets: validateSidebarWidgets(sidebar?.rightWidgets, DEFAULT_CONFIG.sidebar.rightWidgets),
 			mobileWidgets: validateSidebarWidgets(sidebar?.mobileWidgets, DEFAULT_CONFIG.sidebar.mobileWidgets),
+		},
+		widgets: {
+			announcement: {
+				enabled: getBoolean(widgets?.announcement?.enabled, DEFAULT_CONFIG.widgets.announcement.enabled),
+				id: getString(widgets?.announcement?.id, DEFAULT_CONFIG.widgets.announcement.id),
+				title: getString(widgets?.announcement?.title, DEFAULT_CONFIG.widgets.announcement.title),
+				content: getString(widgets?.announcement?.content, DEFAULT_CONFIG.widgets.announcement.content),
+				linkText: getString(widgets?.announcement?.linkText, DEFAULT_CONFIG.widgets.announcement.linkText),
+				linkUrl: getString(widgets?.announcement?.linkUrl, DEFAULT_CONFIG.widgets.announcement.linkUrl),
+				closable: getBoolean(widgets?.announcement?.closable, DEFAULT_CONFIG.widgets.announcement.closable),
+			},
+			advertisement: {
+				enabled: getBoolean(widgets?.advertisement?.enabled, DEFAULT_CONFIG.widgets.advertisement.enabled),
+				id: getString(widgets?.advertisement?.id, DEFAULT_CONFIG.widgets.advertisement.id),
+				title: getString(widgets?.advertisement?.title, DEFAULT_CONFIG.widgets.advertisement.title),
+				content: getString(widgets?.advertisement?.content, DEFAULT_CONFIG.widgets.advertisement.content),
+				imageSrc: getString(widgets?.advertisement?.imageSrc, DEFAULT_CONFIG.widgets.advertisement.imageSrc),
+				imageAlt: getString(widgets?.advertisement?.imageAlt, DEFAULT_CONFIG.widgets.advertisement.imageAlt),
+				linkText: getString(widgets?.advertisement?.linkText, DEFAULT_CONFIG.widgets.advertisement.linkText),
+				linkUrl: getString(widgets?.advertisement?.linkUrl, DEFAULT_CONFIG.widgets.advertisement.linkUrl),
+				expireDate: getString(widgets?.advertisement?.expireDate, DEFAULT_CONFIG.widgets.advertisement.expireDate),
+				displayCount: getNumber(widgets?.advertisement?.displayCount, DEFAULT_CONFIG.widgets.advertisement.displayCount),
+				closable: getBoolean(widgets?.advertisement?.closable, DEFAULT_CONFIG.widgets.advertisement.closable),
+			},
+			siteStats: {
+				enabled: getBoolean(widgets?.siteStats?.enabled, DEFAULT_CONFIG.widgets.siteStats.enabled),
+				siteStartDate: getString(widgets?.siteStats?.siteStartDate, DEFAULT_CONFIG.widgets.siteStats.siteStartDate),
+			},
+			siteInfo: {
+				enabled: getBoolean(widgets?.siteInfo?.enabled, DEFAULT_CONFIG.widgets.siteInfo.enabled),
+			},
+			calendar: {
+				enabled: getBoolean(widgets?.calendar?.enabled, DEFAULT_CONFIG.widgets.calendar.enabled),
+				showHeatmap: getBoolean(widgets?.calendar?.showHeatmap, DEFAULT_CONFIG.widgets.calendar.showHeatmap),
+			},
 		},
 		head: {
 			verification: {

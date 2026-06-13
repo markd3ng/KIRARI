@@ -94,7 +94,16 @@ export type MermaidConfig = {
 	enable: boolean;
 };
 
-export type SidebarWidgetType = "profile" | "toc" | "categories" | "tags";
+export type SidebarWidgetType =
+	| "profile"
+	| "toc"
+	| "categories"
+	| "tags"
+	| "announcement"
+	| "advertisement"
+	| "siteStats"
+	| "siteInfo"
+	| "calendar";
 
 export type SidebarWidgetPosition = "top" | "sticky";
 
@@ -113,6 +122,42 @@ export type SidebarConfig = {
 	leftWidgets: SidebarWidgetConfig[];
 	rightWidgets: SidebarWidgetConfig[];
 	mobileWidgets: SidebarWidgetConfig[];
+};
+
+export type WidgetsConfig = {
+	announcement: {
+		enabled: boolean;
+		id: string;
+		title: string;
+		content: string;
+		linkText: string;
+		linkUrl: string;
+		closable: boolean;
+	};
+	advertisement: {
+		enabled: boolean;
+		id: string;
+		title: string;
+		content: string;
+		imageSrc: string;
+		imageAlt: string;
+		linkText: string;
+		linkUrl: string;
+		expireDate: string;
+		displayCount: number;
+		closable: boolean;
+	};
+	siteStats: {
+		enabled: boolean;
+		siteStartDate: string;
+	};
+	siteInfo: {
+		enabled: boolean;
+	};
+	calendar: {
+		enabled: boolean;
+		showHeatmap: boolean;
+	};
 };
 
 export type HeadConfig = {
@@ -338,6 +383,7 @@ export type Config = {
 	expressiveCode: ExpressiveCodeConfig;
 	mermaid: MermaidConfig;
 	sidebar: SidebarConfig;
+	widgets: WidgetsConfig;
 	head: HeadConfig;
 	footer: FooterConfig;
 	analytics: AnalyticsConfig;

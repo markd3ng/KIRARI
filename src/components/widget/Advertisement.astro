@@ -1,0 +1,83 @@
+---
+import { widgetsConfig } from "../../config";
+import { url } from "../../utils/url-utils";
+import WidgetLayout from "./WidgetLayout.astro";
+
+interface Props {
+	class?: string;
+	style?: string;
+	lang?: string;
+}
+
+const { style } = Astro.props;
+const className = Astro.props.class;
+const componentName = "Advertisement";
+const config = widgetsConfig.advertisement;
+const storageKey = `kirari-widget-ad:${config.id}`;
+const expiresAt = config.expireDate ? new Date(config.expireDate) : null;
+const isExpired = expiresAt ? Date.now() > expiresAt.getTime() : false;
+const imageSrc = config.imageSrc.startsWith("/") ? url(config.imageSrc) : config.imageSrc;
+const hasBody = config.content.trim().length > 0 || config.imageSrc.trim().length > 0;
+const shouldRender = config.enabled && hasBody && !isExpired;
+---
+
+{shouldRender && (
+	<WidgetLayout id={config.id} name={config.title || componentName} class={className} style={style}>
+		<div
+			data-advertisement-widget
+			data-storage-key={storageKey}
+			data-display-count={config.displayCount}
+			class="space-y-3 text-sm"
+		>
+			{config.imageSrc && (
+				<a href={config.linkUrl || undefined} class="block overflow-hidden rounded-lg" aria-label={config.title}>
+					<img src={imageSrc} alt={config.imageAlt} loading="lazy" class="w-full h-auto" />
+				</a>
+			)}
+			{config.content && <p class="text-75 leading-relaxed whitespace-pre-wrap">{config.content}</p>}
+			<div class="flex items-center justify-between gap-3">
+				{config.linkText && config.linkUrl && (
+					<a class="btn-regular rounded-lg px-3 py-1.5 font-medium" href={config.linkUrl}>
+						{config.linkText}
+					</a>
+				)}
+				{config.closable && (
+					<button type="button" data-close-advertisement class="btn-regular rounded-lg px-3 py-1.5 text-sm">
+						Close
+					</button>
+				)}
+			</div>
+		</div>
+	</WidgetLayout>
+)}
+
+<script>
+	function initAdvertisementWidgets() {
+		document.querySelectorAll<HTMLElement>("[data-advertisement-widget]").forEach((widget) => {
+			const key = widget.dataset.storageKey;
+			if (!key) return;
+			const root = widget.closest("widget-layout") as HTMLElement | null;
+			const limit = Number(widget.dataset.displayCount || "-1");
+			const closedKey = `${key}:closed`;
+			const countKey = `${key}:count`;
+			if (localStorage.getItem(closedKey) === "1") {
+				if (root) root.hidden = true;
+				return;
+			}
+			if (limit > 0) {
+				const count = Number(localStorage.getItem(countKey) || "0");
+				if (count >= limit) {
+					if (root) root.hidden = true;
+					return;
+				}
+				localStorage.setItem(countKey, String(count + 1));
+			}
+			widget.querySelector("[data-close-advertisement]")?.addEventListener("click", () => {
+				localStorage.setItem(closedKey, "1");
+				if (root) root.hidden = true;
+			}, { once: true });
+		});
+	}
+
+	initAdvertisementWidgets();
+</script>

@@ -1,0 +1,55 @@
+---
+import { widgetsConfig } from "../../config";
+import { getSortedPosts } from "../../utils/content-utils";
+import WidgetLayout from "./WidgetLayout.astro";
+
+interface Props {
+	class?: string;
+	style?: string;
+	lang?: string;
+}
+
+const { style, lang } = Astro.props;
+const className = Astro.props.class;
+const componentName = "Calendar";
+const config = widgetsConfig.calendar;
+const posts = await getSortedPosts(lang);
+const currentYear = new Date().getFullYear();
+const counts = new Map<string, number>();
+for (const post of posts) {
+	const date = new Date(post.data.updated || post.data.published);
+	if (date.getFullYear() !== currentYear) continue;
+	const key = date.toISOString().slice(0, 10);
+	counts.set(key, (counts.get(key) || 0) + 1);
+}
+const days = Array.from({ length: 53 * 7 }, (_, index) => {
+	const first = new Date(currentYear, 0, 1);
+	const day = new Date(first);
+	day.setDate(first.getDate() - first.getDay() + index);
+	const key = day.toISOString().slice(0, 10);
+	const count = day.getFullYear() === currentYear ? counts.get(key) || 0 : -1;
+	return { key, count };
+});
+---
+
+{config.enabled && (
+	<WidgetLayout id="post-calendar" name={componentName} class={className} style={style}>
+		{config.showHeatmap && (
+			<div class="grid grid-flow-col grid-rows-7 gap-1 overflow-hidden" aria-label={`${currentYear} post heatmap`}>
+				{days.map((day) => (
+					<div
+						title={day.count > 0 ? `${day.key}: ${day.count}` : day.key}
+						class:list={[
+							"h-2.5 w-2.5 rounded-[0.1875rem]",
+							day.count < 0 && "opacity-0",
+							day.count === 0 && "bg-black/10 dark:bg-white/10",
+							day.count === 1 && "bg-[color-mix(in_oklab,var(--primary)_35%,transparent)]",
+							day.count === 2 && "bg-[color-mix(in_oklab,var(--primary)_60%,transparent)]",
+							day.count >= 3 && "bg-[var(--primary)]",
+						]}
+					></div>
+				))}
+			</div>
+		)}
+	</WidgetLayout>
+)}

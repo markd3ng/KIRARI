@@ -1,0 +1,48 @@
+---
+import packageJson from "../../../package.json";
+import { widgetsConfig } from "../../config";
+import WidgetLayout from "./WidgetLayout.astro";
+import { resolveBuildCommit } from "../../../scripts/build-commit.mjs";
+
+interface Props {
+	class?: string;
+	style?: string;
+	lang?: string;
+}
+
+const { style } = Astro.props;
+const className = Astro.props.class;
+const componentName = "SiteInfo";
+const config = widgetsConfig.siteInfo;
+const buildCommit = resolveBuildCommit();
+const commitLabel = buildCommit.full ? buildCommit.short : "local";
+const commitHref = buildCommit.full
+	? `https://github.com/markd3ng/KIRARI/commit/${buildCommit.full}`
+	: "https://github.com/markd3ng/KIRARI";
+const buildTime = new Date().toISOString();
+const items = [
+	["KIRARI", `v${packageJson.version}`],
+	["Commit", commitLabel],
+	["Astro", `v${packageJson.dependencies.astro}`],
+	["Built", buildTime.slice(0, 10)],
+];
+---
+
+{config.enabled && (
+	<WidgetLayout id="site-info" name={componentName} class={className} style={style}>
+		<div class="flex flex-col gap-2">
+			{items.map(([label, value]) => (
+				<div class="flex items-center justify-between gap-3 rounded-lg bg-black/[0.03] dark:bg-white/[0.06] px-3 py-2">
+					<span class="text-sm text-50">{label}</span>
+					{label === "Commit" ? (
+						<a class="link text-sm font-bold text-[var(--primary)] truncate" href={commitHref} target="_blank" rel="noopener noreferrer">
+							{value}
+						</a>
+					) : (
+						<span class="text-sm font-bold text-90 truncate">{value}</span>
+					)}
+				</div>
+			))}
+		</div>
+	</WidgetLayout>
+)}

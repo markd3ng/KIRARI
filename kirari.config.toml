@@ -342,6 +342,47 @@ showOnNonPostPage = true
 # showOnPostPage = true
 # showOnNonPostPage = true
 
+# -----------------------------------------------------------------------------
+# Widget Content Configuration / 组件内容配置
+# -----------------------------------------------------------------------------
+[widgets.announcement]
+# Enable announcement widget content / 启用公告组件内容
+enabled = false
+id = "announcement"
+title = "Announcement"
+content = ""
+linkText = ""
+linkUrl = ""
+closable = true
+
+[widgets.advertisement]
+# Enable advertisement widget content / 启用广告组件内容
+enabled = false
+id = "advertisement"
+title = "Advertisement"
+content = ""
+imageSrc = ""
+imageAlt = "Advertisement"
+linkText = ""
+linkUrl = ""
+expireDate = ""
+displayCount = -1
+closable = true
+
+[widgets.siteStats]
+# Enable site statistics when the widget is placed in sidebar / 侧边栏放置组件时启用站点统计
+enabled = true
+siteStartDate = "2025-01-01"
+
+[widgets.siteInfo]
+# Enable site build info when the widget is placed in sidebar / 侧边栏放置组件时启用站点构建信息
+enabled = true
+
+[widgets.calendar]
+# Enable calendar heatmap when the widget is placed in sidebar / 侧边栏放置组件时启用日历热力图
+enabled = true
+showHeatmap = true
+
 # Favicon configuration / Favicon 配置
 # Note: Leave empty array to use default favicon / 注意: 留空数组使用默认 favicon
 # Each entry is a favicon definition / 每个条目定义一个 favicon

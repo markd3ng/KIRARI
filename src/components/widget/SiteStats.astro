@@ -1,0 +1,61 @@
+---
+import { widgetsConfig } from "../../config";
+import { getCategoryList, getSortedPosts, getTagList } from "../../utils/content-utils";
+import WidgetLayout from "./WidgetLayout.astro";
+
+interface Props {
+	class?: string;
+	style?: string;
+	lang?: string;
+}
+
+const { style, lang } = Astro.props;
+const className = Astro.props.class;
+const componentName = "SiteStats";
+const config = widgetsConfig.siteStats;
+const posts = await getSortedPosts(lang);
+const categories = await getCategoryList(lang);
+const tags = await getTagList(lang);
+const totalWords = posts.reduce((sum, post) => {
+	const text = (post.body || "")
+		.replace(/```[\s\S]*?```/g, "")
+		.replace(/`[^`]*`/g, "")
+		.replace(/\s+/g, " ")
+		.trim();
+	return sum + (text.match(/[\u4e00-\u9fa5]/g) || []).length + (text.match(/[A-Za-z]+/g) || []).join("").length;
+}, 0);
+const latestActivity = posts.reduce<Date | null>((latest, post) => {
+	const published = new Date(post.data.published);
+	const updated = post.data.updated ? new Date(post.data.updated) : published;
+	const current = updated > published ? updated : published;
+	return !latest || current > latest ? current : latest;
+}, null);
+const startDate = new Date(config.siteStartDate);
+const runningDays = Number.isNaN(startDate.getTime())
+	? 0
+	: Math.max(0, Math.ceil((Date.now() - startDate.getTime()) / 86400000));
+const daysSinceUpdate = latestActivity
+	? Math.max(0, Math.floor((Date.now() - latestActivity.getTime()) / 86400000))
+	: 0;
+const stats = [
+	["Posts", posts.length.toLocaleString()],
+	["Categories", categories.length.toLocaleString()],
+	["Tags", tags.length.toLocaleString()],
+	["Words", totalWords.toLocaleString()],
+	["Running", `${runningDays.toLocaleString()} d`],
+	["Updated", daysSinceUpdate === 0 ? "today" : `${daysSinceUpdate.toLocaleString()} d ago`],
+];
+---
+
+{config.enabled && (
+	<WidgetLayout id="site-stats" name={componentName} class={className} style={style}>
+		<div class="grid grid-cols-2 gap-2">
+			{stats.map(([label, value]) => (
+				<div class="rounded-lg bg-black/[0.03] dark:bg-white/[0.06] px-3 py-2">
+					<div class="text-xs text-50">{label}</div>
+					<div class="text-base font-bold text-90">{value}</div>
+				</div>
+			))}
+		</div>
+	</WidgetLayout>
+)}

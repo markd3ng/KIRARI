@@ -3,8 +3,13 @@ import type { MarkdownHeading } from "astro";
 import type { SidebarWidgetConfig } from "../../types/config";
 import { sidebarConfig, siteConfig } from "../../config";
 import { sidebarWidgetRegistry } from "./sidebar-registry";
+import Advertisement from "./Advertisement.astro";
+import Announcement from "./Announcement.astro";
+import Calendar from "./Calendar.astro";
 import Categories from "./Categories.astro";
 import Profile from "./Profile.astro";
+import SiteInfo from "./SiteInfo.astro";
+import SiteStats from "./SiteStats.astro";
 import Tags from "./Tags.astro";
 import TOC from "./TOC.astro";
 
@@ -53,6 +58,11 @@ function animationStyle(index: number): string {
 						{widget.type === "categories" && <Categories class="onload-animation" style={animationStyle(index)} lang={lang} />}
 						{widget.type === "tags" && <Tags class="onload-animation" style={animationStyle(index)} lang={lang} />}
 						{widget.type === "toc" && <TOC class="onload-animation" style={animationStyle(index)} headings={headings} layout="sidebar" lang={lang} />}
+						{widget.type === "announcement" && <Announcement class="onload-animation" style={animationStyle(index)} lang={lang} />}
+						{widget.type === "advertisement" && <Advertisement class="onload-animation" style={animationStyle(index)} lang={lang} />}
+						{widget.type === "siteStats" && <SiteStats class="onload-animation" style={animationStyle(index)} lang={lang} />}
+						{widget.type === "siteInfo" && <SiteInfo class="onload-animation" style={animationStyle(index)} lang={lang} />}
+						{widget.type === "calendar" && <Calendar class="onload-animation" style={animationStyle(index)} lang={lang} />}
 					</>
 				))}
 			</div>
@@ -65,6 +75,11 @@ function animationStyle(index: number): string {
 						{widget.type === "categories" && <Categories class="onload-animation" style={animationStyle(topWidgets.length + index)} lang={lang} />}
 						{widget.type === "tags" && <Tags class="onload-animation" style={animationStyle(topWidgets.length + index)} lang={lang} />}
 						{widget.type === "toc" && <TOC class="onload-animation" style={animationStyle(topWidgets.length + index)} headings={headings} layout="sidebar" lang={lang} />}
+						{widget.type === "announcement" && <Announcement class="onload-animation" style={animationStyle(topWidgets.length + index)} lang={lang} />}
+						{widget.type === "advertisement" && <Advertisement class="onload-animation" style={animationStyle(topWidgets.length + index)} lang={lang} />}
+						{widget.type === "siteStats" && <SiteStats class="onload-animation" style={animationStyle(topWidgets.length + index)} lang={lang} />}
+						{widget.type === "siteInfo" && <SiteInfo class="onload-animation" style={animationStyle(topWidgets.length + index)} lang={lang} />}
+						{widget.type === "calendar" && <Calendar class="onload-animation" style={animationStyle(topWidgets.length + index)} lang={lang} />}
 					</>
 				))}
 			</div>
@@ -80,6 +95,11 @@ function animationStyle(index: number): string {
 				{widget.type === "categories" && <Categories class="onload-animation" style={animationStyle(index)} lang={lang} />}
 				{widget.type === "tags" && <Tags class="onload-animation" style={animationStyle(index)} lang={lang} />}
 				{widget.type === "toc" && <TOC class="onload-animation" style={animationStyle(index)} headings={headings} layout="sidebar" lang={lang} />}
+				{widget.type === "announcement" && <Announcement class="onload-animation" style={animationStyle(index)} lang={lang} />}
+				{widget.type === "advertisement" && <Advertisement class="onload-animation" style={animationStyle(index)} lang={lang} />}
+				{widget.type === "siteStats" && <SiteStats class="onload-animation" style={animationStyle(index)} lang={lang} />}
+				{widget.type === "siteInfo" && <SiteInfo class="onload-animation" style={animationStyle(index)} lang={lang} />}
+				{widget.type === "calendar" && <Calendar class="onload-animation" style={animationStyle(index)} lang={lang} />}
 			</>
 		))}
 	</div>

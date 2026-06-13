@@ -193,6 +193,33 @@ position = "top"
 
 默认 widget 顺序保持 KIRARI 原有侧边栏外观。`type = "toc"` 只会在文章页且 `site.toc.layout = "sidebar"` 时渲染。
 
+### Widgets
+
+```toml
+[widgets.announcement]
+enabled = false
+title = "Announcement"
+content = ""
+
+[widgets.advertisement]
+enabled = false
+imageSrc = ""
+linkUrl = ""
+
+[widgets.siteStats]
+enabled = true
+siteStartDate = "2025-01-01"
+
+[widgets.siteInfo]
+enabled = true
+
+[widgets.calendar]
+enabled = true
+showHeatmap = true
+```
+
+可选组件需要放入 `sidebar.leftWidgets` 或 `sidebar.mobileWidgets`，类型为 `announcement`、`advertisement`、`siteStats`、`siteInfo`、`calendar`。
+
 ### 文章
 
 ```toml

@@ -193,6 +193,33 @@ position = "top"
 
 The default widget order preserves the classic KIRARI sidebar. `type = "toc"` only renders on post pages when `site.toc.layout = "sidebar"`.
 
+### Widgets
+
+```toml
+[widgets.announcement]
+enabled = false
+title = "Announcement"
+content = ""
+
+[widgets.advertisement]
+enabled = false
+imageSrc = ""
+linkUrl = ""
+
+[widgets.siteStats]
+enabled = true
+siteStartDate = "2025-01-01"
+
+[widgets.siteInfo]
+enabled = true
+
+[widgets.calendar]
+enabled = true
+showHeatmap = true
+```
+
+Place optional widgets in `sidebar.leftWidgets` or `sidebar.mobileWidgets` with types `announcement`, `advertisement`, `siteStats`, `siteInfo`, or `calendar`.
+
 ### Posts
 
 ```toml
