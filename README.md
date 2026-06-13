@@ -93,7 +93,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 | Image viewer | photoswipe | ^5.4.4 |
 | Image processing | sharp | ^0.34.5 |
 | Scrollbar | overlayscrollbars | ^2.16.0 |
-| Content | @astrojs/mdx + remark/rehype chain | ^5.0.4 |
+| Content | @astrojs/mdx + remark/rehype chain | ^5.0.6 |
 | Feeds | @astrojs/rss, @astrojs/sitemap | — |
 | OG images | satori | ^0.26.0 |
 | Config | smol-toml | ^1.6.1 |

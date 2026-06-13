@@ -168,5 +168,5 @@ One change per commit. Do not mix style tweaks, logic fixes, and new features.
 | New Astro/Svelte dependency | `README.md` tech stack table |
 | Modified `transition-manager.ts` | This file (Transition System section) |
 | Modified build pipeline | `README.md` Build Pipeline section |
-| Modified Custom Head/Footer snippets | `SECURITY_MODEL.md`, `HYDRATION_GUIDE.md` when hydration or trust boundaries change |
-| Modified search/SEO provider | `kirari.config.toml`, `README.md`, `README_CN.md`, `AI_CONTEXT.md`, `SECURITY_MODEL.md` |
+| Modified Custom Head/Footer snippets | `SECURITY_MODEL.md` when hydration or trust boundaries change |
+| Modified search/SEO provider | `kirari.config.toml`, `README.md`, `README_CN.md`, `SECURITY_MODEL.md` |

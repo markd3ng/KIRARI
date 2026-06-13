@@ -692,7 +692,6 @@ Vercel 的 Root Directory 默认是 `/`。如果你遇到找不到 `package.json
 |---|---|
 | [README.md](./README.md) | 架构、技术栈、配置参考（英文） |
 | [README_CN.md](./README_CN.md) | 架构、技术栈、配置参考（中文） |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | 架构详解 |
 | [SECURITY_MODEL.md](./SECURITY_MODEL.md) | 安全模型 |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | 贡献指南 |
 | [CHANGELOG.md](./CHANGELOG.md) | 变更日志 |

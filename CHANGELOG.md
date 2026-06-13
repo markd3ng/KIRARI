@@ -5,7 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.1] - 2026-06-13
+
+### Removed
+
+- Removed `AI_CONTEXT.md`, `ARCHITECTURE.md`, `HYDRATION_GUIDE.md` — content was fully redundant with `AGENTS.md` and `README.md`.
+- Removed `KIRARI_RELEASE_AUDIT_2026-05-22.md` — one-time audit snapshot, now stale.
+- Removed `.workbuddy/memory/` and `.sisyphus/` — local assistant state already covered by `.gitignore`.
+
+### Changed
+
+- Updated `README.md` and `README_CN.md` to reflect current `@astrojs/mdx` version (^5.0.6).
+- Removed dead cross-references to deleted docs from `AGENTS.md`, `CONTRIBUTING.md`, and `DEPLOY.md`.
+
+## [0.3.0] - 2026-05-22
 
 ### Added
 

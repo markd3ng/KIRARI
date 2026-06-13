@@ -73,4 +73,4 @@ CI must use `--frozen-lockfile`.
 | Modified `transition-manager.ts` | `AGENTS.md` Transition System section |
 | Modified build pipeline scripts | `README.md` Build Pipeline section |
 | Modified Custom Head/Footer snippets | `SECURITY_MODEL.md` and snippet docs |
-| Modified search/SEO provider | `kirari.config.toml`, `README.md`, `README_CN.md`, `AI_CONTEXT.md`, `SECURITY_MODEL.md` |
+| Modified search/SEO provider | `kirari.config.toml`, `README.md`, `README_CN.md`, `SECURITY_MODEL.md` |
