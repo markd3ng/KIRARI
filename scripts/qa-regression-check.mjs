@@ -35,6 +35,8 @@ const localizedSearchPage = readOptional("../src/pages/[lang]/search.astro");
 const guestbookPage = readOptional("../src/pages/guestbook.astro");
 const sponsorPage = readOptional("../src/pages/sponsor.astro");
 const bangumiPage = readOptional("../src/pages/bangumi.astro");
+const localizedSponsorPage = readOptional("../src/pages/[lang]/sponsor.astro");
+const localizedBangumiPage = readOptional("../src/pages/[lang]/bangumi.astro");
 const sidebarRegistry = readOptional("../src/components/widget/sidebar-registry.ts");
 const announcementWidget = readOptional("../src/components/widget/Announcement.astro");
 const advertisementWidget = readOptional("../src/components/widget/Advertisement.astro");
@@ -42,6 +44,8 @@ const siteStatsWidget = readOptional("../src/components/widget/SiteStats.astro")
 const siteInfoWidget = readOptional("../src/components/widget/SiteInfo.astro");
 const calendarWidget = readOptional("../src/components/widget/Calendar.astro");
 const commentsWidget = readOptional("../src/components/comments/Comments.astro");
+const footerWidget = readOptional("../src/components/Footer.astro");
+const buildCommitUtil = readOptional("../src/utils/build-commit.ts");
 const plantumlPlugin = readOptional("../src/plugins/remark-plantuml.js") + readOptional("../src/plugins/rehype-plantuml.mjs");
 
 const llmsTypeBlock = configLoader.match(/llms\?: \{[\s\S]*?\n\t\t\};/)?.[0] || "";
@@ -264,6 +268,13 @@ addCheck(
 		/location\.search/.test(localizedSearchPage),
 	"root and localized /search/ pages must read runtime ?q= and respect active search provider",
 );
+addCheck(
+	"search results render untrusted content as text",
+	!/a\.innerHTML\s*=/.test(searchPage + localizedSearchPage) &&
+		/textContent\s*=/.test(searchPage) &&
+		/textContent\s*=/.test(localizedSearchPage),
+	"search result title/excerpt must use DOM nodes and textContent, not a.innerHTML",
+);
 
 addCheck(
 	"comments config and guestbook exist",
@@ -287,6 +298,67 @@ addCheck(
 		/Sponsor/.test(sponsorPage) &&
 		/Bangumi/.test(bangumiPage),
 	"sponsor and bangumi must have config chains and pages",
+);
+addCheck(
+	"bangumi renders external api data without innerHTML",
+	!/card\.innerHTML\s*=/.test(bangumiPage + localizedBangumiPage) &&
+		/createElement\("img"\)/.test(bangumiPage + localizedBangumiPage) &&
+		/textContent\s*=/.test(bangumiPage + localizedBangumiPage),
+	"Bangumi external API fields must be rendered with DOM APIs and textContent",
+);
+addCheck(
+	"sponsor and bangumi localized routes exist",
+	/GetStaticPaths/.test(localizedSponsorPage) &&
+		/GetStaticPaths/.test(localizedBangumiPage) &&
+		/withLangPrefix\("\/404\/",\s*lang\)/.test(localizedSponsorPage) &&
+		/withLangPrefix\("\/404\/",\s*lang\)/.test(localizedBangumiPage) &&
+		/getPathAlternates/.test(localizedSponsorPage) &&
+		/getPathAlternates/.test(localizedBangumiPage) &&
+		/sponsor\s*=\s*"sponsor"/.test(i18nKey) &&
+		/bangumi\s*=\s*"bangumi"/.test(i18nKey),
+	"sponsor and bangumi must have localized routes, redirects, alternates, and i18n keys",
+);
+
+const widgetBranchCount = (sidebarWidget.match(/widget\.type ===/g) || []).length;
+addCheck(
+	"sidebar widget rendering is centralized",
+	widgetBranchCount <= 9 && /renderWidget/.test(sidebarWidget),
+	"SideBar.astro must render each widget type from one shared helper instead of three duplicated blocks",
+);
+addCheck(
+	"advertisement display count has explicit fallback",
+	/data-display-count=\{config\.displayCount\s*\?\?\s*-1\}/.test(advertisementWidget),
+	"Advertisement widget must render an explicit -1 fallback for displayCount",
+);
+addCheck(
+	"calendar skips disabled build work",
+	/config\.enabled\s*\?\s*await getSortedPosts\(lang\)\s*:\s*\[\]/.test(calendarWidget),
+	"Calendar widget must not call getSortedPosts when widgets.calendar.enabled is false",
+);
+addCheck(
+	"TOC trailing hash helper is spelled correctly",
+	/removeTrailingHash/.test(tocWidget) && !/removeTailingHash/.test(tocWidget),
+	"TOC helper must be named removeTrailingHash",
+);
+addCheck(
+	"comment provider scripts are pinned with SRI",
+	/loadScript\(src: string,\s*datasetKey: string,\s*integrity: string\)/.test(commentsWidget) &&
+		/script\.integrity\s*=\s*integrity/.test(commentsWidget) &&
+		/script\.crossOrigin\s*=\s*"anonymous"/.test(commentsWidget) &&
+		/@waline\/client@3\.15\.2/.test(commentsWidget) &&
+		!/client@v3/.test(commentsWidget) &&
+		/twikoo@1\.7\.6/.test(commentsWidget) &&
+		/sha384-/.test(commentsWidget),
+	"Waline/Twikoo scripts must be version-pinned and loaded with sha384 integrity",
+);
+addCheck(
+	"build commit resolver lives in src utils",
+	/resolveBuildCommit/.test(buildCommitUtil) &&
+		!/\.\.\/\.\.\/scripts\/build-commit\.mjs/.test(footerWidget) &&
+		!/\.\.\/\.\.\/\.\.\/scripts\/build-commit\.mjs/.test(siteInfoWidget) &&
+		/build-commit/.test(footerWidget) &&
+		/build-commit/.test(siteInfoWidget),
+	"Footer and SiteInfo must import resolveBuildCommit from src/utils, not scripts/",
 );
 
 addCheck(

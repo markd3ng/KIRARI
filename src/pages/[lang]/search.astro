@@ -68,7 +68,13 @@ const scriptUrl = url("/pagefind/pagefind.js");
 					var a = document.createElement("a");
 					a.className = "block rounded-xl border border-black/10 px-4 py-3 transition hover:border-[var(--primary)] dark:border-white/15";
 					a.href = item.url || item.raw_url || "/";
-					a.innerHTML = "<div class='font-bold text-90'>" + (item.meta?.title || a.href) + "</div><div class='mt-1 text-sm text-50'>" + (item.excerpt || "") + "</div>";
+					var title = document.createElement("div");
+					title.className = "font-bold text-90";
+					title.textContent = item.meta?.title || a.href;
+					var excerpt = document.createElement("div");
+					excerpt.className = "mt-1 text-sm text-50";
+					excerpt.textContent = item.excerpt || "";
+					a.append(title, excerpt);
 					results.appendChild(a);
 				});
 			}
