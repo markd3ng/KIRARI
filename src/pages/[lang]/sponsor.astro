@@ -1,18 +1,28 @@
 ---
-import { sponsorConfig, siteConfig } from "../config";
-import I18nKey from "../i18n/i18nKey";
-import { i18n } from "../i18n/translation";
-import MainGridLayout from "../layouts/MainGridLayout.astro";
+import type { GetStaticPaths } from "astro";
+import { sponsorConfig } from "../../config";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
+import { fromLangSlug, getPathAlternates, getPrefixedLanguages, toLangSlug, withLangPrefix } from "../../utils/i18n-utils";
 
+export const getStaticPaths = (() =>
+	getPrefixedLanguages().map((lang) => ({
+		params: { lang: toLangSlug(lang) },
+		props: { lang },
+	}))) satisfies GetStaticPaths;
+
+const lang = fromLangSlug(Astro.params.lang);
 if (!sponsorConfig.enabled) {
-	return Astro.redirect("/404/");
+	return Astro.redirect(withLangPrefix("/404/", lang));
 }
 
-const lang = siteConfig.lang;
 const title = sponsorConfig.title || i18n(I18nKey.sponsor, lang);
+const currentUrl = withLangPrefix("/sponsor/", lang);
+const alternates = getPathAlternates((itemLang) => withLangPrefix("/sponsor/", itemLang));
 ---
 
-<MainGridLayout title={title} lang={lang} toc={false}>
+<MainGridLayout title={title} lang={lang} alternates={alternates} canonicalUrl={currentUrl} toc={false}>
 	<section class="card-base px-6 py-6 md:px-8">
 		<h1 class="text-2xl font-bold text-90">{title}</h1>
 		{sponsorConfig.description && <p class="mt-2 text-50">{sponsorConfig.description}</p>}

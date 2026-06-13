@@ -8,6 +8,8 @@ export const ko: Translation = {
 	[Key.search]: "검색",
 	[Key.friends]: "친구",
 	[Key.projects]: "프로젝트",
+	[Key.sponsor]: "후원",
+	[Key.bangumi]: "방구미",
 	[Key.articles]: "글",
 
 	[Key.toc]: "목차",

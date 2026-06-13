@@ -8,6 +8,8 @@ export const th: Translation = {
 	[Key.search]: "ค้นหา",
 	[Key.friends]: "เพื่อน",
 	[Key.projects]: "โปรเจกต์",
+	[Key.sponsor]: "สนับสนุน",
+	[Key.bangumi]: "Bangumi",
 	[Key.articles]: "บทความ",
 
 	[Key.toc]: "สารบัญ",

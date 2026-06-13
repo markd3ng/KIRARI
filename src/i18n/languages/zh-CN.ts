@@ -8,6 +8,8 @@ export const zhCN: Translation = {
 	[Key.search]: "搜索",
 	[Key.friends]: "友链",
 	[Key.projects]: "项目",
+	[Key.sponsor]: "赞助",
+	[Key.bangumi]: "番剧",
 	[Key.articles]: "文章",
 
 	[Key.toc]: "目录",

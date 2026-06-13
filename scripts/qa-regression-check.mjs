@@ -295,8 +295,8 @@ addCheck(
 		/bangumi:\s*BangumiConfig/.test(configTypes) &&
 		/\[sponsor\]/.test(kirariConfig) &&
 		/\[bangumi\]/.test(kirariConfig) &&
-		/Sponsor/.test(sponsorPage) &&
-		/Bangumi/.test(bangumiPage),
+		/I18nKey\.sponsor/.test(sponsorPage) &&
+		/I18nKey\.bangumi/.test(bangumiPage),
 	"sponsor and bangumi must have config chains and pages",
 );
 addCheck(
