@@ -1,0 +1,33 @@
+---
+import type { MarkdownHeading } from "astro";
+import type { SidebarWidgetConfig } from "../../types/config";
+import Advertisement from "./Advertisement.astro";
+import Announcement from "./Announcement.astro";
+import Calendar from "./Calendar.astro";
+import Categories from "./Categories.astro";
+import Profile from "./Profile.astro";
+import SiteInfo from "./SiteInfo.astro";
+import SiteStats from "./SiteStats.astro";
+import Tags from "./Tags.astro";
+import TOC from "./TOC.astro";
+
+interface Props {
+	widget: SidebarWidgetConfig;
+	headings?: MarkdownHeading[];
+	lang?: string;
+	style?: string;
+}
+
+const { widget, headings = [], lang, style } = Astro.props;
+const className = "onload-animation";
+---
+
+{widget.type === "profile" && <Profile class={className} style={style} lang={lang} />}
+{widget.type === "categories" && <Categories class={className} style={style} lang={lang} />}
+{widget.type === "tags" && <Tags class={className} style={style} lang={lang} />}
+{widget.type === "toc" && <TOC class={className} style={style} headings={headings} layout="sidebar" lang={lang} />}
+{widget.type === "announcement" && <Announcement class={className} style={style} lang={lang} />}
+{widget.type === "advertisement" && <Advertisement class={className} style={style} lang={lang} />}
+{widget.type === "siteStats" && <SiteStats class={className} style={style} lang={lang} />}
+{widget.type === "siteInfo" && <SiteInfo class={className} style={style} lang={lang} />}
+{widget.type === "calendar" && <Calendar class={className} style={style} lang={lang} />}

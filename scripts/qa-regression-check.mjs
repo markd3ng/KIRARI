@@ -21,6 +21,7 @@ const markdownCss = readFileSync(new URL("../src/styles/markdown.css", import.me
 const layout = readFileSync(new URL("../src/layouts/Layout.astro", import.meta.url), "utf8");
 const mainGridLayout = readFileSync(new URL("../src/layouts/MainGridLayout.astro", import.meta.url), "utf8");
 const sidebarWidget = readFileSync(new URL("../src/components/widget/SideBar.astro", import.meta.url), "utf8");
+const sidebarWidgetRenderer = readOptional("../src/components/widget/SidebarWidget.astro");
 const tocWidget = readFileSync(new URL("../src/components/widget/TOC.astro", import.meta.url), "utf8");
 const i18nKey = readFileSync(new URL("../src/i18n/i18nKey.ts", import.meta.url), "utf8");
 const contentUtils = readFileSync(new URL("../src/utils/content-utils.ts", import.meta.url), "utf8");
@@ -152,10 +153,10 @@ addCheck(
 );
 addCheck(
 	"sidebar TOC renders in sidebar layout",
-	/useSidebarToc\s*=\s*siteConfig\.toc\.enable\s*&&\s*hasTocContent\s*&&\s*tocLayout\s*===\s*"sidebar"/.test(mainGridLayout) &&
+		/useSidebarToc\s*=\s*siteConfig\.toc\.enable\s*&&\s*hasTocContent\s*&&\s*tocLayout\s*===\s*"sidebar"/.test(mainGridLayout) &&
 		/<SideBar[^>]+toc=\{useSidebarToc\}/.test(mainGridLayout) &&
 		/toc\s*&&\s*tocLayout\s*===\s*"sidebar"/.test(sidebarWidget) &&
-		/<TOC[^>]+layout="sidebar"/.test(sidebarWidget),
+		/<TOC[^>]+layout="sidebar"/.test(sidebarWidgetRenderer),
 	"src/components/widget/SideBar.astro must render TOC only when toc=true in sidebar mode",
 );
 addCheck(
