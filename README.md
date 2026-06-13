@@ -296,6 +296,8 @@ external = true
 
 KIRARI supports three search providers. Pick one in TOML:
 
+The dedicated `/search/` page accepts `?q=keyword` and uses the active provider without changing the navbar search shortcut.
+
 ```toml
 [search]
 provider = "pagefind" # pagefind | docsearch | google

@@ -1,0 +1,116 @@
+---
+import type { GetStaticPaths } from "astro";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
+import { searchConfig } from "../../config";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+import { fromLangSlug, getPathAlternates, getPrefixedLanguages, toLangSlug, withLangPrefix } from "../../utils/i18n-utils";
+import { url } from "../../utils/url-utils";
+
+export const getStaticPaths = (() =>
+	getPrefixedLanguages().map((lang) => ({
+		params: { lang: toLangSlug(lang) },
+		props: { lang },
+	}))) satisfies GetStaticPaths;
+
+const lang = fromLangSlug(Astro.params.lang);
+const searchParams = Astro.url.searchParams;
+const initialQuery = searchParams.get("q") || "";
+const provider = searchConfig.provider;
+const pageTitle = i18n(I18nKey.search, lang);
+const currentUrl = withLangPrefix("/search/", lang);
+const alternates = getPathAlternates((itemLang) => withLangPrefix("/search/", itemLang));
+const scriptUrl = url("/pagefind/pagefind.js");
+---
+
+<MainGridLayout title={pageTitle} lang={lang} alternates={alternates} canonicalUrl={currentUrl} toc={false}>
+	<section class="card-base px-6 py-6 md:px-8">
+		<h1 class="mb-4 text-2xl font-bold text-90">{pageTitle}</h1>
+		<form data-search-form class="mb-5 flex gap-2" action={currentUrl}>
+			<input
+				data-search-input
+				name="q"
+				value={initialQuery}
+				placeholder={pageTitle}
+				class="min-w-0 flex-1 rounded-xl border border-black/10 bg-transparent px-4 py-2 text-base outline-none transition focus:border-[var(--primary)] dark:border-white/15"
+			/>
+			<button class="btn-regular rounded-xl px-4 font-bold" type="submit">{pageTitle}</button>
+		</form>
+		<div data-search-provider={provider} class="text-sm text-50"></div>
+		<div data-search-status class="mt-4 text-sm text-50"></div>
+		<div data-search-results class="mt-4 flex flex-col gap-3"></div>
+	</section>
+
+	<script is:inline define:vars={{ initialQuery, provider, scriptUrl }}>
+		(function () {
+			var form = document.querySelector("[data-search-form]");
+			var input = document.querySelector("[data-search-input]");
+			var status = document.querySelector("[data-search-status]");
+			var results = document.querySelector("[data-search-results]");
+			var providerEl = document.querySelector("[data-search-provider]");
+			if (!form || !input || !status || !results || !providerEl) return;
+			providerEl.textContent = "Provider: " + provider;
+
+			function setStatus(text) {
+				status.textContent = text;
+			}
+
+			function render(items) {
+				results.innerHTML = "";
+				if (!items.length) {
+					setStatus("No results.");
+					return;
+				}
+				setStatus(items.length + " result(s).");
+				items.slice(0, 20).forEach(function (item) {
+					var a = document.createElement("a");
+					a.className = "block rounded-xl border border-black/10 px-4 py-3 transition hover:border-[var(--primary)] dark:border-white/15";
+					a.href = item.url || item.raw_url || "/";
+					a.innerHTML = "<div class='font-bold text-90'>" + (item.meta?.title || a.href) + "</div><div class='mt-1 text-sm text-50'>" + (item.excerpt || "") + "</div>";
+					results.appendChild(a);
+				});
+			}
+
+			async function runPagefind(query) {
+				if (!query) {
+					setStatus("Type something to search.");
+					results.innerHTML = "";
+					return;
+				}
+				setStatus("Loading...");
+				if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+					render([{ url: "/", meta: { title: "Development preview" }, excerpt: "Build the site to query the Pagefind index." }]);
+					return;
+				}
+				var pagefind = window.pagefind || await import(scriptUrl);
+				window.pagefind = pagefind;
+				var response = await pagefind.search(query);
+				var items = await Promise.all(response.results.map(function (item) { return item.data(); }));
+				render(items);
+			}
+
+			function run(query) {
+				if (provider === "docsearch") {
+					setStatus("Use the navbar search button to open DocSearch.");
+					return;
+				}
+				if (provider === "google") {
+					setStatus("Use the navbar search panel for Google Programmable Search.");
+					return;
+				}
+				runPagefind(query).catch(function () {
+					setStatus("Search failed.");
+				});
+			}
+
+			form.addEventListener("submit", function (event) {
+				event.preventDefault();
+				var query = input.value.trim();
+				history.replaceState(null, "", query ? "?q=" + encodeURIComponent(query) : location.pathname);
+				run(query);
+			});
+
+			run(initialQuery);
+		})();
+	</script>
+</MainGridLayout>

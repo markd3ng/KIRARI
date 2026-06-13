@@ -296,6 +296,8 @@ external = true
 
 KIRARI 支持三种搜索提供方，在 TOML 中选择：
 
+独立 `/search/` 页面支持 `?q=keyword`，并沿用当前启用的搜索 provider，不改变导航栏搜索入口。
+
 ```toml
 [search]
 provider = "pagefind" # pagefind | docsearch | google
