@@ -359,6 +359,28 @@ mode = "dynamic"
 
 `/sponsor/` 与 `/bangumi/` 默认隐藏。Bangumi v1 在浏览器中动态加载数据，避免第三方 API 故障导致静态构建失败。
 
+### 字体、封面与 Markdown
+
+```toml
+[fonts]
+enabled = false
+links = []
+fontFamily = ""
+
+[coverImage]
+lqip = true
+fadeIn = true
+
+[markdown.plantuml]
+enable = false
+server = "https://www.plantuml.com/plantuml"
+
+[markdown.admonitions]
+theme = "kirari" # kirari | github | vitepress | obsidian
+```
+
+启用 Mermaid 时，Markdown pipeline 会自动识别 fenced `mermaid` 代码块。PlantUML 为可选功能，默认关闭。
+
 ### 统计分析
 
 总开关：`analytics.enable`。脚本仅在 `true && PROD` 时加载。

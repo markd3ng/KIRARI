@@ -114,6 +114,33 @@ export type CommentsConfig = {
 	};
 };
 
+export type FontsConfig = {
+	enabled: boolean;
+	links: string[];
+	fontFamily: string;
+};
+
+export type CoverImageConfig = {
+	lqip: boolean;
+	fadeIn: boolean;
+};
+
+export type PlantUMLConfig = {
+	enable: boolean;
+	server: string;
+	lightTheme: string;
+	darkTheme: string;
+};
+
+export type AdmonitionsConfig = {
+	theme: "kirari" | "github" | "vitepress" | "obsidian";
+};
+
+export type MarkdownConfig = {
+	plantuml: PlantUMLConfig;
+	admonitions: AdmonitionsConfig;
+};
+
 export type SidebarWidgetType =
 	| "profile"
 	| "toc"
@@ -428,6 +455,9 @@ export type Config = {
 	expressiveCode: ExpressiveCodeConfig;
 	mermaid: MermaidConfig;
 	comments: CommentsConfig;
+	fonts: FontsConfig;
+	coverImage: CoverImageConfig;
+	markdown: MarkdownConfig;
 	sidebar: SidebarConfig;
 	widgets: WidgetsConfig;
 	sponsor: SponsorConfig;

@@ -10,7 +10,7 @@ import { h } from "hastscript";
  * @param {import('mdast').RootContent[]} children - The children elements of the component.
  * @returns {import('mdast').Parent} The created admonition component.
  */
-export function AdmonitionComponent(properties, children, type) {
+export function AdmonitionComponent(properties, children, type, theme = "kirari") {
 	if (!Array.isArray(children) || children.length === 0)
 		return h(
 			"div",
@@ -26,7 +26,7 @@ export function AdmonitionComponent(properties, children, type) {
 		label.tagName = "div"; // Change the tag <p> to <div>
 	}
 
-	return h("blockquote", { class: `admonition bdm-${type}` }, [
+	return h("blockquote", { class: `admonition bdm-${type} admonition-theme-${theme}` }, [
 		h("span", { class: "bdm-title" }, label ? label : type.toUpperCase()),
 		...children,
 	]);

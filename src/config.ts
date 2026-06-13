@@ -2,8 +2,10 @@ import { Config } from "./constants";
 import type {
 	AnalyticsConfig,
 	CommentsConfig,
+	CoverImageConfig,
 	ExpressiveCodeConfig,
 	FooterConfig,
+	FontsConfig,
 	HeadConfig,
 	I18nConfig,
 	LandingPageConfig,
@@ -11,6 +13,7 @@ import type {
 	LicenseConfig,
 	LLMsConfig,
 	MermaidConfig,
+	MarkdownConfig,
 	NavBarConfig,
 	PostsConfig,
 	ProfileConfig,
@@ -45,6 +48,13 @@ export const expressiveCodeConfig: ExpressiveCodeConfig =
 export const mermaidConfig: MermaidConfig = Config.mermaid as MermaidConfig;
 
 export const commentsConfig: CommentsConfig = Config.comments as CommentsConfig;
+
+export const fontsConfig: FontsConfig = Config.fonts as FontsConfig;
+
+export const coverImageConfig: CoverImageConfig =
+	Config.coverImage as CoverImageConfig;
+
+export const markdownConfig: MarkdownConfig = Config.markdown as MarkdownConfig;
 
 export const sidebarConfig: SidebarConfig = Config.sidebar as SidebarConfig;
 

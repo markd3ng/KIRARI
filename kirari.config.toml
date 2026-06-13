@@ -435,6 +435,30 @@ apiBase = "https://api.bgm.tv"
 mode = "dynamic"
 categoryOrder = ["anime", "book", "music", "game"]
 
+# -----------------------------------------------------------------------------
+# Fonts And Cover Image Configuration / 字体与封面图配置
+# -----------------------------------------------------------------------------
+[fonts]
+enabled = false
+links = []
+fontFamily = ""
+
+[coverImage]
+lqip = true
+fadeIn = true
+
+# -----------------------------------------------------------------------------
+# Markdown Enhancement Configuration / Markdown 增强配置
+# -----------------------------------------------------------------------------
+[markdown.plantuml]
+enable = false
+server = "https://www.plantuml.com/plantuml"
+lightTheme = ""
+darkTheme = ""
+
+[markdown.admonitions]
+theme = "kirari"
+
 # Favicon configuration / Favicon 配置
 # Note: Leave empty array to use default favicon / 注意: 留空数组使用默认 favicon
 # Each entry is a favicon definition / 每个条目定义一个 favicon

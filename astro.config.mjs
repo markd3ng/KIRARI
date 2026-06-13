@@ -29,8 +29,10 @@ import { GithubFileCardComponent } from "./src/plugins/rehype-component-github-f
 import { rehypeLazyLoadImage } from "./src/plugins/rehype-lazy-load-image.mjs";
 import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
 import { rehypeMermaidPreProcess } from "./src/plugins/rehype-mermaid-pre.mjs";
+import { rehypePlantuml } from "./src/plugins/rehype-plantuml.mjs";
 import { rehypeTableWrapper } from "./src/plugins/rehype-table-wrapper.mjs";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
+import { remarkPlantuml } from "./src/plugins/remark-plantuml.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
 
 // https://astro.build/config
@@ -193,10 +195,12 @@ export default defineConfig({
 			remarkDirective,
 			remarkSectionize,
 			parseDirectiveNode,
+			[remarkPlantuml, Config.markdown.plantuml],
 		],
 		rehypePlugins: [
 			rehypeKatex,
 			rehypeMermaidPreProcess,
+			rehypePlantuml,
 			rehypeSlug,
 			rehypeLazyLoadImage,
 			rehypeTableWrapper,
@@ -216,11 +220,11 @@ export default defineConfig({
 								children,
 								Config.githubCard.apiBase,
 							),
-						note: (x, y) => AdmonitionComponent(x, y, "note"),
-						tip: (x, y) => AdmonitionComponent(x, y, "tip"),
-						important: (x, y) => AdmonitionComponent(x, y, "important"),
-						caution: (x, y) => AdmonitionComponent(x, y, "caution"),
-						warning: (x, y) => AdmonitionComponent(x, y, "warning"),
+						note: (x, y) => AdmonitionComponent(x, y, "note", Config.markdown.admonitions.theme),
+						tip: (x, y) => AdmonitionComponent(x, y, "tip", Config.markdown.admonitions.theme),
+						important: (x, y) => AdmonitionComponent(x, y, "important", Config.markdown.admonitions.theme),
+						caution: (x, y) => AdmonitionComponent(x, y, "caution", Config.markdown.admonitions.theme),
+						warning: (x, y) => AdmonitionComponent(x, y, "warning", Config.markdown.admonitions.theme),
 					},
 				},
 			],

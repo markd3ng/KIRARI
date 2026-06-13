@@ -359,6 +359,28 @@ mode = "dynamic"
 
 `/sponsor/` and `/bangumi/` are hidden by default. Bangumi v1 loads data in the browser so third-party API outages do not break static builds.
 
+### Fonts, Covers, And Markdown
+
+```toml
+[fonts]
+enabled = false
+links = []
+fontFamily = ""
+
+[coverImage]
+lqip = true
+fadeIn = true
+
+[markdown.plantuml]
+enable = false
+server = "https://www.plantuml.com/plantuml"
+
+[markdown.admonitions]
+theme = "kirari" # kirari | github | vitepress | obsidian
+```
+
+Mermaid fenced code blocks are auto-detected by the Markdown pipeline when Mermaid is enabled. PlantUML is optional and off by default.
+
 ### Analytics
 
 Master switch: `analytics.enable`. Scripts load only when `true && PROD`.

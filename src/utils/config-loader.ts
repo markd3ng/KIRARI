@@ -221,6 +221,26 @@ type TomlConfig = {
 		mode?: unknown;
 		categoryOrder?: unknown;
 	};
+	fonts?: {
+		enabled?: unknown;
+		links?: unknown;
+		fontFamily?: unknown;
+	};
+	coverImage?: {
+		lqip?: unknown;
+		fadeIn?: unknown;
+	};
+	markdown?: {
+		plantuml?: {
+			enable?: unknown;
+			server?: unknown;
+			lightTheme?: unknown;
+			darkTheme?: unknown;
+		};
+		admonitions?: {
+			theme?: unknown;
+		};
+	};
 	/** Head configuration / 头部配置 */
 	head?: {
 		/** Search engine verification codes / 搜索引擎验证码 */
@@ -609,6 +629,26 @@ const DEFAULT_CONFIG: Config = {
 		apiBase: "https://api.bgm.tv",
 		mode: "dynamic",
 		categoryOrder: ["anime", "book", "music", "game"],
+	},
+	fonts: {
+		enabled: false,
+		links: [],
+		fontFamily: "",
+	},
+	coverImage: {
+		lqip: true,
+		fadeIn: true,
+	},
+	markdown: {
+		plantuml: {
+			enable: false,
+			server: "https://www.plantuml.com/plantuml",
+			lightTheme: "",
+			darkTheme: "",
+		},
+		admonitions: {
+			theme: "kirari",
+		},
 	},
 	head: {
 		verification: {
@@ -1207,6 +1247,9 @@ export const loadConfig = (): Config => {
 	const widgets = toml.widgets;
 	const sponsor = toml.sponsor;
 	const bangumi = toml.bangumi;
+	const fonts = toml.fonts;
+	const coverImage = toml.coverImage;
+	const markdown = toml.markdown;
 	const i18n = toml.i18n;
 	const og = toml.og;
 	const seo = toml.seo;
@@ -1391,6 +1434,10 @@ export const loadConfig = (): Config => {
 				message: getString(raw.message, ""),
 			}];
 		});
+	};
+	const validateAdmonitionTheme = (value: unknown): Config["markdown"]["admonitions"]["theme"] => {
+		if (value === "github" || value === "vitepress" || value === "obsidian") return value;
+		return DEFAULT_CONFIG.markdown.admonitions.theme;
 	};
 	const validateLatestCount = (value: unknown): number => {
 		const count = Math.trunc(getNumber(value, DEFAULT_CONFIG.landingPage.latestCount));
@@ -1581,6 +1628,26 @@ export const loadConfig = (): Config => {
 			apiBase: getString(bangumi?.apiBase, DEFAULT_CONFIG.bangumi.apiBase).replace(/\/+$/, ""),
 			mode: "dynamic",
 			categoryOrder: getStringArray(bangumi?.categoryOrder, DEFAULT_CONFIG.bangumi.categoryOrder),
+		},
+		fonts: {
+			enabled: getBoolean(fonts?.enabled, DEFAULT_CONFIG.fonts.enabled),
+			links: getStringArray(fonts?.links, DEFAULT_CONFIG.fonts.links),
+			fontFamily: getString(fonts?.fontFamily, DEFAULT_CONFIG.fonts.fontFamily),
+		},
+		coverImage: {
+			lqip: getBoolean(coverImage?.lqip, DEFAULT_CONFIG.coverImage.lqip),
+			fadeIn: getBoolean(coverImage?.fadeIn, DEFAULT_CONFIG.coverImage.fadeIn),
+		},
+		markdown: {
+			plantuml: {
+				enable: getBoolean(markdown?.plantuml?.enable, DEFAULT_CONFIG.markdown.plantuml.enable),
+				server: getString(markdown?.plantuml?.server, DEFAULT_CONFIG.markdown.plantuml.server).replace(/\/+$/, ""),
+				lightTheme: getString(markdown?.plantuml?.lightTheme, DEFAULT_CONFIG.markdown.plantuml.lightTheme),
+				darkTheme: getString(markdown?.plantuml?.darkTheme, DEFAULT_CONFIG.markdown.plantuml.darkTheme),
+			},
+			admonitions: {
+				theme: validateAdmonitionTheme(markdown?.admonitions?.theme),
+			},
 		},
 		head: {
 			verification: {
