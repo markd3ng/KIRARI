@@ -543,6 +543,15 @@ Photoswipe 自动绑定 `.post-cover` 图片。点击任意内容图片打开全
 | Netlify | `dist/_headers`（postbuild） | `/_astro/*` immutable |
 | Vercel | `vercel.json` | `/_astro/*` immutable |
 | EdgeOne Pages | `edgeone.json` | `/_astro/*` immutable |
+| GitHub Pages | GitHub Actions artifact | 仓库子路径部署需设置 `site.base`；如需 immutable headers 建议前置 CDN |
+
+## GitHub Pages
+
+GitHub Pages 可作为静态托管使用，Actions 工作流运行 `pnpm build` 后上传
+`dist/` 即可。部署到 `https://user.github.io/repo/` 时，在
+`kirari.config.toml` 中设置 `site.base = "/repo/"`；使用自定义域名时保持
+`site.base = "/"`，并在 Pages 设置中绑定域名。Pagefind、RSS、sitemap 与 LLMs
+文件都会在正常构建中生成，因此应部署最终 `dist/` 产物，而不是源码目录。
 
 ## 脚本命令
 

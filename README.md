@@ -100,7 +100,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 
 ## Deployment
 
-> **New to KIRARI?** Read the [Deployment Guide (step-by-step)](./DEPLOY.md) — covers Cloudflare Pages, Vercel, Netlify, EdgeOne Pages, Cloudflare API Token setup, and GitHub Card cache proxy deployment.
+> **New to KIRARI?** Read the [Deployment Guide (step-by-step)](./DEPLOY.md) — covers Cloudflare Pages, GitHub Pages, Vercel, Netlify, EdgeOne Pages, Cloudflare API Token setup, and GitHub Card cache proxy deployment.
 
 ## Quick Start
 
@@ -544,6 +544,16 @@ Photoswipe auto-attaches to `.post-cover` images. Click any content image for fu
 | Netlify | `dist/_headers` (postbuild) | `/_astro/*` immutable |
 | Vercel | `vercel.json` | `/_astro/*` immutable |
 | EdgeOne Pages | `edgeone.json` | `/_astro/*` immutable |
+| GitHub Pages | GitHub Actions artifact | Use `site.base` for repository subpaths; front with a CDN for immutable headers |
+
+## GitHub Pages
+
+GitHub Pages works as static hosting when the build uploads `dist/` from
+`pnpm build`. For `https://user.github.io/repo/`, set `site.base = "/repo/"` in
+`kirari.config.toml`; for a custom domain, keep `site.base = "/"` and add the
+domain in the Pages settings. Pagefind, RSS, sitemap, and LLMs files are
+generated during the normal build, so the Actions workflow should deploy the
+final `dist/` artifact rather than source files.
 
 ## Scripts
 

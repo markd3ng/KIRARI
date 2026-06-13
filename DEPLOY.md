@@ -584,6 +584,78 @@ provider = "none"
 
 ## 5. 其他平台部署
 
+### GitHub Pages
+
+GitHub Pages 适合纯静态部署。推荐使用 GitHub Actions 构建并上传 `dist/`
+产物，不要直接发布源码目录。
+
+关键配置：
+- Build Command: `pnpm build`
+- Artifact Directory: `dist`
+- Node.js 版本: `22`
+- Package manager: `pnpm install --frozen-lockfile`
+
+如果站点部署在仓库子路径，例如 `https://user.github.io/repo/`，需要在
+`kirari.config.toml` 中设置：
+
+```toml
+[site]
+base = "/repo/"
+```
+
+如果使用自定义域名，例如 `https://example.com/`，保持 `site.base = "/"`，并在
+GitHub Pages 设置中绑定域名。Pagefind、RSS、sitemap、LLMs 文件和 GitHub Card
+缓存 materialize 都由 `pnpm build` 生成，因此 Actions 应部署完整 `dist/`。
+
+最小 Actions 示例：
+
+```yaml
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+```
+
+GitHub Pages 不读取 `dist/_headers`，所以无法直接应用 `/_astro/*` immutable
+缓存规则；如果强依赖精细缓存控制，建议前置 Cloudflare 或其他 CDN。
+
 ### Vercel
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/markd3ng/KIRARI)
