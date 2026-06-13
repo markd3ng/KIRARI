@@ -31,7 +31,7 @@ const maxLevel = siteConfig.toc.depth;
 const showTOC = isPostsRoute && headings.length > 0;
 const tocEntries = headings.filter((heading) => heading.depth < minDepth + maxLevel);
 
-const removeTailingHash = (text: string) => {
+const removeTrailingHash = (text: string) => {
 	let lastIndexOfHash = text.lastIndexOf("#");
 	if (lastIndexOfHash !== text.length - 1) {
 		return text;
@@ -63,7 +63,7 @@ let heading1Count = 1;
                 <div class:list={["transition text-sm", {
                     "text-50": heading.depth == minDepth || heading.depth == minDepth + 1,
                     "text-30": heading.depth == minDepth + 2,
-                }]}>{removeTailingHash(heading.text)}</div>
+                }]}>{removeTrailingHash(heading.text)}</div>
             </a>
     )}
     <div data-active-indicator style="opacity: 0" class:list={[{'hidden': headings.length == 0}, "-z-10 absolute bg-[var(--toc-btn-hover)] left-0 right-0 rounded-xl transition-all " +
@@ -100,7 +100,7 @@ let heading1Count = 1;
                         <div class:list={["transition text-sm leading-snug", {
                             "text-50": heading.depth == minDepth || heading.depth == minDepth + 1,
                             "text-30": heading.depth == minDepth + 2,
-                        }]}>{removeTailingHash(heading.text)}</div>
+                        }]}>{removeTrailingHash(heading.text)}</div>
                     </a>
             )}
             <div data-active-indicator style="opacity: 0" class:list={[{'hidden': headings.length == 0}, "-z-10 absolute bg-[var(--toc-btn-hover)] left-0 right-0 rounded-xl transition-all " +
