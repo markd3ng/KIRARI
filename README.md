@@ -602,6 +602,10 @@ CI must use `--frozen-lockfile`. `@astrojs/check` is devDependency only.
 
 [CHANGELOG.md](./CHANGELOG.md)
 
+## Credits
+
+[CREDITS.md](./CREDITS.md)
+
 ## License
 
 MIT
