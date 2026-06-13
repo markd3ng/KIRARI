@@ -27,6 +27,22 @@ const contentUtils = readFileSync(new URL("../src/utils/content-utils.ts", impor
 const categoryPage = readOptional("../src/pages/categories/[...category].astro");
 const localizedCategoryPage = readOptional("../src/pages/[lang]/categories/[...category].astro");
 const profileWidget = readFileSync(new URL("../src/components/widget/Profile.astro", import.meta.url), "utf8");
+const creditsDoc = readOptional("../CREDITS.md");
+const readme = readOptional("../README.md");
+const readmeCn = readOptional("../README_CN.md");
+const searchPage = readOptional("../src/pages/search.astro");
+const localizedSearchPage = readOptional("../src/pages/[lang]/search.astro");
+const guestbookPage = readOptional("../src/pages/guestbook.astro");
+const sponsorPage = readOptional("../src/pages/sponsor.astro");
+const bangumiPage = readOptional("../src/pages/bangumi.astro");
+const sidebarRegistry = readOptional("../src/components/widget/sidebar-registry.ts");
+const announcementWidget = readOptional("../src/components/widget/Announcement.astro");
+const advertisementWidget = readOptional("../src/components/widget/Advertisement.astro");
+const siteStatsWidget = readOptional("../src/components/widget/SiteStats.astro");
+const siteInfoWidget = readOptional("../src/components/widget/SiteInfo.astro");
+const calendarWidget = readOptional("../src/components/widget/Calendar.astro");
+const commentsWidget = readOptional("../src/components/comments/Comments.astro");
+const plantumlPlugin = readOptional("../src/plugins/remark-plantuml.js") + readOptional("../src/plugins/rehype-plantuml.mjs");
 
 const llmsTypeBlock = configLoader.match(/llms\?: \{[\s\S]*?\n\t\t\};/)?.[0] || "";
 addCheck(
@@ -183,6 +199,137 @@ addCheck(
 	/getNestedCategoryList/.test(readFileSync(new URL("../src/components/widget/Categories.astro", import.meta.url), "utf8")) &&
 		/getNestedCategoryList/.test(readFileSync(new URL("../src/pages/categories.astro", import.meta.url), "utf8")),
 	"category widget and category index page must use getNestedCategoryList",
+);
+
+const sidebarTypeBlock = configTypes.match(/export type SidebarConfig = \{[\s\S]*?\n\};/)?.[0] || "";
+const tomlSidebarBlock = configLoader.match(/sidebar\?: \{[\s\S]*?\n\t\};/)?.[0] || "";
+const sidebarConfigBlock = kirariConfig.match(/\[sidebar\][\s\S]*?(?=\n\[|\n#)/)?.[0] || "";
+
+addCheck(
+	"Firefly-inspired sidebar config exists",
+	/sidebar:\s*SidebarConfig/.test(configTypes) &&
+		/enabled:\s*boolean/.test(sidebarTypeBlock) &&
+		/leftWidgets:\s*SidebarWidgetConfig\[\]/.test(configTypes) &&
+		/rightWidgets:\s*SidebarWidgetConfig\[\]/.test(configTypes) &&
+		/mobileWidgets:\s*SidebarWidgetConfig\[\]/.test(configTypes) &&
+		/sidebar\?:/.test(configLoader) &&
+		/\[sidebar\]/.test(kirariConfig),
+	"sidebar config must flow through TOML, config types, and config-loader",
+);
+addCheck(
+	"sidebar widget registry exists",
+	/sidebarWidgetRegistry/.test(sidebarRegistry) &&
+		/profile/.test(sidebarRegistry) &&
+		/categories/.test(sidebarRegistry) &&
+		/tags/.test(sidebarRegistry) &&
+		/toc/.test(sidebarRegistry),
+	"src/components/widget/sidebar-registry.ts must register profile/categories/tags/toc widgets",
+);
+addCheck(
+	"mobile widget area exists",
+	/mobileWidgets/.test(sidebarConfigBlock + tomlSidebarBlock + sidebarWidget) &&
+		/mobile-sidebar-widgets/.test(sidebarWidget) &&
+		/showOnPostPage/.test(sidebarTypeBlock) &&
+		/showOnNonPostPage/.test(sidebarTypeBlock),
+	"sidebar must support independently configured mobile widgets and visibility controls",
+);
+
+addCheck(
+	"low-risk widgets exist",
+	/Announcement/.test(announcementWidget) &&
+		/Advertisement/.test(advertisementWidget) &&
+		/SiteStats/.test(siteStatsWidget) &&
+		/SiteInfo/.test(siteInfoWidget) &&
+		/Calendar/.test(calendarWidget),
+	"announcement, advertisement, site stats, site info, and calendar widgets must exist",
+);
+addCheck(
+	"SiteInfo avoids unknown commit in normal builds",
+	/buildCommit/.test(siteInfoWidget) &&
+		!/unknown/i.test(siteInfoWidget),
+	"SiteInfo widget must render build commit metadata without normal unknown fallback text",
+);
+
+addCheck(
+	"dedicated search pages exist",
+	/searchParams/.test(searchPage) &&
+		/pagefind/.test(searchPage) &&
+		/docsearch/.test(searchPage) &&
+		/google/.test(searchPage) &&
+		/searchParams/.test(localizedSearchPage),
+	"root and localized /search/ pages must read ?q= and respect active search provider",
+);
+
+addCheck(
+	"comments config and guestbook exist",
+	/comments:\s*CommentsConfig/.test(configTypes) &&
+		/comments\?:/.test(configLoader) &&
+		/\[comments\]/.test(kirariConfig) &&
+		/giscus/.test(commentsWidget) &&
+		/waline/.test(commentsWidget) &&
+		/twikoo/.test(commentsWidget) &&
+		/transitionManager/.test(commentsWidget) &&
+		/guestbook/.test(guestbookPage),
+	"comments must be configurable, lazy initialized, and reused by guestbook",
+);
+
+addCheck(
+	"sponsor and bangumi pages exist",
+	/sponsor:\s*SponsorConfig/.test(configTypes) &&
+		/bangumi:\s*BangumiConfig/.test(configTypes) &&
+		/\[sponsor\]/.test(kirariConfig) &&
+		/\[bangumi\]/.test(kirariConfig) &&
+		/Sponsor/.test(sponsorPage) &&
+		/Bangumi/.test(bangumiPage),
+	"sponsor and bangumi must have config chains and pages",
+);
+
+addCheck(
+	"fonts and cover LQIP config exist",
+	/fonts:\s*FontsConfig/.test(configTypes) &&
+		/coverImage:\s*CoverImageConfig/.test(configTypes) &&
+		/\[fonts\]/.test(kirariConfig) &&
+		/\[coverImage\]/.test(kirariConfig) &&
+		/fonts\?:/.test(configLoader) &&
+		/coverImage\?:/.test(configLoader),
+	"fonts and cover image/LQIP configuration must flow through config",
+);
+
+addCheck(
+	"markdown enhancements are configured",
+	/plantuml/.test(plantumlPlugin) &&
+		/plantuml:\s*PlantUMLConfig/.test(configTypes) &&
+		/admonitions:\s*AdmonitionsConfig/.test(configTypes) &&
+		/\[markdown\.plantuml\]/.test(kirariConfig) &&
+		/\[markdown\.admonitions\]/.test(kirariConfig),
+	"PlantUML and admonition theme options must be configured",
+);
+addCheck(
+	"Mermaid auto-render no longer depends on frontmatter only",
+	/rehypeMermaidPreProcess/.test(readFileSync(new URL("../astro.config.mjs", import.meta.url), "utf8")) &&
+		/mermaid/.test(readFileSync(new URL("../src/plugins/rehype-mermaid-pre.mjs", import.meta.url), "utf8")) &&
+		!/frontmatter-only/i.test(readFileSync(new URL("../src/plugins/rehype-mermaid-pre.mjs", import.meta.url), "utf8")),
+	"Mermaid fenced blocks must be auto-detected by the markdown plugin chain",
+);
+
+const requiredCreditTerms = [
+	"Firefly",
+	"Firefly-Docs",
+	"Fuwari",
+	"sidebar",
+	"TOC",
+	"comments",
+	"Sponsor",
+	"Guestbook",
+	"Bangumi",
+	"PlantUML",
+];
+addCheck(
+	"credits document covers borrowed feature ideas",
+	requiredCreditTerms.every((term) => creditsDoc.includes(term)) &&
+		/CREDITS\.md/.test(readme) &&
+		/CREDITS\.md/.test(readmeCn),
+	"CREDITS.md must credit Firefly/Firefly-Docs/Fuwari and README files must link to it",
 );
 
 const failed = checks.filter((check) => !check.passed);
