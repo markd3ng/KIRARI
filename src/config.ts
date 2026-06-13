@@ -17,6 +17,8 @@ import type {
 	SearchConfig,
 	SidebarConfig,
 	SiteConfig,
+	SponsorConfig,
+	BangumiConfig,
 	WidgetsConfig,
 } from "./types/config";
 
@@ -47,6 +49,10 @@ export const commentsConfig: CommentsConfig = Config.comments as CommentsConfig;
 export const sidebarConfig: SidebarConfig = Config.sidebar as SidebarConfig;
 
 export const widgetsConfig: WidgetsConfig = Config.widgets as WidgetsConfig;
+
+export const sponsorConfig: SponsorConfig = Config.sponsor as SponsorConfig;
+
+export const bangumiConfig: BangumiConfig = Config.bangumi as BangumiConfig;
 
 // Head configuration
 export const headConfig: HeadConfig = Config.head as HeadConfig;

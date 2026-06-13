@@ -207,6 +207,20 @@ type TomlConfig = {
 			showHeatmap?: unknown;
 		};
 	};
+	sponsor?: {
+		enabled?: unknown;
+		title?: unknown;
+		description?: unknown;
+		methods?: unknown;
+		supporters?: unknown;
+	};
+	bangumi?: {
+		enabled?: unknown;
+		userId?: unknown;
+		apiBase?: unknown;
+		mode?: unknown;
+		categoryOrder?: unknown;
+	};
 	/** Head configuration / 头部配置 */
 	head?: {
 		/** Search engine verification codes / 搜索引擎验证码 */
@@ -581,6 +595,20 @@ const DEFAULT_CONFIG: Config = {
 			enabled: true,
 			showHeatmap: true,
 		},
+	},
+	sponsor: {
+		enabled: false,
+		title: "Sponsor",
+		description: "",
+		methods: [],
+		supporters: [],
+	},
+	bangumi: {
+		enabled: false,
+		userId: "",
+		apiBase: "https://api.bgm.tv",
+		mode: "dynamic",
+		categoryOrder: ["anime", "book", "music", "game"],
 	},
 	head: {
 		verification: {
@@ -1177,6 +1205,8 @@ export const loadConfig = (): Config => {
 	const llms = toml.llms;
 	const sidebar = toml.sidebar;
 	const widgets = toml.widgets;
+	const sponsor = toml.sponsor;
+	const bangumi = toml.bangumi;
 	const i18n = toml.i18n;
 	const og = toml.og;
 	const seo = toml.seo;
@@ -1336,6 +1366,31 @@ export const loadConfig = (): Config => {
 			}];
 		});
 		return widgets.length > 0 ? widgets : fallback;
+	};
+	const validateSponsorMethods = (value: unknown): Config["sponsor"]["methods"] => {
+		if (!Array.isArray(value)) return DEFAULT_CONFIG.sponsor.methods;
+		return value.flatMap((item) => {
+			if (!item || Array.isArray(item) || typeof item !== "object") return [];
+			const raw = item as Record<string, unknown>;
+			const name = getString(raw.name, "").trim();
+			const url = getString(raw.url, "").trim();
+			if (!name || !url) return [];
+			return [{ name, url, description: getString(raw.description, "") }];
+		});
+	};
+	const validateSupporters = (value: unknown): Config["sponsor"]["supporters"] => {
+		if (!Array.isArray(value)) return DEFAULT_CONFIG.sponsor.supporters;
+		return value.flatMap((item) => {
+			if (!item || Array.isArray(item) || typeof item !== "object") return [];
+			const raw = item as Record<string, unknown>;
+			const name = getString(raw.name, "").trim();
+			if (!name) return [];
+			return [{
+				name,
+				amount: getString(raw.amount, ""),
+				message: getString(raw.message, ""),
+			}];
+		});
 	};
 	const validateLatestCount = (value: unknown): number => {
 		const count = Math.trunc(getNumber(value, DEFAULT_CONFIG.landingPage.latestCount));
@@ -1512,6 +1567,20 @@ export const loadConfig = (): Config => {
 				enabled: getBoolean(widgets?.calendar?.enabled, DEFAULT_CONFIG.widgets.calendar.enabled),
 				showHeatmap: getBoolean(widgets?.calendar?.showHeatmap, DEFAULT_CONFIG.widgets.calendar.showHeatmap),
 			},
+		},
+		sponsor: {
+			enabled: getBoolean(sponsor?.enabled, DEFAULT_CONFIG.sponsor.enabled),
+			title: getString(sponsor?.title, DEFAULT_CONFIG.sponsor.title),
+			description: getString(sponsor?.description, DEFAULT_CONFIG.sponsor.description),
+			methods: validateSponsorMethods(sponsor?.methods),
+			supporters: validateSupporters(sponsor?.supporters),
+		},
+		bangumi: {
+			enabled: getBoolean(bangumi?.enabled, DEFAULT_CONFIG.bangumi.enabled),
+			userId: getString(bangumi?.userId, DEFAULT_CONFIG.bangumi.userId),
+			apiBase: getString(bangumi?.apiBase, DEFAULT_CONFIG.bangumi.apiBase).replace(/\/+$/, ""),
+			mode: "dynamic",
+			categoryOrder: getStringArray(bangumi?.categoryOrder, DEFAULT_CONFIG.bangumi.categoryOrder),
 		},
 		head: {
 			verification: {

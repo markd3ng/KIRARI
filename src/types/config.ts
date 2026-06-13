@@ -180,6 +180,30 @@ export type WidgetsConfig = {
 	};
 };
 
+export type SponsorConfig = {
+	enabled: boolean;
+	title: string;
+	description: string;
+	methods: {
+		name: string;
+		url: string;
+		description: string;
+	}[];
+	supporters: {
+		name: string;
+		amount: string;
+		message: string;
+	}[];
+};
+
+export type BangumiConfig = {
+	enabled: boolean;
+	userId: string;
+	apiBase: string;
+	mode: "dynamic";
+	categoryOrder: string[];
+};
+
 export type HeadConfig = {
 	verification: {
 		google: string;
@@ -406,6 +430,8 @@ export type Config = {
 	comments: CommentsConfig;
 	sidebar: SidebarConfig;
 	widgets: WidgetsConfig;
+	sponsor: SponsorConfig;
+	bangumi: BangumiConfig;
 	head: HeadConfig;
 	footer: FooterConfig;
 	analytics: AnalyticsConfig;

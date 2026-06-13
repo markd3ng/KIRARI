@@ -407,6 +407,34 @@ lang = "en"
 envId = ""
 lang = "en"
 
+# -----------------------------------------------------------------------------
+# Sponsor Page Configuration / 赞助页面配置
+# -----------------------------------------------------------------------------
+[sponsor]
+enabled = false
+title = "Sponsor"
+description = ""
+
+# [[sponsor.methods]]
+# name = "Ko-fi"
+# url = "https://ko-fi.com/example"
+# description = "Support the site"
+
+# [[sponsor.supporters]]
+# name = "Example"
+# amount = "$5"
+# message = "Thank you"
+
+# -----------------------------------------------------------------------------
+# Bangumi Page Configuration / Bangumi 页面配置
+# -----------------------------------------------------------------------------
+[bangumi]
+enabled = false
+userId = ""
+apiBase = "https://api.bgm.tv"
+mode = "dynamic"
+categoryOrder = ["anime", "book", "music", "game"]
+
 # Favicon configuration / Favicon 配置
 # Note: Leave empty array to use default favicon / 注意: 留空数组使用默认 favicon
 # Each entry is a favicon definition / 每个条目定义一个 favicon

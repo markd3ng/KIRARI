@@ -345,6 +345,20 @@ provider = "none" # none | giscus | waline | twikoo
 
 配置 provider 后文章默认启用评论。单篇文章可在 frontmatter 设置 `comments: false` 关闭。`/guestbook/` 复用同一评论组件，并使用固定 guestbook 路径。
 
+### Sponsor 与 Bangumi
+
+```toml
+[sponsor]
+enabled = false
+
+[bangumi]
+enabled = false
+userId = ""
+mode = "dynamic"
+```
+
+`/sponsor/` 与 `/bangumi/` 默认隐藏。Bangumi v1 在浏览器中动态加载数据，避免第三方 API 故障导致静态构建失败。
+
 ### 统计分析
 
 总开关：`analytics.enable`。脚本仅在 `true && PROD` 时加载。

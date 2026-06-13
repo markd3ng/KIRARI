@@ -345,6 +345,20 @@ provider = "none" # none | giscus | waline | twikoo
 
 Posts enable comments by default when a provider is configured. Set `comments: false` in frontmatter to disable a single post. `/guestbook/` reuses the same comments component with a fixed guestbook path.
 
+### Sponsor And Bangumi
+
+```toml
+[sponsor]
+enabled = false
+
+[bangumi]
+enabled = false
+userId = ""
+mode = "dynamic"
+```
+
+`/sponsor/` and `/bangumi/` are hidden by default. Bangumi v1 loads data in the browser so third-party API outages do not break static builds.
+
 ### Analytics
 
 Master switch: `analytics.enable`. Scripts load only when `true && PROD`.

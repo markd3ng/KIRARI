@@ -1,0 +1,41 @@
+---
+import { sponsorConfig, siteConfig } from "../config";
+import MainGridLayout from "../layouts/MainGridLayout.astro";
+
+if (!sponsorConfig.enabled) {
+	return Astro.redirect("/404/");
+}
+
+const lang = siteConfig.lang;
+const title = sponsorConfig.title || "Sponsor";
+---
+
+<MainGridLayout title={title} lang={lang} toc={false}>
+	<section class="card-base px-6 py-6 md:px-8">
+		<h1 class="text-2xl font-bold text-90">Sponsor</h1>
+		{sponsorConfig.description && <p class="mt-2 text-50">{sponsorConfig.description}</p>}
+		{sponsorConfig.methods.length > 0 && (
+			<div class="mt-6 grid gap-3 md:grid-cols-2">
+				{sponsorConfig.methods.map((method) => (
+					<a class="rounded-xl border border-black/10 px-4 py-3 transition hover:border-[var(--primary)] dark:border-white/15" href={method.url}>
+						<div class="font-bold text-90">{method.name}</div>
+						{method.description && <div class="mt-1 text-sm text-50">{method.description}</div>}
+					</a>
+				))}
+			</div>
+		)}
+		{sponsorConfig.supporters.length > 0 && (
+			<div class="mt-6 flex flex-col gap-2">
+				{sponsorConfig.supporters.map((supporter) => (
+					<div class="flex items-center justify-between gap-3 rounded-xl bg-black/[0.03] px-4 py-3 dark:bg-white/[0.06]">
+						<div>
+							<div class="font-bold text-90">{supporter.name}</div>
+							{supporter.message && <div class="text-sm text-50">{supporter.message}</div>}
+						</div>
+						{supporter.amount && <div class="font-bold text-[var(--primary)]">{supporter.amount}</div>}
+					</div>
+				))}
+			</div>
+		)}
+	</section>
+</MainGridLayout>
