@@ -39,13 +39,15 @@ const enabled = giscusReady || walineReady || twikooReady;
 <script>
 	import { transitionManager } from "../../utils/transition-manager";
 
-	function loadScript(src: string, datasetKey: string): Promise<void> {
+	function loadScript(src: string, datasetKey: string, integrity: string): Promise<void> {
 		const existing = document.querySelector<HTMLScriptElement>(`script[data-${datasetKey}]`);
 		if (existing) return Promise.resolve();
 		return new Promise((resolve, reject) => {
 			const script = document.createElement("script");
 			script.src = src;
 			script.async = true;
+			script.integrity = integrity;
+			script.crossOrigin = "anonymous";
 			script.dataset[datasetKey] = "true";
 			script.addEventListener("load", () => resolve(), { once: true });
 			script.addEventListener("error", () => reject(new Error(`Failed to load ${src}`)), { once: true });
@@ -77,7 +79,11 @@ const enabled = giscusReady || walineReady || twikooReady;
 
 	async function initWaline(container: HTMLElement) {
 		const config = JSON.parse(container.dataset.waline || "{}");
-		await loadScript("https://unpkg.com/@waline/client@v3/dist/waline.js", "kirariWaline");
+		await loadScript(
+			"https://unpkg.com/@waline/client@3.15.2/dist/waline.js",
+			"kirariWaline",
+			"sha384-kqixDA8bl4qHg3dhDTfTELTghtQ/AtTDcszZl1RAlUIfzsCoiOqbXT+XZi13ZN3x",
+		);
 		container.innerHTML = "";
 		(window as any).Waline?.init({
 			el: container,
@@ -89,7 +95,11 @@ const enabled = giscusReady || walineReady || twikooReady;
 
 	async function initTwikoo(container: HTMLElement) {
 		const config = JSON.parse(container.dataset.twikoo || "{}");
-		await loadScript("https://cdn.jsdelivr.net/npm/twikoo@1.7.6/dist/twikoo.all.min.js", "kirariTwikoo");
+		await loadScript(
+			"https://cdn.jsdelivr.net/npm/twikoo@1.7.6/dist/twikoo.all.min.js",
+			"kirariTwikoo",
+			"sha384-HF3RTnGZEnD0IwZHZVHtUWJxu4a4dzUSxvYs2IA/H4sepWGI2Mk6Zg2uubtKZwFG",
+		);
 		container.innerHTML = "";
 		(window as any).twikoo?.init({
 			el: container,
