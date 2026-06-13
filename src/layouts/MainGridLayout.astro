@@ -60,8 +60,10 @@ const hasBannerCredit =
 	siteConfig.banner.enable && siteConfig.banner.credit.enable;
 const hasBannerLink = !!siteConfig.banner.credit.url;
 const tocLayout = siteConfig.toc.layout;
-const useFloatingToc = siteConfig.toc.enable && toc && tocLayout === "floating";
-const useSidebarToc = siteConfig.toc.enable && toc && tocLayout === "sidebar";
+const isPostsRoute = /\/(?:[a-z]{2}(?:-[A-Z]{2})?\/)?posts\//.test(Astro.url.pathname);
+const hasTocContent = toc && isPostsRoute && headings.length > 0;
+const useFloatingToc = siteConfig.toc.enable && hasTocContent && tocLayout === "floating";
+const useSidebarToc = siteConfig.toc.enable && hasTocContent && tocLayout === "sidebar";
 const mainPanelTop = siteConfig.banner.enable
 	? `calc(${BANNER_HEIGHT}vh - ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem)`
 	: "5.5rem";

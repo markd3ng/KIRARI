@@ -141,13 +141,14 @@ addCheck(
 );
 addCheck(
 	"floating TOC only renders for floating layout",
-	/useFloatingToc\s*=\s*siteConfig\.toc\.enable\s*&&\s*toc\s*&&\s*tocLayout\s*===\s*"floating"/.test(mainGridLayout) &&
+	/hasTocContent\s*=/.test(mainGridLayout) &&
+		/useFloatingToc\s*=\s*siteConfig\.toc\.enable\s*&&\s*hasTocContent\s*&&\s*tocLayout\s*===\s*"floating"/.test(mainGridLayout) &&
 		/<TOC[^>]+layout="floating"/.test(mainGridLayout),
-	"src/layouts/MainGridLayout.astro must gate right-side TOC on toc=true and layout=\"floating\"",
+	"src/layouts/MainGridLayout.astro must gate right-side TOC on actual article headings and layout=\"floating\"",
 );
 addCheck(
 	"sidebar TOC renders in sidebar layout",
-	/useSidebarToc\s*=\s*siteConfig\.toc\.enable\s*&&\s*toc\s*&&\s*tocLayout\s*===\s*"sidebar"/.test(mainGridLayout) &&
+	/useSidebarToc\s*=\s*siteConfig\.toc\.enable\s*&&\s*hasTocContent\s*&&\s*tocLayout\s*===\s*"sidebar"/.test(mainGridLayout) &&
 		/<SideBar[^>]+toc=\{useSidebarToc\}/.test(mainGridLayout) &&
 		/toc\s*&&\s*tocLayout\s*===\s*"sidebar"/.test(sidebarWidget) &&
 		/<TOC[^>]+layout="sidebar"/.test(sidebarWidget),
