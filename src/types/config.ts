@@ -94,6 +94,26 @@ export type MermaidConfig = {
 	enable: boolean;
 };
 
+export type CommentsConfig = {
+	provider: "none" | "giscus" | "waline" | "twikoo";
+	giscus: {
+		repo: string;
+		repoId: string;
+		category: string;
+		categoryId: string;
+		mapping: string;
+		lang: string;
+	};
+	waline: {
+		serverUrl: string;
+		lang: string;
+	};
+	twikoo: {
+		envId: string;
+		lang: string;
+	};
+};
+
 export type SidebarWidgetType =
 	| "profile"
 	| "toc"
@@ -201,6 +221,7 @@ export type BlogPostData = {
 	prevSlug?: string;
 	nextTitle?: string;
 	nextSlug?: string;
+	comments?: boolean;
 };
 
 export type PostsConfig = {
@@ -382,6 +403,7 @@ export type Config = {
 	license: LicenseConfig;
 	expressiveCode: ExpressiveCodeConfig;
 	mermaid: MermaidConfig;
+	comments: CommentsConfig;
 	sidebar: SidebarConfig;
 	widgets: WidgetsConfig;
 	head: HeadConfig;

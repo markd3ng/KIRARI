@@ -336,6 +336,15 @@ safeSearch = "active"
 
 When `adsense = false`, KIRARI renders Google results in the existing search panel style via the Programmable Search Element callbacks. When `adsense = true`, Google renders the result area so AdSense search ads and Google labels are not hidden or rewritten; ad display is controlled by Google/AdSense.
 
+### Comments
+
+```toml
+[comments]
+provider = "none" # none | giscus | waline | twikoo
+```
+
+Posts enable comments by default when a provider is configured. Set `comments: false` in frontmatter to disable a single post. `/guestbook/` reuses the same comments component with a fixed guestbook path.
+
 ### Analytics
 
 Master switch: `analytics.enable`. Scripts load only when `true && PROD`.

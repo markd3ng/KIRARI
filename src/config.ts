@@ -1,6 +1,7 @@
 import { Config } from "./constants";
 import type {
 	AnalyticsConfig,
+	CommentsConfig,
 	ExpressiveCodeConfig,
 	FooterConfig,
 	HeadConfig,
@@ -40,6 +41,8 @@ export const expressiveCodeConfig: ExpressiveCodeConfig =
 
 // Mermaid configuration
 export const mermaidConfig: MermaidConfig = Config.mermaid as MermaidConfig;
+
+export const commentsConfig: CommentsConfig = Config.comments as CommentsConfig;
 
 export const sidebarConfig: SidebarConfig = Config.sidebar as SidebarConfig;
 

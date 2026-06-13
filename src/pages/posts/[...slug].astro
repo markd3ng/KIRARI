@@ -26,6 +26,7 @@ import { Config } from "../../constants";
 import { licenseConfig, mermaidConfig, profileConfig, siteConfig } from "../../config";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
+import Comments from "../../components/comments/Comments.astro";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
 
 export async function getStaticPaths() {
@@ -151,6 +152,7 @@ const jsonLd = {
 			</div>
 
 			{licenseConfig.enable && <License title={entry.data.title} pubDate={entry.data.published} lastUpdated={entry.data.updated} lang={lang} notByAi={entry.data.notbyai} class="mb-6 rounded-xl license-container onload-animation"></License>}
+			{entry.data.comments !== false && <Comments path={canonicalUrl} title={entry.data.title} lang={lang} />}
 		</div>
 	</div>
 

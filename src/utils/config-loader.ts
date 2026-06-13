@@ -138,6 +138,26 @@ type TomlConfig = {
 		/** Enable Mermaid diagrams / 启用 Mermaid 图表 */
 		enable?: unknown;
 	};
+	/** Comments provider configuration / 评论系统配置 */
+	comments?: {
+		provider?: unknown;
+		giscus?: {
+			repo?: unknown;
+			repoId?: unknown;
+			category?: unknown;
+			categoryId?: unknown;
+			mapping?: unknown;
+			lang?: unknown;
+		};
+		waline?: {
+			serverUrl?: unknown;
+			lang?: unknown;
+		};
+		twikoo?: {
+			envId?: unknown;
+			lang?: unknown;
+		};
+	};
 	/** Sidebar layout and widget configuration / 侧边栏布局与组件配置 */
 	sidebar?: {
 		/** Enable sidebar / 启用侧边栏 */
@@ -471,6 +491,25 @@ const DEFAULT_CONFIG: Config = {
 	},
 	mermaid: {
 		enable: true,
+	},
+	comments: {
+		provider: "none",
+		giscus: {
+			repo: "",
+			repoId: "",
+			category: "General",
+			categoryId: "",
+			mapping: "pathname",
+			lang: "en",
+		},
+		waline: {
+			serverUrl: "",
+			lang: "en",
+		},
+		twikoo: {
+			envId: "",
+			lang: "en",
+		},
 	},
 	sidebar: {
 		enabled: true,
@@ -1131,6 +1170,7 @@ export const loadConfig = (): Config => {
 	const license = toml.license;
 	const expressiveCode = toml.expressiveCode;
 	const mermaid = toml.mermaid;
+	const comments = toml.comments;
 	const head = toml.head;
 	const footer = toml.footer;
 	const analytics = toml.analytics;
@@ -1254,6 +1294,10 @@ export const loadConfig = (): Config => {
 	};
 	const validateGoogleSafeSearch = (value: unknown): Config["search"]["google"]["safeSearch"] => {
 		return value === "off" ? "off" : DEFAULT_CONFIG.search.google.safeSearch;
+	};
+	const validateCommentsProvider = (value: unknown): Config["comments"]["provider"] => {
+		if (value === "giscus" || value === "waline" || value === "twikoo") return value;
+		return "none";
 	};
 	const validateSidebarWidgetType = (value: unknown): Config["sidebar"]["leftWidgets"][number]["type"] | undefined => {
 		if (
@@ -1407,6 +1451,25 @@ export const loadConfig = (): Config => {
 		},
 		mermaid: {
 			enable: getBoolean(mermaid?.enable, DEFAULT_CONFIG.mermaid.enable),
+		},
+		comments: {
+			provider: validateCommentsProvider(comments?.provider),
+			giscus: {
+				repo: getString(comments?.giscus?.repo, DEFAULT_CONFIG.comments.giscus.repo),
+				repoId: getString(comments?.giscus?.repoId, DEFAULT_CONFIG.comments.giscus.repoId),
+				category: getString(comments?.giscus?.category, DEFAULT_CONFIG.comments.giscus.category),
+				categoryId: getString(comments?.giscus?.categoryId, DEFAULT_CONFIG.comments.giscus.categoryId),
+				mapping: getString(comments?.giscus?.mapping, DEFAULT_CONFIG.comments.giscus.mapping),
+				lang: getString(comments?.giscus?.lang, DEFAULT_CONFIG.comments.giscus.lang),
+			},
+			waline: {
+				serverUrl: getString(comments?.waline?.serverUrl, DEFAULT_CONFIG.comments.waline.serverUrl),
+				lang: getString(comments?.waline?.lang, DEFAULT_CONFIG.comments.waline.lang),
+			},
+			twikoo: {
+				envId: getString(comments?.twikoo?.envId, DEFAULT_CONFIG.comments.twikoo.envId),
+				lang: getString(comments?.twikoo?.lang, DEFAULT_CONFIG.comments.twikoo.lang),
+			},
 		},
 		sidebar: {
 			enabled: getBoolean(sidebar?.enabled, DEFAULT_CONFIG.sidebar.enabled),

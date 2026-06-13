@@ -25,6 +25,7 @@ import {
 import { getPostRouteSlug, getPostUrl, getPostUrlBySlug } from "@utils/post-route-utils";
 import { getDir } from "@utils/url-utils";
 import { licenseConfig, mermaidConfig, siteConfig } from "src/config";
+import Comments from "../../../components/comments/Comments.astro";
 import ImageWrapper from "../../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../../components/PostMeta.astro";
 import { profileConfig } from "../../../config";
@@ -158,6 +159,7 @@ const jsonLd = {
 			</div>
 
 			{licenseConfig.enable && <License title={entry.data.title} pubDate={entry.data.published} lastUpdated={entry.data.updated} lang={lang} notByAi={entry.data.notbyai} class="mb-6 rounded-xl license-container onload-animation"></License>}
+			{entry.data.comments !== false && <Comments path={canonicalUrl} title={entry.data.title} lang={lang} />}
 		</div>
 	</div>
 

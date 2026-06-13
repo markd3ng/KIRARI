@@ -383,6 +383,30 @@ enabled = true
 enabled = true
 showHeatmap = true
 
+# -----------------------------------------------------------------------------
+# Comments Configuration / 评论系统配置
+# -----------------------------------------------------------------------------
+[comments]
+# Active comments provider / 当前评论提供方
+# Options / 可选值: "none", "giscus", "waline", "twikoo"
+provider = "none"
+
+[comments.giscus]
+repo = ""
+repoId = ""
+category = "General"
+categoryId = ""
+mapping = "pathname"
+lang = "en"
+
+[comments.waline]
+serverUrl = ""
+lang = "en"
+
+[comments.twikoo]
+envId = ""
+lang = "en"
+
 # Favicon configuration / Favicon 配置
 # Note: Leave empty array to use default favicon / 注意: 留空数组使用默认 favicon
 # Each entry is a favicon definition / 每个条目定义一个 favicon

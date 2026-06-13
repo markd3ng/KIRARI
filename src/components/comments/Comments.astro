@@ -1,0 +1,113 @@
+---
+import { commentsConfig } from "../../config";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+
+interface Props {
+	path: string;
+	title?: string;
+	lang?: string;
+}
+
+const { path, title = path, lang } = Astro.props;
+const provider = commentsConfig.provider;
+const giscusReady =
+	provider === "giscus" &&
+	commentsConfig.giscus.repo &&
+	commentsConfig.giscus.repoId &&
+	commentsConfig.giscus.categoryId;
+const walineReady = provider === "waline" && commentsConfig.waline.serverUrl;
+const twikooReady = provider === "twikoo" && commentsConfig.twikoo.envId;
+const enabled = giscusReady || walineReady || twikooReady;
+---
+
+{enabled && (
+	<section class="card-base mb-4 px-6 py-6 md:px-8" data-pagefind-ignore>
+		<h2 class="mb-4 text-xl font-bold text-90">{i18n(I18nKey.comments, lang)}</h2>
+		<div
+			id="kirari-comments"
+			data-provider={provider}
+			data-path={path}
+			data-title={title}
+			data-giscus={JSON.stringify(commentsConfig.giscus)}
+			data-waline={JSON.stringify(commentsConfig.waline)}
+			data-twikoo={JSON.stringify(commentsConfig.twikoo)}
+		></div>
+	</section>
+)}
+
+<script>
+	import { transitionManager } from "../../utils/transition-manager";
+
+	function loadScript(src: string, datasetKey: string): Promise<void> {
+		const existing = document.querySelector<HTMLScriptElement>(`script[data-${datasetKey}]`);
+		if (existing) return Promise.resolve();
+		return new Promise((resolve, reject) => {
+			const script = document.createElement("script");
+			script.src = src;
+			script.async = true;
+			script.dataset[datasetKey] = "true";
+			script.addEventListener("load", () => resolve(), { once: true });
+			script.addEventListener("error", () => reject(new Error(`Failed to load ${src}`)), { once: true });
+			document.head.appendChild(script);
+		});
+	}
+
+	function initGiscus(container: HTMLElement) {
+		const config = JSON.parse(container.dataset.giscus || "{}");
+		container.innerHTML = "";
+		const script = document.createElement("script");
+		script.src = "https://giscus.app/client.js";
+		script.async = true;
+		script.crossOrigin = "anonymous";
+		script.setAttribute("data-repo", config.repo);
+		script.setAttribute("data-repo-id", config.repoId);
+		script.setAttribute("data-category", config.category);
+		script.setAttribute("data-category-id", config.categoryId);
+		script.setAttribute("data-mapping", config.mapping || "pathname");
+		script.setAttribute("data-strict", "0");
+		script.setAttribute("data-reactions-enabled", "1");
+		script.setAttribute("data-emit-metadata", "0");
+		script.setAttribute("data-input-position", "bottom");
+		script.setAttribute("data-theme", document.documentElement.classList.contains("dark") ? "dark" : "light");
+		script.setAttribute("data-lang", config.lang || "en");
+		script.setAttribute("data-loading", "lazy");
+		container.appendChild(script);
+	}
+
+	async function initWaline(container: HTMLElement) {
+		const config = JSON.parse(container.dataset.waline || "{}");
+		await loadScript("https://unpkg.com/@waline/client@v3/dist/waline.js", "kirariWaline");
+		container.innerHTML = "";
+		(window as any).Waline?.init({
+			el: container,
+			serverURL: config.serverUrl,
+			path: container.dataset.path,
+			lang: config.lang || "en",
+		});
+	}
+
+	async function initTwikoo(container: HTMLElement) {
+		const config = JSON.parse(container.dataset.twikoo || "{}");
+		await loadScript("https://cdn.jsdelivr.net/npm/twikoo@1.7.6/dist/twikoo.all.min.js", "kirariTwikoo");
+		container.innerHTML = "";
+		(window as any).twikoo?.init({
+			el: container,
+			envId: config.envId,
+			path: container.dataset.path,
+			lang: config.lang || "en",
+		});
+	}
+
+	function initComments() {
+		const container = document.getElementById("kirari-comments");
+		if (!container) return;
+		const provider = container.dataset.provider;
+		if (provider === "giscus") initGiscus(container);
+		if (provider === "waline") initWaline(container);
+		if (provider === "twikoo") initTwikoo(container);
+	}
+
+	initComments();
+	transitionManager.on("transition:after-swap", initComments);
+</script>

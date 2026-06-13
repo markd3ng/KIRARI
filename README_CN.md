@@ -336,6 +336,15 @@ safeSearch = "active"
 
 `adsense = false` 时，KIRARI 通过 Programmable Search Element callbacks 把 Google 结果渲染成现有搜索面板风格。`adsense = true` 时，结果区域交给 Google 官方元素渲染，避免隐藏或改写 AdSense 搜索广告和 Google 标识；广告是否展示由 Google/AdSense 控制。
 
+### 评论
+
+```toml
+[comments]
+provider = "none" # none | giscus | waline | twikoo
+```
+
+配置 provider 后文章默认启用评论。单篇文章可在 frontmatter 设置 `comments: false` 关闭。`/guestbook/` 复用同一评论组件，并使用固定 guestbook 路径。
+
 ### 统计分析
 
 总开关：`analytics.enable`。脚本仅在 `true && PROD` 时加载。

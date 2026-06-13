@@ -56,6 +56,7 @@ const postsCollection = defineCollection({
 			.transform((value) => value ?? ""),
 		mermaid: z.boolean().optional().default(false),
 		notbyai: z.boolean().optional().default(false),
+		comments: z.boolean().optional().default(true),
 
 		/* For internal use */
 		prevTitle: z.string().default(""),
@@ -73,5 +74,4 @@ export const collections = {
 	posts: postsCollection,
 	spec: specCollection,
 };
-
 
