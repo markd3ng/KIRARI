@@ -38,7 +38,7 @@ export function resolveBuildCommit(cwd = process.cwd(), env = process.env) {
 	return { short: "unknown", full: "", source: "unknown" };
 }
 
-function resolveCommitFromEnv(env) {
+function resolveCommitFromEnv(env: NodeJS.ProcessEnv) {
 	for (const name of commitEnvNames) {
 		const commit = normalizeCommit(env[name]);
 		if (commit) return commit;
@@ -46,7 +46,7 @@ function resolveCommitFromEnv(env) {
 	return "";
 }
 
-function resolveCommitFromGit(cwd) {
+function resolveCommitFromGit(cwd: string) {
 	try {
 		const commit = execFileSync("git", ["rev-parse", "HEAD"], {
 			cwd,
@@ -62,7 +62,7 @@ function resolveCommitFromGit(cwd) {
 	return resolveCommitFromGitFiles(cwd);
 }
 
-function resolveCommitFromGitFiles(cwd) {
+function resolveCommitFromGitFiles(cwd: string) {
 	const gitPath = findGitPath(cwd);
 	if (!gitPath) return "";
 
@@ -91,7 +91,7 @@ function resolveCommitFromGitFiles(cwd) {
 	return normalizeCommit(packedRefLine);
 }
 
-function findGitPath(cwd) {
+function findGitPath(cwd: string) {
 	let current = path.resolve(cwd);
 	while (true) {
 		const gitPath = path.join(current, ".git");
@@ -102,7 +102,7 @@ function findGitPath(cwd) {
 	}
 }
 
-function resolveGitDir(gitPath) {
+function resolveGitDir(gitPath: string) {
 	try {
 		const content = readFileSync(gitPath, "utf8").trim();
 		const gitDir = content.match(/^gitdir:\s*(.+)$/)?.[1];
@@ -113,12 +113,12 @@ function resolveGitDir(gitPath) {
 	return gitPath;
 }
 
-function normalizeCommit(value) {
+function normalizeCommit(value: unknown) {
 	const match = String(value || "").match(/[a-f0-9]{7,40}/i);
 	return match?.[0].toLowerCase() || "";
 }
 
-function toBuildCommit(commit) {
+function toBuildCommit(commit: string) {
 	return {
 		short: commit.slice(0, 7),
 		full: commit,

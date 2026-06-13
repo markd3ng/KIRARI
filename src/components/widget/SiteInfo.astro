@@ -1,8 +1,8 @@
 ---
 import packageJson from "../../../package.json";
 import { widgetsConfig } from "../../config";
+import { resolveBuildCommit } from "../../utils/build-commit";
 import WidgetLayout from "./WidgetLayout.astro";
-import { resolveBuildCommit } from "../../../scripts/build-commit.mjs";
 
 interface Props {
 	class?: string;

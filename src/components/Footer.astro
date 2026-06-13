@@ -1,9 +1,9 @@
 ---
 
 import { footerConfig, llmsConfig, profileConfig } from "../config";
+import { resolveBuildCommit } from "../utils/build-commit";
 import { getLangHomeUrl } from "../utils/i18n-utils";
 import { url } from "../utils/url-utils";
-import { resolveBuildCommit } from "../../scripts/build-commit.mjs";
 
 const currentYear = new Date().getFullYear();
 const lang = Astro.props.lang;
