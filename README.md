@@ -171,6 +171,28 @@ depth = 3          # 1 | 2 | 3
 layout = "floating" # floating | sidebar
 ```
 
+### Sidebar
+
+```toml
+[sidebar]
+enabled = true
+position = "left"
+
+[[sidebar.leftWidgets]]
+type = "profile"     # profile | toc | categories | tags
+enabled = true
+position = "top"     # top | sticky
+showOnPostPage = true
+showOnNonPostPage = true
+
+[[sidebar.mobileWidgets]]
+type = "profile"
+enabled = false      # mobile bottom widgets are opt-in
+position = "top"
+```
+
+The default widget order preserves the classic KIRARI sidebar. `type = "toc"` only renders on post pages when `site.toc.layout = "sidebar"`.
+
 ### Posts
 
 ```toml

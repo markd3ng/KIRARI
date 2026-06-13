@@ -1,0 +1,8 @@
+import type { SidebarWidgetType } from "../../types/config";
+
+export const sidebarWidgetRegistry: Record<SidebarWidgetType, { label: string }> = {
+	profile: { label: "Profile" },
+	toc: { label: "Table of Contents" },
+	categories: { label: "Categories" },
+	tags: { label: "Tags" },
+};

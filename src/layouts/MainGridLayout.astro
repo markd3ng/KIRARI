@@ -139,6 +139,13 @@ const mainPanelTop = siteConfig.banner.enable
                     <!-- the overflow-hidden here prevent long text break the layout-->
                     <!-- make id different from windows.swup global property -->
                     <slot></slot>
+                    <SideBar
+                        area="mobile"
+                        class="mt-4 mb-4"
+                        headings={headings}
+                        toc={useSidebarToc}
+                        lang={pageLang}
+                    ></SideBar>
                     <div class="footer col-span-2 onload-animation hidden lg:block">
                         <Footer lang={pageLang}></Footer>
                     </div>

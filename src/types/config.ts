@@ -94,6 +94,27 @@ export type MermaidConfig = {
 	enable: boolean;
 };
 
+export type SidebarWidgetType = "profile" | "toc" | "categories" | "tags";
+
+export type SidebarWidgetPosition = "top" | "sticky";
+
+export type SidebarWidgetConfig = {
+	type: SidebarWidgetType;
+	enabled: boolean;
+	position: SidebarWidgetPosition;
+	showTitle?: boolean;
+	showOnPostPage?: boolean;
+	showOnNonPostPage?: boolean;
+};
+
+export type SidebarConfig = {
+	enabled: boolean;
+	position: "left";
+	leftWidgets: SidebarWidgetConfig[];
+	rightWidgets: SidebarWidgetConfig[];
+	mobileWidgets: SidebarWidgetConfig[];
+};
+
 export type HeadConfig = {
 	verification: {
 		google: string;
@@ -316,6 +337,7 @@ export type Config = {
 	license: LicenseConfig;
 	expressiveCode: ExpressiveCodeConfig;
 	mermaid: MermaidConfig;
+	sidebar: SidebarConfig;
 	head: HeadConfig;
 	footer: FooterConfig;
 	analytics: AnalyticsConfig;

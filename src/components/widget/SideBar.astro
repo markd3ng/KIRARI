@@ -1,31 +1,86 @@
 ---
 import type { MarkdownHeading } from "astro";
+import type { SidebarWidgetConfig } from "../../types/config";
+import { sidebarConfig, siteConfig } from "../../config";
+import { sidebarWidgetRegistry } from "./sidebar-registry";
 import Categories from "./Categories.astro";
 import Profile from "./Profile.astro";
-import Tag from "./Tags.astro";
+import Tags from "./Tags.astro";
 import TOC from "./TOC.astro";
-import { siteConfig } from "../../config";
 
 interface Props {
 	class?: string;
 	headings?: MarkdownHeading[];
 	toc?: boolean;
 	lang?: string;
+	area?: "desktop" | "mobile";
 }
 
 const className = Astro.props.class;
 const lang = Astro.props.lang;
 const { headings = [] } = Astro.props;
 const toc = Astro.props.toc ?? false;
+const area = Astro.props.area ?? "desktop";
 const tocLayout = siteConfig.toc.layout;
+const isPostPage = /\/(?:[a-z]{2}(?:-[A-Z]{2})?\/)?posts\//.test(Astro.url.pathname);
+const widgets = area === "mobile" ? sidebarConfig.mobileWidgets : sidebarConfig.leftWidgets;
+
+function isVisible(widget: SidebarWidgetConfig): boolean {
+	if (!sidebarConfig.enabled || !widget.enabled) return false;
+	if (isPostPage && widget.showOnPostPage === false) return false;
+	if (!isPostPage && widget.showOnNonPostPage === false) return false;
+	if (widget.type === "toc") return toc && tocLayout === "sidebar";
+	return widget.type in sidebarWidgetRegistry;
+}
+
+const visibleWidgets = widgets.filter(isVisible);
+const topWidgets = visibleWidgets.filter((widget) => widget.position === "top");
+const stickyWidgets = visibleWidgets.filter((widget) => widget.position === "sticky");
+const mobileWidgets = area === "mobile" ? visibleWidgets : [];
+
+function animationStyle(index: number): string {
+	return `animation-delay: ${100 + index * 50}ms`;
+}
 ---
-<div id="sidebar" class:list={[className, "w-full"]}>
-    <div class="flex flex-col w-full gap-4 mb-4">
-        <Profile lang={lang}></Profile>
-    </div>
-    <div id="sidebar-sticky" class="transition-all duration-700 flex flex-col w-full gap-4 top-4 sticky top-4">
-        {toc && tocLayout === "sidebar" && <TOC class="onload-animation" style="animation-delay: 100ms" headings={headings} layout="sidebar" lang={lang}></TOC>}
-        <Categories class="onload-animation" style="animation-delay: 150ms" lang={lang}></Categories>
-        <Tag class="onload-animation" style="animation-delay: 200ms" lang={lang}></Tag>
-    </div>
-</div>
+
+{visibleWidgets.length > 0 && area === "desktop" && (
+	<div id="sidebar" class:list={[className, "w-full"]}>
+		{topWidgets.length > 0 && (
+			<div class="flex flex-col w-full gap-4 mb-4">
+				{topWidgets.map((widget, index) => (
+					<>
+						{widget.type === "profile" && <Profile class="onload-animation" style={animationStyle(index)} lang={lang} />}
+						{widget.type === "categories" && <Categories class="onload-animation" style={animationStyle(index)} lang={lang} />}
+						{widget.type === "tags" && <Tags class="onload-animation" style={animationStyle(index)} lang={lang} />}
+						{widget.type === "toc" && <TOC class="onload-animation" style={animationStyle(index)} headings={headings} layout="sidebar" lang={lang} />}
+					</>
+				))}
+			</div>
+		)}
+		{stickyWidgets.length > 0 && (
+			<div id="sidebar-sticky" class="transition-all duration-700 flex flex-col w-full gap-4 top-4 sticky">
+				{stickyWidgets.map((widget, index) => (
+					<>
+						{widget.type === "profile" && <Profile class="onload-animation" style={animationStyle(topWidgets.length + index)} lang={lang} />}
+						{widget.type === "categories" && <Categories class="onload-animation" style={animationStyle(topWidgets.length + index)} lang={lang} />}
+						{widget.type === "tags" && <Tags class="onload-animation" style={animationStyle(topWidgets.length + index)} lang={lang} />}
+						{widget.type === "toc" && <TOC class="onload-animation" style={animationStyle(topWidgets.length + index)} headings={headings} layout="sidebar" lang={lang} />}
+					</>
+				))}
+			</div>
+		)}
+	</div>
+)}
+
+{mobileWidgets.length > 0 && area === "mobile" && (
+	<div id="mobile-sidebar-widgets" class:list={[className, "w-full flex flex-col gap-4 lg:hidden"]}>
+		{mobileWidgets.map((widget, index) => (
+			<>
+				{widget.type === "profile" && <Profile class="onload-animation" style={animationStyle(index)} lang={lang} />}
+				{widget.type === "categories" && <Categories class="onload-animation" style={animationStyle(index)} lang={lang} />}
+				{widget.type === "tags" && <Tags class="onload-animation" style={animationStyle(index)} lang={lang} />}
+				{widget.type === "toc" && <TOC class="onload-animation" style={animationStyle(index)} headings={headings} layout="sidebar" lang={lang} />}
+			</>
+		))}
+	</div>
+)}

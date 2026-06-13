@@ -171,6 +171,28 @@ depth = 3            # 1 | 2 | 3
 layout = "floating" # floating | sidebar
 ```
 
+### 侧边栏
+
+```toml
+[sidebar]
+enabled = true
+position = "left"
+
+[[sidebar.leftWidgets]]
+type = "profile"     # profile | toc | categories | tags
+enabled = true
+position = "top"     # top | sticky
+showOnPostPage = true
+showOnNonPostPage = true
+
+[[sidebar.mobileWidgets]]
+type = "profile"
+enabled = false      # 移动端底部 widgets 默认不启用
+position = "top"
+```
+
+默认 widget 顺序保持 KIRARI 原有侧边栏外观。`type = "toc"` 只会在文章页且 `site.toc.layout = "sidebar"` 时渲染。
+
 ### 文章
 
 ```toml

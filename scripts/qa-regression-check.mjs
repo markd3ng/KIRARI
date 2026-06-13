@@ -229,8 +229,8 @@ addCheck(
 	"mobile widget area exists",
 	/mobileWidgets/.test(sidebarConfigBlock + tomlSidebarBlock + sidebarWidget) &&
 		/mobile-sidebar-widgets/.test(sidebarWidget) &&
-		/showOnPostPage/.test(sidebarTypeBlock) &&
-		/showOnNonPostPage/.test(sidebarTypeBlock),
+		/showOnPostPage/.test(configTypes) &&
+		/showOnNonPostPage/.test(configTypes),
 	"sidebar must support independently configured mobile widgets and visibility controls",
 );
 

@@ -138,6 +138,19 @@ type TomlConfig = {
 		/** Enable Mermaid diagrams / 启用 Mermaid 图表 */
 		enable?: unknown;
 	};
+	/** Sidebar layout and widget configuration / 侧边栏布局与组件配置 */
+	sidebar?: {
+		/** Enable sidebar / 启用侧边栏 */
+		enabled?: unknown;
+		/** Sidebar position, currently left / 侧边栏位置，目前为左侧 */
+		position?: unknown;
+		/** Left sidebar widgets / 左侧栏组件 */
+		leftWidgets?: unknown;
+		/** Right sidebar widgets / 右侧栏组件 */
+		rightWidgets?: unknown;
+		/** Mobile bottom widgets / 移动端底部组件 */
+		mobileWidgets?: unknown;
+	};
 	/** Head configuration / 头部配置 */
 	head?: {
 		/** Search engine verification codes / 搜索引擎验证码 */
@@ -422,6 +435,42 @@ const DEFAULT_CONFIG: Config = {
 	},
 	mermaid: {
 		enable: true,
+	},
+	sidebar: {
+		enabled: true,
+		position: "left",
+		leftWidgets: [
+			{
+				type: "profile",
+				enabled: true,
+				position: "top",
+				showOnPostPage: true,
+				showOnNonPostPage: true,
+			},
+			{
+				type: "toc",
+				enabled: true,
+				position: "sticky",
+				showOnPostPage: true,
+				showOnNonPostPage: false,
+			},
+			{
+				type: "categories",
+				enabled: true,
+				position: "sticky",
+				showOnPostPage: true,
+				showOnNonPostPage: true,
+			},
+			{
+				type: "tags",
+				enabled: true,
+				position: "sticky",
+				showOnPostPage: true,
+				showOnNonPostPage: true,
+			},
+		],
+		rightWidgets: [],
+		mobileWidgets: [],
 	},
 	head: {
 		verification: {
@@ -1015,6 +1064,7 @@ export const loadConfig = (): Config => {
 	const footer = toml.footer;
 	const analytics = toml.analytics;
 	const llms = toml.llms;
+	const sidebar = toml.sidebar;
 	const i18n = toml.i18n;
 	const og = toml.og;
 	const seo = toml.seo;
@@ -1133,6 +1183,34 @@ export const loadConfig = (): Config => {
 	const validateGoogleSafeSearch = (value: unknown): Config["search"]["google"]["safeSearch"] => {
 		return value === "off" ? "off" : DEFAULT_CONFIG.search.google.safeSearch;
 	};
+	const validateSidebarWidgetType = (value: unknown): Config["sidebar"]["leftWidgets"][number]["type"] | undefined => {
+		if (value === "profile" || value === "toc" || value === "categories" || value === "tags") return value;
+		return undefined;
+	};
+	const validateSidebarWidgetPosition = (value: unknown): Config["sidebar"]["leftWidgets"][number]["position"] => {
+		return value === "top" ? "top" : "sticky";
+	};
+	const validateSidebarWidgets = (
+		value: unknown,
+		fallback: Config["sidebar"]["leftWidgets"],
+	): Config["sidebar"]["leftWidgets"] => {
+		if (!Array.isArray(value)) return fallback;
+		const widgets = value.flatMap((item) => {
+			if (!item || Array.isArray(item) || typeof item !== "object") return [];
+			const raw = item as Record<string, unknown>;
+			const type = validateSidebarWidgetType(raw.type);
+			if (!type) return [];
+			return [{
+				type,
+				enabled: getBoolean(raw.enabled, true),
+				position: validateSidebarWidgetPosition(raw.position),
+				showTitle: getBoolean(raw.showTitle, true),
+				showOnPostPage: getBoolean(raw.showOnPostPage, true),
+				showOnNonPostPage: getBoolean(raw.showOnNonPostPage, true),
+			}];
+		});
+		return widgets.length > 0 ? widgets : fallback;
+	};
 	const validateLatestCount = (value: unknown): number => {
 		const count = Math.trunc(getNumber(value, DEFAULT_CONFIG.landingPage.latestCount));
 		if (count < 1) return DEFAULT_CONFIG.landingPage.latestCount;
@@ -1247,6 +1325,13 @@ export const loadConfig = (): Config => {
 		},
 		mermaid: {
 			enable: getBoolean(mermaid?.enable, DEFAULT_CONFIG.mermaid.enable),
+		},
+		sidebar: {
+			enabled: getBoolean(sidebar?.enabled, DEFAULT_CONFIG.sidebar.enabled),
+			position: "left",
+			leftWidgets: validateSidebarWidgets(sidebar?.leftWidgets, DEFAULT_CONFIG.sidebar.leftWidgets),
+			rightWidgets: validateSidebarWidgets(sidebar?.rightWidgets, DEFAULT_CONFIG.sidebar.rightWidgets),
+			mobileWidgets: validateSidebarWidgets(sidebar?.mobileWidgets, DEFAULT_CONFIG.sidebar.mobileWidgets),
 		},
 		head: {
 			verification: {

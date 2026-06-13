@@ -14,6 +14,7 @@ import type {
 	PostsConfig,
 	ProfileConfig,
 	SearchConfig,
+	SidebarConfig,
 	SiteConfig,
 } from "./types/config";
 
@@ -38,6 +39,8 @@ export const expressiveCodeConfig: ExpressiveCodeConfig =
 
 // Mermaid configuration
 export const mermaidConfig: MermaidConfig = Config.mermaid as MermaidConfig;
+
+export const sidebarConfig: SidebarConfig = Config.sidebar as SidebarConfig;
 
 // Head configuration
 export const headConfig: HeadConfig = Config.head as HeadConfig;
