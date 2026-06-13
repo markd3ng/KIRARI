@@ -13,7 +13,7 @@ const { style, lang } = Astro.props;
 const className = Astro.props.class;
 const componentName = "Calendar";
 const config = widgetsConfig.calendar;
-const posts = await getSortedPosts(lang);
+const posts = config.enabled ? await getSortedPosts(lang) : [];
 const currentYear = new Date().getFullYear();
 const counts = new Map<string, number>();
 for (const post of posts) {

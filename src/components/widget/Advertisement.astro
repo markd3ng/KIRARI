@@ -26,7 +26,7 @@ const shouldRender = config.enabled && hasBody && !isExpired;
 		<div
 			data-advertisement-widget
 			data-storage-key={storageKey}
-			data-display-count={config.displayCount}
+			data-display-count={config.displayCount ?? -1}
 			class="space-y-3 text-sm"
 		>
 			{config.imageSrc && (
