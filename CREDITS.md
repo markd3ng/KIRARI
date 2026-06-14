@@ -16,8 +16,9 @@ that were studied while evolving KIRARI-native implementations.
 - [Firefly](https://github.com/CuteLeaf/Firefly) - reference project sharing the
   Fuwari lineage. KIRARI studied Firefly's sidebar, TOC, mobile sidebar,
   search, comments, Sponsor, Guestbook, Bangumi, announcement, advertisement,
-  site statistics, SiteInfo, calendar/heatmap, font, cover image, Mermaid,
-  PlantUML, and admonition theme ideas.
+  site statistics, SiteInfo, calendar/heatmap, Friends page search/filter and
+  application guidance, font, cover image, Mermaid, PlantUML, and admonition
+  theme ideas.
 - [Firefly-Docs](https://github.com/CuteLeaf/Firefly-Docs) - reference
   documentation project. KIRARI studied its deployment and GitHub Pages guidance
   style while keeping the main README/DEPLOY documentation native to KIRARI.

@@ -38,6 +38,13 @@ const sponsorPage = readOptional("../src/pages/sponsor.astro");
 const bangumiPage = readOptional("../src/pages/bangumi.astro");
 const localizedSponsorPage = readOptional("../src/pages/[lang]/sponsor.astro");
 const localizedBangumiPage = readOptional("../src/pages/[lang]/bangumi.astro");
+const friendsPage = readOptional("../src/pages/friends.astro");
+const localizedFriendsPage = readOptional("../src/pages/[lang]/friends.astro");
+const friendLinksPanel = readOptional("../src/components/friends/FriendLinksPanel.astro");
+const friendsData = readOptional("../src/_data/friends.json");
+const tagsPage = readOptional("../src/pages/tags.astro");
+const localizedTagsPage = readOptional("../src/pages/[lang]/tags.astro");
+const tagTopList = readOptional("../src/components/taxonomy/TagTopList.astro");
 const sidebarRegistry = readOptional("../src/components/widget/sidebar-registry.ts");
 const announcementWidget = readOptional("../src/components/widget/Announcement.astro");
 const advertisementWidget = readOptional("../src/components/widget/Advertisement.astro");
@@ -205,6 +212,37 @@ addCheck(
 	/getNestedCategoryList/.test(readFileSync(new URL("../src/components/widget/Categories.astro", import.meta.url), "utf8")) &&
 		/getNestedCategoryList/.test(readFileSync(new URL("../src/pages/categories.astro", import.meta.url), "utf8")),
 	"category widget and category index page must use getNestedCategoryList",
+);
+addCheck(
+	"tags pages include top tag ranking",
+	/TagTopList/.test(tagsPage) &&
+		/TagTopList/.test(localizedTagsPage) &&
+		/topTags/.test(tagTopList) &&
+		/sort\(\(a,\s*b\)\s*=>\s*b\.count\s*-\s*a\.count/.test(tagTopList) &&
+		/slice\(0,\s*10\)/.test(tagTopList) &&
+		/aria-label=\{`Top 10/.test(tagTopList) &&
+		/width:\s*\$\{/.test(tagTopList),
+	"tags index pages must render a Top 10 tag ranking with proportional bars below the tag cloud",
+);
+addCheck(
+	"friends page includes searchable categorized application panel",
+	/FriendLinksPanel/.test(friendsPage) &&
+		/FriendLinksPanel/.test(localizedFriendsPage) &&
+		/friend-filter/.test(friendLinksPanel) &&
+		/data-friend-card/.test(friendLinksPanel) &&
+		/data-friend-search/.test(friendLinksPanel) &&
+		/data-friend-tag/.test(friendLinksPanel) &&
+		/data-copy-value/.test(friendLinksPanel) &&
+		/FriendFilter/.test(friendLinksPanel) &&
+		/connectedCallback/.test(friendLinksPanel) &&
+		!/DOMContentLoaded/.test(friendLinksPanel) &&
+		/applicationFields/.test(friendLinksPanel) &&
+		/applySteps/.test(friendLinksPanel) &&
+		/noticeItems/.test(friendLinksPanel) &&
+		/"tags"\s*:/.test(friendsData) &&
+		/"weight"\s*:/.test(friendsData) &&
+		/"enabled"\s*:/.test(friendsData),
+	"friends page must render Firefly-inspired search/filter cards and application guidance from KIRARI data",
 );
 
 const sidebarTypeBlock = configTypes.match(/export type SidebarConfig = \{[\s\S]*?\n\};/)?.[0] || "";

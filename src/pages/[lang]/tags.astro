@@ -1,6 +1,7 @@
 ---
 import type { GetStaticPaths } from "astro";
 import ButtonTag from "@components/control/ButtonTag.astro";
+import TagTopList from "@components/taxonomy/TagTopList.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
@@ -40,5 +41,6 @@ const alternates = getPathAlternates((itemLang) => withLangPrefix("/tags/", item
 				</ButtonTag>
 			))}
 		</div>
+		<TagTopList tags={tags} tagDisplayMap={tagDisplayMap} lang={lang} />
 	</div>
 </MainGridLayout>

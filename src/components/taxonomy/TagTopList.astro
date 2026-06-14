@@ -1,0 +1,48 @@
+---
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+import type { Tag } from "../../utils/content-utils";
+import { getTagName, getTagUrl } from "../../utils/url-utils";
+
+interface Props {
+	tags: Tag[];
+	tagDisplayMap: Record<string, string>;
+	lang?: string;
+	limit?: number;
+}
+
+const { tags, tagDisplayMap, lang, limit = 10 } = Astro.props;
+const topTags = [...tags]
+	.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+	.slice(0, 10)
+	.slice(0, limit);
+const maxCount = topTags[0]?.count || 1;
+---
+
+{topTags.length > 0 && (
+	<section class="mt-10 border-t border-black/10 pt-8 dark:border-white/10" aria-label={`Top 10 ${i18n(I18nKey.tags, lang)}`}>
+		<h2 class="mb-7 text-2xl font-bold text-90">Top 10</h2>
+		<ol class="flex flex-col gap-7">
+			{topTags.map((tag, index) => {
+				const label = getTagName(tag.name, tagDisplayMap);
+				const percentage = Math.max(6, Math.round((tag.count / maxCount) * 100));
+				return (
+					<li class="grid grid-cols-[2.25rem_1fr] items-start gap-3">
+						<div class="pt-1 text-right text-lg font-bold text-[var(--primary)]">{index + 1}</div>
+						<a href={getTagUrl(tag.name, lang)} class="group min-w-0" aria-label={`${label}: ${tag.count} ${i18n(tag.count === 1 ? I18nKey.postCount : I18nKey.postsCount, lang)}`}>
+							<div class="mb-2 flex items-baseline justify-between gap-4">
+								<span class="truncate text-lg font-bold text-75 transition group-hover:text-[var(--primary)]">#{label}</span>
+								<span class="shrink-0 font-bold text-[var(--primary)]">
+									{tag.count} {i18n(tag.count === 1 ? I18nKey.postCount : I18nKey.postsCount, lang)}
+								</span>
+							</div>
+							<div class="h-2 w-full overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--primary)_18%,transparent)]">
+								<div class="h-full rounded-full bg-[var(--primary)] transition-[width]" style={`width: ${percentage}%`}></div>
+							</div>
+						</a>
+					</li>
+				);
+			})}
+		</ol>
+	</section>
+)}
