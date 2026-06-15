@@ -1,5 +1,6 @@
 {
-  "name": "fuwari",
+  "name": "kirari",
+  "private": true,
   "type": "module",
   "version": "0.3.1",
   "repository": {
@@ -11,10 +12,18 @@
   },
   "homepage": "https://github.com/markd3ng/KIRARI#readme",
   "scripts": {
+    "site:dev": "astro dev",
+    "site:build": "node scripts/materialize-ghc-adapter.mjs && astro build && node scripts/postbuild.mjs",
+    "site:type-check": "tsc --noEmit",
+    "site:astro-check": "astro check",
+    "edge:type-check": "echo 'Edge worker not yet configured'",
+    "edge:test": "echo 'Edge worker not yet configured'",
+    "edge:deploy:dry": "echo 'Edge worker not yet configured'",
+    "edge:deploy": "echo 'Edge worker not yet configured'",
+    "check": "astro check",
+    "build": "pnpm site:build",
     "dev": "astro dev",
     "start": "astro dev",
-    "check": "astro check",
-    "build": "node scripts/materialize-ghc-adapter.mjs && astro build && node scripts/postbuild.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "type-check": "tsc --noEmit",
