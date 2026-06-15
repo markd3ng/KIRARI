@@ -1,0 +1,28 @@
+---
+title: IoT Device Development with Embedded Systems
+published: 2026-02-15
+description: "Building IoT devices with embedded systems"
+image: ""
+og: ""
+tags: [iot, embedded, hardware, diy, tutorial]
+tagLabels:
+  iot: 物联网
+  embedded: 嵌入式
+  hardware: 硬件
+  diy: DIY
+  tutorial: 教程
+category: hardware_and_diy
+categoryLabel: 硬件与DIY
+draft: false
+toc: true
+lang: en-US
+---
+
+## Hardware Projects
+
+This article covers IoT device development.
+
+### Expected Display
+
+- Category: `hardware_and_diy` → **硬件与DIY**
+- Tags: `iot` → **物联网**, `embedded` → **嵌入式**, `hardware` → **硬件**, `diy` → **DIY**, `tutorial` → **教程**

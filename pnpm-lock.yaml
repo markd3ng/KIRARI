@@ -194,6 +194,8 @@ importers:
         specifier: ^2.16.1
         version: 2.16.1
 
+  packages/site-profile: {}
+
 packages:
 
   '@adobe/css-tools@4.3.3':

@@ -1,0 +1,29 @@
+[
+	{
+		"siteTitle": "Lorem Ipsum",
+		"siteDesc": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+		"siteUrl": "https://github.com/saicaca/fuwari/",
+		"siteIcon": "https://raw.githubusercontent.com/saicaca/fuwari/refs/heads/main/src/assets/images/demo-avatar.png",
+		"tags": ["Blog"],
+		"weight": 10,
+		"enabled": true
+	},
+	{
+		"siteTitle": "KIRARI",
+		"siteDesc": "A Fuwari-based Astro blog theme with TOML-first configuration.",
+		"siteUrl": "https://github.com/markd3ng/KIRARI",
+		"siteIcon": "https://github.com/markd3ng.png",
+		"tags": ["Theme", "Astro"],
+		"weight": 9,
+		"enabled": true
+	},
+	{
+		"siteTitle": "Astro",
+		"siteDesc": "The web framework for content-driven websites.",
+		"siteUrl": "https://astro.build/",
+		"siteIcon": "https://avatars.githubusercontent.com/u/44914786?v=4&s=160",
+		"tags": ["Framework"],
+		"weight": 8,
+		"enabled": true
+	}
+]

@@ -1,0 +1,6 @@
+{
+  "name": "@kirari/site-profile",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Default site profile for KIRARI — config, content, assets, and snippets"
+}
