@@ -321,6 +321,19 @@ addCheck(
 	"src/components/widget/TOC.astro must support layout=\"sidebar\" with WidgetLayout and i18n title",
 );
 addCheck(
+	"TOC uses animated active background styling",
+	/toc-item/.test(tocWidget) &&
+		/toc-label/.test(tocWidget) &&
+		/toc-badge/.test(tocWidget) &&
+		/toc-active-indicator/.test(tocWidget) &&
+		/\.toc-active-indicator[\s\S]*transition:[\s\S]*top 0\.18s ease[\s\S]*height 0\.18s ease[\s\S]*opacity 0\.14s ease/.test(tocWidget) &&
+		/\.toc-item\.visible \.toc-label/.test(tocWidget) &&
+		/\.toc-item\.visible \.toc-badge-dot/.test(tocWidget) &&
+		!/border-dashed/.test(tocWidget) &&
+		!/group-hover:bg-transparent/.test(tocWidget),
+	"src/components/widget/TOC.astro must keep Firefly/Mizuki-style animated active background, label, and dot states instead of dashed outline fallback",
+);
+addCheck(
 	"TOC i18n key exists",
 	/toc\s*=\s*"toc"/.test(i18nKey),
 	"src/i18n/i18nKey.ts must include toc",
