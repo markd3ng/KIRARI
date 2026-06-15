@@ -1,4 +1,14 @@
 {
+  "rewrites": [
+    {
+      "source": "/search",
+      "destination": "/search/"
+    },
+    {
+      "source": "/:lang/search",
+      "destination": "/:lang/search/"
+    }
+  ],
   "headers": [
     {
       "source": "/_astro/(.*)",

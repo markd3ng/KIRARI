@@ -33,6 +33,8 @@ const readme = readOptional("../../../README.md");
 const readmeCn = readOptional("../../../README_CN.md");
 const searchPage = readOptional("../src/pages/search.astro");
 const localizedSearchPage = readOptional("../src/pages/[lang]/search.astro");
+const postbuildScript = readOptional("../scripts/postbuild.mjs");
+const vercelJson = readOptional("../vercel.json");
 const guestbookPage = readOptional("../src/pages/guestbook.astro");
 const sponsorPage = readOptional("../src/pages/sponsor.astro");
 const bangumiPage = readOptional("../src/pages/bangumi.astro");
@@ -484,22 +486,44 @@ addCheck(
 addCheck(
 	"navbar pagefind search navigates to search page",
 	/const searchPageUrl =/.test(navbarComponent) &&
+		/withLangPrefix\("\/search", lang\)\s*:\s*url\("\/search"\)/.test(navbarComponent) &&
 		/id="search-bar"[\s\S]*data-desktop-search-form/.test(navbarComponent) &&
 		/action=\{searchPageUrl\}/.test(navbarComponent) &&
 		/name="q"/.test(navbarComponent) &&
 		/method="get"/.test(navbarComponent) &&
+		/action=\{searchPageUrl\}/.test(searchPage) &&
+		/replaceState\(null, "", query \? searchPageUrl \+ "\?q="/.test(searchPage) &&
+		/const currentUrl = withLangPrefix\("\/search", lang\)/.test(localizedSearchPage) &&
+		/replaceState\(null, "", query \? currentUrl \+ "\?q="/.test(localizedSearchPage) &&
 		/if \(!docsearchEnabled && !googleEnabled\) return;/.test(searchComponent),
-	"Navbar desktop Pagefind search must submit q to /search/ instead of opening the instant search panel",
+	"Navbar desktop Pagefind search must submit q to /search?q=... instead of opening the instant search panel",
 );
 addCheck(
 	"search page inputs are legible in dark mode",
 	/search-page-input/.test(searchPage) &&
 		/search-page-input/.test(localizedSearchPage) &&
-		/:global\(\.dark\) \.search-page-input\s*\{[\s\S]*color:\s*rgb\(255 255 255 \/ 0\.82\)/.test(searchPage) &&
-		/:global\(\.dark\) \.search-page-input::placeholder/.test(searchPage) &&
-		/:global\(\.dark\) \.search-page-input\s*\{[\s\S]*color:\s*rgb\(255 255 255 \/ 0\.82\)/.test(localizedSearchPage) &&
-		/:global\(\.dark\) \.search-page-input::placeholder/.test(localizedSearchPage),
-	"root and localized search pages must define explicit dark-mode input and placeholder colors",
+		/:global\(\.search-page-result-title\)/.test(searchPage) &&
+		/:global\(\.search-page-muted\)/.test(searchPage) &&
+		/:global\(\.dark \.search-page-input\)\s*\{[\s\S]*color:\s*rgb\(255 255 255 \/ 0\.82\)/.test(searchPage) &&
+		/:global\(\.dark \.search-page-result-title\)/.test(searchPage) &&
+		/:global\(\.dark \.search-page-input::placeholder\)/.test(searchPage) &&
+		/:global\(\.search-page-result-title\)/.test(localizedSearchPage) &&
+		/:global\(\.search-page-muted\)/.test(localizedSearchPage) &&
+		/:global\(\.dark \.search-page-input\)\s*\{[\s\S]*color:\s*rgb\(255 255 255 \/ 0\.82\)/.test(localizedSearchPage) &&
+		/:global\(\.dark \.search-page-result-title\)/.test(localizedSearchPage) &&
+		/:global\(\.dark \.search-page-input::placeholder\)/.test(localizedSearchPage),
+	"root and localized search pages must define explicit global light/dark colors for inputs and dynamic results",
+);
+addCheck(
+	"search pages support slashless query URLs in deployments",
+	/searchRewriteRules/.test(postbuildScript) &&
+		postbuildScript.includes("/search /search/index.html 200") &&
+		postbuildScript.includes("${entry.name}/search /${entry.name}/search/index.html 200") &&
+		/"source": "\/search"/.test(vercelJson) &&
+		/"destination": "\/search\/"/.test(vercelJson) &&
+		/"source": "\/:lang\/search"/.test(vercelJson) &&
+		/"destination": "\/:lang\/search\/"/.test(vercelJson),
+	"Vercel and static _redirects output must rewrite /search?q=... to the generated trailing-slash search page without changing the visible URL",
 );
 addCheck(
 	"search results render untrusted content as text",

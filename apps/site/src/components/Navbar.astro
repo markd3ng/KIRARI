@@ -68,7 +68,7 @@ const resolveNavUrl = (link: NavBarLink) => {
 	return lang ? withLangPrefix(link.url, lang) : url(link.url);
 };
 const searchLabel = i18n(I18nKey.search, lang);
-const searchPageUrl = lang ? withLangPrefix("/search/", lang) : url("/search/");
+const searchPageUrl = lang ? withLangPrefix("/search", lang) : url("/search");
 const themeLabel = `${i18n(I18nKey.lightMode, lang)} / ${i18n(I18nKey.darkMode, lang)}`;
 const displaySettingsLabel = i18n(I18nKey.themeColor, lang);
 const searchProvider: "pagefind" | "docsearch" | "google" = searchConfig.provider === "docsearch" &&

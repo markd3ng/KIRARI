@@ -18,7 +18,7 @@ const searchParams = Astro.url.searchParams;
 const initialQuery = searchParams.get("q") || "";
 const provider = searchConfig.provider;
 const pageTitle = i18n(I18nKey.search, lang);
-const currentUrl = withLangPrefix("/search/", lang);
+const currentUrl = withLangPrefix("/search", lang);
 const alternates = getPathAlternates((itemLang) => withLangPrefix("/search/", itemLang));
 const scriptUrl = url("/pagefind/pagefind.js");
 ---
@@ -114,7 +114,7 @@ const scriptUrl = url("/pagefind/pagefind.js");
 			form.addEventListener("submit", function (event) {
 				event.preventDefault();
 				var query = input.value.trim();
-				history.replaceState(null, "", query ? "?q=" + encodeURIComponent(query) : location.pathname);
+				history.replaceState(null, "", query ? currentUrl + "?q=" + encodeURIComponent(query) : currentUrl);
 				run(query);
 			});
 
@@ -123,52 +123,52 @@ const scriptUrl = url("/pagefind/pagefind.js");
 	</script>
 
 	<style>
-		.search-page-title,
-		.search-page-result-title {
+		:global(.search-page-title),
+		:global(.search-page-result-title) {
 			color: rgb(0 0 0 / 0.86);
 			letter-spacing: 0;
 		}
 
-		.search-page-muted {
+		:global(.search-page-muted) {
 			color: rgb(0 0 0 / 0.58);
 			letter-spacing: 0;
 		}
 
-		.search-page-input {
+		:global(.search-page-input) {
 			color: rgb(0 0 0 / 0.82);
 			background: rgb(255 255 255 / 0.52);
 			border-color: rgb(0 0 0 / 0.12);
 			letter-spacing: 0;
 		}
 
-		.search-page-input::placeholder {
+		:global(.search-page-input::placeholder) {
 			color: rgb(0 0 0 / 0.42);
 		}
 
-		.search-page-result {
+		:global(.search-page-result) {
 			border-color: rgb(0 0 0 / 0.1);
 		}
 
-		:global(.dark) .search-page-title,
-		:global(.dark) .search-page-result-title {
+		:global(.dark .search-page-title),
+		:global(.dark .search-page-result-title) {
 			color: rgb(255 255 255 / 0.9);
 		}
 
-		:global(.dark) .search-page-muted {
+		:global(.dark .search-page-muted) {
 			color: rgb(255 255 255 / 0.58);
 		}
 
-		:global(.dark) .search-page-input {
+		:global(.dark .search-page-input) {
 			color: rgb(255 255 255 / 0.82);
 			background: rgb(255 255 255 / 0.05);
 			border-color: rgb(255 255 255 / 0.16);
 		}
 
-		:global(.dark) .search-page-input::placeholder {
+		:global(.dark .search-page-input::placeholder) {
 			color: rgb(255 255 255 / 0.48);
 		}
 
-		:global(.dark) .search-page-result {
+		:global(.dark .search-page-result) {
 			border-color: rgb(255 255 255 / 0.15);
 		}
 	</style>

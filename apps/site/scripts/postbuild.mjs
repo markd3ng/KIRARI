@@ -272,6 +272,20 @@ function defaultLanguageRedirects() {
 	];
 }
 
+function searchRewriteRules() {
+	const rules = existsSync(join(distDir, "search", "index.html"))
+		? ["/search /search/index.html 200"]
+		: [];
+
+	for (const entry of readdirSync(distDir, { withFileTypes: true })) {
+		if (!entry.isDirectory()) continue;
+		if (!existsSync(join(distDir, entry.name, "search", "index.html"))) continue;
+		rules.push(`/${entry.name}/search /${entry.name}/search/index.html 200`);
+	}
+
+	return rules;
+}
+
 function generateHeadersAndRedirects() {
 	const defaultHomePath = getDefaultHomePath();
 	const criticalCss = findCriticalCss();
@@ -314,6 +328,7 @@ function generateHeadersAndRedirects() {
 
 	writeFileSync(join(distDir, "_headers"), `${headers}\n`);
 	const redirects = [
+		...searchRewriteRules(),
 		defaultHomePath === "/" ? undefined : `/  ${defaultHomePath}  302`,
 		...defaultLanguageRedirects(),
 	].filter(Boolean);
