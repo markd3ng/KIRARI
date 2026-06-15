@@ -64,3 +64,4 @@ KIRARI_FIX_PLAN_*.md
 # generated GitHub card runtime adapters
 functions/ghc/
 api/ghc/
+tmp/
