@@ -55,6 +55,7 @@ const siteStatsWidget = readOptional("../src/components/widget/SiteStats.astro")
 const siteInfoWidget = readOptional("../src/components/widget/SiteInfo.astro");
 const calendarWidget = readOptional("../src/components/widget/Calendar.astro");
 const commentsWidget = readOptional("../src/components/comments/Comments.astro");
+const searchComponent = readOptional("../src/components/Search.svelte");
 const footerWidget = readOptional("../src/components/Footer.astro");
 const buildCommitUtil = readOptional("../src/utils/build-commit.ts");
 const plantumlPlugin = readOptional("../src/plugins/remark-plantuml.js") + readOptional("../src/plugins/rehype-plantuml.mjs");
@@ -479,6 +480,26 @@ addCheck(
 		/URLSearchParams/.test(localizedSearchPage) &&
 		/location\.search/.test(localizedSearchPage),
 	"root and localized /search/ pages must read runtime ?q= and respect active search provider",
+);
+addCheck(
+	"navbar pagefind search navigates to search page",
+	/const searchPageUrl =/.test(navbarComponent) &&
+		/id="search-bar"[\s\S]*data-desktop-search-form/.test(navbarComponent) &&
+		/action=\{searchPageUrl\}/.test(navbarComponent) &&
+		/name="q"/.test(navbarComponent) &&
+		/method="get"/.test(navbarComponent) &&
+		/if \(!docsearchEnabled && !googleEnabled\) return;/.test(searchComponent),
+	"Navbar desktop Pagefind search must submit q to /search/ instead of opening the instant search panel",
+);
+addCheck(
+	"search page inputs are legible in dark mode",
+	/search-page-input/.test(searchPage) &&
+		/search-page-input/.test(localizedSearchPage) &&
+		/:global\(\.dark\) \.search-page-input\s*\{[\s\S]*color:\s*rgb\(255 255 255 \/ 0\.82\)/.test(searchPage) &&
+		/:global\(\.dark\) \.search-page-input::placeholder/.test(searchPage) &&
+		/:global\(\.dark\) \.search-page-input\s*\{[\s\S]*color:\s*rgb\(255 255 255 \/ 0\.82\)/.test(localizedSearchPage) &&
+		/:global\(\.dark\) \.search-page-input::placeholder/.test(localizedSearchPage),
+	"root and localized search pages must define explicit dark-mode input and placeholder colors",
 );
 addCheck(
 	"search results render untrusted content as text",

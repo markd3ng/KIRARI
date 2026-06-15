@@ -25,19 +25,19 @@ const scriptUrl = url("/pagefind/pagefind.js");
 
 <MainGridLayout title={pageTitle} lang={lang} alternates={alternates} canonicalUrl={currentUrl} toc={false}>
 	<section class="card-base px-6 py-6 md:px-8">
-		<h1 class="mb-4 text-2xl font-bold text-90">{pageTitle}</h1>
+		<h1 class="search-page-title mb-4 text-2xl font-bold">{pageTitle}</h1>
 		<form data-search-form class="mb-5 flex gap-2" action={currentUrl}>
 			<input
 				data-search-input
 				name="q"
 				value={initialQuery}
 				placeholder={pageTitle}
-				class="min-w-0 flex-1 rounded-xl border border-black/10 bg-transparent px-4 py-2 text-base outline-none transition focus:border-[var(--primary)] dark:border-white/15"
+				class="search-page-input min-w-0 flex-1 rounded-xl border px-4 py-2 text-base outline-none transition focus:border-[var(--primary)]"
 			/>
 			<button class="btn-regular rounded-xl px-4 font-bold" type="submit">{pageTitle}</button>
 		</form>
-		<div data-search-provider={provider} class="text-sm text-50"></div>
-		<div data-search-status class="mt-4 text-sm text-50"></div>
+		<div data-search-provider={provider} class="search-page-muted text-sm"></div>
+		<div data-search-status class="search-page-muted mt-4 text-sm"></div>
 		<div data-search-results class="mt-4 flex flex-col gap-3"></div>
 	</section>
 
@@ -66,13 +66,13 @@ const scriptUrl = url("/pagefind/pagefind.js");
 				setStatus(items.length + " result(s).");
 				items.slice(0, 20).forEach(function (item) {
 					var a = document.createElement("a");
-					a.className = "block rounded-xl border border-black/10 px-4 py-3 transition hover:border-[var(--primary)] dark:border-white/15";
+					a.className = "search-page-result block rounded-xl border px-4 py-3 transition hover:border-[var(--primary)]";
 					a.href = item.url || item.raw_url || "/";
 					var title = document.createElement("div");
-					title.className = "font-bold text-90";
+					title.className = "search-page-result-title font-bold";
 					title.textContent = item.meta?.title || a.href;
 					var excerpt = document.createElement("div");
-					excerpt.className = "mt-1 text-sm text-50";
+					excerpt.className = "search-page-muted mt-1 text-sm";
 					excerpt.textContent = item.excerpt || "";
 					a.append(title, excerpt);
 					results.appendChild(a);
@@ -121,4 +121,55 @@ const scriptUrl = url("/pagefind/pagefind.js");
 			run(runtimeQuery);
 		})();
 	</script>
+
+	<style>
+		.search-page-title,
+		.search-page-result-title {
+			color: rgb(0 0 0 / 0.86);
+			letter-spacing: 0;
+		}
+
+		.search-page-muted {
+			color: rgb(0 0 0 / 0.58);
+			letter-spacing: 0;
+		}
+
+		.search-page-input {
+			color: rgb(0 0 0 / 0.82);
+			background: rgb(255 255 255 / 0.52);
+			border-color: rgb(0 0 0 / 0.12);
+			letter-spacing: 0;
+		}
+
+		.search-page-input::placeholder {
+			color: rgb(0 0 0 / 0.42);
+		}
+
+		.search-page-result {
+			border-color: rgb(0 0 0 / 0.1);
+		}
+
+		:global(.dark) .search-page-title,
+		:global(.dark) .search-page-result-title {
+			color: rgb(255 255 255 / 0.9);
+		}
+
+		:global(.dark) .search-page-muted {
+			color: rgb(255 255 255 / 0.58);
+		}
+
+		:global(.dark) .search-page-input {
+			color: rgb(255 255 255 / 0.82);
+			background: rgb(255 255 255 / 0.05);
+			border-color: rgb(255 255 255 / 0.16);
+		}
+
+		:global(.dark) .search-page-input::placeholder {
+			color: rgb(255 255 255 / 0.48);
+		}
+
+		:global(.dark) .search-page-result {
+			border-color: rgb(255 255 255 / 0.15);
+		}
+	</style>
 </MainGridLayout>

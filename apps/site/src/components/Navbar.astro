@@ -68,6 +68,7 @@ const resolveNavUrl = (link: NavBarLink) => {
 	return lang ? withLangPrefix(link.url, lang) : url(link.url);
 };
 const searchLabel = i18n(I18nKey.search, lang);
+const searchPageUrl = lang ? withLangPrefix("/search/", lang) : url("/search/");
 const themeLabel = `${i18n(I18nKey.lightMode, lang)} / ${i18n(I18nKey.darkMode, lang)}`;
 const displaySettingsLabel = i18n(I18nKey.themeColor, lang);
 const searchProvider: "pagefind" | "docsearch" | "google" = searchConfig.provider === "docsearch" &&
@@ -172,20 +173,22 @@ const searchInputInputMode = searchProvider === "google" && searchConfig.google.
         </div>}
         <div class="flex">
             <!-- Search bar for desktop - instant display with Astro icons -->
-            <div id="search-bar" class:list={[
+            <form id="search-bar" data-desktop-search-form action={searchPageUrl} method="get" class:list={[
                 "hidden lg:flex transition-all items-center h-11 mr-2 rounded-lg bg-black/[0.04] hover:bg-black/[0.06] focus-within:bg-black/[0.06] dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10",
                 { "lg:!hidden": !showSearch },
             ]}>
                 <Icon name="material-symbols:search" class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30" />
                 <input id="search-input-desktop" placeholder={searchLabel} aria-label={searchLabel}
+                    name="q"
+                    autocomplete="search"
                     readonly={searchInputReadonly}
                     aria-haspopup={searchInputAriaHaspopup}
                     aria-expanded={searchInputAriaExpanded}
                     inputmode={searchInputInputMode}
                     class="transition-all pl-10 text-sm bg-transparent outline-0
-                    h-full w-40 active:w-60 focus:w-60 text-black/50 dark:text-white/50"
+                    h-full w-40 active:w-60 focus:w-60 text-black/70 placeholder:text-black/35 dark:text-white/80 dark:placeholder:text-white/45"
                 />
-            </div>
+            </form>
 
             <!-- Search toggle button for mobile - instant display -->
             {showSearch && (

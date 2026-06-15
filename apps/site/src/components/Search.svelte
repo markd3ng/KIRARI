@@ -423,10 +423,12 @@ onMount(() => {
 	const mobileButton = document.getElementById("search-switch");
 
 	const handleDesktopInput = (e: Event) => {
+		if (!docsearchEnabled && !googleEnabled) return;
 		keywordDesktop = (e.target as HTMLInputElement).value;
 	};
 
 	const handleDesktopFocus = () => {
+		if (!docsearchEnabled && !googleEnabled) return;
 		if (docsearchEnabled) {
 			openDocSearch(keywordDesktop);
 			desktopInput?.blur();
