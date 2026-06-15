@@ -41,6 +41,11 @@ function formatDate(date: Date) {
 function formatTag(tagList: string[]) {
 	return tagList.map((tag) => `#${getTagName(tag, tagDisplayMap)}`).join(" ");
 }
+
+function formatPostCount(count: number) {
+	const key = count === 1 ? I18nKey.postCount : I18nKey.postsCount;
+	return `${count} ${i18n(key, lang)}`;
+}
 ---
 
 <div class="card-base px-8 py-6">
@@ -58,7 +63,7 @@ function formatTag(tagList: string[]) {
 					</div>
 				</div>
 				<div class="w-[70%] md:w-[80%] transition text-left text-50">
-					{group.posts.length} {i18n(group.posts.length === 1 ? I18nKey.postCount : I18nKey.postsCount, lang)}
+					{formatPostCount(group.posts.length)}
 				</div>
 			</div>
 

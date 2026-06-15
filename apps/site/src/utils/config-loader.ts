@@ -1098,9 +1098,8 @@ const getStringRecord = (
  * Validate navigation bar links array
  * 验证导航栏链接数组
  * 
- * Supports both preset links (e.g., { preset: "Home" }) and custom links
- * (e.g., { name: "GitHub", url: "...", external: true }).
- * 支持预设链接（如 { preset: "Home" }）和自定义链接（如 { name: "GitHub", url: "...", external: true }）。
+ * Supports preset links, custom links, and recursive custom children.
+ * 支持预设链接、自定义链接和递归自定义子菜单。
  * 
  * @param links - Unknown value to validate
  * @param fallback - Fallback array if validation fails
@@ -1108,7 +1107,8 @@ const getStringRecord = (
  */
 const validateNavBarLinks = (
 	links: unknown,
-	fallback: Array<NavBarLink | LinkPresetType>
+	fallback: Array<NavBarLink | LinkPresetType>,
+	depth = 0,
 ): Array<NavBarLink | LinkPresetType> => {
 	if (!Array.isArray(links) || links.length === 0) return fallback;
 	
@@ -1136,16 +1136,22 @@ const validateNavBarLinks = (
 			continue;
 		}
 		
-		// Custom link: { name: string, url: string, external?: boolean }
+		// Custom link: { name: string, url: string, external?: boolean, children?: NavBarLink[] }
 		if ("name" in link && "url" in link) {
 			if (typeof link.name === "string" && typeof link.url === "string") {
-				const validated: { name: string; url: string; external?: boolean } = {
+				const validated: NavBarLink = {
 					name: link.name,
 					url: link.url,
 				};
 				
 				if ("external" in link && typeof link.external === "boolean") {
 					validated.external = link.external;
+				}
+
+				if (depth < 3 && "children" in link && Array.isArray(link.children)) {
+					const children = validateNavBarLinks(link.children, [], depth + 1)
+						.filter((child): child is NavBarLink => typeof child !== "number");
+					if (children.length > 0) validated.children = children;
 				}
 				
 				result.push(validated);

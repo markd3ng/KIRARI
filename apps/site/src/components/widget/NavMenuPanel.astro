@@ -13,28 +13,66 @@ const links = Astro.props.links;
 const lang = Astro.props.lang;
 const resolveNavUrl = (link: NavBarLink) => {
 	if (link.external) return link.url;
+	if (link.url === "#") return "#";
 	return lang ? withLangPrefix(link.url, lang) : url(link.url);
 };
 ---
 <div id="nav-menu-panel" class:list={["float-panel float-panel-closed absolute transition-all fixed right-4 px-2 py-2"]}>
-    {links.map((link) => (
-        <a href={resolveNavUrl(link)} class="group flex justify-between items-center py-2 pl-3 pr-1 rounded-lg gap-8
-            hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)] transition
-        "
-           target={link.external ? "_blank" : null}
-           data-astro-prefetch={link.external ? undefined : "tap"}
-        >
-            <div class="transition text-black/75 dark:text-white/75 font-bold group-hover:text-[var(--primary)] group-active:text-[var(--primary)]">
-                {link.name}
+    {links.map((link) => {
+        const hasChildren = !!link.children?.length;
+        return (
+            <div class="nav-menu-group">
+                <a href={resolveNavUrl(link)} class="group flex justify-between items-center py-2 pl-3 pr-1 rounded-lg gap-8
+                    hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)] transition
+                "
+                   target={link.external ? "_blank" : null}
+                   rel={link.external ? "noopener noreferrer" : null}
+                   data-astro-prefetch={link.external || link.url === "#" ? undefined : "tap"}
+                >
+                    <div class="transition text-black/75 dark:text-white/75 font-bold group-hover:text-[var(--primary)] group-active:text-[var(--primary)]">
+                        {link.name}
+                    </div>
+                    {hasChildren ? (
+                        <Icon name="material-symbols:chevron-right-rounded"
+                              class="transition text-[1.25rem] rotate-90 text-[var(--primary)]"
+                        />
+                    ) : !link.external ? (
+                        <Icon name="material-symbols:chevron-right-rounded"
+                              class="transition text-[1.25rem] text-[var(--primary)]"
+                        />
+                    ) : (
+                        <Icon name="fa6-solid:arrow-up-right-from-square"
+                              class="transition text-[0.75rem] text-black/25 dark:text-white/25 -translate-x-1"
+                        />
+                    )}
+                </a>
+                {hasChildren && (
+                    <div class="nav-menu-children ml-3 border-l border-black/10 pl-2 dark:border-white/10">
+                        {link.children?.map((child) => (
+                            <a href={resolveNavUrl(child)}
+                               class="group flex justify-between items-center py-2 pl-3 pr-1 rounded-lg gap-8
+                                   hover:bg-[var(--btn-plain-bg-hover)] active:bg-[var(--btn-plain-bg-active)] transition"
+                               target={child.external ? "_blank" : null}
+                               rel={child.external ? "noopener noreferrer" : null}
+                               data-astro-prefetch={child.external || child.url === "#" ? undefined : "tap"}
+                            >
+                                <div class="transition text-sm text-black/60 dark:text-white/60 font-bold group-hover:text-[var(--primary)] group-active:text-[var(--primary)]">
+                                    {child.name}
+                                </div>
+                                {!child.external ? (
+                                    <Icon name="material-symbols:chevron-right-rounded"
+                                          class="transition text-[1.1rem] text-[var(--primary)]"
+                                    />
+                                ) : (
+                                    <Icon name="fa6-solid:arrow-up-right-from-square"
+                                          class="transition text-[0.75rem] text-black/25 dark:text-white/25 -translate-x-1"
+                                    />
+                                )}
+                            </a>
+                        ))}
+                    </div>
+                )}
             </div>
-            {!link.external && <Icon name="material-symbols:chevron-right-rounded"
-                  class="transition text-[1.25rem] text-[var(--primary)]"
-            >
-            </Icon>}
-            {link.external && <Icon name="fa6-solid:arrow-up-right-from-square"
-                  class="transition text-[0.75rem] text-black/25 dark:text-white/25 -translate-x-1"
-            >
-            </Icon>}
-        </a>
-    ))}
+        );
+    })}
 </div>

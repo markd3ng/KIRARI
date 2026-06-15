@@ -42,9 +42,12 @@ const friendsPage = readOptional("../src/pages/friends.astro");
 const localizedFriendsPage = readOptional("../src/pages/[lang]/friends.astro");
 const friendLinksPanel = readOptional("../src/components/friends/FriendLinksPanel.astro");
 const friendsData = readOptional("../src/_data/friends.json");
+const navbarComponent = readOptional("../src/components/Navbar.astro");
+const navMenuPanel = readOptional("../src/components/widget/NavMenuPanel.astro");
 const tagsPage = readOptional("../src/pages/tags.astro");
 const localizedTagsPage = readOptional("../src/pages/[lang]/tags.astro");
 const tagTopList = readOptional("../src/components/taxonomy/TagTopList.astro");
+const archivePanel = readOptional("../src/components/ArchivePanel.astro");
 const sidebarRegistry = readOptional("../src/components/widget/sidebar-registry.ts");
 const announcementWidget = readOptional("../src/components/widget/Announcement.astro");
 const advertisementWidget = readOptional("../src/components/widget/Advertisement.astro");
@@ -315,6 +318,16 @@ addCheck(
 	"tags index pages must render a Top 10 tag ranking with proportional bars below the tag cloud",
 );
 addCheck(
+	"post count labels preserve spacing and casing",
+	/function formatPostCount\(count: number\)/.test(tagTopList) &&
+		/function formatPostCount\(count: number\)/.test(archivePanel) &&
+		/return `\$\{count\} \$\{i18n\(key, lang\)\}`/.test(tagTopList) &&
+		/return `\$\{count\} \$\{i18n\(key, lang\)\}`/.test(archivePanel) &&
+		/\[Key\.postCount\]: "Post"/.test(readFileSync(new URL("../src/i18n/languages/en.ts", import.meta.url), "utf8")) &&
+		/\[Key\.postsCount\]: "Posts"/.test(readFileSync(new URL("../src/i18n/languages/en.ts", import.meta.url), "utf8")),
+	"post count labels must render as '<count> <localized label>' and English labels must preserve title casing",
+);
+addCheck(
 	"friends page includes searchable categorized application panel",
 	/FriendLinksPanel/.test(friendsPage) &&
 		/FriendLinksPanel/.test(localizedFriendsPage) &&
@@ -333,6 +346,56 @@ addCheck(
 		/"weight"\s*:/.test(friendsData) &&
 		/"enabled"\s*:/.test(friendsData),
 	"friends page must render Firefly-inspired search/filter cards and application guidance from KIRARI data",
+);
+addCheck(
+	"friends search input is legible in dark mode",
+	/friend-search-input/.test(friendLinksPanel) &&
+		/friend-search-icon/.test(friendLinksPanel) &&
+		/\.dark \.friend-search-input\s*\{[\s\S]*color:\s*rgb\(255 255 255 \/ 0\.82\)/.test(friendLinksPanel) &&
+		/\.dark \.friend-search-input::placeholder,[\s\S]*\.dark \.friend-search-icon\s*\{[\s\S]*color:\s*rgb\(255 255 255 \/ 0\.48\)/.test(friendLinksPanel),
+	"friends search input and placeholder/icon must define explicit dark-mode colors",
+);
+addCheck(
+	"friends page uses dedicated typography styles",
+	/friend-page-title/.test(friendLinksPanel) &&
+		/friend-card-title/.test(friendLinksPanel) &&
+		/friend-card-description/.test(friendLinksPanel) &&
+		/friend-section-title/.test(friendLinksPanel) &&
+		/\.dark \.friend-page-title,[\s\S]*\.dark \.friend-card-title/.test(friendLinksPanel) &&
+		/letter-spacing:\s*0/.test(friendLinksPanel),
+	"friends page typography must use dedicated light/dark text styles instead of generic weak text utilities",
+);
+
+addCheck(
+	"navbar links support child menus in config",
+	/children\?: NavBarLink\[\]/.test(configTypes) &&
+		/depth = 0/.test(configLoader) &&
+		/validateNavBarLinks\(link\.children,\s*\[\],\s*depth \+ 1\)/.test(configLoader) &&
+		/validated\.children = children/.test(configLoader),
+	"navBar.links must support recursive children through config types and config-loader",
+);
+addCheck(
+	"navbar child links are documented",
+	/\[\[navBar\.links\.children\]\]/.test(kirariConfig) &&
+		/\[\[navBar\.links\.children\]\]/.test(readme) &&
+		/\[\[navBar\.links\.children\]\]/.test(readmeCn),
+	"kirari.config.toml, README.md, and README_CN.md must document [[navBar.links.children]]",
+);
+addCheck(
+	"desktop navbar renders accessible dropdown menus",
+	/navbar-dropdown/.test(navbarComponent) &&
+		/navbar-dropdown-menu/.test(navbarComponent) &&
+		/aria-haspopup="menu"/.test(navbarComponent) &&
+		/role="menuitem"/.test(navbarComponent) &&
+		/focus-within/.test(navbarComponent),
+	"Navbar.astro must render child links as hover/focus dropdown menu items on desktop",
+);
+addCheck(
+	"mobile nav menu renders child links",
+	/nav-menu-children/.test(navMenuPanel) &&
+		/link\.children/.test(navMenuPanel) &&
+		/child\.name/.test(navMenuPanel),
+	"NavMenuPanel.astro must render navbar child links in the mobile menu",
 );
 
 const sidebarTypeBlock = configTypes.match(/export type SidebarConfig = \{[\s\S]*?\n\};/)?.[0] || "";

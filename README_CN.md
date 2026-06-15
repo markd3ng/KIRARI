@@ -293,6 +293,14 @@ preset = "Home"
 name = "GitHub"
 url = "https://github.com/you"
 external = true
+
+[[navBar.links]]
+name = "Docs"
+url = "/docs/"
+
+[[navBar.links.children]]
+name = "Guide"
+url = "/docs/guide/"
 ```
 
 ### 搜索

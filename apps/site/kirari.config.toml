@@ -495,8 +495,8 @@ theme = "kirari"
 #   - Friends / 友链
 #   - Projects / 项目
 #
-# Custom links support: name, url, external (optional)
-# 自定义链接支持: name（名称）, url（链接）, external（可选，是否外链）
+# Custom links support: name, url, external (optional), children (optional)
+# 自定义链接支持: name（名称）, url（链接）, external（可选，是否外链）, children（可选，二级菜单）
 
 # Preset link example / 预设链接示例
 [[navBar.links]]
@@ -512,6 +512,26 @@ preset = "About"
 preset = "Friends"
 
 [[navBar.links]]
+name = "Explore"
+url = "#"
+
+[[navBar.links.children]]
+name = "Articles"
+url = "/blog/"
+
+[[navBar.links.children]]
+name = "Categories"
+url = "/categories/"
+
+[[navBar.links.children]]
+name = "Tags"
+url = "/tags/"
+
+[[navBar.links.children]]
+name = "Search"
+url = "/search/"
+
+[[navBar.links]]
 preset = "Projects"
 
 # Custom link example / 自定义链接示例
@@ -519,6 +539,19 @@ preset = "Projects"
 # name = "GitHub"
 # url = "https://github.com/saicaca/fuwari"
 # external = true  # Open in new tab / 在新标签页打开
+
+# Dropdown link example / 二级菜单示例
+# [[navBar.links]]
+# name = "Docs"
+# url = "/docs/"
+#
+# [[navBar.links.children]]
+# name = "Guide"
+# url = "/docs/guide/"
+#
+# [[navBar.links.children]]
+# name = "API"
+# url = "/docs/api/"
 
 # -----------------------------------------------------------------------------
 # Profile Configuration / 个人资料配置
