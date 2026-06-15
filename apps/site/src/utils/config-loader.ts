@@ -446,6 +446,24 @@ type TomlConfig = {
 			items?: unknown;
 		};
 	};
+	/** Edge configuration / Edge 配置 */
+	edge?: {
+		/** Enable edge runtime / 启用 Edge 运行时 */
+		enabled?: unknown;
+		/** Edge API base URL / Edge API 基础 URL */
+		apiBase?: unknown;
+		/** Edge feature flags / Edge 特性开关 */
+		features?: {
+			/** GitHub Card proxy / GitHub Card 代理 */
+			githubCard?: { enabled?: unknown };
+			/** Avatar proxy / 头像代理 */
+			avatarProxy?: { enabled?: unknown };
+			/** Bangumi API proxy / Bangumi API 代理 */
+			bangumiApiProxy?: { enabled?: unknown };
+			/** Bangumi image proxy / Bangumi 图片代理 */
+			bangumiImageProxy?: { enabled?: unknown };
+		};
+	};
 };
 
 /**
@@ -873,6 +891,16 @@ const DEFAULT_CONFIG: Config = {
 			],
 		},
 	},
+		edge: {
+			enabled: false,
+			apiBase: "",
+			features: {
+				githubCard: { enabled: false },
+				avatarProxy: { enabled: false },
+				bangumiApiProxy: { enabled: false },
+				bangumiImageProxy: { enabled: false },
+			},
+		},
 };
 
 /**
@@ -1256,6 +1284,7 @@ export const loadConfig = (): Config => {
 	const search = toml.search;
 	const githubCard = toml.githubCard;
 	const landingPage = toml.landingPage;
+	const edge = toml.edge;
 
 	// Helper: validate lang field
 	const validLangs = ["en-US", "zh-CN", "zh-TW", "zh-HK", "ja-JP", "ko-KR", "es-ES", "th-TH", "vi-VN", "tr-TR", "id-ID"] as const;
@@ -1774,6 +1803,16 @@ export const loadConfig = (): Config => {
 			secondaryCtaLabel: getString(landingPage?.secondaryCtaLabel, DEFAULT_CONFIG.landingPage.secondaryCtaLabel),
 			features: validateLandingFeatures(landingPage?.features),
 		},
+			edge: {
+				enabled: getBoolean(edge?.enabled, DEFAULT_CONFIG.edge.enabled),
+				apiBase: getString(edge?.apiBase, DEFAULT_CONFIG.edge.apiBase),
+				features: {
+					githubCard: { enabled: getBoolean(edge?.features?.githubCard?.enabled, DEFAULT_CONFIG.edge.features.githubCard.enabled) },
+					avatarProxy: { enabled: getBoolean(edge?.features?.avatarProxy?.enabled, DEFAULT_CONFIG.edge.features.avatarProxy.enabled) },
+					bangumiApiProxy: { enabled: getBoolean(edge?.features?.bangumiApiProxy?.enabled, DEFAULT_CONFIG.edge.features.bangumiApiProxy.enabled) },
+					bangumiImageProxy: { enabled: getBoolean(edge?.features?.bangumiImageProxy?.enabled, DEFAULT_CONFIG.edge.features.bangumiImageProxy.enabled) },
+				},
+			},
 	};
 
 	return config;

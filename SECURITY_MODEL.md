@@ -95,3 +95,27 @@ pnpm audit --audit-level moderate
 Security overrides in `package.json` are allowed when the affected transitive
 dependency is compatible and the upstream package has not released a patched
 dependency tree yet.
+
+## Edge Proxy Trust Boundary
+
+The optional KIRARI Edge runtime (`workers/kirari-edge`) is an opt-in
+Cloudflare Worker that proxies requests to third-party APIs (GitHub, Bangumi,
+avatar services).
+
+When the Edge runtime is disabled (`[edge] enabled = false`), the site behaves
+identically to the static Pages-only deployment — no proxy routes are active
+and no additional trust boundaries exist.
+
+When `[edge] enabled = true` and individual features are enabled:
+
+- **GitHub Card proxy**: Requests are forwarded to api.github.com. The proxy
+  applies the same URL allow-listing as the legacy adapter.
+- **Avatar proxy**: Rewrites avatar image URLs via the configured proxy
+  service.
+- **Bangumi proxy**: Rewrites Bangumi API and image URLs via the proxy.
+
+All edge-proxied responses are rendered through the same `set:html` trust
+boundary as the rest of the site. Visitor-supplied or third-party API data
+must still traverse text/attribute-safe rendering paths. The edge proxy is an
+additional trust boundary between the visitor and the upstream API — it does
+not relax the rendering model.

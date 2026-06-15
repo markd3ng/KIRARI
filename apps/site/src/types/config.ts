@@ -446,6 +446,17 @@ export type LandingPageFeaturesConfig = {
 	items: LandingPageFeatureItem[];
 };
 
+export type EdgeConfig = {
+	enabled: boolean;
+	apiBase: string;
+	features: {
+		githubCard: { enabled: boolean };
+		avatarProxy: { enabled: boolean };
+		bangumiApiProxy: { enabled: boolean };
+		bangumiImageProxy: { enabled: boolean };
+	};
+};
+
 export type Config = {
 	site: SiteConfig;
 	posts: PostsConfig;
@@ -472,4 +483,5 @@ export type Config = {
 	search: SearchConfig;
 	githubCard: GithubCardConfig;
 	landingPage: LandingPageConfig;
+	edge: EdgeConfig;
 };
