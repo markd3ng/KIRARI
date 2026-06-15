@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const checks = [];
 
@@ -55,6 +55,45 @@ const commentsWidget = readOptional("../src/components/comments/Comments.astro")
 const footerWidget = readOptional("../src/components/Footer.astro");
 const buildCommitUtil = readOptional("../src/utils/build-commit.ts");
 const plantumlPlugin = readOptional("../src/plugins/remark-plantuml.js") + readOptional("../src/plugins/rehype-plantuml.mjs");
+
+// ---- Monorepo architecture checks ----
+addCheck(
+	"pnpm-workspace.yaml exists",
+	existsSync(new URL("../pnpm-workspace.yaml", import.meta.url)),
+	"Monorepo requires pnpm-workspace.yaml at repo root",
+);
+addCheck(
+	"apps/site/package.json exists",
+	existsSync(new URL("../apps/site/package.json", import.meta.url)),
+	"Monorepo requires apps/site/package.json",
+);
+addCheck(
+	"packages/site-profile/package.json exists",
+	existsSync(new URL("../packages/site-profile/package.json", import.meta.url)),
+	"Monorepo requires packages/site-profile/package.json",
+);
+addCheck(
+	"workers/kirari-edge/package.json exists",
+	existsSync(new URL("../workers/kirari-edge/package.json", import.meta.url)),
+	"Monorepo requires workers/kirari-edge/package.json",
+);
+addCheck(
+	"monorepo architecture doc exists",
+	existsSync(new URL("../docs/MONOREPO_ARCHITECTURE.md", import.meta.url)),
+	"Monorepo requires docs/MONOREPO_ARCHITECTURE.md",
+);
+addCheck(
+	"deployment matrix doc exists",
+	existsSync(new URL("../docs/DEPLOYMENT_MATRIX.md", import.meta.url)),
+	"Monorepo requires docs/DEPLOYMENT_MATRIX.md",
+);
+
+const materializeProfileScript = readOptional("../apps/site/scripts/materialize-profile.mjs");
+addCheck(
+	"profile materialization script does not execute git commands",
+	!/git add|git commit|reset --hard/.test(materializeProfileScript),
+	"packages/site-profile must be materialized via copy, not git operations",
+);
 
 const llmsTypeBlock = configLoader.match(/llms\?: \{[\s\S]*?\n\t\t\};/)?.[0] || "";
 addCheck(
