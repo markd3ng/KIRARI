@@ -1,5 +1,21 @@
 # KIRARI Development Constraints
 
+## Monorepo Workspace
+
+KIRARI is a pnpm workspace with three packages:
+
+| Directory | Package | Purpose |
+|---|---|---|
+| `apps/site/` | `@kirari/site` | Astro site program |
+| `packages/site-profile/` | `@kirari/site-profile` | Default content, config, brand assets, snippets |
+| `workers/kirari-edge/` | `@kirari/edge` | Optional edge runtime |
+
+- **Repo root** is the workspace root. All `pnpm` commands run from here.
+- **Config is TOML-first**: `kirari.config.toml` → types → config-loader.
+- **Default profile TOML** is materialized into the site before every build via
+  `apps/site/scripts/materialize-profile.mjs`.
+- **Build pipeline**: `materialize-profile → materialize-ghc-adapter → astro build → postbuild`.
+
 ## Architecture Invariants
 
 ### 1. Astro Islands

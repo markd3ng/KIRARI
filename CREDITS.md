@@ -23,6 +23,14 @@ that were studied while evolving KIRARI-native implementations.
   documentation project. KIRARI studied its deployment and GitHub Pages guidance
   style while keeping the main README/DEPLOY documentation native to KIRARI.
 
+## Architectural References
+
+- [Mizuki](https://github.com/CuteLeaf/Mizuki) — reference project sharing the
+  Fuwari lineage. KIRARI studied Mizuki's content-separation architecture and
+  `docs/content-separation.md` when designing the monorepo profile boundary.
+  KIRARI's implementation is a KIRARI-native monorepo architecture built on
+  pnpm workspaces, not a copy of Mizuki's structure.
+
 ## KIRARI-Native Notes
 
 - Sidebar, TOC, mobile widgets, comments, Sponsor, Guestbook, Bangumi, SiteInfo,
