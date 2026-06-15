@@ -278,7 +278,8 @@ description = "Connect and grow together."
 # TOC layout / 目录布局
 # Type: string / 类型: 字符串
 # Options / 可选值: "floating" (right-side floating TOC / 右侧悬浮目录), "sidebar" (sidebar widget / 侧边栏组件)
-# layout = "floating"
+# Default / 默认值: "floating"
+layout = "sidebar"
 
 # -----------------------------------------------------------------------------
 # Sidebar Configuration / 侧边栏配置
@@ -294,7 +295,7 @@ description = "Connect and grow together."
 # position = "left"
 
 # Left sidebar widgets / 左侧栏组件
-# Supported types / 支持类型: "profile", "toc", "categories", "tags"
+# Supported types / 支持类型: "profile", "toc", "categories", "tags", "announcement", "advertisement", "siteStats", "siteInfo", "calendar"
 # position: "top" renders above sticky widgets; "sticky" follows page scroll
 # position: "top" 渲染在粘性组件上方；"sticky" 跟随页面滚动
 [[sidebar.leftWidgets]]
@@ -325,6 +326,41 @@ position = "sticky"
 showOnPostPage = true
 showOnNonPostPage = true
 
+[[sidebar.leftWidgets]]
+type = "announcement"
+enabled = true
+position = "sticky"
+showOnPostPage = true
+showOnNonPostPage = true
+
+[[sidebar.leftWidgets]]
+type = "advertisement"
+enabled = true
+position = "sticky"
+showOnPostPage = true
+showOnNonPostPage = true
+
+[[sidebar.leftWidgets]]
+type = "siteStats"
+enabled = true
+position = "sticky"
+showOnPostPage = true
+showOnNonPostPage = true
+
+[[sidebar.leftWidgets]]
+type = "siteInfo"
+enabled = true
+position = "sticky"
+showOnPostPage = true
+showOnNonPostPage = true
+
+[[sidebar.leftWidgets]]
+type = "calendar"
+enabled = true
+position = "sticky"
+showOnPostPage = true
+showOnNonPostPage = true
+
 # Right sidebar widgets are reserved for future layouts / 右侧栏组件预留给未来布局
 # [[sidebar.rightWidgets]]
 # type = "toc"
@@ -335,36 +371,50 @@ showOnNonPostPage = true
 
 # Mobile bottom widgets, rendered before the mobile footer when configured
 # 移动端底部组件，配置后会在移动端页脚前渲染
-# [[sidebar.mobileWidgets]]
-# type = "profile"
-# enabled = false
-# position = "top"
-# showOnPostPage = true
-# showOnNonPostPage = true
+[[sidebar.mobileWidgets]]
+type = "profile"
+enabled = true
+position = "top"
+showOnPostPage = true
+showOnNonPostPage = true
+
+[[sidebar.mobileWidgets]]
+type = "siteStats"
+enabled = true
+position = "top"
+showOnPostPage = true
+showOnNonPostPage = true
+
+[[sidebar.mobileWidgets]]
+type = "calendar"
+enabled = true
+position = "top"
+showOnPostPage = true
+showOnNonPostPage = true
 
 # -----------------------------------------------------------------------------
 # Widget Content Configuration / 组件内容配置
 # -----------------------------------------------------------------------------
 [widgets.announcement]
 # Enable announcement widget content / 启用公告组件内容
-enabled = false
+enabled = true
 id = "announcement"
-title = "Announcement"
-content = ""
-linkText = ""
-linkUrl = ""
+title = "Demo Announcement"
+content = "KIRARI demo now showcases sidebar TOC, mobile widgets, sponsor cards, Bangumi, and PlantUML."
+linkText = "Explore features"
+linkUrl = "/projects/"
 closable = true
 
 [widgets.advertisement]
 # Enable advertisement widget content / 启用广告组件内容
-enabled = false
+enabled = true
 id = "advertisement"
-title = "Advertisement"
-content = ""
+title = "KIRARI Demo"
+content = "A compact demo placement for announcements, links, or sponsor messages."
 imageSrc = ""
 imageAlt = "Advertisement"
-linkText = ""
-linkUrl = ""
+linkText = "View projects"
+linkUrl = "/projects/"
 expireDate = ""
 displayCount = -1
 closable = true
@@ -411,26 +461,36 @@ lang = "en"
 # Sponsor Page Configuration / 赞助页面配置
 # -----------------------------------------------------------------------------
 [sponsor]
-enabled = false
+enabled = true
 title = "Sponsor"
-description = ""
+description = "Demo sponsor page with mock methods and supporters."
 
-# [[sponsor.methods]]
-# name = "Ko-fi"
-# url = "https://ko-fi.com/example"
-# description = "Support the site"
+[[sponsor.methods]]
+name = "GitHub Sponsors"
+url = "https://github.com/sponsors"
+description = "Support ongoing theme development."
 
-# [[sponsor.supporters]]
-# name = "Example"
-# amount = "$5"
-# message = "Thank you"
+[[sponsor.methods]]
+name = "Ko-fi"
+url = "https://ko-fi.com/"
+description = "Send a small thank-you."
+
+[[sponsor.supporters]]
+name = "KIRARI Friend"
+amount = "$5"
+message = "Thanks for keeping the demo bright."
+
+[[sponsor.supporters]]
+name = "Theme Supporter"
+amount = "$12"
+message = "Mock supporter entry for the online demo."
 
 # -----------------------------------------------------------------------------
 # Bangumi Page Configuration / Bangumi 页面配置
 # -----------------------------------------------------------------------------
 [bangumi]
-enabled = false
-userId = ""
+enabled = true
+userId = "905494"
 apiBase = "https://api.bgm.tv"
 mode = "dynamic"
 categoryOrder = ["anime", "book", "music", "game"]
@@ -439,9 +499,9 @@ categoryOrder = ["anime", "book", "music", "game"]
 # Fonts And Cover Image Configuration / 字体与封面图配置
 # -----------------------------------------------------------------------------
 [fonts]
-enabled = false
+enabled = true
 links = []
-fontFamily = ""
+fontFamily = "Inter, Noto Sans SC, system-ui, sans-serif"
 
 [coverImage]
 lqip = true
@@ -451,7 +511,7 @@ fadeIn = true
 # Markdown Enhancement Configuration / Markdown 增强配置
 # -----------------------------------------------------------------------------
 [markdown.plantuml]
-enable = false
+enable = true
 server = "https://www.plantuml.com/plantuml"
 lightTheme = ""
 darkTheme = ""

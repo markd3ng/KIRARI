@@ -58,6 +58,7 @@ const commentsWidget = readOptional("../src/components/comments/Comments.astro")
 const footerWidget = readOptional("../src/components/Footer.astro");
 const buildCommitUtil = readOptional("../src/utils/build-commit.ts");
 const plantumlPlugin = readOptional("../src/plugins/remark-plantuml.js") + readOptional("../src/plugins/rehype-plantuml.mjs");
+const markdownDemoPost = readOptional("../src/content/posts/markdown-extended.md");
 const rootPackageJson = readOptional("../../../package.json");
 const edgePackageJson = readOptional("../../../workers/kirari-edge/package.json");
 const rootGitignore = readOptional("../../../.gitignore");
@@ -221,8 +222,8 @@ const tocConfigBlock = kirariConfig.match(/\[site\.toc\][\s\S]*?(?=\n\[|\n# Favi
 
 addCheck(
 	"TOC config documents floating layout",
-	/layout\s*=\s*"floating"/.test(tocConfigBlock) && /floating/.test(tocConfigBlock) && /sidebar/.test(tocConfigBlock),
-	"kirari.config.toml [site.toc] must document layout = \"floating\" with floating/sidebar options",
+	/Default[\s\S]*"floating"/.test(tocConfigBlock) && /floating/.test(tocConfigBlock) && /sidebar/.test(tocConfigBlock),
+	"kirari.config.toml [site.toc] must document the default \"floating\" layout with floating/sidebar options",
 );
 addCheck(
 	"SiteConfig toc declares layout union",
@@ -430,6 +431,19 @@ addCheck(
 		/showOnNonPostPage/.test(configTypes),
 	"sidebar must support independently configured mobile widgets and visibility controls",
 );
+addCheck(
+	"demo profile enables visible Firefly-inspired widgets",
+	/layout\s*=\s*"sidebar"/.test(kirariConfig) &&
+		/\[\[sidebar\.leftWidgets\]\]\s*type = "announcement"\s*enabled = true/.test(kirariConfig) &&
+		/\[\[sidebar\.leftWidgets\]\]\s*type = "advertisement"\s*enabled = true/.test(kirariConfig) &&
+		/\[\[sidebar\.leftWidgets\]\]\s*type = "siteStats"\s*enabled = true/.test(kirariConfig) &&
+		/\[\[sidebar\.leftWidgets\]\]\s*type = "siteInfo"\s*enabled = true/.test(kirariConfig) &&
+		/\[\[sidebar\.leftWidgets\]\]\s*type = "calendar"\s*enabled = true/.test(kirariConfig) &&
+		/\[\[sidebar\.mobileWidgets\]\]\s*type = "profile"\s*enabled = true/.test(kirariConfig) &&
+		/\[\[sidebar\.mobileWidgets\]\]\s*type = "siteStats"\s*enabled = true/.test(kirariConfig) &&
+		/\[\[sidebar\.mobileWidgets\]\]\s*type = "calendar"\s*enabled = true/.test(kirariConfig),
+	"demo kirari.config.toml must enable sidebar TOC, desktop low-risk widgets, and mobile widgets",
+);
 
 addCheck(
 	"low-risk widgets exist",
@@ -445,6 +459,12 @@ addCheck(
 	/buildCommit/.test(siteInfoWidget) &&
 		!/unknown/i.test(siteInfoWidget),
 	"SiteInfo widget must render build commit metadata without normal unknown fallback text",
+);
+addCheck(
+	"demo widget content is populated",
+	/\[widgets\.announcement\][\s\S]*enabled = true[\s\S]*title = "Demo Announcement"[\s\S]*content = ".+"/.test(kirariConfig) &&
+		/\[widgets\.advertisement\][\s\S]*enabled = true[\s\S]*title = "KIRARI Demo"[\s\S]*content = ".+"[\s\S]*linkUrl = "\/projects\/"/.test(kirariConfig),
+	"demo widgets must include visible announcement and advertisement mock content",
 );
 
 addCheck(
@@ -490,6 +510,12 @@ addCheck(
 		/I18nKey\.sponsor/.test(sponsorPage) &&
 		/I18nKey\.bangumi/.test(bangumiPage),
 	"sponsor and bangumi must have config chains and pages",
+);
+addCheck(
+	"demo sponsor and bangumi pages are enabled",
+	/\[sponsor\][\s\S]*enabled = true[\s\S]*\[\[sponsor\.methods\]\][\s\S]*name = "GitHub Sponsors"[\s\S]*\[\[sponsor\.supporters\]\][\s\S]*name = "KIRARI Friend"/.test(kirariConfig) &&
+		/\[bangumi\][\s\S]*enabled = true[\s\S]*userId = "905494"/.test(kirariConfig),
+	"demo sponsor page needs mock methods/supporters and Bangumi must use userId 905494",
 );
 addCheck(
 	"bangumi renders external api data without innerHTML",
@@ -563,6 +589,11 @@ addCheck(
 		/coverImage\?:/.test(configLoader),
 	"fonts and cover image/LQIP configuration must flow through config",
 );
+addCheck(
+	"demo fonts are enabled with a system stack",
+	/\[fonts\][\s\S]*enabled = true[\s\S]*fontFamily = "Inter, Noto Sans SC, system-ui, sans-serif"/.test(kirariConfig),
+	"demo kirari.config.toml must enable fonts with a safe system font stack",
+);
 
 addCheck(
 	"markdown enhancements are configured",
@@ -572,6 +603,12 @@ addCheck(
 		/\[markdown\.plantuml\]/.test(kirariConfig) &&
 		/\[markdown\.admonitions\]/.test(kirariConfig),
 	"PlantUML and admonition theme options must be configured",
+);
+addCheck(
+	"demo markdown includes PlantUML fixture",
+	/\[markdown\.plantuml\][\s\S]*enable = true/.test(kirariConfig) &&
+		/```plantuml[\s\S]*@startuml[\s\S]*@enduml[\s\S]*```/.test(markdownDemoPost),
+	"demo markdown fixture must include a plantuml fenced block and PlantUML must be enabled",
 );
 addCheck(
 	"Mermaid auto-render no longer depends on frontmatter only",

@@ -103,6 +103,23 @@ This is a note with a custom title.
 > The GitHub syntax is also supported.
 ```
 
+## PlantUML
+
+PlantUML diagrams can be written as fenced code blocks and rendered through the configured PlantUML server.
+
+```plantuml
+@startuml
+actor Reader
+participant KIRARI
+participant "PlantUML Server" as Server
+
+Reader -> KIRARI: Open markdown demo
+KIRARI -> Server: Render plantuml block
+Server --> KIRARI: Diagram image
+KIRARI --> Reader: Enhanced article
+@enduml
+```
+
 ### Spoiler
 
 You can add spoilers to your text. The text also supports **Markdown** syntax.
