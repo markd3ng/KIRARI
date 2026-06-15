@@ -1,0 +1,18 @@
+{
+  "name": "@kirari/edge",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "KIRARI Edge runtime — proxy, cache, and API enhancement features for Cloudflare Workers",
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "test": "echo 'No tests configured yet'",
+    "deploy:dry": "echo 'Deployment not yet configured'",
+    "deploy": "echo 'Deployment not yet configured'"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260615.1",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "pnpm@9.14.4"
+}

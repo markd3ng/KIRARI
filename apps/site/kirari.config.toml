@@ -943,13 +943,55 @@ route = "/ghc"
 # Default: "GHCARD_CACHE" / 默认值: "GHCARD_CACHE"
 serviceBinding = "GHCARD_CACHE"
 
+# -----------------------------------------------------------------------------
+# Edge Configuration / Edge 配置
+# -----------------------------------------------------------------------------
+# KIRARI Edge runtime for proxy, cache, and API enhancement features.
+# Enable by setting `enabled = true` and deploying the edge worker.
+# All edge features default to disabled — Pages-only deployment does not need this.
+# KIRARI Edge 运行时，用于代理、缓存和 API 增强功能。
+# 通过设置 `enabled = true` 并部署 edge worker 来启用。
+# 所有 edge 特性默认禁用 — 纯 Pages 部署不需要此配置。
+[edge]
+# Enable the KIRARI Edge runtime / 启用 KIRARI Edge 运行时
+# Type: boolean / 类型: 布尔值
+enabled = false
+
+# Edge API base URL / Edge API 基础 URL
+# Type: string / 类型: 字符串
+# Example / 示例: "https://edge.your-domain.com"
+apiBase = ""
+
+# GitHub Card proxy / GitHub Card 代理
+[edge.features.githubCard]
+# Enable GitHub Card proxy through the edge / 通过 Edge 代理 GitHub Card
+# Type: boolean / 类型: 布尔值
+enabled = false
+
+# Avatar proxy / 头像代理
+[edge.features.avatarProxy]
+# Enable avatar URL rewriting through the edge / 通过 Edge 重写头像 URL
+# Type: boolean / 类型: 布尔值
+enabled = false
+
+# Bangumi API proxy / Bangumi API 代理
+[edge.features.bangumiApiProxy]
+# Enable Bangumi API proxying through the edge / 通过 Edge 代理 Bangumi API
+# Type: boolean / 类型: 布尔值
+enabled = false
+
+# Bangumi image proxy / Bangumi 图片代理
+[edge.features.bangumiImageProxy]
+# Enable Bangumi image proxying through the edge / 通过 Edge 代理 Bangumi 图片
+# Type: boolean / 类型: 布尔值
+enabled = false
+
 # =============================================================================
 # END OF CONFIGURATION / 配置结束
-# =============================================================================
-# 
+#
 # For more information, see:
 # 更多信息请参考:
 #   - README.md (English)
 #   - README_CN.md (中文)
-# 
+#
 # =============================================================================
