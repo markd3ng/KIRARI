@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 
 const checks = [];
 
@@ -12,6 +12,58 @@ function readOptional(path) {
 
 function addCheck(name, passed, detail) {
 	checks.push({ name, passed, detail });
+}
+
+function collectAstroFiles(dirUrl) {
+	if (!existsSync(dirUrl)) return [];
+	return readdirSync(dirUrl, { withFileTypes: true }).flatMap((entry) => {
+		if (entry.name.startsWith(".")) return [];
+		const entryUrl = new URL(entry.name + (entry.isDirectory() ? "/" : ""), dirUrl);
+		if (entry.isDirectory()) return collectAstroFiles(entryUrl);
+		return entry.name.endsWith(".astro") ? [entryUrl] : [];
+	});
+}
+
+function escapeRegExp(value) {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function dynamicClassTokens(source) {
+	const tokens = new Set();
+	const dynamicClassPatterns = [
+		/(?:className\s*=\s*|classList\.add\()\s*["'`]([^"'`]+)["'`]/g,
+	];
+
+	for (const pattern of dynamicClassPatterns) {
+		for (const match of source.matchAll(pattern)) {
+			for (const token of match[1].split(/\s+/)) {
+				if (/^[A-Za-z_][\w-]*$/.test(token)) tokens.add(token);
+			}
+		}
+	}
+
+	return [...tokens];
+}
+
+function localScopedStyleContent(source) {
+	const blocks = [];
+	for (const match of source.matchAll(/<style([^>]*)>([\s\S]*?)<\/style>/g)) {
+		if (/\bis:global\b/.test(match[1])) continue;
+		blocks.push(match[2].replace(/:global\([^)]*\)/g, ""));
+	}
+	return blocks.join("\n");
+}
+
+function dynamicScopedStyleLeaks() {
+	return collectAstroFiles(new URL("../src/", import.meta.url)).flatMap((fileUrl) => {
+		const source = readFileSync(fileUrl, "utf8");
+		const localCss = localScopedStyleContent(source);
+		if (!localCss) return [];
+
+		return dynamicClassTokens(source)
+			.filter((token) => new RegExp(`\\.${escapeRegExp(token)}(?:[^\\w-]|$)`).test(localCss))
+			.map((token) => `${fileUrl.pathname.replace(new URL("../../../", import.meta.url).pathname, "")}: .${token}`);
+	});
 }
 
 const configLoader = readFileSync(new URL("../src/utils/config-loader.ts", import.meta.url), "utf8");
@@ -513,6 +565,12 @@ addCheck(
 		/:global\(\.dark \.search-page-result-title\)/.test(localizedSearchPage) &&
 		/:global\(\.dark \.search-page-input::placeholder\)/.test(localizedSearchPage),
 	"root and localized search pages must define explicit global light/dark colors for inputs and dynamic results",
+);
+const scopedStyleLeaks = dynamicScopedStyleLeaks();
+addCheck(
+	"dynamic astro classes are not styled by scoped CSS",
+	scopedStyleLeaks.length === 0,
+	`Script-created DOM nodes do not receive Astro scoped CSS attributes; use Tailwind classes, <style is:global>, or :global(...). Leaks: ${scopedStyleLeaks.slice(0, 8).join(", ")}`,
 );
 addCheck(
 	"search pages support slashless query URLs in deployments",

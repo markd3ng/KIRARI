@@ -84,6 +84,13 @@ kirari.config.toml → smol-toml parse → config-loader.ts → Config singleton
 
 > Do not write Stylus in components. Do not write component styles in `markdown-extend.styl`.
 
+Astro scoped CSS only applies to DOM that Astro renders and annotates at build time.
+Elements created later with `document.createElement()`, `className = ...`, or
+`classList.add(...)` do **not** receive Astro's scoped attributes. Style those
+runtime nodes with Tailwind utility classes, `<style is:global>`, or
+`:global(...)`; never rely on ordinary scoped selectors such as `.dynamic-item {}`
+for script-created DOM.
+
 ### 5. Edge Compatibility
 
 Client-side and Edge Function code must not import Node.js builtins (`fs`, `path`, `crypto`, etc.). If adding Cloudflare D1/KV: queries must be parameterized, KV must declare explicit lifecycles.
