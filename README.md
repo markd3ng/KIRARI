@@ -23,7 +23,10 @@ kirari.config.toml  ──→  smol-toml parse  ──→  config-loader.ts (typ
                                               ↓ consumed by astro.config.mjs + all components
 ```
 
-Configuration is **TOML-first**: edit `kirari.config.toml` for normal site settings. Environment variables are reserved for secrets, deployment overrides, and provider credentials that should not be committed.
+Configuration is **TOML-first**: edit `packages/site-profile/kirari.config.toml`
+for normal site settings; builds materialize it into `apps/site/kirari.config.toml`.
+Environment variables are reserved for secrets, deployment overrides, and provider
+credentials that should not be committed.
 
 **Islands**: Only 3 Svelte components hydrate on the client — Search (`client:idle`), Theme Toggle (`client:idle`), Display Settings (`client:only="svelte"`). Everything else is static `.astro`.
 
@@ -108,7 +111,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 git clone https://github.com/markd3ng/KIRARI.git
 cd KIRARI
 pnpm install          # pnpm only — preinstall hook blocks npm/yarn
-pnpm dev
+pnpm site:dev
 pnpm build
 ```
 
@@ -116,35 +119,38 @@ pnpm build
 
 ## Fork Checklist
 
-Only edit files listed below. Do not modify `src/components/`, `src/layouts/`, `src/styles/`, or `src/utils/`.
+Only edit files listed below. Do not modify program files under `apps/site/src/components/`,
+`apps/site/src/layouts/`, `apps/site/src/styles/`, or `apps/site/src/utils/`.
 
 | Path | Action | Required |
 |---|---|---|
-| `kirari.config.toml` | Set `site.url`, `site.title`, `profile.*`, `navBar.*`, `landingPage.*` | Yes |
-| `src/content/posts/` | Delete demo posts, add your `.md`/`.mdx` | Yes |
-| `src/content/spec/about.md` | Replace About content | Recommended |
-| `src/assets/images/` | Replace avatar, banner, landing hero | Recommended |
-| `public/favicon/` | Replace favicon | Recommended |
-| `public/og/default.png` | Replace default OG image | Recommended |
-| `src/content/spec/friends.md` | Replace or remove Friends nav in config | Optional |
-| `src/content/spec/projects.md` | Replace GitHub project cards or remove Projects nav in config | Optional |
-| `src/_data/friends.json` | Replace friend-link data | Optional |
+| `packages/site-profile/kirari.config.toml` | Set `site.url`, `site.title`, `profile.*`, `navBar.*`, `landingPage.*` | Yes |
+| `packages/site-profile/content/posts/` | Delete demo posts, add your `.md`/`.mdx` | Yes |
+| `packages/site-profile/content/spec/about.md` | Replace About content | Recommended |
+| `packages/site-profile/assets/` | Replace favicon, OG images, and profile assets | Recommended |
+| `packages/site-profile/content/spec/friends.md` | Replace or remove Friends nav in config | Optional |
+| `packages/site-profile/content/spec/projects.md` | Replace GitHub project cards or remove Projects nav in config | Optional |
+| `packages/site-profile/data/friends.json` | Replace friend-link data | Optional |
 
 Validation:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm type-check
-pnpm astro check
+pnpm site:type-check
+pnpm site:astro-check
+pnpm edge:type-check
+pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```
 
 ## Configuration
 
-Single source: `kirari.config.toml`. Priority: **ENV vars > TOML > defaults** in `config-loader.ts`.
+Single user-editable source: `packages/site-profile/kirari.config.toml`.
+Priority: **ENV vars > TOML > defaults** in `config-loader.ts`.
 
-Every key in `kirari.config.toml` carries bilingual comments. The file is the canonical reference. Below is a structural overview.
+Every key in `packages/site-profile/kirari.config.toml` carries bilingual comments.
+The file is the canonical profile reference. Below is a structural overview.
 
 ### Site
 
@@ -540,68 +546,69 @@ Photoswipe auto-attaches to `.post-cover` images. Click any content image for fu
 
 | Platform | Config file | Rule |
 |---|---|---|
-| Cloudflare Pages | `dist/_headers` (postbuild) | `/_astro/*` immutable |
-| Netlify | `dist/_headers` (postbuild) | `/_astro/*` immutable |
+| Cloudflare Pages | `apps/site/dist/_headers` (postbuild) | `/_astro/*` immutable |
+| Netlify | `apps/site/dist/_headers` (postbuild) | `/_astro/*` immutable |
 | Vercel | `vercel.json` | `/_astro/*` immutable |
 | EdgeOne Pages | `edgeone.json` | `/_astro/*` immutable |
 | GitHub Pages | GitHub Actions artifact | Use `site.base` for repository subpaths; front with a CDN for immutable headers |
 
 ## GitHub Pages
 
-GitHub Pages works as static hosting when the build uploads `dist/` from
+GitHub Pages works as static hosting when the build uploads `apps/site/dist/` from
 `pnpm build`. For `https://user.github.io/repo/`, set `site.base = "/repo/"` in
-`kirari.config.toml`; for a custom domain, keep `site.base = "/"` and add the
+`packages/site-profile/kirari.config.toml`; for a custom domain, keep `site.base = "/"` and add the
 domain in the Pages settings. Pagefind, RSS, sitemap, and LLMs files are
 generated during the normal build, so the Actions workflow should deploy the
-final `dist/` artifact rather than source files.
+final `apps/site/dist/` artifact rather than source files.
 
 ## Scripts
 
 | Command | Executes |
 |---|---|
-| `pnpm dev` | `astro dev` |
+| `pnpm site:dev` | `astro dev` for `@kirari/site` |
 | `pnpm build` | materialize → astro build → postbuild |
-| `pnpm preview` | `astro preview` |
-| `pnpm check` | `astro check` |
-| `pnpm type-check` | `tsc --noEmit` |
-| `pnpm new-post` | Interactive post creation wizard |
+| `pnpm check` | site type-check → Astro check → edge type-check → edge test |
+| `pnpm site:type-check` | `tsc --noEmit` for `@kirari/site` |
+| `pnpm site:astro-check` | `astro check` for `@kirari/site` |
+| `pnpm edge:type-check` | `tsc --noEmit` for `@kirari/edge` |
+| `pnpm edge:test` | edge runtime tests |
+| `pnpm --filter @kirari/site preview` | `astro preview` |
+| `pnpm --filter @kirari/site new-post` | Interactive post creation wizard |
 
 ## Directory Structure
 
 ```
 KIRARI/
-├── kirari.config.toml          # Canonical config (TOML, bilingual comments)
-├── astro.config.mjs            # Integrations, markdown plugins, Vite config
-├── src/
-│   ├── constants.ts            # Config loader → Config singleton
-│   ├── config.ts               # Per-section re-exports (backward compat)
-│   ├── types/config.ts         # Full TypeScript type tree
-│   ├── components/             # .astro (static), .svelte (islands)
-│   │   ├── embed/              # YouTube, Bilibili
-│   │   ├── landing/            # LandingPage.astro
-│   │   ├── misc/               # ImageWrapper, License, Markdown
-│   │   └── widget/             # SideBar, TOC, Profile, Categories, Tags
-│   ├── content/
-│   │   ├── posts/              # .md / .mdx blog posts
-│   │   └── spec/               # Static pages (about, friends, projects)
-│   ├── layouts/                # Layout.astro (~1310 lines), MainGridLayout.astro
-│   ├── pages/                  # File-based routes + [lang]/ variants
-│   ├── plugins/                # Remark/rehype adapters, expressive-code plugins
-│   ├── i18n/                   # Translation dicts (10 languages)
-│   ├── styles/                 # markdown-extend.styl (admonitions, GitHub cards, KaTeX)
-│   └── utils/                  # config-loader, transition-manager, env, i18n-utils
-├── scripts/                    # materialize-ghc-adapter, postbuild, new-post
-├── adapters/                   # ghc-card route templates (cloudflare, vercel)
-├── public/                     # Static assets (favicon, OG images)
-└── dist/                       # Build output (gitignored)
+├── apps/
+│   └── site/                   # Astro site program
+│       ├── kirari.config.toml  # Materialized profile config
+│       ├── astro.config.mjs    # Integrations, markdown plugins, Vite config
+│       └── src/
+│           ├── constants.ts    # Config loader → Config singleton
+│           ├── config.ts       # Per-section re-exports (backward compat)
+│           ├── types/config.ts # Full TypeScript type tree
+│           ├── components/     # .astro (static), .svelte (islands)
+│           ├── layouts/        # Layout.astro, MainGridLayout.astro
+│           ├── pages/          # File-based routes + [lang]/ variants
+│           ├── plugins/        # Remark/rehype adapters, expressive-code plugins
+│           ├── i18n/           # Translation dicts
+│           ├── styles/         # Markdown/component style layers
+│           └── utils/          # config-loader, transition-manager, env, i18n-utils
+├── packages/
+│   └── site-profile/           # Default content, config, brand assets, snippets
+├── workers/
+│   └── kirari-edge/            # Optional edge runtime
+└── apps/site/dist/             # Build output (gitignored)
 ```
 
 ## Release Validation
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm type-check
-pnpm astro check
+pnpm site:type-check
+pnpm site:astro-check
+pnpm edge:type-check
+pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```

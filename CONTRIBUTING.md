@@ -30,8 +30,10 @@ One change per commit. Separate style, logic, and feature work.
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm type-check
-pnpm astro check
+pnpm site:type-check
+pnpm site:astro-check
+pnpm edge:type-check
+pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```

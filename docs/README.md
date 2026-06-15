@@ -11,7 +11,7 @@
 ```bash
 pnpm install
 pnpm build   # materializes profile → adapters → astro build → postbuild
-pnpm check   # astro check
+pnpm check   # site type-check + Astro check + edge checks
 ```
 
 ## Default Fork Experience

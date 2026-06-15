@@ -12,17 +12,17 @@
   },
   "homepage": "https://github.com/markd3ng/KIRARI#readme",
   "scripts": {
-    "site:dev": "pnpm --filter @kirari/site dev",
-    "site:build": "pnpm --filter @kirari/site build",
-    "site:type-check": "pnpm --filter @kirari/site type-check",
-    "site:astro-check": "pnpm --filter @kirari/site check",
-    "edge:type-check": "pnpm --filter @kirari/edge type-check",
-    "edge:test": "pnpm --filter @kirari/edge test",
-    "edge:deploy:dry": "pnpm --filter @kirari/edge deploy:dry",
-    "edge:deploy": "pnpm --filter @kirari/edge deploy",
-    "check": "pnpm site:astro-check",
-    "build": "pnpm site:build",
-    "audit": "pnpm --filter @kirari/site audit"
+    "site:dev": "\"$npm_execpath\" --filter @kirari/site dev",
+    "site:build": "\"$npm_execpath\" --filter @kirari/site build",
+    "site:type-check": "\"$npm_execpath\" --filter @kirari/site type-check",
+    "site:astro-check": "\"$npm_execpath\" --filter @kirari/site check",
+    "edge:type-check": "\"$npm_execpath\" --filter @kirari/edge type-check",
+    "edge:test": "\"$npm_execpath\" --filter @kirari/edge test",
+    "edge:deploy:dry": "\"$npm_execpath\" --filter @kirari/edge deploy:dry",
+    "edge:deploy": "\"$npm_execpath\" --filter @kirari/edge deploy",
+    "check": "\"$npm_execpath\" site:type-check && \"$npm_execpath\" site:astro-check && \"$npm_execpath\" edge:type-check && \"$npm_execpath\" edge:test",
+    "build": "\"$npm_execpath\" site:build",
+    "audit": "\"$npm_execpath\" --filter @kirari/site audit"
   },
   "packageManager": "pnpm@9.14.4",
   "pnpm": {

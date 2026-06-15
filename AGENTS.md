@@ -152,9 +152,11 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm type-check    # tsc --noEmit
-pnpm astro check   # .astro template type checking
-pnpm build         # Full build (materialize → astro → postbuild)
+pnpm site:type-check   # site tsc --noEmit
+pnpm site:astro-check  # site .astro template type checking
+pnpm edge:type-check   # edge tsc --noEmit
+pnpm edge:test         # edge runtime tests
+pnpm build             # Full build (materialize → astro → postbuild)
 pnpm audit --audit-level moderate
 ```
 
@@ -180,7 +182,7 @@ One change per commit. Do not mix style tweaks, logic fixes, and new features.
 ### CI/CD
 
 - Must use `pnpm install --frozen-lockfile`
-- `@astrojs/check` is devDependency; invoked via `pnpm astro check`
+- `@astrojs/check` is devDependency in `@kirari/site`; invoked via `pnpm site:astro-check`
 
 ## Documentation Sync
 

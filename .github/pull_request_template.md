@@ -7,8 +7,10 @@
 
 ## Checklist
 
-- [ ] `pnpm type-check` passes
-- [ ] `pnpm astro check` passes
+- [ ] `pnpm site:type-check` passes
+- [ ] `pnpm site:astro-check` passes
+- [ ] `pnpm edge:type-check` passes
+- [ ] `pnpm edge:test` passes
 - [ ] `pnpm build` succeeds
 - [ ] New config fields synced to `kirari.config.toml`, `src/types/config.ts`, and `README.md`
 - [ ] Commit follows [Conventional Commits](https://www.conventionalcommits.org/)

@@ -5,8 +5,8 @@ git clone https://github.com/your-org/KIRARI
 cd KIRARI
 pnpm install
 pnpm build    # Full build (materialize → astro → postbuild)
-pnpm check    # Astro type checking
-pnpm dev      # Local dev server
+pnpm check    # Site + edge validation
+pnpm site:dev # Local dev server
 ```
 
 ## Default Content

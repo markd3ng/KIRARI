@@ -6,6 +6,7 @@ dist/
 
 # dependencies
 node_modules/
+.pnpm-store/
 
 # logs
 npm-debug.log*
@@ -60,8 +61,12 @@ pagespeed*.html
 KIRARI_*_REPORT*.md
 KIRARI_CODE_REVIEW_*.md
 KIRARI_FIX_PLAN_*.md
+KIRARI_CODE_AUDIT_*.md
 
 # generated GitHub card runtime adapters
 functions/ghc/
 api/ghc/
 tmp/
+
+# generated site profile materialization manifest
+apps/site/.kirari-profile-manifest.json

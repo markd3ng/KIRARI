@@ -55,6 +55,16 @@ const commentsWidget = readOptional("../src/components/comments/Comments.astro")
 const footerWidget = readOptional("../src/components/Footer.astro");
 const buildCommitUtil = readOptional("../src/utils/build-commit.ts");
 const plantumlPlugin = readOptional("../src/plugins/remark-plantuml.js") + readOptional("../src/plugins/rehype-plantuml.mjs");
+const rootPackageJson = readOptional("../../../package.json");
+const edgePackageJson = readOptional("../../../workers/kirari-edge/package.json");
+const rootGitignore = readOptional("../../../.gitignore");
+const rootReadme = readOptional("../../../README.md");
+const rootReadmeCn = readOptional("../../../README_CN.md");
+const contributingDoc = readOptional("../../../CONTRIBUTING.md");
+const agentsDoc = readOptional("../../../AGENTS.md");
+const quickStartDoc = readOptional("../../../docs/QUICK_START.md");
+const docsReadme = readOptional("../../../docs/README.md");
+const pullRequestTemplate = readOptional("../../../.github/pull_request_template.md");
 
 // ---- Monorepo architecture checks ----
 addCheck(
@@ -86,6 +96,47 @@ addCheck(
 	"deployment matrix doc exists",
 	existsSync(new URL("../../../docs/DEPLOYMENT_MATRIX.md", import.meta.url)),
 	"Monorepo requires docs/DEPLOYMENT_MATRIX.md",
+);
+addCheck(
+	"root workspace scripts reuse the active pnpm CLI",
+	/"site:type-check":\s*"\\"?\$npm_execpath/.test(rootPackageJson) &&
+		/"edge:type-check":\s*"\\"?\$npm_execpath/.test(rootPackageJson) &&
+		/"build":\s*"\\"?\$npm_execpath\\"? site:build"/.test(rootPackageJson) &&
+		/"check":\s*"\\"?\$npm_execpath\\"? site:type-check[\s\S]*edge:test/.test(rootPackageJson) &&
+		!/"check":\s*"pnpm site:astro-check"/.test(rootPackageJson),
+	"Root package scripts must not recursively call a different pnpm from PATH, and pnpm check must cover site and edge checks",
+);
+addCheck(
+	"generated/local audit artifacts are ignored",
+	/KIRARI_CODE_AUDIT_\*\.md/.test(rootGitignore) &&
+		/apps\/site\/\.kirari-profile-manifest\.json/.test(rootGitignore),
+	"Git must ignore local audit reports and the generated profile materialization manifest",
+);
+addCheck(
+	"root docs use monorepo validation commands",
+	!/pnpm type-check/.test(rootReadme + rootReadmeCn + contributingDoc + agentsDoc + pullRequestTemplate) &&
+		!/pnpm astro check/.test(rootReadme + rootReadmeCn + contributingDoc + agentsDoc + pullRequestTemplate) &&
+		/pnpm site:type-check/.test(rootReadme) &&
+		/pnpm site:astro-check/.test(rootReadme) &&
+		/pnpm edge:type-check/.test(rootReadme) &&
+		/pnpm site:type-check/.test(rootReadmeCn) &&
+		/pnpm site:astro-check/.test(rootReadmeCn) &&
+		/pnpm edge:type-check/.test(rootReadmeCn),
+	"README, README_CN, AGENTS, and PR template must not document removed root pnpm type-check / astro check commands",
+);
+addCheck(
+	"quick start docs describe actual root scripts",
+	/pnpm check\s+# Site \+ edge validation/.test(quickStartDoc) &&
+		/pnpm site:dev/.test(quickStartDoc) &&
+		/pnpm check\s+# site type-check \+ Astro check \+ edge checks/.test(docsReadme),
+	"Quick start docs must describe the root scripts that actually exist after monorepo migration",
+);
+addCheck(
+	"edge test script runs real tests",
+	/"test":\s*"node --test/.test(edgePackageJson) &&
+		/"deploy:dry":\s*"WRANGLER_WRITE_LOGS=false WRANGLER_SEND_METRICS=false wrangler deploy --dry-run --config wrangler\.jsonc"/.test(edgePackageJson) &&
+		!/No tests configured yet|Deployment not yet configured/.test(edgePackageJson),
+	"workers/kirari-edge test and dry-run deploy scripts must not be passing echo placeholders",
 );
 
 const materializeProfileScript = readOptional("../scripts/materialize-profile.mjs");

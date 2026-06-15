@@ -459,19 +459,19 @@ Add the following to your configuration file in your kv_namespaces array:
 
 ```bash
 # 类型检查
-pnpm type-check
+pnpm edge:type-check
 
 # 运行测试
-pnpm test
+pnpm edge:test
 
 # 干运行（不实际部署，验证配置是否正确）
-pnpm deploy:dry
+pnpm edge:deploy:dry
 ```
 
 #### 步骤 8：部署
 
 ```bash
-pnpm deploy
+pnpm edge:deploy
 ```
 
 部署成功后输出：
@@ -586,12 +586,12 @@ provider = "none"
 
 ### GitHub Pages
 
-GitHub Pages 适合纯静态部署。推荐使用 GitHub Actions 构建并上传 `dist/`
+GitHub Pages 适合纯静态部署。推荐使用 GitHub Actions 构建并上传 `apps/site/dist/`
 产物，不要直接发布源码目录。
 
 关键配置：
 - Build Command: `pnpm build`
-- Artifact Directory: `dist`
+- Artifact Directory: `apps/site/dist`
 - Node.js 版本: `22`
 - Package manager: `pnpm install --frozen-lockfile`
 
@@ -605,7 +605,7 @@ base = "/repo/"
 
 如果使用自定义域名，例如 `https://example.com/`，保持 `site.base = "/"`，并在
 GitHub Pages 设置中绑定域名。Pagefind、RSS、sitemap、LLMs 文件和 GitHub Card
-缓存 materialize 都由 `pnpm build` 生成，因此 Actions 应部署完整 `dist/`。
+缓存 materialize 都由 `pnpm build` 生成，因此 Actions 应部署完整 `apps/site/dist/`。
 
 最小 Actions 示例：
 

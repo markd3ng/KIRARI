@@ -8,12 +8,12 @@ other edge runtime features.
 ## Prerequisites
 
 - Cloudflare account (for `@kirari/edge` on Cloudflare Workers)
-- `wrangler` CLI installed
+- Dependencies installed with `pnpm install` (`wrangler` is provided by `@kirari/edge`)
 
 ## Configuration
 
-Set `[edge] enabled = true` in `kirari.config.toml` and enable the individual
-features you need:
+Set `[edge] enabled = true` in `packages/site-profile/kirari.config.toml` and
+enable the individual features you need:
 
 ```toml
 [edge]
@@ -27,8 +27,12 @@ enabled = true
 ## Deploy
 
 ```bash
+pnpm edge:deploy:dry
 pnpm edge:deploy
 ```
+
+For production, edit `workers/kirari-edge/wrangler.jsonc` if you need a
+different worker name, route, or environment binding policy.
 
 ## Enable Later
 
