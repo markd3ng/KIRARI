@@ -329,9 +329,12 @@ addCheck(
 		/\.toc-active-indicator[\s\S]*transition:[\s\S]*top 0\.18s ease[\s\S]*height 0\.18s ease[\s\S]*opacity 0\.14s ease/.test(tocWidget) &&
 		/\.toc-item\.visible \.toc-label/.test(tocWidget) &&
 		/\.toc-item\.visible \.toc-badge-dot/.test(tocWidget) &&
+		/var\(--btn-plain-bg-hover\)/.test(tocWidget) &&
+		/var\(--btn-plain-bg-active\)/.test(tocWidget) &&
+		/var\(--btn-regular-bg\)/.test(tocWidget) &&
 		!/border-dashed/.test(tocWidget) &&
 		!/group-hover:bg-transparent/.test(tocWidget),
-	"src/components/widget/TOC.astro must keep Firefly/Mizuki-style animated active background, label, and dot states instead of dashed outline fallback",
+	"src/components/widget/TOC.astro must keep category-style animated active background, label, badge, and dot states instead of dashed outline fallback",
 );
 addCheck(
 	"TOC i18n key exists",

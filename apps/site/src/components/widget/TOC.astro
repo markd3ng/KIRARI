@@ -137,35 +137,48 @@ let heading1Count = 1;
         width: 100%;
         min-width: 0;
         max-width: 100%;
-        min-height: 2.2rem;
+        height: 2.5rem;
         flex-shrink: 0;
         overflow: hidden;
         box-sizing: border-box;
-        padding: 0.48rem 0.62rem;
-        border-radius: 0.875rem;
-        color: inherit;
+        padding: 0 0.5rem;
+        border-radius: 0.5rem;
+        color: rgb(64 64 64);
         text-decoration: none;
         transition:
             background-color 0.14s ease,
-            transform 0.14s ease,
+            padding-left 0.14s ease,
             color 0.14s ease;
     }
 
+    :global(.dark) .toc-item {
+        color: rgb(212 212 212);
+    }
+
     .toc-item:hover {
-        background: color-mix(in oklab, var(--toc-btn-hover) 84%, transparent);
-        transform: translateX(1px);
+        padding-left: 0.75rem;
+        background: var(--btn-plain-bg-hover);
+        color: var(--primary);
     }
 
     .toc-item:active {
-        background: color-mix(in oklab, var(--toc-btn-active) 88%, transparent);
+        background: var(--btn-plain-bg-active);
     }
 
     .toc-item.toc-level-1 {
-        padding-left: 1.08rem;
+        padding-left: 1.5rem;
     }
 
     .toc-item.toc-level-2 {
-        padding-left: 1.62rem;
+        padding-left: 2.5rem;
+    }
+
+    .toc-item.toc-level-1:hover {
+        padding-left: 1.75rem;
+    }
+
+    .toc-item.toc-level-2:hover {
+        padding-left: 2.75rem;
     }
 
     .toc-label {
@@ -183,36 +196,37 @@ let heading1Count = 1;
     }
 
     .toc-label-primary {
-        color: rgb(0 0 0 / 0.5);
+        color: inherit;
     }
 
     .toc-label-secondary {
-        color: rgb(0 0 0 / 0.3);
-    }
-
-    :global(.dark) .toc-label-primary {
-        color: rgb(255 255 255 / 0.5);
+        color: rgb(0 0 0 / 0.45);
     }
 
     :global(.dark) .toc-label-secondary {
-        color: rgb(255 255 255 / 0.3);
+        color: rgb(255 255 255 / 0.45);
     }
 
     .toc-badge {
         display: grid;
         place-items: center;
-        width: 1.35rem;
-        height: 1.35rem;
+        width: 1.75rem;
+        height: 1.75rem;
         flex-shrink: 0;
         border-radius: 0.5rem;
-        font-size: 0.68rem;
+        font-size: 0.875rem;
         font-weight: 700;
         line-height: 1;
     }
 
     .toc-badge-index {
-        background: var(--toc-badge-bg);
+        background: var(--btn-regular-bg);
         color: var(--btn-content);
+    }
+
+    :global(.dark) .toc-badge-index {
+        background: var(--primary);
+        color: var(--deep-text);
     }
 
     .toc-badge-dot {
@@ -240,14 +254,18 @@ let heading1Count = 1;
         transform: scale(1.08);
     }
 
+    .toc-item.visible .toc-badge-index {
+        background: var(--primary);
+        color: var(--deep-text);
+    }
+
     .toc-active-indicator {
         position: absolute;
         left: 0;
         right: 0;
         z-index: -1;
-        border-radius: 0.875rem;
-        background: color-mix(in oklab, var(--toc-btn-hover) 88%, transparent);
-        box-shadow: 0 6px 18px -14px color-mix(in oklab, var(--primary) 55%, transparent);
+        border-radius: 0.5rem;
+        background: var(--btn-plain-bg-hover);
         transition:
             top 0.18s ease,
             height 0.18s ease,
@@ -256,21 +274,21 @@ let heading1Count = 1;
     }
 
     .group:hover .toc-active-indicator {
-        background: color-mix(in oklab, var(--toc-btn-active) 72%, transparent);
+        background: var(--btn-plain-bg-active);
     }
 
     @media (max-width: 768px) {
         .toc-item {
-            padding: 0.44rem 0.58rem;
-            border-radius: 0.78rem;
+            padding-left: 0.5rem;
+            border-radius: 0.5rem;
         }
 
         .toc-item.toc-level-1 {
-            padding-left: 0.94rem;
+            padding-left: 1.25rem;
         }
 
         .toc-item.toc-level-2 {
-            padding-left: 1.34rem;
+            padding-left: 2rem;
         }
     }
 </style>
