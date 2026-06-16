@@ -107,7 +107,7 @@ async function copyLink() {
 
 		<div
 			transition:fade={{ duration: 120 }}
-			class="absolute right-0 z-50 mt-2 min-w-max rounded-xl bg-[var(--license-block-bg)] p-4 shadow-lg"
+			class="fixed left-1/2 z-50 -translate-x-1/2 rounded-xl bg-[var(--license-block-bg)] p-4 shadow-lg" style="top: 40%;"
 			role="menu"
 		>
 			<div class="flex items-center gap-2">
