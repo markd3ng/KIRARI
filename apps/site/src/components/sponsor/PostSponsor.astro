@@ -18,20 +18,19 @@ interface Props {
 }
 
 const { lang, post } = Astro.props;
-const sponsorText = i18n(I18nKey.sponsorButton, lang);
-const cardTitle = post ? i18n(I18nKey.shareOnSocial, lang) : sponsorText;
-const cardDesc = post ? i18n(I18nKey.shareOnSocialDescription, lang) : i18n(I18nKey.sponsorButtonText, lang);
+const title = i18n(I18nKey.sponsorButton, lang);
+const description = i18n(I18nKey.sponsorButtonText, lang);
 ---
 
 <div class="rounded-xl bg-[var(--license-block-bg)] px-6 py-5 transition">
 	<div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div class="flex items-start gap-3">
 			<div class="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
-				<Icon name="material-symbols:favorite-outline-rounded" class="text-xl text-[var(--primary)]" />
+				<Icon name="material-symbols:favorite" class="text-xl text-[var(--primary)]" />
 			</div>
 			<div>
-				<div class="font-bold text-90">{cardTitle}</div>
-				<p class="mt-1 text-sm leading-relaxed text-50">{cardDesc}</p>
+				<div class="font-bold text-90">{title}</div>
+				<p class="mt-1 text-sm leading-relaxed text-50">{description}</p>
 			</div>
 		</div>
 		<div class="flex shrink-0 flex-wrap items-center gap-2">
@@ -47,10 +46,9 @@ const cardDesc = post ? i18n(I18nKey.shareOnSocialDescription, lang) : i18n(I18n
 			/>
 			<a
 				href="/sponsor/"
-				class="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/80 dark:text-black/70"
+				class="inline-flex items-center gap-2 px-6 py-3 bg-[var(--primary)] text-white dark:text-black/70 rounded-lg font-medium hover:bg-[var(--primary)]/80 hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
 			>
-				<Icon name="material-symbols:favorite-outline-rounded" class="text-sm" />
-				{sponsorText}
+				{i18n(I18nKey.sponsor, lang)}
 				<Icon name="material-symbols:arrow-outward-rounded" class="text-sm" />
 			</a>
 		</div>

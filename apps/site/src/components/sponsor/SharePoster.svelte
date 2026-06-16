@@ -1,5 +1,6 @@
 <script lang="ts">
 import QRCode from "qrcode";
+import Icon from "@iconify/svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 
@@ -199,11 +200,11 @@ function copyShareLink() {
 
 {#if title}
 	<button
-		class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/80 dark:text-black/70"
+		class="inline-flex items-center gap-2 px-6 py-3 bg-[var(--primary)] text-white dark:text-black/70 rounded-lg font-medium hover:bg-[var(--primary)]/80 hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
 		onclick={generatePoster}
 	>
-		↑
-		{i18n(I18nKey.shareArticle, undefined)}
+			<Icon icon="material-symbols:share" />
+			{i18n(I18nKey.shareArticle)}
 	</button>
 {/if}
 

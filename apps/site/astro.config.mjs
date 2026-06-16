@@ -96,6 +96,7 @@ export default defineConfig({
 					"code-rounded",
 					"electric-bolt-rounded",
 					"favorite-outline-rounded",
+					"favorite",
 					"menu-book-outline-rounded",
 					"star-outline-rounded",
 				],
