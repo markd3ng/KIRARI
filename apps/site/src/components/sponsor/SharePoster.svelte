@@ -199,10 +199,10 @@ function copyShareLink() {
 
 {#if title}
 	<button
-		class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-black/5 px-5 py-2.5 text-sm font-medium text-70 transition-all hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20"
+		class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/80 dark:text-black/70"
 		onclick={generatePoster}
 	>
-		<span class="text-base">↑</span>
+		↑
 		{i18n(I18nKey.shareArticle, undefined)}
 	</button>
 {/if}
