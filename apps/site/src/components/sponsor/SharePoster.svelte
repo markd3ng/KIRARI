@@ -1,6 +1,7 @@
 <script lang="ts">
 import QRCode from "qrcode";
 import Icon from "@iconify/svelte";
+import { onMount } from "svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 
@@ -26,6 +27,17 @@ let showModal = $state(false);
 let posterImage = $state<string | null>(null);
 let generating = $state(false);
 let copied = $state(false);
+let themeColor = $state("");
+
+onMount(() => {
+	const el = document.createElement("div");
+	el.style.color = "var(--primary)";
+	el.style.display = "none";
+	document.body.appendChild(el);
+	const c = getComputedStyle(el).color;
+	document.body.removeChild(el);
+	if (c) themeColor = c;
+});
 
 function loadImage(src: string): Promise<HTMLImageElement | null> {
 	return new Promise((resolve) => {
@@ -227,25 +239,31 @@ function copyShareLink() {
 				{:else}
 					<div class="flex flex-col items-center gap-3">
 						<div class="size-8 animate-spin rounded-full border-2 border-gray-200 border-t-[var(--primary)]"></div>
-						<span class="text-sm text-50">{i18n(I18nKey.generatingPoster, undefined)}</span>
+						<span class="text-sm text-50">{i18n(I18nKey.generatingPoster)}</span>
 					</div>
 				{/if}
 			</div>
 			<div class="grid grid-cols-2 gap-3 border-t border-black/10 p-4 dark:border-white/10">
 				<button
-					class="flex items-center justify-center gap-2 rounded-xl bg-black/5 px-4 py-3 font-medium text-70 transition-all hover:bg-black/10 active:scale-[0.98] dark:bg-white/10 dark:hover:bg-white/20"
+					class="flex items-center justify-center gap-2 rounded-xl bg-gray-100 px-4 py-3 font-medium text-gray-700 transition-all hover:bg-gray-200 active:scale-[0.98] dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 					onclick={copyShareLink}
 				>
-					{copied ? "✓" : "🔗"}
-					{i18n(copied ? I18nKey.copied : I18nKey.copyLink, undefined)}
+					{#if copied}
+						<Icon icon="material-symbols:check" />
+						<span>{i18n(I18nKey.copied)}</span>
+					{:else}
+						<Icon icon="material-symbols:link" />
+						<span>{i18n(I18nKey.copyLink)}</span>
+					{/if}
+					{copied ? I18nKey.copied : I18nKey.copyLink}
 				</button>
 				<button
-					class="flex items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-3 font-medium text-white shadow-lg transition-all hover:brightness-90 active:scale-[0.98] disabled:opacity-50"
+					class="flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium text-white shadow-lg transition-all hover:brightness-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
 					onclick={downloadPoster}
 					disabled={!posterImage}
 				>
-					⬇
-					{i18n(I18nKey.savePoster, undefined)}
+					<Icon icon="material-symbols:download" />
+					{i18n(I18nKey.savePoster)}
 				</button>
 			</div>
 		</div>
