@@ -61,6 +61,7 @@ const alternates: AlternateLink[] = getEnabledLanguages().flatMap((itemLang) => 
 });
 
 const canonicalUrl = getPostUrl(entry, lang);
+const fullPostUrl = new URL(canonicalUrl, Astro.url.origin).href;
 const ogImageUrl = entry.data.og?.trim() || siteConfig.og?.defaultImage || "/og/default.png";
 
 const jsonLd = {
@@ -153,7 +154,7 @@ const jsonLd = {
 			</div>
 
 			{licenseConfig.enable && <License title={entry.data.title} pubDate={entry.data.published} lastUpdated={entry.data.updated} lang={lang} notByAi={entry.data.notbyai} class="mb-6 rounded-xl license-container onload-animation"></License>}
-				{sponsorConfig.enabled && sponsorConfig.showButtonInPost && <PostSponsor lang={lang} post={{ title: entry.data.title, author: profileConfig.name, description: entry.data.description, pubDate: formatDateToYYYYMMDD(entry.data.published), url: canonicalUrl, siteTitle: siteConfig.title, avatar: profileConfig.avatar || "" }} />}
+				{sponsorConfig.enabled && sponsorConfig.showButtonInPost && <PostSponsor lang={lang} post={{ title: entry.data.title, author: profileConfig.name, description: entry.data.description, pubDate: formatDateToYYYYMMDD(entry.data.published), url: fullPostUrl, siteTitle: siteConfig.title, avatar: profileConfig.avatar || "" }} />}
 			{entry.data.comments !== false && <Comments path={canonicalUrl} title={entry.data.title} lang={lang} />}
 		</div>
 	</div>
