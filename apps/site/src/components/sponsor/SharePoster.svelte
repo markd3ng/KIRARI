@@ -255,7 +255,6 @@ function copyShareLink() {
 						<Icon icon="material-symbols:link" />
 						<span>{i18n(I18nKey.copyLink)}</span>
 					{/if}
-					{copied ? I18nKey.copied : I18nKey.copyLink}
 				</button>
 				<button
 					class="flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium text-white shadow-lg transition-all hover:brightness-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
