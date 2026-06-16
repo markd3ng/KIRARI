@@ -107,7 +107,7 @@ async function copyLink() {
 
 		<div
 			transition:fade={{ duration: 120 }}
-			class="absolute right-0 z-50 mt-2 min-w-max rounded-xl bg-[var(--license-block-bg)] p-3 shadow-lg"
+			class="absolute right-0 z-50 mt-2 min-w-max rounded-xl bg-[var(--license-block-bg)] p-4 shadow-lg"
 			role="menu"
 		>
 			<div class="flex items-center gap-2">
@@ -116,19 +116,19 @@ async function copyLink() {
 						href={link.href}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-70 transition-all hover:bg-black/5 dark:hover:bg-white/10 {link.color}"
+						class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium text-70 transition-all hover:bg-black/5 dark:hover:bg-white/10 {link.color}"
 						role="menuitem"
 					>
-						<Icon icon={link.icon} class="text-base" />
+						<Icon icon={link.icon} class="text-lg" />
 						{link.name}
 					</a>
 				{/each}
 				<button
-					class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-70 transition-all hover:bg-black/5 dark:hover:bg-white/10"
+					class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium text-70 transition-all hover:bg-black/5 dark:hover:bg-white/10"
 					onclick={copyLink}
 					role="menuitem"
 				>
-					<Icon icon={copied ? "material-symbols:check" : "material-symbols:link"} class="text-base" />
+					<Icon icon={copied ? "material-symbols:check" : "material-symbols:link"} class="text-lg" />
 					{copied ? "Copied!" : "Copy Link"}
 				</button>
 			</div>
