@@ -107,10 +107,10 @@ async function copyLink() {
 
 		<div
 			transition:fade={{ duration: 120 }}
-			class="absolute left-0 right-0 z-50 mt-2 rounded-xl bg-[var(--license-block-bg)] p-3 shadow-lg"
+			class="absolute right-0 z-50 mt-2 min-w-max rounded-xl bg-[var(--license-block-bg)] p-3 shadow-lg"
 			role="menu"
 		>
-			<div class="flex flex-wrap items-center gap-2">
+			<div class="flex items-center gap-2">
 				{#each links as link}
 					<a
 						href={link.href}
