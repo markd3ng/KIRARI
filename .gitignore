@@ -70,3 +70,4 @@ tmp/
 
 # generated site profile materialization manifest
 apps/site/.kirari-profile-manifest.json
+.codegraph/
