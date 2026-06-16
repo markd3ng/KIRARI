@@ -351,10 +351,8 @@ function copyLink() {
 					onclick={copyLink}
 				>
 					{#if copied}
-						<Icon icon="material-symbols:check" />
 						<span>{i18n(I18nKey.copied)}</span>
 					{:else}
-						<Icon icon="material-symbols:link" />
 						<span>{i18n(I18nKey.copyLink)}</span>
 					{/if}
 				</button>
@@ -364,7 +362,6 @@ function copyLink() {
 					onclick={downloadPoster}
 					disabled={!posterImage}
 				>
-					<Icon icon="material-symbols:download" />
 					{i18n(I18nKey.savePoster)}
 				</button>
 			</div>
