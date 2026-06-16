@@ -10,6 +10,9 @@ export const es: Translation = {
 	[Key.projects]: "Proyectos",
 	[Key.sponsor]: "Patrocinar",
 	[Key.bangumi]: "Bangumi",
+	[Key.devices]: "Dispositivos",
+	[Key.devicesSubtitle]: "Aquí están los dispositivos que uso",
+	[Key.devicesViewDetails]: "Ver detalles",
 	[Key.articles]: "Artículos",
 
 	[Key.toc]: "Índice",

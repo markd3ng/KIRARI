@@ -3,6 +3,7 @@ import type {
 	AnalyticsConfig,
 	CommentsConfig,
 	CoverImageConfig,
+	DevicesConfig,
 	ExpressiveCodeConfig,
 	FooterConfig,
 	FontsConfig,
@@ -79,5 +80,5 @@ export const i18nConfig: I18nConfig = Config.i18n as I18nConfig;
 
 export const searchConfig: SearchConfig = Config.search as SearchConfig;
 
-export const landingPageConfig: LandingPageConfig =
-	Config.landingPage as LandingPageConfig;
+export const landingPageConfig: LandingPageConfig = Config.landingPage as LandingPageConfig;
+export const devicesConfig: DevicesConfig = Config.devices as DevicesConfig;

@@ -10,6 +10,9 @@ export const zhCN: Translation = {
 	[Key.projects]: "项目",
 	[Key.sponsor]: "赞助",
 	[Key.bangumi]: "番剧",
+	[Key.devices]: "我的设备",
+	[Key.devicesSubtitle]: "这里展示了我日常使用的各类设备",
+	[Key.devicesViewDetails]: "查看详情",
 	[Key.articles]: "文章",
 
 	[Key.toc]: "目录",

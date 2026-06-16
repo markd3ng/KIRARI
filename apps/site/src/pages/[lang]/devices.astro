@@ -1,0 +1,44 @@
+---
+import type { GetStaticPaths } from "astro";
+import DevicesFilter from "../../components/devices/DevicesFilter.svelte";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+import MainGridLayout from "../../layouts/MainGridLayout.astro";
+import { Config } from "../../constants";
+import { fromLangSlug, getPathAlternates, getPrefixedLanguages, toLangSlug, withLangPrefix } from "../../utils/i18n-utils";
+
+export const getStaticPaths = (() =>
+	getPrefixedLanguages().map((lang) => ({
+		params: { lang: toLangSlug(lang) },
+		props: { lang },
+	}))) satisfies GetStaticPaths;
+
+const lang = fromLangSlug(Astro.params.lang);
+const devicesConfig = Config.devices;
+if (!devicesConfig.enable) {
+	return Astro.redirect(withLangPrefix("/404/", lang));
+}
+
+const title = devicesConfig.title || i18n(I18nKey.devices, lang);
+const subtitle = devicesConfig.subtitle || i18n(I18nKey.devicesSubtitle, lang);
+const currentUrl = withLangPrefix("/devices/", lang);
+const alternates = getPathAlternates((itemLang) => withLangPrefix("/devices/", itemLang));
+
+const brands: Array<{ name: string; devices: Array<{ name: string; image: string; specs: string; description: string; link: string }> }> = [];
+try {
+	const data = await import("../../_data/devices.json");
+	if (data.brands) brands.push(...data.brands);
+} catch {
+	// devices.json not materialized yet; brands stays empty
+}
+---
+
+<MainGridLayout title={title} lang={lang} alternates={alternates} canonicalUrl={currentUrl} toc={false}>
+	<section class="card-base px-6 py-6 md:px-8">
+		<div class="mb-6">
+			<h1 class="text-2xl font-bold text-90">{title}</h1>
+			{subtitle && <p class="mt-1 text-50">{subtitle}</p>}
+		</div>
+		<DevicesFilter brands={brands} {lang} client:load />
+	</section>
+</MainGridLayout>

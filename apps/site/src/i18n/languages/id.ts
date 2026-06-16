@@ -10,6 +10,9 @@ export const id: Translation = {
 	[Key.projects]: "Proyek",
 	[Key.sponsor]: "Sponsor",
 	[Key.bangumi]: "Bangumi",
+	[Key.devices]: "Perangkat",
+	[Key.devicesSubtitle]: "Berikut adalah perangkat yang saya gunakan",
+	[Key.devicesViewDetails]: "Lihat Detail",
 	[Key.articles]: "Artikel",
 
 	[Key.toc]: "Daftar Isi",

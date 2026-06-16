@@ -7,6 +7,9 @@ enum I18nKey {
 	projects = "projects",
 	sponsor = "sponsor",
 	bangumi = "bangumi",
+	devices = "devices",
+	devicesSubtitle = "devicesSubtitle",
+	devicesViewDetails = "devicesViewDetails",
 	articles = "articles",
 
 	toc = "toc",

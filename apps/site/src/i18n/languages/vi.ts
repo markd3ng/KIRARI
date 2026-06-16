@@ -10,6 +10,9 @@ export const vi: Translation = {
 	[Key.projects]: "Dự án",
 	[Key.sponsor]: "Tài trợ",
 	[Key.bangumi]: "Bangumi",
+	[Key.devices]: "Thiết bị",
+	[Key.devicesSubtitle]: "Các thiết bị tôi sử dụng hàng ngày",
+	[Key.devicesViewDetails]: "Xem chi tiết",
 	[Key.articles]: "Bài viết",
 
 	[Key.toc]: "Mục lục",

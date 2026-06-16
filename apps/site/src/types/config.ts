@@ -447,6 +447,12 @@ export type LandingPageFeaturesConfig = {
 	items: LandingPageFeatureItem[];
 };
 
+export type DevicesConfig = {
+	enable: boolean;
+	title: string;
+	subtitle: string;
+};
+
 export type EdgeConfig = {
 	enabled: boolean;
 	apiBase: string;
@@ -485,4 +491,5 @@ export type Config = {
 	githubCard: GithubCardConfig;
 	landingPage: LandingPageConfig;
 	edge: EdgeConfig;
+	devices: DevicesConfig;
 };

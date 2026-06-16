@@ -10,6 +10,9 @@ export const ko: Translation = {
 	[Key.projects]: "프로젝트",
 	[Key.sponsor]: "후원",
 	[Key.bangumi]: "방구미",
+	[Key.devices]: "장치",
+	[Key.devicesSubtitle]: "일상적으로 사용하는 장치들",
+	[Key.devicesViewDetails]: "자세히 보기",
 	[Key.articles]: "글",
 
 	[Key.toc]: "목차",

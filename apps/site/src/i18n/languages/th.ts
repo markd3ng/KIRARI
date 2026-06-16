@@ -10,6 +10,9 @@ export const th: Translation = {
 	[Key.projects]: "โปรเจกต์",
 	[Key.sponsor]: "สนับสนุน",
 	[Key.bangumi]: "Bangumi",
+	[Key.devices]: "อุปกรณ์",
+	[Key.devicesSubtitle]: "อุปกรณ์ที่ฉันใช้ในชีวิตประจำวัน",
+	[Key.devicesViewDetails]: "ดูรายละเอียด",
 	[Key.articles]: "บทความ",
 
 	[Key.toc]: "สารบัญ",

@@ -1,3 +1,21 @@
+# -----------------------------------------------------------------------------
+# Devices Page Configuration / 设备页面配置
+# -----------------------------------------------------------------------------
+# Devices showcase page for listing the devices you use.
+# 设备展示页面，用于列出你使用的设备。
+[devices]
+# Enable the devices page / 启用设备页面
+# Type: boolean / 类型: 布尔值
+enable = true
+
+# Devices page title / 设备页面标题
+# Type: string / 类型: 字符串
+# title = "My Devices"
+
+# Devices page subtitle / 设备页面副标题
+# Type: string / 类型: 字符串
+# subtitle = "Here are the devices I use in my daily life"
+
 # =============================================================================
 # KIRARI Configuration File / KIRARI 配置文件
 # =============================================================================
@@ -593,6 +611,10 @@ url = "/search/"
 
 [[navBar.links]]
 preset = "Projects"
+
+[[navBar.links]]
+name = "Devices"
+url = "/devices/"
 
 # Custom link example / 自定义链接示例
 # [[navBar.links]]

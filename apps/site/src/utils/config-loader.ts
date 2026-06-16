@@ -447,6 +447,15 @@ type TomlConfig = {
 		};
 	};
 	/** Edge configuration / Edge 配置 */
+	/** Devices page configuration / 设备页面配置 */
+	devices?: {
+		/** Enable devices page / 启用设备页面 */
+		enable?: unknown;
+		/** Devices page title / 设备页面标题 */
+		title?: unknown;
+		/** Devices page subtitle / 设备页面副标题 */
+		subtitle?: unknown;
+	};
 	edge?: {
 		/** Enable edge runtime / 启用 Edge 运行时 */
 		enabled?: unknown;
@@ -901,6 +910,11 @@ const DEFAULT_CONFIG: Config = {
 				bangumiImageProxy: { enabled: false },
 			},
 		},
+		devices: {
+			enable: true,
+			title: "My Devices",
+			subtitle: "Here are the devices I use in my daily life",
+		},
 };
 
 /**
@@ -1291,6 +1305,7 @@ export const loadConfig = (): Config => {
 	const githubCard = toml.githubCard;
 	const landingPage = toml.landingPage;
 	const edge = toml.edge;
+	const devices = toml.devices;
 
 	// Helper: validate lang field
 	const validLangs = ["en-US", "zh-CN", "zh-TW", "zh-HK", "ja-JP", "ko-KR", "es-ES", "th-TH", "vi-VN", "tr-TR", "id-ID"] as const;
@@ -1818,6 +1833,11 @@ export const loadConfig = (): Config => {
 					bangumiApiProxy: { enabled: getBoolean(edge?.features?.bangumiApiProxy?.enabled, DEFAULT_CONFIG.edge.features.bangumiApiProxy.enabled) },
 					bangumiImageProxy: { enabled: getBoolean(edge?.features?.bangumiImageProxy?.enabled, DEFAULT_CONFIG.edge.features.bangumiImageProxy.enabled) },
 				},
+			},
+			devices: {
+				enable: getBoolean(devices?.enable, DEFAULT_CONFIG.devices.enable),
+				title: getString(devices?.title, DEFAULT_CONFIG.devices.title),
+				subtitle: getString(devices?.subtitle, DEFAULT_CONFIG.devices.subtitle),
 			},
 	};
 

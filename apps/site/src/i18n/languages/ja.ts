@@ -10,6 +10,9 @@ export const ja: Translation = {
 	[Key.projects]: "プロジェクト",
 	[Key.sponsor]: "スポンサー",
 	[Key.bangumi]: "番組",
+	[Key.devices]: "デバイス",
+	[Key.devicesSubtitle]: "日常的に使用しているデバイス",
+	[Key.devicesViewDetails]: "詳細を見る",
 	[Key.articles]: "記事",
 
 	[Key.toc]: "目次",

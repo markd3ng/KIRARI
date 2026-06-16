@@ -10,6 +10,9 @@ export const tr: Translation = {
 	[Key.projects]: "Projeler",
 	[Key.sponsor]: "Sponsor",
 	[Key.bangumi]: "Bangumi",
+	[Key.devices]: "Cihazlar",
+	[Key.devicesSubtitle]: "Günlük hayatta kullandığım cihazlar",
+	[Key.devicesViewDetails]: "Detayları Gör",
 	[Key.articles]: "Yazılar",
 
 	[Key.toc]: "İçindekiler",
