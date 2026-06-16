@@ -5,14 +5,14 @@
       "devices": [
         {
           "name": "OnePlus 13T",
-          "image": "/images/device/oneplus13t.webp",
+          "image": "/images/devices/oneplus13t.svg",
           "specs": "Snapdragon 8 Elite · 12GB RAM · 512GB",
           "description": "Daily driver with an incredible camera system and blazing-fast performance. Handles everything from development work to mobile gaming.",
           "link": "https://www.oneplus.com"
         },
         {
           "name": "OnePlus Buds Pro 3",
-          "image": "/images/device/oneplus-buds.webp",
+          "image": "/images/devices/oneplus-buds.svg",
           "specs": "Adaptive ANC · 43h Battery · Hi-Res Audio",
           "description": "Noise-cancelling earbuds with rich sound quality and seamless multipoint connection across all my devices.",
           "link": "https://www.oneplus.com"
@@ -24,21 +24,21 @@
       "devices": [
         {
           "name": "MacBook Pro 14\" M4 Pro",
-          "image": "/images/device/macbook-pro.webp",
+          "image": "/images/devices/macbook-pro.svg",
           "specs": "M4 Pro · 24GB RAM · 1TB SSD",
           "description": "My primary development machine. Compiles code in seconds and handles multiple Docker containers with ease.",
           "link": "https://www.apple.com/macbook-pro"
         },
         {
           "name": "iPad Air M2",
-          "image": "/images/device/ipad-air.webp",
+          "image": "/images/devices/ipad-air.svg",
           "specs": "M2 · 11\" Liquid Retina · 256GB",
           "description": "Perfect for note-taking during meetings, reading technical docs, and sketching architecture diagrams on the go.",
           "link": "https://www.apple.com/ipad-air"
         },
         {
           "name": "AirPods Pro 2",
-          "image": "/images/device/airpods-pro.webp",
+          "image": "/images/devices/airpods-pro.svg",
           "specs": "H2 Chip · Adaptive Audio · USB-C",
           "description": "Always in my ears during deep work sessions. The noise cancellation is a game-changer for focus.",
           "link": "https://www.apple.com/airpods-pro"
@@ -50,7 +50,7 @@
       "devices": [
         {
           "name": "GL-MT3000",
-          "image": "/images/device/mt3000.webp",
+          "image": "/images/devices/mt3000.svg",
           "specs": "Wi-Fi 6 · OpenWrt · 2.5Gbps WAN",
           "description": "Travel router running custom OpenWrt with WireGuard VPN. Essential for secure connections on the road.",
           "link": "https://www.gl-inet.com"
@@ -62,14 +62,14 @@
       "devices": [
         {
           "name": "Sony WH-1000XM5",
-          "image": "/images/device/xm5.webp",
+          "image": "/images/devices/xm5.svg",
           "specs": "Industry ANC · 30h Battery · Multipoint",
           "description": "My go-to headphones for flights and open-plan offices. The comfort level lets me wear them all day.",
           "link": "https://www.sony.com"
         },
         {
           "name": "FiiO KA5",
-          "image": "/images/device/fiio-ka5.webp",
+          "image": "/images/devices/fiio-ka5.svg",
           "specs": "Dual CS43198 · 32bit/768kHz · 4.4mm BAL",
           "description": "USB DAC/amp that drives my IEMs with crystal-clear audio. Noticeable upgrade over built-in headphone jacks.",
           "link": "https://www.fiio.com"

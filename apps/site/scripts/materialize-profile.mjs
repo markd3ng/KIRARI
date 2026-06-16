@@ -21,7 +21,7 @@ const MAPPINGS = [
 	{ src: "content/spec", dest: "src/content/spec" },
 	{ src: "data/friends.json", dest: "src/_data/friends.json" },
 		{ src: "data/devices.json", dest: "src/_data/devices.json" },
-		{ src: "assets/images/device", dest: "public/images/device" },
+		{ src: "assets/images/devices", dest: "public/images/devices" },
 	{ src: "assets/favicon", dest: "public/favicon" },
 	{ src: "assets/og", dest: "public/og" },
 	{ src: "snippets", dest: "src/snippets" },
