@@ -13,6 +13,7 @@ let {
 	url = "",
 	siteTitle = "",
 	avatar = "",
+	lang = "",
 }: {
 	title?: string;
 	author?: string;
@@ -21,6 +22,7 @@ let {
 	url?: string;
 	siteTitle?: string;
 	avatar?: string;
+	lang?: string;
 } = $props();
 
 let showModal = $state(false);
@@ -320,7 +322,7 @@ function copyLink() {
 		onclick={generatePoster}
 	>
 		<Icon icon="material-symbols:share" />
-		{i18n(I18nKey.shareArticle)}
+		{i18n(I18nKey.shareArticle, lang)}
 	</button>
 {/if}
 
@@ -341,7 +343,7 @@ function copyLink() {
 				{:else}
 					<div class="flex flex-col items-center gap-3">
 						<div class="w-8 h-8 border-2 border-gray-200 rounded-full animate-spin" style="border-top-color: {themeColor}"></div>
-						<span class="text-sm text-gray-500">{i18n(I18nKey.generatingPoster)}</span>
+						<span class="text-sm text-gray-500">{i18n(I18nKey.generatingPoster, lang)}</span>
 					</div>
 				{/if}
 			</div>
@@ -351,9 +353,9 @@ function copyLink() {
 					onclick={copyLink}
 				>
 					{#if copied}
-						<span>{i18n(I18nKey.copied)}</span>
+						<span>{i18n(I18nKey.copied, lang)}</span>
 					{:else}
-						<span>{i18n(I18nKey.copyLink)}</span>
+						<span>{i18n(I18nKey.copyLink, lang)}</span>
 					{/if}
 				</button>
 				<button
@@ -362,7 +364,7 @@ function copyLink() {
 					onclick={downloadPoster}
 					disabled={!posterImage}
 				>
-					{i18n(I18nKey.savePoster)}
+					{i18n(I18nKey.savePoster, lang)}
 				</button>
 			</div>
 		</div>
