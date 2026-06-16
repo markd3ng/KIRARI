@@ -11,7 +11,7 @@
     "deploy": "WRANGLER_WRITE_LOGS=false WRANGLER_SEND_METRICS=false wrangler deploy --config wrangler.jsonc"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260615.1",
+    "@cloudflare/workers-types": "^4.20260616.1",
     "typescript": "^5.9.3",
     "wrangler": "4.100.0"
   },
