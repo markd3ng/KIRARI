@@ -1,6 +1,6 @@
 <script lang="ts">
 import Icon from "@iconify/svelte";
-import { fade } from "svelte/transition";
+import { slide } from "svelte/transition";
 
 let {
 	title = "",
@@ -17,64 +17,23 @@ let copied = $state(false);
 
 const encodedUrl = $derived(encodeURIComponent(url));
 const encodedTitle = $derived(encodeURIComponent(title));
-const text = $derived(title);
 
-const links = $derived([
-	{
-		name: "X",
-		icon: "fa6-brands:x-twitter",
-		href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
-		color: "hover:text-black dark:hover:text-white",
-	},
-	{
-		name: "Facebook",
-		icon: "fa6-brands:facebook",
-		href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-		color: "hover:text-[#1877F2]",
-	},
-	{
-		name: "LinkedIn",
-		icon: "fa6-brands:linkedin",
-		href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
-		color: "hover:text-[#0A66C2]",
-	},
-	{
-		name: "Reddit",
-		icon: "fa6-brands:reddit",
-		href: `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedTitle}`,
-		color: "hover:text-[#FF4500]",
-	},
-	{
-		name: "Telegram",
-		icon: "fa6-brands:telegram",
-		href: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`,
-		color: "hover:text-[#0088CC]",
-	},
-	{
-		name: "WhatsApp",
-		icon: "fa6-brands:whatsapp",
-		href: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`,
-		color: "hover:text-[#25D366]",
-	},
-	{
-		name: "LINE",
-		icon: "fa6-brands:line",
-		href: `https://social-plugins.line.me/lineit/share?url=${encodedUrl}`,
-		color: "hover:text-[#06C755]",
-	},
-	{
-		name: "Mail",
-		icon: "fa6-solid:envelope",
-		href: `mailto:?subject=${encodedTitle}&body=${text}%0A${encodedUrl}`,
-		color: "hover:text-70",
-	},
+const socials = $derived([
+	{ name: "X", icon: "fa6-brands:x-twitter", href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}` },
+	{ name: "Facebook", icon: "fa6-brands:facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}` },
+	{ name: "LinkedIn", icon: "fa6-brands:linkedin", href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}` },
+	{ name: "Reddit", icon: "fa6-brands:reddit", href: `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedTitle}` },
+	{ name: "Telegram", icon: "fa6-brands:telegram", href: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}` },
+	{ name: "WhatsApp", icon: "fa6-brands:whatsapp", href: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}` },
+	{ name: "LINE", icon: "fa6-brands:line", href: `https://social-plugins.line.me/lineit/share?url=${encodedUrl}` },
+	{ name: "Mail", icon: "fa6-solid:envelope", href: `mailto:?subject=${encodedTitle}&body=${title}%0A${encodedUrl}` },
 ]);
 
-function toggleBar() {
-	open = !open;
+function openSheet() {
+	open = true;
 }
 
-function closeBar() {
+function closeSheet() {
 	open = false;
 }
 
@@ -89,49 +48,58 @@ async function copyLink() {
 }
 </script>
 
-<div class="relative" class:open>
-	{#if title}
-		<button
-			class="inline-flex items-center gap-2 px-6 py-3 bg-[var(--primary)] text-white dark:text-black/70 rounded-lg font-medium hover:bg-[var(--primary)]/80 hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
-			onclick={toggleBar}
-		>
-			<Icon icon="material-symbols:share" />
-			Share
-		</button>
-	{/if}
+{#if title}
+	<button
+		class="inline-flex items-center gap-2 px-6 py-3 bg-[var(--primary)] text-white dark:text-black/70 rounded-lg font-medium hover:bg-[var(--primary)]/80 hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+		onclick={openSheet}
+	>
+		<Icon icon="material-symbols:share" />
+		Share
+	</button>
+{/if}
 
-	{#if open}
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="fixed inset-0 z-40" onclick={closeBar}></div>
+{#if open}
+	<div class="fixed inset-0 z-40 bg-black/60" onclick={closeSheet}></div>
 
-		<div
-			transition:fade={{ duration: 120 }}
-			class="fixed left-1/2 z-50 -translate-x-1/2 rounded-xl bg-[var(--license-block-bg)] p-4 shadow-lg" style="top: 40%;"
-			role="menu"
-		>
-			<div class="flex items-center gap-2">
-				{#each links as link}
-					<a
-						href={link.href}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium text-70 transition-all hover:bg-black/5 dark:hover:bg-white/10 {link.color}"
-						role="menuitem"
-					>
-						<Icon icon={link.icon} class="text-lg" />
-						{link.name}
-					</a>
-				{/each}
-				<button
-					class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-medium text-70 transition-all hover:bg-black/5 dark:hover:bg-white/10"
-					onclick={copyLink}
-					role="menuitem"
-				>
-					<Icon icon={copied ? "material-symbols:check" : "material-symbols:link"} class="text-lg" />
-					{copied ? "Copied!" : "Copy Link"}
-				</button>
-			</div>
+	<div
+		transition:slide={{ duration: 250 }}
+		class="fixed inset-x-0 bottom-0 z-50 rounded-t-[var(--radius-large)] bg-[var(--float-panel-bg)] shadow-xl dark:shadow-none"
+	>
+		<div class="flex items-center justify-center pt-3 pb-1">
+			<div class="h-1 w-8 rounded-full bg-black/20 dark:bg-white/20"></div>
 		</div>
-	{/if}
-</div>
+
+		<div class="px-5 pb-1 text-center text-90 font-bold">Share</div>
+
+		<div class="grid grid-cols-4 gap-y-3 gap-x-2 px-6 py-5">
+			<button
+				class="flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-70 transition hover:bg-black/5 dark:hover:bg-white/10"
+				onclick={copyLink}
+			>
+				<Icon icon={copied ? "material-symbols:check" : "material-symbols:link"} class="text-xl" />
+				<span class="text-50 text-xs">{copied ? "Copied!" : "Copy Link"}</span>
+			</button>
+			{#each socials as item}
+				<a
+					href={item.href}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-70 transition hover:bg-black/5 dark:hover:bg-white/10"
+				>
+					<Icon icon={item.icon} class="text-xl" />
+					<span class="text-50 text-xs">{item.name}</span>
+				</a>
+			{/each}
+		</div>
+
+		<div class="px-4 pb-5">
+			<div class="border-t border-black/10 dark:border-white/10"></div>
+			<button
+				class="btn-regular mt-3 w-full rounded-xl py-3"
+				onclick={closeSheet}
+			>
+				Cancel
+			</button>
+		</div>
+	</div>
+{/if}
