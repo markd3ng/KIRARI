@@ -6,6 +6,8 @@ enum I18nKey {
 	friends = "friends",
 	projects = "projects",
 	sponsor = "sponsor",
+	sponsorButton = "sponsorButton",
+	sponsorButtonText = "sponsorButtonText",
 	bangumi = "bangumi",
 	devices = "devices",
 	devicesSubtitle = "devicesSubtitle",

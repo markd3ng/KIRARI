@@ -9,6 +9,8 @@ export const zhCN: Translation = {
 	[Key.friends]: "友链",
 	[Key.projects]: "项目",
 	[Key.sponsor]: "赞助",
+	[Key.sponsorButton]: "赞助",
+	[Key.sponsorButtonText]: "如果这篇文章对你有所帮助，欢迎考虑赞助支持！",
 	[Key.bangumi]: "番剧",
 	[Key.devices]: "我的设备",
 	[Key.devicesSubtitle]: "这里展示了我日常使用的各类设备",

@@ -9,6 +9,8 @@ export const ja: Translation = {
 	[Key.friends]: "友達",
 	[Key.projects]: "プロジェクト",
 	[Key.sponsor]: "スポンサー",
+	[Key.sponsorButton]: "スポンサー",
+	[Key.sponsorButtonText]: "この記事が役に立ったら、サポートをお願いします！",
 	[Key.bangumi]: "番組",
 	[Key.devices]: "デバイス",
 	[Key.devicesSubtitle]: "日常的に使用しているデバイス",

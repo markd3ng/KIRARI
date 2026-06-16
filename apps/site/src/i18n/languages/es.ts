@@ -9,6 +9,8 @@ export const es: Translation = {
 	[Key.friends]: "Amigos",
 	[Key.projects]: "Proyectos",
 	[Key.sponsor]: "Patrocinar",
+	[Key.sponsorButton]: "Patrocinar",
+	[Key.sponsorButtonText]: "Si este artículo te ayudó, ¡considera apoyarme!",
 	[Key.bangumi]: "Bangumi",
 	[Key.devices]: "Dispositivos",
 	[Key.devicesSubtitle]: "Aquí están los dispositivos que uso",

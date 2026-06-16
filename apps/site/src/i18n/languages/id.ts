@@ -9,6 +9,8 @@ export const id: Translation = {
 	[Key.friends]: "Tautan Ramah",
 	[Key.projects]: "Proyek",
 	[Key.sponsor]: "Sponsor",
+	[Key.sponsorButton]: "Sponsor",
+	[Key.sponsorButtonText]: "Jika artikel ini membantu Anda, dukung saya!",
 	[Key.bangumi]: "Bangumi",
 	[Key.devices]: "Perangkat",
 	[Key.devicesSubtitle]: "Berikut adalah perangkat yang saya gunakan",

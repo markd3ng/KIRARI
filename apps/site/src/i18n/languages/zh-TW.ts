@@ -9,6 +9,8 @@ export const zhTW: Translation = {
 	[Key.friends]: "友鏈",
 	[Key.projects]: "專案",
 	[Key.sponsor]: "贊助",
+	[Key.sponsorButton]: "贊助",
+	[Key.sponsorButtonText]: "如果這篇文章對你有所幫助，歡迎考慮贊助支持！",
 	[Key.bangumi]: "番劇",
 	[Key.devices]: "我的設備",
 	[Key.devicesSubtitle]: "這裡展示了我日常使用的各類設備",

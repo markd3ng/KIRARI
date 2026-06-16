@@ -9,6 +9,8 @@ export const th: Translation = {
 	[Key.friends]: "เพื่อน",
 	[Key.projects]: "โปรเจกต์",
 	[Key.sponsor]: "สนับสนุน",
+	[Key.sponsorButton]: "สนับสนุน",
+	[Key.sponsorButtonText]: "หากบทความนี้เป็นประโยชน์ โปรดสนับสนุนฉัน!",
 	[Key.bangumi]: "Bangumi",
 	[Key.devices]: "อุปกรณ์",
 	[Key.devicesSubtitle]: "อุปกรณ์ที่ฉันใช้ในชีวิตประจำวัน",

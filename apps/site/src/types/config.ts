@@ -212,6 +212,7 @@ export type SponsorConfig = {
 	enabled: boolean;
 	title: string;
 	description: string;
+	showButtonInPost: boolean;
 	methods: {
 		name: string;
 		url: string;

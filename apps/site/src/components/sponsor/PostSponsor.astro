@@ -1,0 +1,35 @@
+---
+import { Icon } from "astro-icon/components";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+
+interface Props {
+	lang?: string;
+}
+
+const { lang } = Astro.props;
+const sponsorText = i18n(I18nKey.sponsorButton, lang);
+const sponsorDescription = i18n(I18nKey.sponsorButtonText, lang);
+---
+
+<div class="rounded-xl bg-[var(--license-block-bg)] px-6 py-5 transition">
+	<div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<div class="flex items-start gap-3">
+			<div class="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
+				<Icon name="material-symbols:favorite-outline-rounded" class="text-xl text-[var(--primary)]" />
+			</div>
+			<div>
+				<div class="font-bold text-90">{sponsorText}</div>
+				<p class="mt-1 text-sm leading-relaxed text-50">{sponsorDescription}</p>
+			</div>
+		</div>
+		<a
+			href="/sponsor/"
+			class="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-[var(--primary)] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-[var(--primary)]/80 dark:text-black/70"
+		>
+			<Icon name="material-symbols:favorite-outline-rounded" class="text-sm" />
+			{sponsorText}
+			<Icon name="material-symbols:arrow-outward-rounded" class="text-sm" />
+		</a>
+	</div>
+</div>

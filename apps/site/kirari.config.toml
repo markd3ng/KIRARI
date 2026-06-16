@@ -482,6 +482,9 @@ lang = "en"
 enabled = true
 title = "Sponsor"
 description = "Demo sponsor page with mock methods and supporters."
+# Show a sponsor callout card at the bottom of post articles / 在文章底部显示赞助卡片
+# Type: boolean / 类型: 布尔值
+showButtonInPost = true
 
 [[sponsor.methods]]
 name = "GitHub Sponsors"

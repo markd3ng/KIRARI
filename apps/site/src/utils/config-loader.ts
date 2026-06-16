@@ -211,6 +211,7 @@ type TomlConfig = {
 		enabled?: unknown;
 		title?: unknown;
 		description?: unknown;
+			showButtonInPost?: unknown;
 		methods?: unknown;
 		supporters?: unknown;
 	};
@@ -647,6 +648,7 @@ const DEFAULT_CONFIG: Config = {
 		enabled: false,
 		title: "Sponsor",
 		description: "",
+		showButtonInPost: false,
 		methods: [],
 		supporters: [],
 	},
@@ -1669,6 +1671,7 @@ export const loadConfig = (): Config => {
 			enabled: getBoolean(sponsor?.enabled, DEFAULT_CONFIG.sponsor.enabled),
 			title: getString(sponsor?.title, DEFAULT_CONFIG.sponsor.title),
 			description: getString(sponsor?.description, DEFAULT_CONFIG.sponsor.description),
+				showButtonInPost: getBoolean(sponsor?.showButtonInPost, DEFAULT_CONFIG.sponsor.showButtonInPost),
 			methods: validateSponsorMethods(sponsor?.methods),
 			supporters: validateSupporters(sponsor?.supporters),
 		},

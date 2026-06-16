@@ -9,6 +9,8 @@ export const vi: Translation = {
 	[Key.friends]: "Bạn",
 	[Key.projects]: "Dự án",
 	[Key.sponsor]: "Tài trợ",
+	[Key.sponsorButton]: "Tài trợ",
+	[Key.sponsorButtonText]: "Nếu bài viết này hữu ích, hãy cân nhắc ủng hộ tôi!",
 	[Key.bangumi]: "Bangumi",
 	[Key.devices]: "Thiết bị",
 	[Key.devicesSubtitle]: "Các thiết bị tôi sử dụng hàng ngày",
