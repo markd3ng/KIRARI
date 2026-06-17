@@ -18,33 +18,27 @@ let copied = $state(false);
 const encodedUrl = $derived(encodeURIComponent(url));
 const encodedTitle = $derived(encodeURIComponent(title));
 
-const socials = $derived([
-	{ name: "X", icon: "fa6-brands:x-twitter", href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}` },
-	{ name: "Facebook", icon: "fa6-brands:facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}` },
-	{ name: "LinkedIn", icon: "fa6-brands:linkedin", href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}` },
-	{ name: "Reddit", icon: "fa6-brands:reddit", href: `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedTitle}` },
-	{ name: "Telegram", icon: "fa6-brands:telegram", href: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}` },
-	{ name: "WhatsApp", icon: "fa6-brands:whatsapp", href: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}` },
-	{ name: "LINE", icon: "fa6-brands:line", href: `https://social-plugins.line.me/lineit/share?url=${encodedUrl}` },
-	{ name: "Mail", icon: "fa6-solid:envelope", href: `mailto:?subject=${encodedTitle}&body=${title}%0A${encodedUrl}` },
+const items = $derived([
+	{ name: "Copy Link", icon: copied ? "material-symbols:check" : "material-symbols:link", action: "clipboard" as const, href: "" },
+	{ name: "X", icon: "fa6-brands:x-twitter", action: "link" as const, href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}` },
+	{ name: "Facebook", icon: "fa6-brands:facebook", action: "link" as const, href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}` },
+	{ name: "LinkedIn", icon: "fa6-brands:linkedin", action: "link" as const, href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}` },
+	{ name: "Reddit", icon: "fa6-brands:reddit", action: "link" as const, href: `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedTitle}` },
+	{ name: "Telegram", icon: "fa6-brands:telegram", action: "link" as const, href: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}` },
+	{ name: "WhatsApp", icon: "fa6-brands:whatsapp", action: "link" as const, href: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}` },
+	{ name: "LINE", icon: "fa6-brands:line", action: "link" as const, href: `https://social-plugins.line.me/lineit/share?url=${encodedUrl}` },
+	{ name: "Mail", icon: "fa6-solid:envelope", action: "link" as const, href: `mailto:?subject=${encodedTitle}&body=${title}%0A${encodedUrl}` },
 ]);
 
-function openSheet() {
-	open = true;
-}
+function openSheet() { open = true; }
+function closeSheet() { open = false; }
 
-function closeSheet() {
-	open = false;
-}
-
-async function copyLink() {
+async function handleClipboard() {
 	try {
 		await navigator.clipboard.writeText(url);
 		copied = true;
 		setTimeout(() => (copied = false), 2000);
-	} catch {
-		// clipboard unavailable
-	}
+	} catch {}
 }
 </script>
 
@@ -62,44 +56,31 @@ async function copyLink() {
 	<div class="fixed inset-0 z-40 bg-black/60" onclick={closeSheet}></div>
 
 	<div
-		transition:slide={{ duration: 250 }}
-		class="fixed inset-x-0 bottom-0 z-50 rounded-t-[var(--radius-large)] bg-[var(--float-panel-bg)] shadow-xl dark:shadow-none"
+		transition:slide={{ duration: 200 }}
+		class="fixed inset-x-0 bottom-0 z-50 bg-[var(--float-panel-bg)] shadow-xl dark:shadow-none"
 	>
-		<div class="flex items-center justify-center pt-3 pb-1">
-			<div class="h-1 w-8 rounded-full bg-black/20 dark:bg-white/20"></div>
-		</div>
-
-		<div class="px-5 pb-1 text-center text-90 font-bold">Share</div>
-
-		<div class="grid grid-cols-4 gap-y-3 gap-x-2 px-6 py-5">
-			<button
-				class="flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-70 transition hover:bg-black/5 dark:hover:bg-white/10"
-				onclick={copyLink}
-			>
-				<Icon icon={copied ? "material-symbols:check" : "material-symbols:link"} class="text-xl" />
-				<span class="text-50 text-xs">{copied ? "Copied!" : "Copy Link"}</span>
-			</button>
-			{#each socials as item}
-				<a
-					href={item.href}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-70 transition hover:bg-black/5 dark:hover:bg-white/10"
-				>
-					<Icon icon={item.icon} class="text-xl" />
-					<span class="text-50 text-xs">{item.name}</span>
-				</a>
+		<div class="flex gap-1 overflow-x-auto px-4 py-3">
+			{#each items as item}
+				{#if item.action === "clipboard"}
+					<button
+						class="flex shrink-0 flex-col items-center gap-1 rounded-xl px-3 py-2 text-70 transition hover:bg-black/5 dark:hover:bg-white/10"
+						onclick={handleClipboard}
+					>
+						<Icon icon={item.icon} class="text-lg" />
+						<span class="text-50 text-[10px] leading-tight">{item.name}</span>
+					</button>
+				{:else}
+					<a
+						href={item.href}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="flex shrink-0 flex-col items-center gap-1 rounded-xl px-3 py-2 text-70 transition hover:bg-black/5 dark:hover:bg-white/10"
+					>
+						<Icon icon={item.icon} class="text-lg" />
+						<span class="text-50 text-[10px] leading-tight">{item.name}</span>
+					</a>
+				{/if}
 			{/each}
-		</div>
-
-		<div class="px-4 pb-5">
-			<div class="border-t border-black/10 dark:border-white/10"></div>
-			<button
-				class="btn-regular mt-3 w-full rounded-xl py-3"
-				onclick={closeSheet}
-			>
-				Cancel
-			</button>
 		</div>
 	</div>
 {/if}
