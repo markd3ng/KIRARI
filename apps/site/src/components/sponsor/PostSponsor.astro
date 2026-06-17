@@ -5,43 +5,46 @@ import { i18n } from "../../i18n/translation";
 import SharePoster from "./SharePoster.svelte";
 
 interface Props {
-    lang?: string;
-    post?: {
-        title: string;
-        url: string;
-    };
+	lang?: string;
+	post?: {
+		title: string;
+		url: string;
+	};
 }
 
 const { lang, post } = Astro.props;
 const title = i18n(I18nKey.sponsorButton, lang);
 const description = i18n(I18nKey.sponsorButtonText, lang);
+const shareUrl = post?.url ?? "";
 ---
 
 <div class="rounded-xl bg-[var(--license-block-bg)] px-6 py-5 transition">
-    <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-start gap-3">
-            <div class="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
-                <Icon name="material-symbols:favorite" class="text-xl text-[var(--primary)]" />
-            </div>
-            <div>
-                <div class="font-bold text-90">{title}</div>
-                <p class="mt-1 text-sm leading-relaxed text-50">{description}</p>
-            </div>
-        </div>
-        <a
-            href="/sponsor/"
-            class="inline-flex shrink-0 items-center gap-2 px-6 py-3 bg-[var(--primary)] text-white dark:text-black/70 rounded-lg font-medium hover:bg-[var(--primary)]/80 hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
-        >
-            {i18n(I18nKey.sponsor, lang)}
-            <Icon name="material-symbols:arrow-outward-rounded" class="text-sm" />
-        </a>
-    </div>
-    <div class="mt-4 border-t border-black/5 pt-4 dark:border-white/10">
-        <SharePoster
-            title={post?.title ?? ""}
-            url={post?.url ?? ""}
-            lang={lang}
-            client:load
-        />
-    </div>
+	<div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+		<div class="flex items-start gap-3">
+			<div class="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
+				<Icon name="material-symbols:favorite" class="text-xl text-[var(--primary)]" />
+			</div>
+			<div>
+				<div class="font-bold text-90">{title}</div>
+				<p class="mt-1 text-sm leading-relaxed text-50">{description}</p>
+			</div>
+		</div>
+		<a
+			href="/sponsor/"
+			class="inline-flex shrink-0 items-center gap-2 px-6 py-3 bg-[var(--primary)] text-white dark:text-black/70 rounded-lg font-medium hover:bg-[var(--primary)]/80 hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+		>
+			{i18n(I18nKey.sponsor, lang)}
+			<Icon name="material-symbols:arrow-outward-rounded" class="text-sm" />
+		</a>
+	</div>
+	{shareUrl && (
+		<div class="mt-4 border-t border-black/5 pt-4 dark:border-white/10">
+			<SharePoster
+				title={post?.title ?? ""}
+				url={shareUrl}
+				lang={lang}
+				client:load
+			/>
+		</div>
+	)}
 </div>

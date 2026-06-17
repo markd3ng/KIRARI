@@ -25,7 +25,7 @@ const items = $derived([
 	{ name: "Telegram", icon: "fa6-brands:telegram", href: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}` },
 	{ name: "WhatsApp", icon: "fa6-brands:whatsapp", href: `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}` },
 	{ name: "LINE", icon: "fa6-brands:line", href: `https://social-plugins.line.me/lineit/share?url=${encodedUrl}` },
-	{ name: "Mail", icon: "fa6-solid:envelope", href: `mailto:?subject=${encodedTitle}&body=${title}%0A${encodedUrl}` },
+	{ name: "Mail", icon: "fa6-solid:envelope", href: `mailto:?subject=${encodedTitle}&body=${encodedTitle}%0A${encodedUrl}` },
 ]);
 
 let copied = $state(false);
