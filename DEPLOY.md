@@ -160,12 +160,12 @@ pnpm install
 
 | 序号 | 文件 | 修改内容 | 必须？ |
 |---|---|---|---|
-| 1 | `kirari.config.toml` | 设置 `site.url` 为你的域名、`site.title`、`profile.*`、`navBar.*` | **是** |
-| 2 | `src/content/posts/` | 删除示例文章，添加你的 `.md` 文件 | **是** |
-| 3 | `src/assets/images/` | 替换头像、Banner、Landing Hero 图 | 推荐 |
-| 4 | `public/favicon/` | 替换网站图标 | 推荐 |
-| 5 | `public/og/default.png` | 替换默认社交分享图 | 推荐 |
-| 6 | `src/content/spec/about.md` | 修改"关于"页面 | 推荐 |
+| 1 | `packages/site-profile/kirari.config.toml` | 设置 `site.url` 为你的域名、`site.title`、`profile.*`、`navBar.*` | **是** |
+| 2 | `packages/site-profile/content/posts/` | 删除示例文章，添加你的 `.md` 文件 | **是** |
+| 3 | `packages/site-profile/assets/images/` | 替换头像、Banner、Landing Hero 图 | 推荐 |
+| 4 | `packages/site-profile/assets/favicon/` | 替换网站图标 | 推荐 |
+| 5 | `packages/site-profile/assets/og/default.png` | 替换默认社交分享图 | 推荐 |
+| 6 | `packages/site-profile/content/spec/about.md` | 修改"关于"页面 | 推荐 |
 
 #### site.url 设置示例
 
@@ -640,7 +640,7 @@ jobs:
       - run: pnpm build
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: apps/site/dist
 
   deploy:
     needs: build
@@ -700,7 +700,7 @@ Vercel 会自动检测 `.npmrc` 中的包管理器设置。部署后的域名格
 |---|---|---|
 | `pnpm: command not found` | Cloudflare Pages 未识别 pnpm | 确认项目根目录有 `.npmrc` 文件且包含 `package-manager=pnpm` |
 | `preinstall hook blocks npm/yarn` | 使用了 npm 而非 pnpm 安装 | 这是预期行为，KIRARI 强制使用 pnpm。在 Cloudflare Pages 构建设置中确保使用 pnpm |
-| `ENOENT: no such file or directory ... kirari.config.toml` | 配置文件缺失 | 从 `kirari.config.toml` 的备份恢复，不要删除此文件 |
+| `ENOENT: no such file or directory ... kirari.config.toml` | 配置文件缺失 | 从 `packages/site-profile/kirari.config.toml` 的备份恢复，不要删除此文件 |
 | `error during build: RollupError` | 依赖版本冲突 | 运行 `pnpm install --frozen-lockfile` 而非 `pnpm install` |
 | 构建超时（超过 25 分钟） | 首次构建安装依赖耗时较长 | Cloudflare Pages 免费版限制 25 分钟，通常够用。如果超时，参考下方"构建速度优化" |
 

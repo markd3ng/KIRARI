@@ -22,11 +22,9 @@ export const zhTW: Translation = {
 	[Key.toc]: "目錄",
 	[Key.tags]: "標籤",
 	[Key.categories]: "分類",
-	[Key.recentPosts]: "最新文章",
 
 	[Key.comments]: "評論",
 
-	[Key.untitled]: "無標題",
 	[Key.uncategorized]: "未分類",
 	[Key.noTags]: "無標籤",
 

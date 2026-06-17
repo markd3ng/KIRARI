@@ -19,8 +19,8 @@ const brands: Array<{ name: string; devices: Array<{ name: string; image: string
 try {
 	const data = await import("../_data/devices.json");
 	if (data.brands) brands.push(...data.brands);
-} catch {
-	// devices.json not materialized yet; brands stays empty
+} catch (err) {
+	console.warn("[devices] Could not load devices.json:", err);
 }
 ---
 

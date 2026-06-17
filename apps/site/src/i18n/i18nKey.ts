@@ -19,11 +19,9 @@ enum I18nKey {
 	toc = "toc",
 	tags = "tags",
 	categories = "categories",
-	recentPosts = "recentPosts",
 
 	comments = "comments",
 
-	untitled = "untitled",
 	uncategorized = "uncategorized",
 	noTags = "noTags",
 

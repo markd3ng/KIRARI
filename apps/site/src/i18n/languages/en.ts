@@ -22,11 +22,9 @@ export const en: Translation = {
 	[Key.toc]: "Table of Contents",
 	[Key.tags]: "Tags",
 	[Key.categories]: "Categories",
-	[Key.recentPosts]: "Recent Posts",
 
 	[Key.comments]: "Comments",
 
-	[Key.untitled]: "Untitled",
 	[Key.uncategorized]: "Uncategorized",
 	[Key.noTags]: "No Tags",
 

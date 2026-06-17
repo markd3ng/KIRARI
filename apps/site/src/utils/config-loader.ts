@@ -1420,6 +1420,9 @@ export const loadConfig = (): Config => {
 	const validateGoogleSafeSearch = (value: unknown): Config["search"]["google"]["safeSearch"] => {
 		return value === "off" ? "off" : DEFAULT_CONFIG.search.google.safeSearch;
 	};
+	const validateBangumiMode = (value: unknown): Config["bangumi"]["mode"] => {
+		return value === "dynamic" ? "dynamic" : DEFAULT_CONFIG.bangumi.mode;
+	};
 	const validateCommentsProvider = (value: unknown): Config["comments"]["provider"] => {
 		if (value === "giscus" || value === "waline" || value === "twikoo") return value;
 		return "none";
@@ -1679,7 +1682,7 @@ export const loadConfig = (): Config => {
 			enabled: getBoolean(bangumi?.enabled, DEFAULT_CONFIG.bangumi.enabled),
 			userId: getString(bangumi?.userId, DEFAULT_CONFIG.bangumi.userId),
 			apiBase: getString(bangumi?.apiBase, DEFAULT_CONFIG.bangumi.apiBase).replace(/\/+$/, ""),
-			mode: "dynamic",
+			mode: validateBangumiMode(bangumi?.mode),
 			categoryOrder: getStringArray(bangumi?.categoryOrder, DEFAULT_CONFIG.bangumi.categoryOrder),
 		},
 		fonts: {

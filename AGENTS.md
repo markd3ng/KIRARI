@@ -119,7 +119,7 @@ Order matters — each plugin feeds the next:
 ### 7. Build Pipeline
 
 ```
-materialize-ghc-adapter.mjs → astro build → postbuild.mjs
+materialize-profile.mjs → materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 ```
 
 `postbuild.mjs` runs 6 sequential tasks on `dist/`:

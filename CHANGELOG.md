@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-17
+
+### Added
+
+- **Devices showcase page** (`/devices/`) — brand-filtered device gallery with
+  Svelte `client:load` island, configurable via `[devices]` in TOML.
+- **Post-bottom sponsor callout card** — sponsor CTA + inline social share bar
+  (`X, Facebook, LinkedIn, Reddit, Telegram, WhatsApp, LINE, Mail, Copy Link`)
+  controlled by `[sponsor] showButtonInPost`.
+- **Monorepo workspace** — `apps/site` (Astro program), `packages/site-profile`
+  (default content / config / assets), `workers/kirari-edge` (optional edge
+  runtime with GitHub Card, avatar, and Bangumi proxy features).
+
+### Changed
+
+- **Configuration pipeline** — `og.defaultImage` is now correctly read via a
+  top-level `ogConfig` export instead of the broken `siteConfig.og` path.
+- **Default profile icon** — upgraded Twitter link to X (`fa6-brands:x-twitter`).
+- **i18n** — removed 8 dead translation keys, added 3 new device keys, fixed
+  Japanese `home` translation.
+
+### Fixed
+
+- Code review sweep: mailto body encoding, empty guard on empty share URL,
+  removed dead astro-icon config entries, tab indentation consistency.
+- Stale PostSponsor props no longer passed from post templates.
+- `DEPLOY.md` paths updated to monorepo `packages/site-profile/...` structure.
+
 ## [0.3.1] - 2026-06-13
 
 ### Removed

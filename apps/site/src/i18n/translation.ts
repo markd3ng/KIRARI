@@ -37,5 +37,5 @@ export function getTranslation(lang: string): Translation {
 
 export function i18n(key: I18nKey, lang?: string): string {
 	lang = lang || siteConfig.lang || "en-US";
-	return getTranslation(lang)[key];
+	return getTranslation(lang)[key] ?? String(key);
 }

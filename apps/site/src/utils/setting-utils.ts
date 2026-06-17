@@ -10,7 +10,8 @@ import type { LIGHT_DARK_MODE } from "@/types/config";
 export function getDefaultHue(): number {
 	const fallback = "250";
 	const configCarrier = document.getElementById("config-carrier");
-	return Number.parseInt(configCarrier?.dataset.hue || fallback, 10);
+	const parsed = Number.parseInt(configCarrier?.dataset.hue || fallback, 10);
+	return Number.isFinite(parsed) ? parsed : 250;
 }
 
 export function getHue(): number {

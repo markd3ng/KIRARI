@@ -22,11 +22,9 @@ export const es: Translation = {
 	[Key.toc]: "Índice",
 	[Key.tags]: "Etiquetas",
 	[Key.categories]: "Categorías",
-	[Key.recentPosts]: "Publicaciones recientes",
 
 	[Key.comments]: "Comentarios",
 
-	[Key.untitled]: "Sin título",
 	[Key.uncategorized]: "Sin categoría",
 	[Key.noTags]: "Sin etiquetas",
 

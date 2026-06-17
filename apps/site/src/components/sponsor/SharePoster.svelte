@@ -31,6 +31,7 @@ const items = $derived([
 let copied = $state(false);
 
 async function copyLink() {
+	if (!url) return;
 	try {
 		await navigator.clipboard.writeText(url);
 		copied = true;

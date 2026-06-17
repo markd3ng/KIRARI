@@ -22,11 +22,9 @@ export const tr: Translation = {
 	[Key.toc]: "İçindekiler",
 	[Key.tags]: "Taglar",
 	[Key.categories]: "Katagoriler",
-	[Key.recentPosts]: "Son Paylaşımlar",
 
 	[Key.comments]: "Yorumlar",
 
-	[Key.untitled]: "Başlıksız",
 	[Key.uncategorized]: "Katagorisiz",
 	[Key.noTags]: "Tag Bulunamadı",
 
