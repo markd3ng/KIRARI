@@ -757,6 +757,19 @@ addCheck(
 	"CREDITS.md must credit Firefly/Firefly-Docs/Fuwari and README files must link to it",
 );
 
+const postSponsorComponent = readOptional("../src/components/sponsor/PostSponsor.astro");
+const sharePosterComponent = readOptional("../src/components/sponsor/SharePoster.svelte");
+addCheck(
+	"PostSponsor component exists",
+	/sponsorButton/.test(postSponsorComponent) && /license-block-bg/.test(postSponsorComponent),
+	"src/components/sponsor/PostSponsor.astro must reference sponsorButton and license-block-bg",
+);
+addCheck(
+	"SharePoster component has social links",
+	/fa6-brands:x-twitter/.test(sharePosterComponent) && /copyLink/.test(sharePosterComponent),
+	"src/components/sponsor/SharePoster.svelte must include X/Twitter share and copyLink i18n",
+);
+
 const failed = checks.filter((check) => !check.passed);
 for (const check of checks) {
 	console.log(`${check.passed ? "PASS" : "FAIL"} ${check.name}`);

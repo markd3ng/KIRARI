@@ -100,7 +100,7 @@ export default defineConfig({
 					"menu-book-outline-rounded",
 					"star-outline-rounded",
 				],
-				"fa6-brands": ["creative-commons", "github", "steam", "twitter", "x-twitter", "facebook", "linkedin", "reddit", "telegram", "whatsapp", "line"],
+				"fa6-brands": ["creative-commons", "github", "steam", "x-twitter", "facebook", "linkedin", "reddit", "telegram", "whatsapp", "line"],
 				"fa6-regular": ["address-card"],
 				"fa6-solid": ["envelope", "arrow-up-right-from-square", "arrow-rotate-left", "chevron-right",
 				],
