@@ -1,5 +1,6 @@
 import { Config } from "./constants";
 import type {
+	OGConfig,
 	AnalyticsConfig,
 	CommentsConfig,
 	CoverImageConfig,
@@ -81,4 +82,6 @@ export const i18nConfig: I18nConfig = Config.i18n as I18nConfig;
 export const searchConfig: SearchConfig = Config.search as SearchConfig;
 
 export const landingPageConfig: LandingPageConfig = Config.landingPage as LandingPageConfig;
+
+export const ogConfig: OGConfig = Config.og as OGConfig;
 export const devicesConfig: DevicesConfig = Config.devices as DevicesConfig;

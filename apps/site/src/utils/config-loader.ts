@@ -528,7 +528,7 @@ const DEFAULT_CONFIG: Config = {
 		links: [
 			{
 				name: "Twitter",
-				icon: "fa6-brands:twitter",
+				icon: "fa6-brands:x-twitter",
 				url: "https://twitter.com",
 			},
 			{

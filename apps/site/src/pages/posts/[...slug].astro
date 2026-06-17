@@ -23,7 +23,7 @@ import {
 } from "@utils/content-utils";
 import { getDir } from "@utils/url-utils";
 import { Config } from "../../constants";
-import { licenseConfig, mermaidConfig, profileConfig, siteConfig, sponsorConfig } from "../../config";
+import { licenseConfig, mermaidConfig, ogConfig, profileConfig, siteConfig, sponsorConfig } from "../../config";
 import PostSponsor from "../../components/sponsor/PostSponsor.astro";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
@@ -62,7 +62,7 @@ const alternates: AlternateLink[] = getEnabledLanguages().flatMap((itemLang) => 
 
 const canonicalUrl = getPostUrl(entry, lang);
 const fullPostUrl = new URL(canonicalUrl, Astro.url.origin).href;
-const ogImageUrl = entry.data.og?.trim() || siteConfig.og?.defaultImage || "/og/default.png";
+const ogImageUrl = entry.data.og?.trim() || ogConfig.defaultImage || "/og/default.png";
 
 const jsonLd = {
 	"@context": "https://schema.org",
