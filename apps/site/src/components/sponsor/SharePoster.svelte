@@ -45,7 +45,7 @@ async function copyLink() {
 				onclick={copyLink}
 			>
 				<Icon icon={copied ? "material-symbols:check" : item.icon} class="text-base" />
-				<span class="text-50 text-[11px] leading-none">{copied ? "Copied!" : item.name}</span>
+				<span class="text-50 text-xs font-medium">{copied ? "Copied!" : item.name}</span>
 			</button>
 		{:else}
 			<a
@@ -55,7 +55,7 @@ async function copyLink() {
 				class="inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-70 transition hover:bg-black/5 dark:hover:bg-white/10"
 			>
 				<Icon icon={item.icon} class="text-base" />
-				<span class="text-50 text-[11px] leading-none">{item.name}</span>
+				<span class="text-50 text-xs font-medium">{item.name}</span>
 			</a>
 		{/if}
 	{/each}
