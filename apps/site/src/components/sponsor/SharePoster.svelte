@@ -1,6 +1,5 @@
 <script lang="ts">
 import Icon from "@iconify/svelte";
-import { slide } from "svelte/transition";
 
 let {
 	title = "",
@@ -56,7 +55,6 @@ async function handleClipboard() {
 	<div class="fixed inset-0 z-40 bg-black/60" onclick={closeSheet}></div>
 
 	<div
-		transition:slide={{ duration: 200 }}
 		class="fixed inset-x-0 bottom-0 z-50 bg-[var(--float-panel-bg)] shadow-xl dark:shadow-none"
 	>
 		<div class="flex gap-1 overflow-x-auto px-4 py-3">
