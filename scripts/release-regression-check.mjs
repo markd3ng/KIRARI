@@ -44,6 +44,12 @@ const layout = read("apps/site/src/layouts/Layout.astro");
 const astroConfig = read("apps/site/astro.config.mjs");
 const postPage = read("apps/site/src/pages/posts/[...slug].astro");
 const localizedPostPage = read("apps/site/src/pages/[lang]/posts/[...slug].astro");
+const bangumiPage = read("apps/site/src/pages/bangumi.astro");
+const localizedBangumiPage = read("apps/site/src/pages/[lang]/bangumi.astro");
+const bangumiPanel = existsSync(join(repoRoot, "apps/site/src/components/bangumi/BangumiPanel.astro"))
+	? read("apps/site/src/components/bangumi/BangumiPanel.astro")
+	: "";
+const i18nKeys = read("apps/site/src/i18n/i18nKey.ts");
 const rootVercel = readJson("vercel.json");
 const deployDocs = [
 	"DEPLOY.md",
@@ -88,6 +94,19 @@ addCheck(
 	/import\s+\{\s*unified\s*\}\s+from\s+["']@astrojs\/markdown-remark["']/.test(astroConfig) &&
 		/processor:\s*unified\(\{/.test(astroConfig),
 	"Astro 6 markdown plugins must be passed through markdown.processor: unified({...})",
+);
+addCheck(
+	"Bangumi uses a transition-safe shared panel",
+	bangumiPage.includes("BangumiPanel") &&
+		localizedBangumiPage.includes("BangumiPanel") &&
+		!bangumiPage.includes("function initBangumi") &&
+		!localizedBangumiPage.includes("function initBangumi") &&
+		bangumiPanel.includes('transitionManager.on("transition:after-swap", initBangumi)') &&
+		bangumiPanel.includes("data-bangumi-state") &&
+		/BangumiLoading|bangumiLoading/.test(i18nKeys) &&
+		/BangumiEmpty|bangumiEmpty/.test(i18nKeys) &&
+		/BangumiError|bangumiError/.test(i18nKeys),
+	"root and localized routes must share an idempotent Bangumi panel registered on transitionManager with i18n states",
 );
 addCheck(
 	"Edge proxy routes are covered",

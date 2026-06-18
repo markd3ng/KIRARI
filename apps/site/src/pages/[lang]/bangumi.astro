@@ -1,5 +1,6 @@
 ---
 import type { GetStaticPaths } from "astro";
+import BangumiPanel from "../../components/bangumi/BangumiPanel.astro";
 import { bangumiConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
@@ -23,77 +24,5 @@ const alternates = getPathAlternates((itemLang) => withLangPrefix("/bangumi/", i
 ---
 
 <MainGridLayout title={title} lang={lang} alternates={alternates} canonicalUrl={currentUrl} toc={false}>
-	<section class="card-base px-6 py-6 md:px-8">
-		<h1 class="text-2xl font-bold text-90">{title}</h1>
-		<div
-			data-bangumi-page
-			data-user-id={bangumiConfig.userId}
-			data-api-base={bangumiConfig.apiBase}
-			data-category-order={JSON.stringify(bangumiConfig.categoryOrder)}
-			class="mt-5"
-		>
-			<div data-bangumi-status class="text-sm text-50">Loading...</div>
-			<div data-bangumi-results class="mt-4 grid gap-3 md:grid-cols-2"></div>
-		</div>
-	</section>
-
-	<script>
-		function normalizeCollection(item: any) {
-			const subject = item.subject || item;
-			return {
-				name: subject.name_cn || subject.name || "Untitled",
-				type: subject.type || item.type || "",
-				url: subject.id ? `https://bgm.tv/subject/${subject.id}` : "https://bgm.tv/",
-				image: subject.images?.medium || subject.images?.common || "",
-				rate: subject.rating?.score || "",
-			};
-		}
-
-		async function initBangumi() {
-			const root = document.querySelector("[data-bangumi-page]");
-			if (!root) return;
-			const status = root.querySelector("[data-bangumi-status]");
-			const results = root.querySelector("[data-bangumi-results]");
-			const userId = root.getAttribute("data-user-id");
-			const apiBase = root.getAttribute("data-api-base") || "https://api.bgm.tv";
-			if (!status || !results || !userId) return;
-			try {
-				const response = await fetch(`${apiBase}/v0/users/${encodeURIComponent(userId)}/collections?limit=24`, {
-					headers: { accept: "application/json" },
-				});
-				if (!response.ok) throw new Error("Bangumi request failed");
-				const data = await response.json();
-				const items = (data.data || data || []).map(normalizeCollection);
-				status.textContent = items.length ? "" : "No Bangumi items.";
-				results.innerHTML = "";
-				items.forEach((item: any) => {
-					const card = document.createElement("a");
-					card.href = item.url;
-					card.className = "flex gap-3 rounded-xl border border-black/10 px-3 py-3 transition hover:border-[var(--primary)] dark:border-white/15";
-					if (item.image) {
-						const image = document.createElement("img");
-						image.src = item.image;
-						image.alt = "";
-						image.loading = "lazy";
-						image.className = "h-16 w-12 rounded object-cover";
-						card.appendChild(image);
-					}
-					const body = document.createElement("div");
-					const name = document.createElement("div");
-					name.className = "font-bold text-90";
-					name.textContent = item.name;
-					const meta = document.createElement("div");
-					meta.className = "mt-1 text-sm text-50";
-					meta.textContent = item.rate ? "Rate " + item.rate : "Bangumi";
-					body.append(name, meta);
-					card.appendChild(body);
-					results.appendChild(card);
-				});
-			} catch {
-				status.textContent = "Failed to load Bangumi.";
-			}
-		}
-
-		initBangumi();
-	</script>
+	<BangumiPanel {lang} {title} />
 </MainGridLayout>

@@ -1,0 +1,187 @@
+---
+import { bangumiConfig } from "../../config";
+import I18nKey from "../../i18n/i18nKey";
+import { i18n } from "../../i18n/translation";
+
+interface Props {
+	lang: string;
+	title: string;
+}
+
+const { lang, title } = Astro.props;
+---
+
+<section class="card-base px-6 py-6 md:px-8">
+	<h1 class="text-2xl font-bold text-90">{title}</h1>
+	<div
+		data-bangumi-page
+		data-bangumi-state="idle"
+		data-user-id={bangumiConfig.userId}
+		data-api-base={bangumiConfig.apiBase}
+		data-category-order={JSON.stringify(bangumiConfig.categoryOrder)}
+		data-loading-text={i18n(I18nKey.bangumiLoading, lang)}
+		data-empty-text={i18n(I18nKey.bangumiEmpty, lang)}
+		data-error-text={i18n(I18nKey.bangumiError, lang)}
+		data-score-text={i18n(I18nKey.bangumiScore, lang)}
+		data-untitled-text={i18n(I18nKey.bangumiUntitled, lang)}
+		class="mt-5"
+	>
+		<div data-bangumi-status class="text-sm text-50">
+			{i18n(I18nKey.bangumiLoading, lang)}
+		</div>
+		<div data-bangumi-results class="mt-4 grid gap-3 md:grid-cols-2"></div>
+	</div>
+</section>
+
+<script>
+	import { transitionManager } from "@utils/transition-manager";
+
+	type UnknownRecord = Record<string, unknown>;
+	type BangumiItem = {
+		name: string;
+		url: string;
+		image: string;
+		rate: string;
+	};
+
+	const activeRequests = new WeakMap<HTMLElement, AbortController>();
+
+	function isRecord(value: unknown): value is UnknownRecord {
+		return typeof value === "object" && value !== null;
+	}
+
+	function getString(value: unknown): string {
+		return typeof value === "string" || typeof value === "number" ? String(value) : "";
+	}
+
+	function getHttpsUrl(value: unknown): string {
+		const raw = getString(value);
+		if (!raw) return "";
+		try {
+			const url = new URL(raw);
+			return url.protocol === "https:" ? url.href : "";
+		} catch {
+			return "";
+		}
+	}
+
+	function normalizeCollection(value: unknown, untitledText: string): BangumiItem {
+		const item = isRecord(value) ? value : {};
+		const subject = isRecord(item.subject) ? item.subject : item;
+		const images = isRecord(subject.images) ? subject.images : {};
+		const rating = isRecord(subject.rating) ? subject.rating : {};
+		const id = getString(subject.id);
+
+		return {
+			name: getString(subject.name_cn) || getString(subject.name) || untitledText,
+			url: id ? `https://bgm.tv/subject/${encodeURIComponent(id)}` : "https://bgm.tv/",
+			image: getHttpsUrl(images.medium) || getHttpsUrl(images.common),
+			rate: getString(rating.score),
+		};
+	}
+
+	function createCard(item: BangumiItem, scoreText: string) {
+		const card = document.createElement("a");
+		card.href = item.url;
+		card.target = "_blank";
+		card.rel = "noopener noreferrer";
+		card.className =
+			"flex gap-3 rounded-xl border border-black/10 px-3 py-3 transition hover:border-[var(--primary)] dark:border-white/15";
+
+		if (item.image) {
+			const image = document.createElement("img");
+			image.src = item.image;
+			image.alt = "";
+			image.loading = "lazy";
+			image.className = "h-16 w-12 shrink-0 rounded object-cover";
+			card.appendChild(image);
+		}
+
+		const body = document.createElement("div");
+		body.className = "min-w-0";
+		const name = document.createElement("div");
+		name.className = "line-clamp-2 font-bold text-90";
+		name.textContent = item.name;
+		const meta = document.createElement("div");
+		meta.className = "mt-1 text-sm text-50";
+		meta.textContent = item.rate ? `${scoreText} ${item.rate}` : "Bangumi";
+		body.append(name, meta);
+		card.appendChild(body);
+		return card;
+	}
+
+	async function initBangumi() {
+		const roots = document.querySelectorAll<HTMLElement>("[data-bangumi-page]");
+		for (const root of roots) {
+			if (root.dataset.bangumiState === "loading" || root.dataset.bangumiState === "loaded") {
+				continue;
+			}
+
+			const status = root.querySelector<HTMLElement>("[data-bangumi-status]");
+			const results = root.querySelector<HTMLElement>("[data-bangumi-results]");
+			const userId = root.dataset.userId;
+			const apiBase = root.dataset.apiBase?.replace(/\/+$/, "") || "https://api.bgm.tv";
+			if (!status || !results || !userId) continue;
+
+			const controller = new AbortController();
+			activeRequests.get(root)?.abort();
+			activeRequests.set(root, controller);
+			root.dataset.bangumiState = "loading";
+			status.hidden = false;
+			status.textContent = root.dataset.loadingText || "Loading...";
+			results.replaceChildren();
+
+			try {
+				const response = await fetch(
+					`${apiBase}/v0/users/${encodeURIComponent(userId)}/collections?limit=24`,
+					{
+						headers: { accept: "application/json" },
+						signal: controller.signal,
+					},
+				);
+				if (!response.ok) throw new Error(`Bangumi request failed: ${response.status}`);
+
+				const payload: unknown = await response.json();
+				const rawItems = Array.isArray(payload)
+					? payload
+					: isRecord(payload) && Array.isArray(payload.data)
+						? payload.data
+						: [];
+				const untitledText = root.dataset.untitledText || "Untitled";
+				const scoreText = root.dataset.scoreText || "Score";
+				const items = rawItems.map((item) => normalizeCollection(item, untitledText));
+
+				results.replaceChildren(...items.map((item) => createCard(item, scoreText)));
+				root.dataset.bangumiState = "loaded";
+				status.textContent = items.length ? "" : (root.dataset.emptyText || "No Bangumi items.");
+				status.hidden = items.length > 0;
+			} catch (error) {
+				if (error instanceof DOMException && error.name === "AbortError") continue;
+				root.dataset.bangumiState = "error";
+				status.hidden = false;
+				status.textContent = root.dataset.errorText || "Failed to load Bangumi.";
+			} finally {
+				if (activeRequests.get(root) === controller) activeRequests.delete(root);
+			}
+		}
+	}
+
+	function abortBangumiRequests() {
+		for (const root of document.querySelectorAll<HTMLElement>("[data-bangumi-page]")) {
+			activeRequests.get(root)?.abort();
+		}
+	}
+
+	declare global {
+		interface Window {
+			__kirariBangumiTransitionRegistered?: boolean;
+		}
+	}
+
+	if (!window.__kirariBangumiTransitionRegistered) {
+		window.__kirariBangumiTransitionRegistered = true;
+		transitionManager.on("transition:before-swap", abortBangumiRequests);
+		transitionManager.on("transition:after-swap", initBangumi);
+	}
+	void initBangumi();
+</script>

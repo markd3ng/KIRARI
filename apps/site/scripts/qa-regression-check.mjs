@@ -90,6 +90,7 @@ const vercelJson = readOptional("../vercel.json");
 const guestbookPage = readOptional("../src/pages/guestbook.astro");
 const sponsorPage = readOptional("../src/pages/sponsor.astro");
 const bangumiPage = readOptional("../src/pages/bangumi.astro");
+const bangumiPanel = readOptional("../src/components/bangumi/BangumiPanel.astro");
 const localizedSponsorPage = readOptional("../src/pages/[lang]/sponsor.astro");
 const localizedBangumiPage = readOptional("../src/pages/[lang]/bangumi.astro");
 const friendsPage = readOptional("../src/pages/friends.astro");
@@ -638,9 +639,9 @@ addCheck(
 );
 addCheck(
 	"bangumi renders external api data without innerHTML",
-	!/card\.innerHTML\s*=/.test(bangumiPage + localizedBangumiPage) &&
-		/createElement\("img"\)/.test(bangumiPage + localizedBangumiPage) &&
-		/textContent\s*=/.test(bangumiPage + localizedBangumiPage),
+	!/card\.innerHTML\s*=/.test(bangumiPanel) &&
+		/createElement\("img"\)/.test(bangumiPanel) &&
+		/textContent\s*=/.test(bangumiPanel),
 	"Bangumi external API fields must be rendered with DOM APIs and textContent",
 );
 addCheck(
