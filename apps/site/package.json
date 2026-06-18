@@ -2,7 +2,7 @@
   "name": "@kirari/site",
   "private": true,
   "type": "module",
-  "version": "0.3.1",
+  "version": "0.4.1",
   "scripts": {
     "dev": "node scripts/materialize-profile.mjs && astro dev",
     "build": "node scripts/materialize-profile.mjs && node scripts/materialize-ghc-adapter.mjs && astro build && node scripts/postbuild.mjs",

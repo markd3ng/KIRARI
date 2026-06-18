@@ -95,7 +95,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 | 图片灯箱 | photoswipe | ^5.4.4 |
 | 图片处理 | sharp | ^0.34.5 |
 | 滚动条 | overlayscrollbars | ^2.16.0 |
-| 内容 | @astrojs/mdx + remark/rehype 链 | ^5.0.6 |
+| 内容 | @astrojs/mdx + remark/rehype 链 | ^6.0.3 |
 | 订阅 | @astrojs/rss、@astrojs/sitemap | — |
 | OG 图片 | satori | ^0.26.0 |
 | 配置 | smol-toml | ^1.6.1 |

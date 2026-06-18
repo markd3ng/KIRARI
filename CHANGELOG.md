@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-06-18
+
+### Added
+
+- Added release CI gates for frozen installs, site and Edge checks, full builds,
+  dependency audit, generated deployment config, and release metadata.
+- Added a deterministic Vercel configuration generator backed by the same
+  security policy used for Cloudflare/Netlify `_headers`.
+
+### Changed
+
+- Upgraded Astro to 6.4.8, Svelte to 5.56.3, MDX to 6.0.3, Expressive Code to
+  0.43.1, Tailwind CSS to 4.3.1, Wrangler to 4.101.0, and related integrations.
+- Migrated the Markdown plugin chain to Astro 6's `unified()` processor API.
+- Declared Node.js 22.12.0 as the minimum runtime and synchronized deployment
+  documentation with the monorepo `apps/site/dist` output.
+
+### Fixed
+
+- Corrected all KIRARI Edge upstream paths, query forwarding, CORS, method
+  handling, cache policy, credential isolation, GitHub secret injection, and
+  upstream failure responses.
+- Prevented taxonomy `hreflang` links from pointing to tag or category pages
+  that are not generated in the target language.
+- Made Bangumi loading transition-safe and idempotent through a shared panel,
+  localized loading/empty/error states, abort handling, and safe DOM rendering.
+- Unified robots, sitemap, canonical, Open Graph, RSS, LLM, and structured-data
+  origins; removed placeholder and legacy upstream domains.
+- Restored sponsor share icon contrast in dark mode.
+- Removed duplicate Vercel configuration and applied search rewrites, immutable
+  asset caching, CSP, and security headers from the repository root.
+
+### Security
+
+- Updated or pinned vulnerable transitive dependencies including Vite, ws,
+  node-tar, js-yaml, and DOMPurify; `pnpm audit --audit-level moderate` now
+  reports no known vulnerabilities.
+
 ## [0.4.0] - 2026-06-17
 
 ### Added
@@ -51,15 +89,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added a Projects preset page that renders editable Markdown GitHub repository cards from `src/content/spec/projects.md`.
-
-### Changed
-
-- Updated Astro to 6.3.7 and refreshed the current dependency set for Tailwind CSS, `@tailwindcss/vite`, OverlayScrollbars, `@types/node`, and related lockfile-only transitive packages.
-
-## [0.3.0] - 2026-05-22
-
-### Added
-
 - Added Google Programmable Search as a first-class search provider, including TOML configuration, Google CSE runtime loading, KIRARI-styled no-ads results, and AdSense-compatible rendering mode.
 - Added optional Google Indexing API submission after build, with service account JSON restricted to environment variables and non-blocking warning behavior on submission failures.
 - Added trusted Custom Head/Footer snippet files under `src/snippets/` so maintainers can inject multiline HTML and JavaScript without TOML escaping pain.
@@ -72,7 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rewrote all project documentation (README.md, README_CN.md, AGENTS.md, CONTRIBUTING.md, SKILL.md) with hard technical specificity: architecture diagrams, transition system event mapping, full plugin chain ordering, config pipeline internals, type guard documentation, and platform-specific caching rules. Eliminated filler language, unified terminology across files, and removed SKILL.md/AGENTS.md content duplication.
 - Adopted TOML-first configuration governance: site behavior belongs in `kirari.config.toml`, TypeScript stays responsible for defaults/types/loading, and environment variables are reserved for secrets and deployment-specific values.
 - Changed Search and Theme Toggle hydration guidance to `client:idle`, while keeping Display Settings as `client:only="svelte"`.
-- Updated Astro to 6.3.6 and refreshed related dependencies, including Svelte, Mermaid, Expressive Code, KaTeX, Pagefind, and security-sensitive transitive overrides.
+- Updated Astro to 6.3.7 and refreshed related dependencies, including Svelte, Mermaid, Expressive Code, KaTeX, Pagefind, Tailwind CSS, OverlayScrollbars, `@types/node`, and security-sensitive transitive overrides.
 - Changed the default GitHub Card behavior back to direct `https://api.github.com` access for pure static builds.
 - Added a fork checklist to README and README_CN so new users know which config, content, and asset files to edit first.
 - Reworked GitHub Card adapter documentation with explicit mode selection, generated route behavior, token ownership tables, and verification checks.
