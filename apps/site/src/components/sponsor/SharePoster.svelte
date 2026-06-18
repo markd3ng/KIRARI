@@ -47,10 +47,10 @@ async function copyLink() {
 		{#each items as item}
 			{#if !item.href}
 				<button
-					class="inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-70 transition hover:bg-black/5 dark:hover:bg-white/10"
+					class="btn-plain inline-flex items-center gap-1 rounded-lg px-2.5 py-2"
 					onclick={copyLink}
 				>
-					<Icon icon={copied ? "material-symbols:check" : item.icon} class="text-base" />
+					<Icon icon={copied ? "material-symbols:check" : item.icon} class="text-base text-75" />
 					<span class="text-50 text-xs font-medium">{copied ? i18n(I18nKey.copied, lang) : item.name}</span>
 				</button>
 			{:else}
@@ -58,9 +58,9 @@ async function copyLink() {
 					href={item.href}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="inline-flex items-center gap-1 rounded-lg px-2.5 py-2 text-70 transition hover:bg-black/5 dark:hover:bg-white/10"
+					class="btn-plain inline-flex items-center gap-1 rounded-lg px-2.5 py-2"
 				>
-					<Icon icon={item.icon} class="text-base" />
+					<Icon icon={item.icon} class="text-base text-75" />
 					<span class="text-50 text-xs font-medium">{item.name}</span>
 				</a>
 			{/if}

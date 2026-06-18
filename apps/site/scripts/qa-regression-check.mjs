@@ -769,6 +769,13 @@ addCheck(
 	/fa6-brands:x-twitter/.test(sharePosterComponent) && /copyLink/.test(sharePosterComponent),
 	"src/components/sponsor/SharePoster.svelte must include X/Twitter share and copyLink i18n",
 );
+addCheck(
+	"SharePoster icons retain dark-mode contrast",
+	/btn-plain/.test(sharePosterComponent) &&
+		/text-75/.test(sharePosterComponent) &&
+		!/text-70/.test(sharePosterComponent),
+	"src/components/sponsor/SharePoster.svelte must use the defined btn-plain/text-75 color system instead of the nonexistent text-70 utility",
+);
 
 const failed = checks.filter((check) => !check.passed);
 for (const check of checks) {
