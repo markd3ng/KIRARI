@@ -36,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restored sponsor share icon contrast in dark mode.
 - Removed duplicate Vercel configuration and applied search rewrites, immutable
   asset caching, CSP, and security headers from the repository root.
+- Made site type-check and Astro validation materialize the default profile so
+  clean CI clones use the same typed content collections as local builds.
 
 ### Security
 

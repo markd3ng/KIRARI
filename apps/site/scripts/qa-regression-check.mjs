@@ -116,6 +116,7 @@ const buildCommitUtil = readOptional("../src/utils/build-commit.ts");
 const plantumlPlugin = readOptional("../src/plugins/remark-plantuml.js") + readOptional("../src/plugins/rehype-plantuml.mjs");
 const markdownDemoPost = readOptional("../src/content/posts/markdown-extended.md");
 const rootPackageJson = readOptional("../../../package.json");
+const sitePackageJson = readOptional("../package.json");
 const edgePackageJson = readOptional("../../../workers/kirari-edge/package.json");
 const rootGitignore = readOptional("../../../.gitignore");
 const rootReadme = readOptional("../../../README.md");
@@ -204,6 +205,12 @@ addCheck(
 	"profile materialization script does not execute git commands",
 	!/git add|git commit|reset --hard/.test(materializeProfileScript),
 	"packages/site-profile must be materialized via copy, not git operations",
+);
+addCheck(
+	"site validation scripts materialize the default profile",
+	/"type-check":\s*"node scripts\/materialize-profile\.mjs && tsc --noEmit"/.test(sitePackageJson) &&
+		/"check":\s*"node scripts\/materialize-profile\.mjs && astro check"/.test(sitePackageJson),
+	"Fresh clones must materialize profile content before site type-check and Astro check",
 );
 
 const llmsTypeBlock = configLoader.match(/llms\?: \{[\s\S]*?\n\t\t\};/)?.[0] || "";
