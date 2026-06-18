@@ -1141,14 +1141,12 @@ window.addEventListener('beforeunload', () => {
 });
 
 let backToTopBtn: HTMLElement | null = document.getElementById('back-to-top-btn');
-let toc: HTMLElement | null = document.getElementById('toc-wrapper');
 let navbar: HTMLElement | null = document.getElementById('navbar-wrapper');
 let bodyScrollCleanup: (() => void) | null = null;
 
 // Re-query DOM elements after View Transitions (old references become stale)
 function refreshDomReferences() {
 	backToTopBtn = document.getElementById('back-to-top-btn');
-	toc = document.getElementById('toc-wrapper');
 	navbar = document.getElementById('navbar-wrapper');
 }
 

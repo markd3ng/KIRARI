@@ -496,8 +496,8 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
   ">
         <Icon icon="material-symbols:search" class="absolute text-icon-lg pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
         <input placeholder={searchLabel} aria-label={searchLabel} bind:value={keywordMobile}
-			   on:change={() => googleAdsenseMode && runCurrentSearch(keywordMobile, false)}
-			   on:keydown={(event) => {
+			   onchange={() => googleAdsenseMode && runCurrentSearch(keywordMobile, false)}
+			   onkeydown={(event) => {
 				   if (googleAdsenseMode && event.key === "Enter") runCurrentSearch(keywordMobile, false);
 			   }}
                class="pl-10 absolute inset-0 text-sm bg-transparent outline-0

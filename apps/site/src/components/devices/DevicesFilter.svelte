@@ -22,7 +22,12 @@ let {
 	lang?: string;
 } = $props();
 
-let selectedBrand = $state(brands.length > 0 ? brands[0].name : "");
+let selectedBrandOverride = $state("");
+let selectedBrand = $derived(
+	brands.some((brand) => brand.name === selectedBrandOverride)
+		? selectedBrandOverride
+		: (brands[0]?.name ?? ""),
+);
 </script>
 
 <div class="devices-filter">
@@ -36,7 +41,7 @@ let selectedBrand = $state(brands.length > 0 ? brands[0].name : "");
 						{selectedBrand === brand.name
 							? 'bg-[var(--primary)] text-white shadow-sm'
 							: 'bg-black/5 text-70 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20'}"
-					onclick={() => (selectedBrand = brand.name)}
+					onclick={() => (selectedBrandOverride = brand.name)}
 				>
 					{brand.name}
 				</button>

@@ -38,6 +38,12 @@ const localizedTagPage = read("apps/site/src/pages/[lang]/tags/[tag].astro");
 const categoryPage = read("apps/site/src/pages/categories/[...category].astro");
 const localizedCategoryPage = read("apps/site/src/pages/[lang]/categories/[...category].astro");
 const postbuild = read("apps/site/scripts/postbuild.mjs");
+const searchComponent = read("apps/site/src/components/Search.svelte");
+const devicesFilter = read("apps/site/src/components/devices/DevicesFilter.svelte");
+const layout = read("apps/site/src/layouts/Layout.astro");
+const astroConfig = read("apps/site/astro.config.mjs");
+const postPage = read("apps/site/src/pages/posts/[...slug].astro");
+const localizedPostPage = read("apps/site/src/pages/[lang]/posts/[...slug].astro");
 const rootVercel = readJson("vercel.json");
 const deployDocs = [
 	"DEPLOY.md",
@@ -59,6 +65,29 @@ addCheck(
 		existsSync(join(repoRoot, ".nvmrc")) &&
 		read(".nvmrc").trim() === "22.12.0",
 	"package.json engines.node and .nvmrc must require Node 22.12.0",
+);
+addCheck(
+	"Svelte sources use current event syntax",
+	!/\bon:(?:change|keydown)=/.test(searchComponent),
+	"Search.svelte must use Svelte 5 event attributes instead of deprecated on: directives",
+);
+addCheck(
+	"Devices filter derives initial selection reactively",
+	/\$derived/.test(devicesFilter) && !/\$state\(brands\.length/.test(devicesFilter),
+	"DevicesFilter.svelte must not capture the initial brands prop in $state",
+);
+addCheck(
+	"Astro sources have no known unused release variables",
+	!/\blet toc: HTMLElement/.test(layout) &&
+		!/\bsiteConfig\b/.test(postPage.split("\n").find((line) => line.includes("from \"../../config\"")) || "") &&
+		!/\bsiteConfig\b/.test(localizedPostPage.split("\n").find((line) => line.includes('from "src/config"')) || ""),
+	"remove the unused Layout toc variable and unused post page siteConfig imports",
+);
+addCheck(
+	"Astro markdown uses the current processor API",
+	/import\s+\{\s*unified\s*\}\s+from\s+["']@astrojs\/markdown-remark["']/.test(astroConfig) &&
+		/processor:\s*unified\(\{/.test(astroConfig),
+	"Astro 6 markdown plugins must be passed through markdown.processor: unified({...})",
 );
 addCheck(
 	"Edge proxy routes are covered",

@@ -11,7 +11,7 @@
 
 # KIRARI
 
-Static blog theme — Astro 6.3.7 + Svelte 5 + Tailwind CSS v4. Single TOML config file. Targets Cloudflare Pages, Vercel, Netlify, EdgeOne Pages.
+Static blog theme — Astro 6.4.8 + Svelte 5 + Tailwind CSS v4. Single TOML config file. Targets Cloudflare Pages, Vercel, Netlify, EdgeOne Pages.
 
 ## Architecture
 
@@ -84,11 +84,11 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 
 | Category | Package | Version |
 |---|---|---|
-| Framework | astro | 6.3.7 |
-| Islands | svelte | ^5.55.9 |
+| Framework | astro | 6.4.8 |
+| Islands | svelte | ^5.56.3 |
 | CSS | tailwindcss, @tailwindcss/vite, stylus | ^4.3.0, ^0.64.0 |
 | Search | pagefind (default), @docsearch/js (Algolia) | ^1.5.2, ^4.6.3 |
-| Code highlight | astro-expressive-code + 4 plugins | ^0.42.0 |
+| Code highlight | astro-expressive-code + 4 plugins | ^0.43.1 |
 | Math | remark-math, rehype-katex, katex | ^0.16.47 |
 | Diagrams | mermaid (client-side) | ^11.15.0 |
 | Icons | astro-icon, @iconify/svelte | — |

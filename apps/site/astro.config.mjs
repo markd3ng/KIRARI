@@ -1,4 +1,5 @@
 import mdx from "@astrojs/mdx";
+import { unified } from "@astrojs/markdown-remark";
 import sitemap from "@astrojs/sitemap";
 import svelte from "@astrojs/svelte";
 
@@ -181,82 +182,84 @@ export default defineConfig({
 			type: "shiki",
 			excludeLangs: ["mermaid"],
 		},
-		remarkPlugins: [
-			remarkMath,
-			remarkReadingTime,
-			remarkExcerpt,
-			[
-				remarkGithubAdmonitionsToDirectives,
-				{
-					mapping: {
-						NOTE: "note",
-						TIP: "tip",
-						IMPORTANT: "important",
-						CAUTION: "caution",
-						WARNING: "warning",
-					},
-				},
-			],
-			remarkDirective,
-			remarkSectionize,
-			parseDirectiveNode,
-			[remarkPlantuml, Config.markdown.plantuml],
-		],
-		rehypePlugins: [
-			rehypeKatex,
-			rehypeMermaidPreProcess,
-			rehypePlantuml,
-			rehypeSlug,
-			rehypeLazyLoadImage,
-			rehypeTableWrapper,
-			[
-				rehypeComponents,
-				{
-					components: {
-						github: (properties, children) =>
-							GithubCardComponent(
-								properties,
-								children,
-								Config.githubCard.apiBase,
-							),
-						githubfile: (properties, children) =>
-							GithubFileCardComponent(
-								properties,
-								children,
-								Config.githubCard.apiBase,
-							),
-						note: (x, y) => AdmonitionComponent(x, y, "note", Config.markdown.admonitions.theme),
-						tip: (x, y) => AdmonitionComponent(x, y, "tip", Config.markdown.admonitions.theme),
-						important: (x, y) => AdmonitionComponent(x, y, "important", Config.markdown.admonitions.theme),
-						caution: (x, y) => AdmonitionComponent(x, y, "caution", Config.markdown.admonitions.theme),
-						warning: (x, y) => AdmonitionComponent(x, y, "warning", Config.markdown.admonitions.theme),
-					},
-				},
-			],
-			[
-				rehypeAutolinkHeadings,
-				{
-					behavior: "append",
-					properties: {
-						className: ["anchor"],
-					},
-					content: {
-						type: "element",
-						tagName: "span",
-						properties: {
-							className: ["anchor-icon"],
-							"data-pagefind-ignore": true,
+		processor: unified({
+			remarkPlugins: [
+				remarkMath,
+				remarkReadingTime,
+				remarkExcerpt,
+				[
+					remarkGithubAdmonitionsToDirectives,
+					{
+						mapping: {
+							NOTE: "note",
+							TIP: "tip",
+							IMPORTANT: "important",
+							CAUTION: "caution",
+							WARNING: "warning",
 						},
-						children: [
-							{
-								type: "text",
-								value: "#",
-							},
-						],
 					},
-				},
+				],
+				remarkDirective,
+				remarkSectionize,
+				parseDirectiveNode,
+				[remarkPlantuml, Config.markdown.plantuml],
 			],
-		],
+			rehypePlugins: [
+				rehypeKatex,
+				rehypeMermaidPreProcess,
+				rehypePlantuml,
+				rehypeSlug,
+				rehypeLazyLoadImage,
+				rehypeTableWrapper,
+				[
+					rehypeComponents,
+					{
+						components: {
+							github: (properties, children) =>
+								GithubCardComponent(
+									properties,
+									children,
+									Config.githubCard.apiBase,
+								),
+							githubfile: (properties, children) =>
+								GithubFileCardComponent(
+									properties,
+									children,
+									Config.githubCard.apiBase,
+								),
+							note: (x, y) => AdmonitionComponent(x, y, "note", Config.markdown.admonitions.theme),
+							tip: (x, y) => AdmonitionComponent(x, y, "tip", Config.markdown.admonitions.theme),
+							important: (x, y) => AdmonitionComponent(x, y, "important", Config.markdown.admonitions.theme),
+							caution: (x, y) => AdmonitionComponent(x, y, "caution", Config.markdown.admonitions.theme),
+							warning: (x, y) => AdmonitionComponent(x, y, "warning", Config.markdown.admonitions.theme),
+						},
+					},
+				],
+				[
+					rehypeAutolinkHeadings,
+					{
+						behavior: "append",
+						properties: {
+							className: ["anchor"],
+						},
+						content: {
+							type: "element",
+							tagName: "span",
+							properties: {
+								className: ["anchor-icon"],
+								"data-pagefind-ignore": true,
+							},
+							children: [
+								{
+									type: "text",
+									value: "#",
+								},
+							],
+						},
+					},
+				],
+			],
+		}),
 	},
 	vite: {
 		plugins: [
