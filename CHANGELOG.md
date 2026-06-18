@@ -40,8 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 - Updated or pinned vulnerable transitive dependencies including Vite, ws,
-  node-tar, js-yaml, and DOMPurify; `pnpm audit --audit-level moderate` now
-  reports no known vulnerabilities.
+  node-tar, js-yaml, DOMPurify, and undici; `pnpm audit --audit-level moderate`
+  now reports no known vulnerabilities.
 
 ## [0.4.0] - 2026-06-17
 
