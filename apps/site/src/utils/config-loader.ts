@@ -1,4 +1,5 @@
 import { parse } from "smol-toml";
+import siteDefaults from "../../site-defaults.json";
 import { getEnvBoolean, getEnvString, getEnvStringFromKeys } from "./env";
 import { LinkPreset, type Config, type LinkPresetType, type NavBarLink } from "../types/config";
 
@@ -485,9 +486,9 @@ type TomlConfig = {
  */
 const DEFAULT_CONFIG: Config = {
 	site: {
-		url: "https://kirari-main.vercel.app",
-		base: "/",
-		title: "KIRARI",
+		url: siteDefaults.url,
+		base: siteDefaults.base,
+		title: siteDefaults.title,
 		subtitle: "Demo Site",
 		lang: "en-US",
 		themeColor: {

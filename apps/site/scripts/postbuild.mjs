@@ -4,11 +4,13 @@ import { spawnSync } from "node:child_process";
 import { webcrypto } from "node:crypto";
 import { parse } from "smol-toml";
 import sanitizeHtml from "sanitize-html";
+import { buildContentSecurityPolicy, SECURITY_HEADERS } from "./security-policy.mjs";
 
 const crypto = globalThis.crypto || webcrypto;
 const distDir = new URL("../dist", import.meta.url).pathname;
 const astroDir = join(distDir, "_astro");
 const configPath = new URL("../kirari.config.toml", import.meta.url).pathname;
+const defaultsPath = new URL("../site-defaults.json", import.meta.url).pathname;
 
 function readConfigText() {
 	return existsSync(configPath) ? readFileSync(configPath, "utf8") : "";
@@ -16,20 +18,8 @@ function readConfigText() {
 
 const configText = readConfigText();
 const config = configText ? parse(configText) : {};
-const contentSecurityPolicy = [
-	"default-src 'self'",
-	"script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://analytics.umami.is https://plausible.io https://www.clarity.ms https://scripts.simpleanalyticscdn.com https://www.google.com https://cse.google.com https://www.gstatic.com",
-	"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.google.com https://www.gstatic.com",
-	"img-src 'self' data: blob: https:",
-	"font-src 'self' data: https://fonts.gstatic.com",
-	"connect-src 'self' https://api.github.com https://github.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://*.clarity.ms https://*.algolia.net https://*.algolianet.com https://api.indexnow.org https://indexing.googleapis.com",
-	"frame-src https://www.google.com https://cse.google.com",
-	"object-src 'none'",
-	"base-uri 'self'",
-	"form-action 'self'",
-	"frame-ancestors 'none'",
-	"upgrade-insecure-requests",
-].join("; ");
+const siteDefaults = JSON.parse(readFileSync(defaultsPath, "utf8"));
+const contentSecurityPolicy = buildContentSecurityPolicy(config);
 
 function toPublicPath(filePath) {
 	return `/${relative(distDir, filePath).split(sep).join("/")}`;
@@ -87,16 +77,16 @@ function activeSearchProvider() {
 }
 
 function siteUrl() {
-	return (process.env.PUBLIC_SITE_URL || getTomlString("site", "url", "https://example.com")).replace(/\/$/, "");
+	return (process.env.PUBLIC_SITE_URL || getTomlString("site", "url", siteDefaults.url)).replace(/\/$/, "");
 }
 
 function basePath() {
-	const base = process.env.PUBLIC_SITE_BASE || getTomlString("site", "base", "/");
+	const base = process.env.PUBLIC_SITE_BASE || getTomlString("site", "base", siteDefaults.base);
 	return base.endsWith("/") ? base : `${base}/`;
 }
 
 function siteTitle() {
-	return process.env.PUBLIC_SITE_TITLE || getTomlString("site", "title", "KIRARI");
+	return process.env.PUBLIC_SITE_TITLE || getTomlString("site", "title", siteDefaults.title);
 }
 
 function stripTags(html) {
@@ -301,10 +291,7 @@ function generateHeadersAndRedirects() {
 	const headers = [
 		"/*",
 		`  Content-Security-Policy: ${contentSecurityPolicy}`,
-		"  X-Frame-Options: DENY",
-		"  X-Content-Type-Options: nosniff",
-		"  Referrer-Policy: strict-origin-when-cross-origin",
-		"  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+		...SECURITY_HEADERS.map(([name, value]) => `  ${name}: ${value}`),
 		"",
 		"/",
 		linkHeaders,

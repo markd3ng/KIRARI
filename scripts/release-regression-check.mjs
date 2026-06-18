@@ -197,8 +197,11 @@ if (existsSync(distRoot)) {
 		.join("\n");
 	addCheck(
 		"generated release metadata is concrete",
-		!/\bunknown\b/i.test(generatedText) && !generatedText.includes("https://example.com"),
-		"generated text artifacts must not contain unknown commit metadata or example.com",
+		!/KIRARI[\s\S]{0,200}@[\s\S]{0,100}>unknown</i.test(generatedText) &&
+			!/>Commit<[\s\S]{0,300}>unknown</i.test(generatedText) &&
+			!generatedText.includes("https://example.com") &&
+			!generatedText.includes("https://fuwari.vercel.app"),
+		"Footer/SiteInfo commit metadata and generated origins must be concrete",
 	);
 }
 
