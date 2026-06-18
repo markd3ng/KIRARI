@@ -75,8 +75,8 @@
 > **注意**：一键部署使用的构建设置：
 > - Framework preset: **None**（手动配置）
 > - Build command: `pnpm build`
-> - Build output directory: `dist`
-> - Node.js 版本会自动从 `.nvmrc` 或 `package.json` 的 `engines` 字段检测。KIRARI 要求 Node.js ≥ 22。
+> - Build output directory: `apps/site/dist`
+> - Node.js 版本会自动从 `.nvmrc` 或 `package.json` 的 `engines` 字段检测。KIRARI 要求 Node.js ≥ 22.12.0。
 
 ---
 
@@ -107,7 +107,7 @@
 | **Production branch** | `main` | 主分支，推送代码自动触发部署 |
 | **Framework preset** | `None` | 不使用预设框架 |
 | **Build command** | `pnpm build` | 完整构建：materialize → astro build → postbuild |
-| **Build output directory** | `dist` | Astro 静态站点生成器的默认输出目录 |
+| **Build output directory** | `apps/site/dist` | Monorepo 中 Astro 站点的静态输出目录 |
 | **Root directory** | （留空） | 项目根目录 |
 
 > **为什么 Framework preset 选 "None"？** Cloudflare 预设的 Astro 框架配置可能使用旧版构建命令或输出目录。KIRARI 的构建流程包含 prebuild（GitHub Card 适配器生成）和 postbuild（缓存头、搜索索引、SEO 文件）自定义脚本，必须使用 `pnpm build`。
@@ -119,9 +119,9 @@
 
 | 变量名 | 值 |
 |---|---|
-| `NODE_VERSION` | `22` |
+| `NODE_VERSION` | `22.12.0` |
 
-> KIRARI 的 `engines` 字段和 `.npmrc` 已配置 pnpm，Cloudflare Pages 会自动检测并使用 pnpm 安装依赖。
+> KIRARI 的 `packageManager` 字段固定 pnpm 版本；Cloudflare Pages 会据此使用 pnpm 安装依赖。
 
 #### 步骤 5：保存并部署
 
@@ -133,9 +133,10 @@
 1. Cloning repository...
 2. pnpm install --frozen-lockfile    # 安装依赖
 3. pnpm build                         # 完整构建
-   ├── node scripts/materialize-ghc-adapter.mjs   # GitHub Card 适配器（默认跳过）
-   ├── astro build                                  # Astro SSG 构建
-   └── node scripts/postbuild.mjs                   # 后处理：headers, robots.txt, Pagefind, llms.txt
+   ├── apps/site/scripts/materialize-profile.mjs     # 同步默认 profile
+   ├── apps/site/scripts/materialize-ghc-adapter.mjs # GitHub Card 适配器（默认跳过）
+   ├── astro build                                   # Astro SSG 构建
+   └── apps/site/scripts/postbuild.mjs               # headers, robots.txt, Pagefind, llms.txt
 4. Deploying to Cloudflare's global network...
 ```
 
@@ -592,7 +593,7 @@ GitHub Pages 适合纯静态部署。推荐使用 GitHub Actions 构建并上传
 关键配置：
 - Build Command: `pnpm build`
 - Artifact Directory: `apps/site/dist`
-- Node.js 版本: `22`
+- Node.js 版本: `22.12.0`
 - Package manager: `pnpm install --frozen-lockfile`
 
 如果站点部署在仓库子路径，例如 `https://user.github.io/repo/`，需要在
@@ -634,7 +635,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.12.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
@@ -663,10 +664,10 @@ GitHub Pages 不读取 `dist/_headers`，所以无法直接应用 `/_astro/*` im
 一键部署配置：
 - Framework: **Other**（或手动选择 Astro）
 - Build Command: `pnpm build`
-- Output Directory: `dist`
+- Output Directory: `apps/site/dist`
 - Install Command: `pnpm install --frozen-lockfile`
 
-Vercel 会自动检测 `.npmrc` 中的包管理器设置。部署后的域名格式为 `项目名.vercel.app`。
+Vercel 会读取根 `package.json` 的 `packageManager` 和 `engines`。部署后的域名格式为 `项目名.vercel.app`。
 
 ### Netlify
 
@@ -674,9 +675,9 @@ Vercel 会自动检测 `.npmrc` 中的包管理器设置。部署后的域名格
 
 一键部署配置：
 - Build Command: `pnpm build`
-- Publish Directory: `dist`
+- Publish Directory: `apps/site/dist`
 
-> **Netlify 注意**：需要在 Netlify 项目设置中将 Node.js 版本设为 22+。
+> **Netlify 注意**：需要在 Netlify 项目设置中将 Node.js 版本设为 22.12.0 或更高。
 
 ### EdgeOne Pages（腾讯云）
 
@@ -687,8 +688,8 @@ Vercel 会自动检测 `.npmrc` 中的包管理器设置。部署后的域名格
 一键部署配置：
 - 框架预设: **None**
 - 构建命令: `pnpm build`
-- 输出目录: `dist`
-- Node.js 版本: `22`
+- 输出目录: `apps/site/dist`
+- Node.js 版本: `22.12.0`
 
 ---
 
@@ -698,7 +699,7 @@ Vercel 会自动检测 `.npmrc` 中的包管理器设置。部署后的域名格
 
 | 错误 | 原因 | 解决 |
 |---|---|---|
-| `pnpm: command not found` | Cloudflare Pages 未识别 pnpm | 确认项目根目录有 `.npmrc` 文件且包含 `package-manager=pnpm` |
+| `pnpm: command not found` | 平台未启用 Corepack/pnpm | 将 Install Command 设为 `corepack enable && pnpm install --frozen-lockfile` |
 | `preinstall hook blocks npm/yarn` | 使用了 npm 而非 pnpm 安装 | 这是预期行为，KIRARI 强制使用 pnpm。在 Cloudflare Pages 构建设置中确保使用 pnpm |
 | `ENOENT: no such file or directory ... kirari.config.toml` | 配置文件缺失 | 从 `packages/site-profile/kirari.config.toml` 的备份恢复，不要删除此文件 |
 | `error during build: RollupError` | 依赖版本冲突 | 运行 `pnpm install --frozen-lockfile` 而非 `pnpm install` |
@@ -709,7 +710,7 @@ Vercel 会自动检测 `.npmrc` 中的包管理器设置。部署后的域名格
 Cloudflare Pages 首次构建通常 2-4 分钟。如果遇到超时：
 
 1. **不要勾选 "使用系统安装的 Node"**——Cloudflare 构建环境的默认版本可能不兼容
-2. 在环境变量中添加 `NODE_VERSION=22`
+2. 在环境变量中添加 `NODE_VERSION=22.12.0`
 3. 如果仓库很大（含许多图片），考虑将图片放到 CDN 而非仓库
 
 ### 部署成功但页面空白或不正常

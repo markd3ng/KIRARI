@@ -3,7 +3,7 @@
 ```bash
 git clone https://github.com/your-org/KIRARI
 cd KIRARI
-pnpm install
+pnpm install --frozen-lockfile
 pnpm build    # Full build (materialize → astro → postbuild)
 pnpm check    # Site + edge validation
 pnpm site:dev # Local dev server
@@ -21,3 +21,4 @@ into `apps/site/`. You can replace profile-owned files to customize.
 - **Vercel**: same build command, same output directory.
 
 No Worker configuration needed. Edge features are opt-in.
+Node.js 22.12.0 or newer is required.

@@ -9,6 +9,7 @@ required.
 
 - Vercel account
 - Vercel CLI or Git integration
+- Node.js 22.12.0 or newer
 
 ## One-Click Path
 
@@ -23,7 +24,7 @@ required.
 
 ```bash
 pnpm build
-npx vercel deploy apps/site/dist --prod
+npx vercel --prod
 ```
 
 ## Environment Variables
@@ -36,6 +37,7 @@ Visit your deployed site. Confirm all routes work, including search and RSS.
 
 ## Notes
 
-- Vercel automatically detects Astro and applies the correct configuration.
-- The root `vercel.json` at `apps/site/vercel.json` sets caching and security
-  headers for the static output.
+- The repository-root `vercel.json` sets `apps/site/dist`, search rewrites,
+  immutable asset caching, and security headers.
+- Run `node apps/site/scripts/generate-vercel-config.mjs --check` after changing
+  provider URLs or security-sensitive feature configuration.

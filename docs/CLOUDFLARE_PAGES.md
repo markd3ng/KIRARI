@@ -9,6 +9,7 @@ required.
 
 - Cloudflare account
 - `cloudflare pages` CLI or GitHub/GitLab integration
+- Node.js 22.12.0 or newer
 
 ## One-Click Path
 
@@ -28,6 +29,7 @@ npx wrangler pages deploy apps/site/dist --project-name kirari
 ## Environment Variables
 
 None required. Secrets (API keys) go in Cloudflare Pages environment settings.
+If the platform does not infer the runtime, set `NODE_VERSION=22.12.0`.
 
 ## Verification
 
