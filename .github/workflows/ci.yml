@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.14.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: node apps/site/scripts/qa-regression-check.mjs
+      - run: pnpm site:type-check
+      - run: pnpm site:astro-check
+      - run: pnpm edge:type-check
+      - run: pnpm edge:test
+      - run: pnpm edge:deploy:dry
+      - run: node apps/site/scripts/generate-vercel-config.mjs --check
+      - run: pnpm build
+      - run: pnpm release:check
+      - run: pnpm release:version-check
+      - run: pnpm audit --audit-level moderate
+      - run: git diff --check

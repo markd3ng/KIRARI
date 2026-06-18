@@ -23,7 +23,9 @@
     "edge:test": "\"$npm_execpath\" --filter @kirari/edge test",
     "edge:deploy:dry": "\"$npm_execpath\" --filter @kirari/edge deploy:dry",
     "edge:deploy": "\"$npm_execpath\" --filter @kirari/edge deploy",
+    "deploy:config:check": "node apps/site/scripts/generate-vercel-config.mjs --check",
     "release:check": "node scripts/release-regression-check.mjs",
+    "release:version-check": "node scripts/release-version-check.mjs",
     "check": "\"$npm_execpath\" site:type-check && \"$npm_execpath\" site:astro-check && \"$npm_execpath\" edge:type-check && \"$npm_execpath\" edge:test",
     "build": "\"$npm_execpath\" site:build",
     "audit": "\"$npm_execpath\" --filter @kirari/site audit"
