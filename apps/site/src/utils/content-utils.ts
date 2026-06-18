@@ -1,7 +1,16 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import { normalizeMappingKey } from "@utils/normalize";
 import { getCategoryUrl } from "@utils/url-utils.ts";
-import { filterPostsByLang, getPostLang, getPostTranslationGroupKey, normalizeLangCode } from "./i18n-utils";
+import {
+	type AlternateLink,
+	filterPostsByLang,
+	getEnabledLanguages,
+	getLanguageConfig,
+	getPostLang,
+	getPostTranslationGroupKey,
+	normalizeLangCode,
+	withLangPrefix,
+} from "./i18n-utils";
 import { applyPostRouteSlug, getPostRouteSlug } from "./post-route-utils";
 
 // Cache for all blog posts to avoid repeated getCollection calls
@@ -259,6 +268,39 @@ export async function getCategoryList(lang?: string): Promise<Category[]> {
 export async function getNestedCategoryList(lang?: string): Promise<CategoryNode[]> {
 	const categories = await getCategoryList(lang);
 	return buildCategoryTree(categories, lang);
+}
+
+export async function getTaxonomyAlternates(
+	type: "tag" | "category",
+	value: string,
+): Promise<AlternateLink[]> {
+	const normalizedValue = normalizeMappingKey(value);
+	const allPosts = await getAllPosts();
+
+	return getEnabledLanguages().flatMap((lang) => {
+		const hasRoute = filterPostsByLang(allPosts, lang).some((post) => {
+			if (type === "tag") {
+				return post.data.tags.some((tag) => normalizeMappingKey(tag) === normalizedValue);
+			}
+			if (normalizedValue === "uncategorized") {
+				return !post.data.category || normalizeMappingKey(post.data.category) === "";
+			}
+			if (!post.data.category) return false;
+			const postCategory = normalizeMappingKey(post.data.category);
+			return postCategory === normalizedValue || postCategory.startsWith(`${normalizedValue}/`);
+		});
+
+		if (!hasRoute) return [];
+		const path = type === "tag"
+			? `/tags/${normalizedValue}/`
+			: `/categories/${normalizedValue}/`;
+		return [{
+			lang,
+			hreflang: getLanguageConfig(lang).locale,
+			label: getLanguageConfig(lang).label,
+			url: withLangPrefix(path, lang),
+		}];
+	});
 }
 
 function buildCategoryTree(categories: Category[], lang?: string): CategoryNode[] {

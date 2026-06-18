@@ -4,10 +4,13 @@ import ArchivePanel from "@components/ArchivePanel.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { getSortedPostsList, getTaxonomyDisplayMappings } from "../../../utils/content-utils";
+import {
+	getSortedPostsList,
+	getTaxonomyAlternates,
+	getTaxonomyDisplayMappings,
+} from "../../../utils/content-utils";
 import {
 	fromLangSlug,
-	getPathAlternates,
 	getPrefixedLanguages,
 	toLangSlug,
 	withLangPrefix,
@@ -59,7 +62,7 @@ const categoryName = normalizedCategory === "uncategorized"
 	? i18n(I18nKey.uncategorized, lang)
 	: getCategoryName(category, categoryDisplayMap);
 const categoryUrl = withLangPrefix(`/categories/${normalizedCategory}/`, lang);
-const alternates = getPathAlternates((itemLang) => withLangPrefix(`/categories/${normalizedCategory}/`, itemLang));
+const alternates = await getTaxonomyAlternates("category", normalizedCategory);
 ---
 
 <MainGridLayout title={`${i18n(I18nKey.archive, lang)} - ${categoryName}`} lang={lang} alternates={alternates} canonicalUrl={categoryUrl}>
