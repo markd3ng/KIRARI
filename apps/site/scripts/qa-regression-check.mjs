@@ -207,10 +207,10 @@ addCheck(
 	"packages/site-profile must be materialized via copy, not git operations",
 );
 addCheck(
-	"site validation scripts materialize the default profile",
-	/"type-check":\s*"node scripts\/materialize-profile\.mjs && tsc --noEmit"/.test(sitePackageJson) &&
+	"site validation scripts prepare profile and Astro content types",
+	/"type-check":\s*"node scripts\/materialize-profile\.mjs && astro sync && tsc --noEmit"/.test(sitePackageJson) &&
 		/"check":\s*"node scripts\/materialize-profile\.mjs && astro check"/.test(sitePackageJson),
-	"Fresh clones must materialize profile content before site type-check and Astro check",
+	"Fresh clones must materialize profile content and sync Astro types before site validation",
 );
 
 const llmsTypeBlock = configLoader.match(/llms\?: \{[\s\S]*?\n\t\t\};/)?.[0] || "";
