@@ -99,6 +99,10 @@ sources. No files are proposed for automatic deletion.
 - Previous `AGENTS.md`: claimed only three islands, named a nonexistent
   `ThemeToggle.svelte`, omitted current Markdown plugins, and duplicated
   project guidance now owned by Trellis specs.
+- Previous `AGENTS.md` said “Do not write Stylus in components,” but
+  `apps/site/src/components/widget/DisplaySettings.svelte` currently contains
+  component-local `<style lang="stylus">`. The blanket prohibition is
+  conflicting historical guidance and was not migrated as an active rule.
 
 ### Duplicate
 
@@ -142,6 +146,24 @@ guidance.
 5. Confirm whether root `README.md`/`README_CN.md` remain the canonical user
    manuals or should be reduced in favor of focused `docs/` pages.
 6. Confirm deletion of tracked `.DS_Store` files separately.
+
+## AGENTS.md Migration Follow-Up
+
+The focused follow-up migrated the remaining verified durable rules:
+
+- `client:only` SEO/SSR boundary and explicit `set:html` trust rules:
+  `.trellis/spec/site/frontend/component-guidelines.md`.
+- User-configurable values and exact TOML/snippet glob plus filename contract:
+  `.trellis/spec/site/frontend/type-safety.md`.
+- Search-provider fallback, Pagefind disabling, SSG preservation, and required
+  documentation sync: `.trellis/spec/site/frontend/state-management.md`.
+- Full GitHub-card adapter contract and exact Markdown plugin order:
+  `.trellis/spec/site/frontend/quality-guidelines.md`.
+- Frozen install, verification, Conventional Commits, changelog policy, and
+  repository documentation-sync matrix:
+  `.trellis/spec/guides/repository-workflow.md`.
+
+The Stylus ban was not migrated because current source directly contradicts it.
 
 ## Inventory Scope
 

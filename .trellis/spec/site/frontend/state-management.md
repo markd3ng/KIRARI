@@ -21,3 +21,15 @@ restoration.
 
 Search selects one effective provider. Pagefind is the fallback; DocSearch and
 Google are active only when their required config is complete.
+
+Provider resolution must remain consistent in `astro.config.mjs`,
+`Layout.astro`, `Navbar.astro`, `Search.svelte`, search routes, and
+`scripts/postbuild.mjs`. A complete external provider disables Pagefind
+preloading/index generation; incomplete DocSearch or Google configuration
+falls back to Pagefind.
+
+Search and SEO changes must preserve static output. Keep normal provider
+settings TOML-first, keep credentials in appropriate environment/platform
+configuration, and update `packages/site-profile/kirari.config.toml`,
+`README.md`, `README_CN.md`, and `SECURITY_MODEL.md` with the runtime/build
+change.
