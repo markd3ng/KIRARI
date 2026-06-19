@@ -1,54 +1,15 @@
 # Directory Structure
 
-> How backend code is organized in this project.
+- `src/index.ts`: `Env`, feature routing, proxy helpers, CORS, cache headers,
+  and the default Worker `fetch` handler.
+- `test/index.test.ts`: Node built-in tests with a mocked `globalThis.fetch`.
+- `wrangler.jsonc`: Worker name, entrypoint, compatibility date.
+- `package.json`: type-check, test, dry deploy, and deploy scripts.
 
----
+Keep this single-file implementation while the feature set remains four small
+proxies. Do not introduce a router, service classes, or storage abstractions for
+future possibilities.
 
-## Overview
-
-<!--
-Document your project's backend directory structure here.
-
-Questions to answer:
-- How are modules/packages organized?
-- Where does business logic live?
-- Where are API endpoints defined?
-- How are utilities and helpers organized?
--->
-
-(To be filled by the team)
-
----
-
-## Directory Layout
-
-```
-<!-- Replace with your actual structure -->
-src/
-├── ...
-└── ...
-```
-
----
-
-## Module Organization
-
-<!-- How should new features/modules be organized? -->
-
-(To be filled by the team)
-
----
-
-## Naming Conventions
-
-<!-- File and folder naming rules -->
-
-(To be filled by the team)
-
----
-
-## Examples
-
-<!-- Link to well-organized modules as examples -->
-
-(To be filled by the team)
+The site-facing `[edge]` TOML section and Worker environment variables are
+separate current mechanisms. No code in this package reads TOML directly and
+no deployment script currently proves automatic TOML-to-binding propagation.

@@ -1,51 +1,12 @@
-# Type Safety
+# Profile Contracts
 
-> Type safety patterns in this project.
+`kirari.config.toml` is parsed as unknown data and normalized by
+`apps/site/src/utils/config-loader.ts`. New fields require synchronized type,
+validator/default, profile comments, and user documentation changes.
 
----
+Post frontmatter is validated by `apps/site/src/content.config.ts`. Use valid
+dates and the existing field names; do not invent profile-only aliases.
 
-## Overview
-
-<!--
-Document your project's type safety conventions here.
-
-Questions to answer:
-- What type system do you use?
-- How are types organized?
-- What validation library do you use?
-- How do you handle type inference?
--->
-
-(To be filled by the team)
-
----
-
-## Type Organization
-
-<!-- Where types are defined, shared types vs local types -->
-
-(To be filled by the team)
-
----
-
-## Validation
-
-<!-- Runtime validation patterns (Zod, Yup, io-ts, etc.) -->
-
-(To be filled by the team)
-
----
-
-## Common Patterns
-
-<!-- Type utilities, generics, type guards -->
-
-(To be filled by the team)
-
----
-
-## Forbidden Patterns
-
-<!-- any, type assertions, etc. -->
-
-(To be filled by the team)
+JSON files have no package-local schema. Before changing their shape, inspect
+the current site consumers and add a runtime/type boundary if the data becomes
+externally supplied.

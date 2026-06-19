@@ -1,51 +1,13 @@
-# Database Guidelines
+# Storage And Persistence
 
-> Database patterns and conventions for this project.
+The current Worker is stateless. It uses upstream HTTP responses plus
+`Cache-Control` headers; it does not use Cloudflare Cache API, KV, D1, R2,
+Durable Objects, or Queues.
 
----
+Do not add bindings or persistence to solve a problem already covered by
+upstream caching headers.
 
-## Overview
-
-<!--
-Document your project's database conventions here.
-
-Questions to answer:
-- What ORM/query library do you use?
-- How are migrations managed?
-- What are the naming conventions for tables/columns?
-- How do you handle transactions?
--->
-
-(To be filled by the team)
-
----
-
-## Query Patterns
-
-<!-- How should queries be written? Batch operations? -->
-
-(To be filled by the team)
-
----
-
-## Migrations
-
-<!-- How to create and run migrations -->
-
-(To be filled by the team)
-
----
-
-## Naming Conventions
-
-<!-- Table names, column names, index names -->
-
-(To be filled by the team)
-
----
-
-## Common Mistakes
-
-<!-- Database-related mistakes your team has made -->
-
-(To be filled by the team)
+If storage becomes an approved feature, update `Env`, `wrangler.jsonc`, tests,
+deployment docs, and lifecycle/retention rules together. D1 queries must be
+parameterized and secret values must remain Worker bindings, never public TOML
+or response payloads.

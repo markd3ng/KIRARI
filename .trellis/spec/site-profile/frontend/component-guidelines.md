@@ -1,59 +1,14 @@
-# Component Guidelines
+# Content, Data, And Snippets
 
-> How components are built in this project.
+Markdown/MDX files are inputs to the site's Astro content collections. Post
+frontmatter must satisfy `apps/site/src/content.config.ts`; spec pages are
+loaded by the `spec` collection.
 
----
+JSON data is consumed by site pages/components. Preserve the current shape of
+`friends.json` and `devices.json` unless source consumers and validation are
+updated together.
 
-## Overview
-
-<!--
-Document your project's component conventions here.
-
-Questions to answer:
-- What component patterns do you use?
-- How are props defined?
-- How do you handle composition?
-- What accessibility standards apply?
--->
-
-(To be filled by the team)
-
----
-
-## Component Structure
-
-<!-- Standard structure of a component file -->
-
-(To be filled by the team)
-
----
-
-## Props Conventions
-
-<!-- How props should be defined and typed -->
-
-(To be filled by the team)
-
----
-
-## Styling Patterns
-
-<!-- How styles are applied (CSS modules, styled-components, Tailwind, etc.) -->
-
-(To be filled by the team)
-
----
-
-## Accessibility
-
-<!-- A11y requirements and patterns -->
-
-(To be filled by the team)
-
----
-
-## Common Mistakes
-
-<!-- Component-related mistakes your team has made -->
-
-(To be filled by the team)
+Snippet files are trusted maintainer code copied to `apps/site/src/snippets`.
+Only basename `.html` and `.js` files are accepted by the config loader.
+Snippets are not visitor/CMS content and are intentionally an owner-level
+escape hatch.

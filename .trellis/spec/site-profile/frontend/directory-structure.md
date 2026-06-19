@@ -1,54 +1,16 @@
 # Directory Structure
 
-> How frontend code is organized in this project.
+Current profile inputs:
 
----
+- `kirari.config.toml`
+- `content/posts/`, `content/spec/`
+- `data/friends.json`, `data/devices.json`
+- `assets/images/devices/`, `assets/favicon/`, `assets/og/`
+- `snippets/`
 
-## Overview
+`apps/site/scripts/materialize-profile.mjs` is the authoritative mapping list.
+Update it when adding a profile-owned path; do not rely on documentation alone.
 
-<!--
-Document your project's frontend directory structure here.
-
-Questions to answer:
-- Where do components live?
-- How are features/modules organized?
-- Where are shared utilities?
-- How are assets organized?
--->
-
-(To be filled by the team)
-
----
-
-## Directory Layout
-
-```
-<!-- Replace with your actual structure -->
-src/
-├── ...
-└── ...
-```
-
----
-
-## Module Organization
-
-<!-- How should new features be organized? -->
-
-(To be filled by the team)
-
----
-
-## Naming Conventions
-
-<!-- File and folder naming rules -->
-
-(To be filled by the team)
-
----
-
-## Examples
-
-<!-- Link to well-organized modules as examples -->
-
-(To be filled by the team)
+`package.json` contains metadata only. There is no runtime export, build output,
+or package API. `.DS_Store` files are repository hygiene issues, not profile
+features.

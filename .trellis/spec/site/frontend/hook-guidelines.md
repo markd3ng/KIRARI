@@ -1,51 +1,26 @@
-# Hook Guidelines
+# Navigation And Browser Initialization
 
-> How hooks are used in this project.
+`src/utils/transition-manager.ts` is a singleton adapter over Astro
+`ClientRouter` and a dynamically imported Swup fallback.
 
----
+Unified events are:
 
-## Overview
+| Event | Astro | Swup |
+|---|---|---|
+| `transition:start` | `astro:before-preparation` | `visit:start` |
+| `transition:before-swap` | `astro:before-swap` | `content:replace` |
+| `transition:after-swap` | `astro:after-swap` | `page:view` |
+| `transition:end` | `astro:page-load` | `visit:end` |
 
-<!--
-Document your project's hook conventions here.
+Features that must re-bind after client navigation should expose an idempotent
+initializer and register it on `transition:after-swap`. `BangumiPanel.astro` is
+the regression-checked example.
 
-Questions to answer:
-- What custom hooks do you have?
-- How do you handle data fetching?
-- What are the naming conventions?
-- How do you share stateful logic?
--->
+Not every script needs the manager: a script scoped to a hydrated Svelte island
+uses `onMount`; a one-shot inline document bootstrap may run immediately.
+Avoid adding a bare `DOMContentLoaded` listener for behavior expected to survive
+SPA navigation.
 
-(To be filled by the team)
-
----
-
-## Custom Hook Patterns
-
-<!-- How to create and structure custom hooks -->
-
-(To be filled by the team)
-
----
-
-## Data Fetching
-
-<!-- How data fetching is handled (React Query, SWR, etc.) -->
-
-(To be filled by the team)
-
----
-
-## Naming Conventions
-
-<!-- Hook naming rules (use*, etc.) -->
-
-(To be filled by the team)
-
----
-
-## Common Mistakes
-
-<!-- Hook-related mistakes your team has made -->
-
-(To be filled by the team)
+Return cleanup functions from Svelte `onMount` when listeners outlive the
+component. Prevent duplicate handlers with stable assignments, `{ once: true }`,
+or idempotent markers.

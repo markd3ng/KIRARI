@@ -1,51 +1,43 @@
 # Quality Guidelines
 
-> Code quality standards for frontend development.
+## Build Reality
 
----
+`@kirari/site` commands first materialize the profile. Production build order:
 
-## Overview
+1. `materialize-profile.mjs`
+2. `materialize-ghc-adapter.mjs`
+3. `astro build`
+4. `postbuild.mjs`
 
-<!--
-Document your project's quality standards here.
+Postbuild runs seven ordered actions: generate headers/redirects, generate
+robots metadata, obfuscate mailto links, conditionally build Pagefind, generate
+LLM files, optionally submit IndexNow, and optionally submit Google Indexing
+API notifications. Read the script before changing the list; old docs contain
+shortened summaries.
 
-Questions to answer:
-- What patterns are forbidden?
-- What linting rules do you enforce?
-- What are your testing requirements?
-- What code review standards apply?
--->
+## Markdown And Styles
 
-(To be filled by the team)
+Plugin order in `astro.config.mjs` is behavior. The current chains include
+PlantUML and table wrapping in addition to math, reading time, excerpt,
+admonitions, directives, sectioning, Mermaid, slugs, lazy images, components,
+and heading links.
 
----
+Use Tailwind/CSS for component appearance. Use `markdown-extend.styl` for
+Markdown-generated deep DOM. Do not assume scoped Astro CSS styles nodes
+created by browser scripts.
 
-## Forbidden Patterns
+## Verification
 
-<!-- Patterns that should never be used and why -->
+Run from the workspace root:
 
-(To be filled by the team)
+```bash
+node apps/site/scripts/qa-regression-check.mjs
+pnpm site:type-check
+pnpm site:astro-check
+pnpm build
+pnpm release:check
+node apps/site/scripts/generate-vercel-config.mjs --check
+```
 
----
-
-## Required Patterns
-
-<!-- Patterns that must always be used -->
-
-(To be filled by the team)
-
----
-
-## Testing Requirements
-
-<!-- What level of testing is expected -->
-
-(To be filled by the team)
-
----
-
-## Code Review Checklist
-
-<!-- What reviewers should check -->
-
-(To be filled by the team)
+CI additionally runs edge checks, release version checks, audit, and
+`git diff --check`. Use pnpm and Node `>=22.12.0`.

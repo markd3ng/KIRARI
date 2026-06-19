@@ -1,51 +1,24 @@
 # Quality Guidelines
 
-> Code quality standards for backend development.
+Route prefixes and upstreams are fixed in `src/index.ts`:
 
----
+- `/api/github` → `https://api.github.com`
+- `/avatar` → `https://cravatar.cn`
+- `/api/bangumi` → `https://api.bgm.tv`
+- `/images/bangumi` → `https://lain.bgm.tv`
 
-## Overview
+Forward only the allow-listed request headers. Never forward client cookies or
+authorization; GitHub authorization comes only from `KIRARI_GITHUB_TOKEN`.
+Preserve query strings and strip the local prefix.
 
-<!--
-Document your project's quality standards here.
+Every new route or changed method/header/cache contract needs a Node built-in
+test. Follow `withMockFetch` in `test/index.test.ts`; avoid adding a test
+framework for this package.
 
-Questions to answer:
-- What patterns are forbidden?
-- What linting rules do you enforce?
-- What are your testing requirements?
-- What code review standards apply?
--->
+Verify:
 
-(To be filled by the team)
-
----
-
-## Forbidden Patterns
-
-<!-- Patterns that should never be used and why -->
-
-(To be filled by the team)
-
----
-
-## Required Patterns
-
-<!-- Patterns that must always be used -->
-
-(To be filled by the team)
-
----
-
-## Testing Requirements
-
-<!-- What level of testing is expected -->
-
-(To be filled by the team)
-
----
-
-## Code Review Checklist
-
-<!-- What reviewers should check -->
-
-(To be filled by the team)
+```bash
+pnpm edge:type-check
+pnpm edge:test
+pnpm edge:deploy:dry
+```

@@ -1,39 +1,31 @@
-# Frontend Development Guidelines
+# `@kirari/site` Guidelines
 
-> Best practices for frontend development in this project.
+`apps/site` is the Astro 6 static-site program. It owns application source,
+routes, rendering, client islands, Markdown processing, and the build pipeline.
+Profile-owned config/content/assets are copied into it before development,
+checks, and builds.
 
----
+## Guides
 
-## Overview
+| Guide | Use for |
+|---|---|
+| [Directory Structure](./directory-structure.md) | Package ownership and generated boundaries |
+| [Component Guidelines](./component-guidelines.md) | Astro components, Svelte islands, runtime DOM |
+| [Hook Guidelines](./hook-guidelines.md) | Navigation lifecycle and browser initialization |
+| [State Management](./state-management.md) | Build-time config and client state |
+| [Type Safety](./type-safety.md) | TOML validation, content schemas, typed props |
+| [Quality Guidelines](./quality-guidelines.md) | Build pipeline, styles, security, verification |
 
-This directory contains guidelines for frontend development. Fill in each file with your project's specific conventions.
+## Pre-Development Checklist
 
----
+- Read `directory-structure.md` for any path under `apps/site`.
+- Read `component-guidelines.md`, `hook-guidelines.md`, and
+  `state-management.md` for UI or browser behavior.
+- Read `type-safety.md` for config, content, routes, or external payloads.
+- Read `quality-guidelines.md` before changing build scripts, Markdown plugins,
+  search/SEO behavior, styles, or trusted snippets.
+- Read `.trellis/spec/guides/index.md`.
 
-## Guidelines Index
-
-| Guide | Description | Status |
-|-------|-------------|--------|
-| [Directory Structure](./directory-structure.md) | Module organization and file layout | To fill |
-| [Component Guidelines](./component-guidelines.md) | Component patterns, props, composition | To fill |
-| [Hook Guidelines](./hook-guidelines.md) | Custom hooks, data fetching patterns | To fill |
-| [State Management](./state-management.md) | Local state, global state, server state | To fill |
-| [Quality Guidelines](./quality-guidelines.md) | Code standards, forbidden patterns | To fill |
-| [Type Safety](./type-safety.md) | Type patterns, validation | To fill |
-
----
-
-## How to Fill These Guidelines
-
-For each guideline file:
-
-1. Document your project's **actual conventions** (not ideals)
-2. Include **code examples** from your codebase
-3. List **forbidden patterns** and why
-4. Add **common mistakes** your team has made
-
-The goal is to help AI assistants and new team members understand how YOUR project works.
-
----
-
-**Language**: All documentation should be written in **English**.
+Verified against `apps/site/package.json`, `astro.config.mjs`,
+`src/content.config.ts`, `src/utils/config-loader.ts`, component call paths,
+and build scripts.

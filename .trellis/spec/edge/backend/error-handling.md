@@ -1,51 +1,14 @@
 # Error Handling
 
-> How errors are handled in this project.
+Current response contract:
 
----
+- Master switch not `"true"`: plain `404 Edge disabled`.
+- No enabled route match: CORS-safe plain `404 Not found`.
+- `OPTIONS` on a matched route: `204` with CORS headers, no upstream request.
+- Non-GET/HEAD on a matched route: CORS-safe `405` with `Allow`.
+- Upstream throw: structured log plus CORS-safe JSON `502` and `no-store`.
+- Upstream HTTP statuses: preserved, with project cache/CORS headers applied.
 
-## Overview
-
-<!--
-Document your project's error handling conventions here.
-
-Questions to answer:
-- What error types do you define?
-- How are errors propagated?
-- How are errors logged?
-- How are errors returned to clients?
--->
-
-(To be filled by the team)
-
----
-
-## Error Types
-
-<!-- Custom error classes/types -->
-
-(To be filled by the team)
-
----
-
-## Error Handling Patterns
-
-<!-- Try-catch patterns, error propagation -->
-
-(To be filled by the team)
-
----
-
-## API Error Responses
-
-<!-- Standard error response format -->
-
-(To be filled by the team)
-
----
-
-## Common Mistakes
-
-<!-- Error handling mistakes your team has made -->
-
-(To be filled by the team)
+Do not leak upstream exception text, tokens, request credentials, or binding
+values in responses. Preserve HEAD semantics by forwarding the method and
+passing through the upstream body/status contract.

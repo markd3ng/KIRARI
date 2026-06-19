@@ -1,38 +1,21 @@
-# Backend Development Guidelines
+# `@kirari/edge` Backend Guidelines
 
-> Best practices for backend development in this project.
+`workers/kirari-edge` is currently one stateless Cloudflare Worker module. It
+provides opt-in GET/HEAD proxy routes for GitHub, avatars, Bangumi API, and
+Bangumi images. It has no database, KV namespace, Durable Object, router
+framework, or persistence layer.
 
----
+## Guides
 
-## Overview
+| Guide | Use for |
+|---|---|
+| [Directory Structure](./directory-structure.md) | Current single-module shape |
+| [Database Guidelines](./database-guidelines.md) | Explicit absence of storage |
+| [Error Handling](./error-handling.md) | HTTP and upstream failures |
+| [Logging Guidelines](./logging-guidelines.md) | Worker logs and secrets |
+| [Quality Guidelines](./quality-guidelines.md) | Proxy/security/test rules |
 
-This directory contains guidelines for backend development. Fill in each file with your project's specific conventions.
+## Pre-Development Checklist
 
----
-
-## Guidelines Index
-
-| Guide | Description | Status |
-|-------|-------------|--------|
-| [Directory Structure](./directory-structure.md) | Module organization and file layout | To fill |
-| [Database Guidelines](./database-guidelines.md) | ORM patterns, queries, migrations | To fill |
-| [Error Handling](./error-handling.md) | Error types, handling strategies | To fill |
-| [Quality Guidelines](./quality-guidelines.md) | Code standards, forbidden patterns | To fill |
-| [Logging Guidelines](./logging-guidelines.md) | Structured logging, log levels | To fill |
-
----
-
-## How to Fill These Guidelines
-
-For each guideline file:
-
-1. Document your project's **actual conventions** (not ideals)
-2. Include **code examples** from your codebase
-3. List **forbidden patterns** and why
-4. Add **common mistakes** your team has made
-
-The goal is to help AI assistants and new team members understand how YOUR project works.
-
----
-
-**Language**: All documentation should be written in **English**.
+Read all five guides before changing `src/index.ts`, bindings, routes, or tests,
+then read `.trellis/spec/guides/index.md`.

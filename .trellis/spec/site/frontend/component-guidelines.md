@@ -1,59 +1,25 @@
 # Component Guidelines
 
-> How components are built in this project.
+Default to `.astro` for routes, layouts, navigation, cards, and content that can
+render at build time. Add Svelte only for real client state.
 
----
+Current hydrated islands are:
 
-## Overview
+- `Search.svelte` and `LightDarkSwitch.svelte`: `client:idle` in `Navbar.astro`.
+- `DisplaySettings.svelte`: `client:only="svelte"` because its initial state
+  reads browser storage.
+- `DevicesFilter.svelte` and `PostSponsor.astro`'s Svelte child:
+  `client:load` for immediately interactive page features.
 
-<!--
-Document your project's component conventions here.
+Do not describe the site as having only three islands. Preserve the directive
+already chosen unless measured UX or correctness requires a change.
 
-Questions to answer:
-- What component patterns do you use?
-- How are props defined?
-- How do you handle composition?
-- What accessibility standards apply?
--->
+Astro props use local `interface Props` declarations and `Astro.props`.
+Svelte 5 components use runes (`$props`, `$state`, `$derived`, `$effect`) and
+current event attributes such as `onclick`; `scripts/release-regression-check.mjs`
+guards against deprecated event syntax.
 
-(To be filled by the team)
-
----
-
-## Component Structure
-
-<!-- Standard structure of a component file -->
-
-(To be filled by the team)
-
----
-
-## Props Conventions
-
-<!-- How props should be defined and typed -->
-
-(To be filled by the team)
-
----
-
-## Styling Patterns
-
-<!-- How styles are applied (CSS modules, styled-components, Tailwind, etc.) -->
-
-(To be filled by the team)
-
----
-
-## Accessibility
-
-<!-- A11y requirements and patterns -->
-
-(To be filled by the team)
-
----
-
-## Common Mistakes
-
-<!-- Component-related mistakes your team has made -->
-
-(To be filled by the team)
+Runtime-created DOM cannot receive Astro scoped attributes. Style it with
+Tailwind classes, `:global(...)`, or `<style is:global>`. Keep visitor or remote
+payloads in `textContent`/attributes; reserve HTML injection for the trusted
+boundaries documented in `SECURITY_MODEL.md`.

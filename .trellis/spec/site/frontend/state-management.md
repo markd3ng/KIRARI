@@ -1,51 +1,23 @@
 # State Management
 
-> How state is managed in this project.
+There is no application-wide client store. State is deliberately split by
+lifetime:
 
----
+- Build-time global config: `Config`, created once in `src/constants.ts`.
+- Backward-compatible section exports: `src/config.ts`.
+- Route/component data: Astro props and content collection entries.
+- Island-local UI state: Svelte 5 runes.
+- Persistent display preferences: `localStorage` through
+  `src/utils/setting-utils.ts`.
+- Navigation lifecycle: the `transitionManager` singleton.
 
-## Overview
+Keep state local unless multiple current consumers need the same mutable value.
+Do not add a store, context provider, or event bus speculatively.
 
-<!--
-Document your project's state management conventions here.
+Theme mode and hue are applied to `<html>` before paint in `Layout.astro` and
+then managed by settings utilities/islands. New persisted settings need a
+defined default, initial-paint behavior when visible, and navigation-safe
+restoration.
 
-Questions to answer:
-- What state management solution do you use?
-- How is local vs global state decided?
-- How do you handle server state?
-- What are the patterns for derived state?
--->
-
-(To be filled by the team)
-
----
-
-## State Categories
-
-<!-- Local state, global state, server state, URL state -->
-
-(To be filled by the team)
-
----
-
-## When to Use Global State
-
-<!-- Criteria for promoting state to global -->
-
-(To be filled by the team)
-
----
-
-## Server State
-
-<!-- How server data is cached and synchronized -->
-
-(To be filled by the team)
-
----
-
-## Common Mistakes
-
-<!-- State management mistakes your team has made -->
-
-(To be filled by the team)
+Search selects one effective provider. Pagefind is the fallback; DocSearch and
+Google are active only when their required config is complete.

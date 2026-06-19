@@ -1,51 +1,12 @@
-# Hook Guidelines
+# Materialization Lifecycle
 
-> How hooks are used in this project.
+Profile files are copied before `site:dev`, `site:type-check`,
+`site:astro-check`, and `site:build`.
 
----
+For each mapping, destination directory contents are removed before copying.
+Missing source paths are skipped with a warning. A manifest records the copied
+top-level mappings.
 
-## Overview
-
-<!--
-Document your project's hook conventions here.
-
-Questions to answer:
-- What custom hooks do you have?
-- How do you handle data fetching?
-- What are the naming conventions?
-- How do you share stateful logic?
--->
-
-(To be filled by the team)
-
----
-
-## Custom Hook Patterns
-
-<!-- How to create and structure custom hooks -->
-
-(To be filled by the team)
-
----
-
-## Data Fetching
-
-<!-- How data fetching is handled (React Query, SWR, etc.) -->
-
-(To be filled by the team)
-
----
-
-## Naming Conventions
-
-<!-- Hook naming rules (use*, etc.) -->
-
-(To be filled by the team)
-
----
-
-## Common Mistakes
-
-<!-- Hook-related mistakes your team has made -->
-
-(To be filled by the team)
+There is no merge step. A file added directly to a mapped site destination can
+be removed by the next materialization. Make persistent customization in this
+package.

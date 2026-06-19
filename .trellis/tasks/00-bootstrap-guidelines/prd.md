@@ -21,10 +21,10 @@ the rest conversationally.
 
 ## Status (update the checkboxes as you complete each item)
 
-- [ ] Fill guidelines for @kirari/site
-- [ ] Fill guidelines for @kirari/edge
-- [ ] Fill guidelines for @kirari/site-profile
-- [ ] Add code examples
+- [x] Fill guidelines for @kirari/site
+- [x] Fill guidelines for @kirari/edge
+- [x] Fill guidelines for @kirari/site-profile
+- [x] Add code examples
 
 ---
 

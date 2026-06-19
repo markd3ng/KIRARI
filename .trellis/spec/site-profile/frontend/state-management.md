@@ -1,51 +1,13 @@
-# State Management
+# Ownership And Configuration State
 
-> How state is managed in this project.
+The profile is the editable default state; the copies under `apps/site` are
+materialized state.
 
----
+Configuration priority inside the site is environment override, then TOML,
+then loader default. This does not mean every TOML field has an environment
+override. Environment variables are for implemented deploy overrides,
+credentials, and secrets.
 
-## Overview
-
-<!--
-Document your project's state management conventions here.
-
-Questions to answer:
-- What state management solution do you use?
-- How is local vs global state decided?
-- How do you handle server state?
-- What are the patterns for derived state?
--->
-
-(To be filled by the team)
-
----
-
-## State Categories
-
-<!-- Local state, global state, server state, URL state -->
-
-(To be filled by the team)
-
----
-
-## When to Use Global State
-
-<!-- Criteria for promoting state to global -->
-
-(To be filled by the team)
-
----
-
-## Server State
-
-<!-- How server data is cached and synchronized -->
-
-(To be filled by the team)
-
----
-
-## Common Mistakes
-
-<!-- State management mistakes your team has made -->
-
-(To be filled by the team)
+Keep current implementation separate from intended options. For example, the
+profile's `[edge]` flags describe site integration, while Worker deployment
+still requires separate environment variables.
