@@ -231,7 +231,7 @@ git push
 > | 使用 Cloudflare Dashboard 连接 Git 仓库部署 Pages | **不需要** |
 > | 使用 `wrangler` CLI 部署 Worker | **需要** |
 > | 在 GitHub Actions CI/CD 中自动部署 Worker | **需要** |
-> | 部署 GitHub Card 缓存代理（KIRARI-GHCard-Cache） | **需要** |
+> | 部署 KIRARI Edge Worker（`workers/kirari-edge`） | **需要** |
 
 ### A.1 创建 API Token（手把手）
 
@@ -252,12 +252,11 @@ git push
 
 如果你选择自定义令牌，以下是 KIRARI 相关场景需要的精确权限。
 
-**场景 A：仅部署 GHCard-Cache Worker（通过 wrangler）**
+**场景 A：仅部署 KIRARI Edge Worker（通过 wrangler）**
 
 | 权限类别 | 权限名称（Dashboard 中的显示名） | 级别 |
 |---|---|---|
 | **Account** | `Workers Scripts:Edit` | 编辑（Edit） |
-| **Account** | `Workers KV Storage:Edit` | 编辑（Edit） |
 | **Account** | `Workers Tail:Read` | 读取（Read） |
 | **Account** | `Account Settings:Read` | 读取（Read） |
 
@@ -269,7 +268,6 @@ git push
 |---|---|---|
 | **Account** | `Cloudflare Pages:Edit` | 编辑（Edit） |
 | **Account** | `Workers Scripts:Edit` | 编辑（Edit） |
-| **Account** | `Workers KV Storage:Edit` | 编辑（Edit） |
 | **Account** | `Workers Tail:Read` | 读取（Read） |
 | **Account** | `Account Settings:Read` | 读取（Read） |
 
@@ -278,10 +276,9 @@ git push
 | 权限类别 | 权限名称 | 级别 |
 |---|---|---|
 | **Account** | `Workers Scripts:Edit` | 编辑（Edit） |
-| **Account** | `Workers KV Storage:Edit` | 编辑（Edit） |
 | **Account** | `Account Settings:Read` | 读取（Read） |
 
-> 这是 wrangler deploy + KV namespace 的最小权限组合。不含 `Workers Tail:Read`（无法查看实时日志）。
+> 这是 `wrangler deploy` 的最小权限组合。不含 `Workers Tail:Read`（无法查看实时日志）。
 
 #### 第 4 步：设置账户和区域范围
 
@@ -326,7 +323,6 @@ npx wrangler whoami
 | Cloudflare Dashboard 权限名称 | 允许的操作 |
 |---|---|
 | `Workers Scripts:Edit` | 创建、修改、删除、部署 Worker 脚本 |
-| `Workers KV Storage:Edit` | 创建、修改、删除 KV 命名空间和键值 |
 | `Workers Tail:Read` | 查看 Worker 实时日志（`wrangler tail`） |
 | `Cloudflare Pages:Edit` | 创建、编辑、删除 Pages 项目，触发部署 |
 | `Account Settings:Read` | 读取账户信息（wrangler 登录验证需要） |
@@ -337,18 +333,17 @@ npx wrangler whoami
 |---|---|---|
 | `wrangler whoami` 报错 `Authentication error` | Token 缺少 `Account Settings:Read` | 重新创建 Token，确权勾选该项 |
 | `wrangler deploy` 报 `workers.api.error.insufficient_permissions` | Token 缺少 `Workers Scripts:Edit` | 补充该权限或使用 "Edit Cloudflare Workers" 模板 |
-| `wrangler kv:namespace create` 报权限不足 | Token 缺少 `Workers KV Storage:Edit` | 补充该权限 |
 | GitHub Actions 中 wrangler 报认证错误 | `CLOUDFLARE_API_TOKEN` 未设置或值错误 | 检查 Secrets 名称和值是否正确，注意不要有多余空格 |
 | Token 泄露/丢失 | — | 立即在 Cloudflare Dashboard → API Tokens 中撤销该 Token，重新创建 |
 
 ---
 
-## 附录 B：GitHub Card 缓存代理部署（可选）
+## 附录 B：GitHub Card Edge 代理部署（可选）
 
 > **什么时候需要这个？**
 >
 > 你的博客文章中使用了 `::github{repo="owner/repo"}` 或 `::githubfile{}` 指令。
-> 不部署缓存代理也能用，但建议生产环境部署以：
+> 不部署 Edge 代理也能用，但建议生产环境部署以：
 > - 避免 GitHub API 匿名 60 次/小时的频率限制
 > - 减少跨区域请求延迟
 > - 保护你的 GitHub 用量配额
@@ -356,75 +351,34 @@ npx wrangler whoami
 ### B.1 架构说明
 
 ```
-浏览器 → KIRARI Pages → Pages Function（/ghc/*）→ Service Binding → GHCard-Cache Worker → GitHub API
-                                                                    ↑ 含 KV 缓存
+浏览器 → KIRARI Pages → Pages Function（/ghc/*）→ Service Binding → KIRARI Edge Worker → GitHub API
 ```
 
 - **KIRARI Pages Function**：由 KIRARI 项目 `materialize-ghc-adapter.mjs` 自动生成（`functions/ghc/[[path]].ts`）
-- **GHCard-Cache Worker**：独立部署的缓存代理 Worker（项目地址：`KIRARI-GHCard-Cache`）
+- **KIRARI Edge Worker**：本仓库 monorepo 内的 `workers/kirari-edge`，部署名称默认为 `kirari-edge`
 - **Service Binding**：Cloudflare Pages 到 Worker 的内部通道，请求不经过公网
-- **KV 存储**：Worker 的二级缓存（L1 为 Cache API），提供 stale 兜底
+- **缓存方式**：Worker 返回 `Cache-Control`，由 Cloudflare/CDN 按真实访问缓存；当前实现没有 KV、D1、Durable Object 或定时任务
 
-### B.2 部署 GHCard-Cache Worker
+### B.2 部署 KIRARI Edge Worker
 
 #### 前置条件
 
-- 已完成 [附录 A](#a2-权限速查表) 中的 Cloudflare API Token 创建（需要 `Workers Scripts:Edit` + `Workers KV Storage:Edit`）
+- 已完成 [附录 A](#a2-权限速查表) 中的 Cloudflare API Token 创建（需要 `Workers Scripts:Edit`）
 
-#### 步骤 1：Clone 并安装
+#### 步骤 1：安装依赖
 
 ```bash
-git clone https://github.com/markd3ng/KIRARI-GHCard-Cache.git
-cd KIRARI-GHCard-Cache
 pnpm install
 ```
 
-#### 步骤 2：生成 TypeScript 类型
+#### 步骤 2：（可选）设置 GitHub Token
 
-```bash
-pnpm cf:types
-```
-
-> 这一步会调用 `wrangler types` 生成 Cloudflare 环境绑定（KV、环境变量等）的 TypeScript 类型定义。
-
-#### 步骤 3：创建 KV 命名空间
-
-```bash
-# 创建 KV 命名空间
-pnpm wrangler kv namespace create GITHUB_CACHE
-```
-
-输出示例：
-```
-Add the following to your configuration file in your kv_namespaces array:
-{ binding = "GITHUB_CACHE", id = "abc123def456..." }
-```
-
-**复制输出的 `id` 值**（那一长串十六进制字符串）。
-
-#### 步骤 4：写入 KV ID 到配置
-
-打开 `wrangler.jsonc`，找到 `kv_namespaces` 部分：
-
-```jsonc
-"kv_namespaces": [
-  {
-    "binding": "GITHUB_CACHE",
-    "id": "<production-kv-id>"   // ← 替换这里
-  }
-]
-```
-
-将 `<production-kv-id>` 替换为步骤 3 复制的那串 ID。
-
-#### 步骤 5：（推荐）设置 GitHub Token
-
-> **可选但强烈推荐**。不设置 Token 的话，Worker 以匿名模式访问 GitHub API（60 次/小时限制）。设置了 Token 后提升到 5,000 次/小时。
+> **可选但强烈推荐**。不设置 Token 的话，Edge Worker 以匿名模式访问 GitHub API（60 次/小时限制）。设置了 Token 后提升到 5,000 次/小时。
 
 1. 创建 GitHub Personal Access Token（classic）：
    - 打开 https://github.com/settings/tokens
    - 点击 **Generate new token** → **Generate new token (classic)**
-   - Note 填 `KIRARI-GHCard-Cache`
+   - Note 填 `KIRARI Edge`
    - 过期时间选 "No expiration"（或按需设置）
    - **不需要勾选任何权限**（只需要公开仓库的读取权限，classic token 默认即可读取公开仓库）
    - 点击 **Generate token**，复制 Token 值
@@ -432,30 +386,32 @@ Add the following to your configuration file in your kv_namespaces array:
 2. 将 Token 设置为 Worker Secret：
 
    ```bash
-   pnpm wrangler secret put GITHUB_TOKEN
+   pnpm --filter @kirari/edge exec wrangler secret put KIRARI_GITHUB_TOKEN --config wrangler.jsonc
    ```
 
    粘贴 Token 后按 Enter。**Token 不会显示在屏幕或配置文件中。**
 
-#### 步骤 6：（生产推荐）配置 CORS 白名单
+#### 步骤 3：配置 Worker 环境变量
 
-编辑 `wrangler.jsonc` 中的 `vars`：
+`workers/kirari-edge/src/index.ts` 的功能默认关闭。至少需要在 Cloudflare Worker 环境变量中启用总开关和 GitHub Card 路由：
 
-```jsonc
-"vars": {
-  "CACHE_NAMESPACE_VERSION": "v1",
-  "ALLOWED_ORIGINS": "https://blog.yourdomain.com"
-}
+```text
+KIRARI_EDGE_ENABLED=true
+KIRARI_GHCARD_ENABLED=true
 ```
+
+可选变量：
 
 | 变量 | 说明 | 是否必须 |
 |---|---|---|
-| `CACHE_NAMESPACE_VERSION` | 缓存命名空间版本；需要整体失效缓存时递增 | 建议保留默认值 |
-| `ALLOWED_ORIGINS` | 允许跨域调用 Worker 的域名，逗号分隔 | 生产环境建议设置。KIRARI Pages 通过 Service Binding 调用（不走 Origin），但浏览器直接请求会检查 Origin |
+| `KIRARI_GITHUB_TOKEN` | GitHub REST API token，仅 Worker Secret 中配置 | 推荐 |
+| `KIRARI_AVATAR_PROXY_ENABLED` | 启用 `/avatar/*` 代理 | 可选 |
+| `KIRARI_BANGUMI_API_PROXY_ENABLED` | 启用 `/api/bangumi/*` 代理 | 可选 |
+| `KIRARI_BANGUMI_IMAGE_PROXY_ENABLED` | 启用 `/images/bangumi/*` 代理 | 可选 |
 
-GitHub Card 缓存按实际访问生成：只有页面加载到相关卡片、头像或文件资源时，Worker 才会请求 GitHub 并写入缓存。
+GitHub Card 缓存按实际访问生成：只有页面加载到相关卡片、头像或文件资源时，Worker 才会请求 GitHub，并通过 `Cache-Control` 让 Cloudflare/CDN 缓存响应。
 
-#### 步骤 7：验证
+#### 步骤 4：验证
 
 ```bash
 # 类型检查
@@ -468,7 +424,7 @@ pnpm edge:test
 pnpm edge:deploy:dry
 ```
 
-#### 步骤 8：部署
+#### 步骤 5：部署
 
 ```bash
 pnpm edge:deploy
@@ -477,21 +433,18 @@ pnpm edge:deploy
 部署成功后输出：
 ```
 Current Deployment ID: xxx
-Deployed kirari-ghcard-cache
-  https://kirari-ghcard-cache.你的子域名.workers.dev
+Deployed kirari-edge
+  https://kirari-edge.你的子域名.workers.dev
 ```
 
-#### 步骤 9：验证 Worker 是否正常
+#### 步骤 6：验证 Worker 是否正常
 
 ```bash
 # 替换为你的 Worker URL
-curl https://kirari-ghcard-cache.你的子域名.workers.dev/healthz
+curl -i https://kirari-edge.你的子域名.workers.dev/api/github/repos/markd3ng/KIRARI
 ```
 
-预期输出：
-```json
-{"ok":true,"service":"kirari-ghcard-cache"}
-```
+预期：返回 GitHub repo JSON，响应头包含 `Cache-Control: public, max-age=300, stale-while-revalidate=3600`。
 
 ### B.3 配置 Pages Service Binding
 
@@ -508,7 +461,7 @@ curl https://kirari-ghcard-cache.你的子域名.workers.dev/healthz
    | 字段 | 值 |
    |---|---|
    | **Variable name** | `GHCARD_CACHE` |
-   | **Service** | `kirari-ghcard-cache`（你部署的 Worker 名称） |
+   | **Service** | `kirari-edge`（你部署的 Worker 名称） |
    | **Environment** | `Production` |
 
 6. 点击 **Add binding**
@@ -547,19 +500,11 @@ git push
 部署完成后逐一验证：
 
 ```bash
-# 1. 健康检查
-curl -i https://你的域名/ghc/healthz
-# 预期: {"ok":true,"service":"kirari-ghcard-cache"}
-
-# 2. 仓库卡片
+# 1. 仓库卡片
 curl -i https://你的域名/ghc/repos/markd3ng/KIRARI
-# 预期: 返回仓库 JSON，响应头包含 X-Cache
+# 预期: 返回仓库 JSON，响应头包含 Cache-Control
 
-# 3. 头像缓存
-curl -I https://你的域名/ghc/avatar/markd3ng?size=96
-# 预期: 返回 200，Content-Type 为 image/png
-
-# 4. 浏览器验证
+# 2. 浏览器验证
 # 打开一篇包含 ::github{} 卡片的文章
 # 在 DevTools Network 面板确认请求走同源 /ghc/* 而非 api.github.com
 ```

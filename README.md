@@ -442,7 +442,7 @@ route = "/ghc"
 serviceBinding = "GHCARD_CACHE"
 ```
 
-- **Cloudflare Pages**: Deploy a separate Worker with a GitHub token as Secret. Set `serviceBinding` to the binding name.
+- **Cloudflare Pages**: Deploy the monorepo Edge Worker in `workers/kirari-edge` with `KIRARI_GITHUB_TOKEN` as an optional Worker Secret. Set `serviceBinding` to the binding name.
 - **Vercel**: Set `GITHUB_TOKEN` in Project Environment Variables. Set `GHC_ALLOWED_ORIGINS` to a comma-separated list of exact origins allowed to call the adapter. When empty, browser Origin requests are not granted CORS; same-origin/no-Origin server requests still work without `Access-Control-Allow-Origin`.
 
 ### SEO

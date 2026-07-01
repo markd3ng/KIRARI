@@ -1032,8 +1032,8 @@ enabled = false
 # works in hosted platform builds with VERCEL=1 or CF_PAGES=1.
 # 注意: 生产建议显式设置为 "cloudflare" 或 "vercel"。"auto" 只在平台构建环境中检测。
 # Token placement:
-# - Cloudflare provider: optional GITHUB_TOKEN belongs to the external
-#   KIRARI-GHCard-Cache Worker Secret, not this file.
+# - Cloudflare provider: optional KIRARI_GITHUB_TOKEN belongs to the
+#   workers/kirari-edge Worker Secret, not this file.
 # - Vercel provider: optional GITHUB_TOKEN belongs to Vercel Project
 #   Environment Variables, not this file.
 # - Never commit real tokens to kirari.config.toml.
@@ -1041,7 +1041,7 @@ enabled = false
 #   exact origins allowed for CORS. Empty means no browser Origin is granted
 #   ACAO; no-Origin requests still work without ACAO.
 # Token 配置位置:
-# - Cloudflare provider: 可选 GITHUB_TOKEN 配在外部 KIRARI-GHCard-Cache
+# - Cloudflare provider: 可选 KIRARI_GITHUB_TOKEN 配在 workers/kirari-edge
 #   Worker Secret，不写在这里。
 # - Vercel provider: 可选 GITHUB_TOKEN 配在 Vercel Project Environment
 #   Variables，不写在这里。
