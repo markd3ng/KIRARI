@@ -444,17 +444,16 @@ Add the following to your configuration file in your kv_namespaces array:
 ```jsonc
 "vars": {
   "CACHE_NAMESPACE_VERSION": "v1",
-  "PUBLIC_BASE_URL": "https://kirari-ghcard-cache.你的子域名.workers.dev/api/github",
-  "ALLOWED_ORIGINS": "https://blog.yourdomain.com",
-  "PREWARM_TARGETS": ""
+  "ALLOWED_ORIGINS": "https://blog.yourdomain.com"
 }
 ```
 
 | 变量 | 说明 | 是否必须 |
 |---|---|---|
+| `CACHE_NAMESPACE_VERSION` | 缓存命名空间版本；需要整体失效缓存时递增 | 建议保留默认值 |
 | `ALLOWED_ORIGINS` | 允许跨域调用 Worker 的域名，逗号分隔 | 生产环境建议设置。KIRARI Pages 通过 Service Binding 调用（不走 Origin），但浏览器直接请求会检查 Origin |
-| `PUBLIC_BASE_URL` | Worker 的公网 URL，用于 cron 预热时改写头像 URL | 如果启用了 cron 预热，必须设置 |
-| `PREWARM_TARGETS` | 定时预热目标，格式：`repo:owner/repo,avatar:owner` | 可选，格式参考 `.env.example` |
+
+GitHub Card 缓存按实际访问生成：只有页面加载到相关卡片、头像或文件资源时，Worker 才会请求 GitHub 并写入缓存。
 
 #### 步骤 7：验证
 
