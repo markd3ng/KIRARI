@@ -1,18 +1,19 @@
 ---
-import { bangumiConfig, siteConfig } from "../config";
+import { bangumiConfig } from "../config";
 import BangumiPanel from "../components/bangumi/BangumiPanel.astro";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
 import MainGridLayout from "../layouts/MainGridLayout.astro";
+import { getDefaultRouteContext } from "../utils/page-route-utils";
 
 if (!bangumiConfig.enabled) {
 	return Astro.redirect("/404/");
 }
 
-const lang = siteConfig.lang;
+const { lang, currentUrl, alternates } = getDefaultRouteContext("/bangumi/");
 const title = i18n(I18nKey.bangumi, lang);
 ---
 
-<MainGridLayout title={title} lang={lang} toc={false}>
+<MainGridLayout title={title} lang={lang} alternates={alternates} canonicalUrl={currentUrl} toc={false}>
 	<BangumiPanel {lang} {title} />
 </MainGridLayout>

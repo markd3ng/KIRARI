@@ -29,6 +29,8 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+      - run: pnpm profile:check
+      - run: pnpm trellis:check
       - run: node apps/site/scripts/qa-regression-check.mjs
       - run: pnpm site:type-check
       - run: pnpm site:astro-check

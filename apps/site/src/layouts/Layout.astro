@@ -23,6 +23,7 @@ import { defaultFavicons } from "../constants/icon";
 import type { Favicon } from "../types/config";
 import type { AlternateLink } from "../utils/i18n-utils";
 import { getLangHomeUrl, getLanguageConfig, normalizeLangCode, toHreflang } from "../utils/i18n-utils";
+import { resolveSearchProvider } from "../utils/search-provider.mjs";
 import { pathsEqual, url } from "../utils/url-utils";
 
 interface Props {
@@ -112,16 +113,7 @@ const absoluteUrl = (path: string) => new URL(path, Astro.site || Astro.url.orig
 const canonicalHref = canonicalUrl ? absoluteUrl(canonicalUrl) : Astro.url.href;
 const rssHref = absoluteUrl(getLangHomeUrl(pageLang).replace(/\/$/, "/rss.xml"));
 const xDefaultHref = absoluteUrl(getLangHomeUrl(Config.i18n.defaultLang));
-const activeSearchProvider =
-	searchConfig.provider === "docsearch" &&
-	!!searchConfig.docsearch.enable &&
-	!!searchConfig.docsearch.appId &&
-	!!searchConfig.docsearch.apiKey &&
-	!!searchConfig.docsearch.indexName
-		? "docsearch"
-		: searchConfig.provider === "google" && !!searchConfig.google.cx
-			? "google"
-			: "pagefind";
+const activeSearchProvider = resolveSearchProvider(searchConfig);
 const pagefindEnabled = activeSearchProvider === "pagefind";
 const docsearchMetaTags = Object.entries(searchConfig.docsearch.metaTags || {})
 	.filter(([key]) => key !== "language");

@@ -5,6 +5,7 @@ import { webcrypto } from "node:crypto";
 import { parse } from "smol-toml";
 import sanitizeHtml from "sanitize-html";
 import { buildContentSecurityPolicy, SECURITY_HEADERS } from "./security-policy.mjs";
+import { resolveSearchProvider } from "../src/utils/search-provider.mjs";
 
 const crypto = globalThis.crypto || webcrypto;
 const distDir = new URL("../dist", import.meta.url).pathname;
@@ -66,14 +67,7 @@ function getTomlValue(section, key) {
 }
 
 function activeSearchProvider() {
-	const configured = getTomlString("search", "provider", "");
-	if (configured === "docsearch") {
-		return docsearchEnabled() ? "docsearch" : "pagefind";
-	}
-	if (configured === "google") {
-		return getTomlString("search.google", "cx") ? "google" : "pagefind";
-	}
-	return docsearchEnabled() ? "docsearch" : "pagefind";
+	return resolveSearchProvider(config);
 }
 
 function siteUrl() {
@@ -334,13 +328,6 @@ function obfuscateMailtoLinks() {
 		html = html.replace(/mailto:/gi, "&#109;&#97;&#105;&#108;&#116;&#111;&#58;");
 		writeFileSync(file, html);
 	}
-}
-
-function docsearchEnabled() {
-	return getTomlBool("search.docsearch", "enable", false) &&
-		!!getTomlString("search.docsearch", "appId") &&
-		!!getTomlString("search.docsearch", "apiKey") &&
-		!!getTomlString("search.docsearch", "indexName");
 }
 
 function generatePagefind() {

@@ -7,17 +7,14 @@ import {
 	getNestedCategoryList,
 	getTaxonomyDisplayMappings,
 } from "../utils/content-utils";
-import { Config } from "../constants";
-import { getPathAlternates, withLangPrefix } from "../utils/i18n-utils";
+import { getDefaultRouteContext } from "../utils/page-route-utils";
 
-const lang = Config.i18n.defaultLang;
+const { lang, currentUrl, alternates } = getDefaultRouteContext("/categories/");
 const categories = await getNestedCategoryList(lang);
 const { categories: categoryDisplayMap } = await getTaxonomyDisplayMappings(lang);
-const categoriesUrl = withLangPrefix("/categories/", lang);
-const alternates = getPathAlternates((itemLang) => withLangPrefix("/categories/", itemLang));
 ---
 
-<MainGridLayout title={i18n(I18nKey.categories, lang)} lang={lang} alternates={alternates} canonicalUrl={categoriesUrl}>
+<MainGridLayout title={i18n(I18nKey.categories, lang)} lang={lang} alternates={alternates} canonicalUrl={currentUrl}>
 	<div class="card-base px-8 py-6">
 		<h1 class="text-3xl font-bold mb-6 text-black/90 dark:text-white/90">{i18n(I18nKey.categories, lang)}</h1>
 		<div class="grid gap-2">

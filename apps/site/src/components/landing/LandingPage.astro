@@ -1,7 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import { render } from "astro:content";
-import path from "node:path";
 import { Icon } from "astro-icon/components";
 import Footer from "@components/Footer.astro";
 import ImageWrapper from "@components/misc/ImageWrapper.astro";
@@ -13,8 +12,8 @@ import Layout from "@/layouts/Layout.astro";
 import { getCategoryList, getTaxonomyDisplayMappings } from "@utils/content-utils";
 import type { AlternateLink } from "@utils/i18n-utils";
 import { getLangHomeUrl, withLangPrefix } from "@utils/i18n-utils";
-import { getPostUrl } from "@utils/post-route-utils";
-import { getCategoryName, getDir } from "@utils/url-utils";
+import { getPostAssetBasePath, getPostUrl } from "@utils/post-route-utils";
+import { getCategoryName } from "@utils/url-utils";
 
 interface Props {
 	posts: CollectionEntry<"posts">[];
@@ -33,10 +32,7 @@ const categories = (await getCategoryList(lang))
 const latestPosts = await Promise.all(
 	latestEntries.map(async (entry) => {
 		const { remarkPluginFrontmatter } = await render(entry);
-		const imageBasePath = path.join(
-			"content/posts/",
-			getDir(getDir(entry.id) === "/" ? (entry as any).filePath.replace("src/content/posts/", "") : entry.id),
-		);
+		const imageBasePath = getPostAssetBasePath(entry);
 
 		return {
 			entry,

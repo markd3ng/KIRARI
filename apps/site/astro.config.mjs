@@ -35,19 +35,11 @@ import { rehypeTableWrapper } from "./src/plugins/rehype-table-wrapper.mjs";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkPlantuml } from "./src/plugins/remark-plantuml.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
+import { resolveSearchProvider } from "./src/utils/search-provider.mjs";
 
 // https://astro.build/config
 
-const activeSearchProvider =
-	Config.search?.provider === "docsearch" &&
-	!!Config.search.docsearch.enable &&
-	!!Config.search.docsearch.appId &&
-	!!Config.search.docsearch.apiKey &&
-	!!Config.search.docsearch.indexName
-		? "docsearch"
-		: Config.search?.provider === "google" && !!Config.search.google.cx
-			? "google"
-			: "pagefind";
+const activeSearchProvider = resolveSearchProvider(Config);
 
 export default defineConfig({
 	site: Config.site.url,

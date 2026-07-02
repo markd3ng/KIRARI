@@ -334,15 +334,15 @@ Before finishing your code-spec update:
 
 ```
 Development Flow:
-  Learn something → /skill trellis-update-spec → Knowledge captured
+  Learn something → `update-spec` (Trellis command) → Knowledge captured
        ↑                                  ↓
-  /skill trellis-break-loop ←──────────────────── Future sessions benefit
+  `break-loop` (Trellis command) ←──────────────────── Future sessions benefit
   (deep bug analysis)
 ```
 
-- `/skill trellis-break-loop` - Analyzes bugs deeply, often reveals spec updates needed
-- `/skill trellis-update-spec` - Actually makes the updates
-- `/skill trellis-finish-work` - Reminds you to check if specs need updates
+- ``break-loop` (Trellis command)` - Analyzes bugs deeply, often reveals spec updates needed
+- ``update-spec` (Trellis command)` - Actually makes the updates
+- ``finish-work` (Trellis command)` - Reminds you to check if specs need updates
 
 ---
 

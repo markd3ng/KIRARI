@@ -7,6 +7,7 @@ import { i18n } from "../i18n/translation";
 import { type LinkPresetType, type NavBarLink } from "../types/config";
 import type { AlternateLink } from "../utils/i18n-utils";
 import { getLangHomeUrl, withLangPrefix } from "../utils/i18n-utils";
+import { resolveSearchProvider } from "../utils/search-provider.mjs";
 import { url } from "../utils/url-utils";
 import LanguageSwitch from "./LanguageSwitch.astro";
 import LightDarkSwitch from "./LightDarkSwitch.svelte";
@@ -20,6 +21,7 @@ const alternates = Astro.props.alternates as AlternateLink[] | undefined;
 const showSearch = Astro.props.showSearch !== false;
 const variant = Astro.props.variant || "default";
 const isLandingVariant = variant === "landing";
+type SearchProvider = "pagefind" | "docsearch" | "google";
 
 function normalizeNavLink(item: NavBarLink | LinkPresetType): NavBarLink {
 	if (typeof item === "number") {
@@ -71,15 +73,7 @@ const searchLabel = i18n(I18nKey.search, lang);
 const searchPageUrl = lang ? withLangPrefix("/search", lang) : url("/search");
 const themeLabel = `${i18n(I18nKey.lightMode, lang)} / ${i18n(I18nKey.darkMode, lang)}`;
 const displaySettingsLabel = i18n(I18nKey.themeColor, lang);
-const searchProvider: "pagefind" | "docsearch" | "google" = searchConfig.provider === "docsearch" &&
-	!!searchConfig.docsearch.enable &&
-	!!searchConfig.docsearch.appId &&
-	!!searchConfig.docsearch.apiKey &&
-	!!searchConfig.docsearch.indexName
-	? "docsearch"
-	: searchConfig.provider === "google" && !!searchConfig.google.cx
-		? "google"
-		: "pagefind";
+const searchProvider: SearchProvider = resolveSearchProvider(searchConfig);
 const searchProviderConfig = {
 	provider: searchProvider,
 	docsearch: {

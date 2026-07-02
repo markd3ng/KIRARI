@@ -52,32 +52,12 @@ const shouldRender = config.enabled && hasBody && !isExpired;
 )}
 
 <script>
-	function initAdvertisementWidgets() {
-		document.querySelectorAll<HTMLElement>("[data-advertisement-widget]").forEach((widget) => {
-			const key = widget.dataset.storageKey;
-			if (!key) return;
-			const root = widget.closest("widget-layout") as HTMLElement | null;
-			const limit = Number(widget.dataset.displayCount || "-1");
-			const closedKey = `${key}:closed`;
-			const countKey = `${key}:count`;
-			if (localStorage.getItem(closedKey) === "1") {
-				if (root) root.hidden = true;
-				return;
-			}
-			if (limit > 0) {
-				const count = Number(localStorage.getItem(countKey) || "0");
-				if (count >= limit) {
-					if (root) root.hidden = true;
-					return;
-				}
-				localStorage.setItem(countKey, String(count + 1));
-			}
-			widget.querySelector("[data-close-advertisement]")?.addEventListener("click", () => {
-				localStorage.setItem(closedKey, "1");
-				if (root) root.hidden = true;
-			}, { once: true });
-		});
-	}
+	import { initDismissibleWidgets } from "@utils/dismissible-widget";
 
-	initAdvertisementWidgets();
+	initDismissibleWidgets({
+		widgetSelector: "[data-advertisement-widget]",
+		closeSelector: "[data-close-advertisement]",
+		closedKey: (key) => `${key}:closed`,
+		countKey: (key) => `${key}:count`,
+	});
 </script>

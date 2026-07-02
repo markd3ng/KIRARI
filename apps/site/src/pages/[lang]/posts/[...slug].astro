@@ -1,5 +1,4 @@
 ---
-import path from "node:path";
 import type { CollectionEntry } from "astro:content";
 import { render } from "astro:content";
 import { Icon } from "astro-icon/components";
@@ -22,8 +21,7 @@ import {
 	toLangSlug,
 	type AlternateLink,
 } from "@utils/i18n-utils";
-import { getPostRouteSlug, getPostUrl, getPostUrlBySlug } from "@utils/post-route-utils";
-import { getDir } from "@utils/url-utils";
+import { getPostAssetBasePath, getPostRouteSlug, getPostUrl, getPostUrlBySlug } from "@utils/post-route-utils";
 import { licenseConfig, mermaidConfig, ogConfig, sponsorConfig } from "src/config";
 import PostSponsor from "../../../components/sponsor/PostSponsor.astro";
 import Comments from "../../../components/comments/Comments.astro";
@@ -151,7 +149,7 @@ const jsonLd = {
 			</div>
 
 			{entry.data.image &&
-				<ImageWrapper id="post-cover" src={entry.data.image} basePath={path.join("content/posts/", getDir(getDir(entry.id) === "/" ? (entry as any).filePath.replace("src/content/posts/", "") : entry.id))} class="mb-8 aspect-[16/9] rounded-xl banner-container onload-animation"/>
+				<ImageWrapper id="post-cover" src={entry.data.image} basePath={getPostAssetBasePath(entry)} class="mb-8 aspect-[16/9] rounded-xl banner-container onload-animation"/>
 			}
 
 			<div class="markdown-wrapper relative">

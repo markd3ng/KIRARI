@@ -5,24 +5,18 @@ import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import MainGridLayout from "../../layouts/MainGridLayout.astro";
 import { Config } from "../../constants";
-import { fromLangSlug, getPathAlternates, getPrefixedLanguages, toLangSlug, withLangPrefix } from "../../utils/i18n-utils";
+import { getLocalizedRouteContext, getPrefixedStaticPaths } from "../../utils/page-route-utils";
 
-export const getStaticPaths = (() =>
-	getPrefixedLanguages().map((lang) => ({
-		params: { lang: toLangSlug(lang) },
-		props: { lang },
-	}))) satisfies GetStaticPaths;
+export const getStaticPaths = getPrefixedStaticPaths satisfies GetStaticPaths;
 
-const lang = fromLangSlug(Astro.params.lang);
+const { lang, currentUrl, alternates } = getLocalizedRouteContext("/devices/", Astro.params.lang);
 const devicesConfig = Config.devices;
 if (!devicesConfig.enable) {
-	return Astro.redirect(withLangPrefix("/404/", lang));
+	return Astro.redirect(getLocalizedRouteContext("/404/", Astro.params.lang).currentUrl);
 }
 
 const title = devicesConfig.title || i18n(I18nKey.devices, lang);
 const subtitle = devicesConfig.subtitle || i18n(I18nKey.devicesSubtitle, lang);
-const currentUrl = withLangPrefix("/devices/", lang);
-const alternates = getPathAlternates((itemLang) => withLangPrefix("/devices/", itemLang));
 
 const brands: Array<{ name: string; devices: Array<{ name: string; image: string; specs: string; description: string; link: string }> }> = [];
 try {

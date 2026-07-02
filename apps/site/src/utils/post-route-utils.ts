@@ -1,7 +1,7 @@
 import type { CollectionEntry } from "astro:content";
 import { Config } from "../constants";
 import { withLangPrefix } from "./i18n-utils";
-import { url } from "./url-utils";
+import { getDir, url } from "./url-utils";
 
 function crc32(input: string): string {
 	let crc = 0xffffffff;
@@ -48,4 +48,13 @@ export function getPostUrlBySlug(slug: string, lang?: string): string {
 	const routeSlug = normalizeRouteSlug(slug);
 	if (lang) return withLangPrefix(`/posts/${routeSlug}/`, lang);
 	return url(`/posts/${routeSlug}/`);
+}
+
+export function getPostAssetBasePath(post: CollectionEntry<"posts">): string {
+	const filePath = (post as CollectionEntry<"posts"> & { filePath?: string }).filePath;
+	const contentId = getDir(post.id) === "/" && filePath
+		? filePath.replace(/^src\/content\/posts\//, "")
+		: post.id;
+	const dir = getDir(contentId);
+	return `content/posts/${dir === "/" ? "" : dir}`;
 }

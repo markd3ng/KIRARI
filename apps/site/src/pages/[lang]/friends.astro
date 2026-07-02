@@ -8,30 +8,18 @@ import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
 import { getLocalizedSpecEntry } from "@utils/spec-content";
 import friendsItems from "../../_data/friends.json";
-import {
-	fromLangSlug,
-	getPathAlternates,
-	getPrefixedLanguages,
-	toLangSlug,
-	withLangPrefix,
-} from "../../utils/i18n-utils";
+import { getLocalizedRouteContext, getPrefixedStaticPaths } from "../../utils/page-route-utils";
 
-export const getStaticPaths = (() =>
-	getPrefixedLanguages().map((lang) => ({
-		params: { lang: toLangSlug(lang) },
-		props: { lang },
-	}))) satisfies GetStaticPaths;
+export const getStaticPaths = getPrefixedStaticPaths satisfies GetStaticPaths;
 
-const lang = fromLangSlug(Astro.params.lang);
+const { lang, currentUrl, alternates } = getLocalizedRouteContext("/friends/", Astro.params.lang);
 const friendsPage = await getLocalizedSpecEntry("friends", lang);
 if (!friendsPage) throw new Error("Friends page content not found");
 const { Content } = await render(friendsPage);
-const friendsUrl = withLangPrefix("/friends/", lang);
-const alternates = getPathAlternates((itemLang) => withLangPrefix("/friends/", itemLang));
 const items = friendsItems;
 ---
 
-<MainGridLayout title={i18n(I18nKey.friends, lang)} description={i18n(I18nKey.friends, lang)} lang={lang} alternates={alternates} canonicalUrl={friendsUrl}>
+<MainGridLayout title={i18n(I18nKey.friends, lang)} description={i18n(I18nKey.friends, lang)} lang={lang} alternates={alternates} canonicalUrl={currentUrl}>
 	<FriendLinksPanel items={items} lang={lang} />
 	<div class="card-base mt-6 px-6 py-6 sm:px-9">
 		<Markdown class="">

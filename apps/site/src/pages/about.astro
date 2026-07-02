@@ -4,19 +4,16 @@ import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
-import { Config } from "../constants";
+import { getDefaultRouteContext } from "../utils/page-route-utils";
 import { getLocalizedSpecEntry } from "../utils/spec-content";
-import { getPathAlternates, withLangPrefix } from "../utils/i18n-utils";
 
-const lang = Config.i18n.defaultLang;
+const { lang, currentUrl, alternates } = getDefaultRouteContext("/about/");
 const aboutPost = await getLocalizedSpecEntry("about", lang);
 if (!aboutPost) throw new Error("About page content not found");
 const { Content } = await render(aboutPost);
-const aboutUrl = withLangPrefix("/about/", lang);
-const alternates = getPathAlternates((itemLang) => withLangPrefix("/about/", itemLang));
 ---
 
-<MainGridLayout title={i18n(I18nKey.about, lang)} description={i18n(I18nKey.about, lang)} lang={lang} alternates={alternates} canonicalUrl={aboutUrl}>
+<MainGridLayout title={i18n(I18nKey.about, lang)} description={i18n(I18nKey.about, lang)} lang={lang} alternates={alternates} canonicalUrl={currentUrl}>
 	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative min-h-32">
 		<div class="card-base z-10 px-9 py-6 relative w-full ">
 			<Markdown class="mt-2">

@@ -68,6 +68,15 @@ functions/ghc/
 api/ghc/
 tmp/
 
-# generated site profile materialization manifest
+# generated site profile materialization
+apps/site/kirari.config.toml
+apps/site/src/content/posts/
+apps/site/src/content/spec/
+apps/site/src/_data/friends.json
+apps/site/src/_data/devices.json
+apps/site/public/images/devices/
+apps/site/public/favicon/
+apps/site/public/og/
+apps/site/src/snippets/
 apps/site/.kirari-profile-manifest.json
 .codegraph/
