@@ -1,4 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 
 const checks = [];
 
@@ -12,6 +13,15 @@ function readOptional(path) {
 
 function addCheck(name, passed, detail) {
 	checks.push({ name, passed, detail });
+}
+
+function ensureMaterializedProfile() {
+	const configUrl = new URL("../kirari.config.toml", import.meta.url);
+	if (existsSync(configUrl)) return;
+	execFileSync("node", [new URL("./materialize-profile.mjs", import.meta.url).pathname], {
+		cwd: new URL("..", import.meta.url).pathname,
+		stdio: "inherit",
+	});
 }
 
 function collectAstroFiles(dirUrl) {
@@ -68,6 +78,7 @@ function dynamicScopedStyleLeaks() {
 
 const configLoader = readFileSync(new URL("../src/utils/config-loader.ts", import.meta.url), "utf8");
 const configTypes = readFileSync(new URL("../src/types/config.ts", import.meta.url), "utf8");
+ensureMaterializedProfile();
 const kirariConfig = readFileSync(new URL("../kirari.config.toml", import.meta.url), "utf8");
 const markdownCss = readFileSync(new URL("../src/styles/markdown.css", import.meta.url), "utf8");
 const layout = readFileSync(new URL("../src/layouts/Layout.astro", import.meta.url), "utf8");
