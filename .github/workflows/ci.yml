@@ -29,7 +29,10 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+      - run: node --test scripts/tests/ci-profile-contract.test.mjs
+      - run: node apps/site/scripts/materialize-profile.mjs
       - run: pnpm profile:check
+      - run: pnpm site:test
       - run: pnpm trellis:check
       - run: node apps/site/scripts/qa-regression-check.mjs
       - run: pnpm site:type-check

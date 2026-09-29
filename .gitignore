@@ -81,4 +81,5 @@ apps/site/public/og/
 apps/site/src/snippets/
 apps/site/public/ads.txt
 apps/site/.kirari-profile-manifest.json
+apps/site/.kirari-external-publish-locks-*/
 .codegraph/

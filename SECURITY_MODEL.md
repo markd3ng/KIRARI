@@ -43,14 +43,23 @@ config.
 
 `./build.sh --site <directory>` treats mapped Site files as trusted owner input,
 validates paths/types and rejects symlinks before copying them into a disposable
-site workspace. The source directory is read-only. MDX and snippets can execute
-code during the build. The temporary workspace and child-environment allowlist
-are not an OS sandbox: build code retains the invoking user's filesystem and
-network permissions. Do not build unreviewed Site input where it can access
-sensitive files. `PUBLIC_*` values are still public and must not contain
-secrets. Build-only mode suppresses IndexNow and Google Indexing API
-submissions. This local POC does not package or deploy generated Pages
+site workspace. Materialization stages the mapped inputs and does not write to
+the original Site Source; the source is not enforced as read-only. MDX and
+other build-time code can execute during the build with the invoking user's
+filesystem and network permissions. Snippets are loaded as raw text and
+injected into generated HTML/JavaScript for browser execution; they are trusted
+owner code, but current code does not execute snippet JavaScript in the Node
+build process. The temporary workspace and child-environment allowlist are not
+an OS sandbox. Do not build unreviewed Site input where build-time code could
+access sensitive files. `PUBLIC_*` values are still public and must not
+contain secrets. This local POC does not package or deploy generated Pages
 Functions.
+
+Postbuild indexing submissions require
+`KIRARI_ALLOW_INDEXING_SUBMISSIONS=true`; `KIRARI_BUILD_ONLY=true` and
+`NODE_ENV=test` each veto both IndexNow and Google Indexing API submissions.
+The external builder always sets build-only mode and does not forward the
+authorization variable to its child process.
 
 The complete mapping and verification contract is documented in
 [`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md).

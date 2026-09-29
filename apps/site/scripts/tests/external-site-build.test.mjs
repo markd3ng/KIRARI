@@ -119,7 +119,7 @@ test("a distinct external Site replaces demo articles and never submits indexing
 	});
 	assert.equal(build.error, undefined, build.error?.message);
 	assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
-	assert.match(`${build.stdout}\n${build.stderr}`, /Indexing submissions skipped in build-only mode/);
+	assert.match(`${build.stdout}\n${build.stderr}`, /Indexing submissions skipped by the fail-closed authorization policy/);
 	assert.doesNotMatch(`${build.stdout}\n${build.stderr}`, /Test blocked indexing request/);
 
 	const distRoot = join(repoRoot, "apps/site/dist");

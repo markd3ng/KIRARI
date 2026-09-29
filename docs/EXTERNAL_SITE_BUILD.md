@@ -22,9 +22,10 @@ pnpm site:test
 
 The external source may contain spaces and non-ASCII path characters. The
 contract checker validates the source without writing to it. The external
-build copies `apps/site` into a temporary workspace, runs the package's normal
-build there, and installs only a successful static `dist` into
-`apps/site/dist`. A failed build leaves the prior output in place.
+build copies `apps/site` into a temporary workspace, validates and stages the
+mapped inputs, and does not use the original Site Source as a write target. It
+runs the package's normal build there and installs only a successful static
+`dist` into `apps/site/dist`. A failed build leaves the prior output in place.
 
 ## Site input contract
 
@@ -42,7 +43,7 @@ source-to-target mappings and required/optional status.
 | `content/posts/` | `src/content/posts/` | Optional; an absent directory becomes empty |
 | `data/devices.json` | `src/_data/devices.json` | Optional JSON object; `brands`, when present, is an array |
 | `assets/images/devices/` | `public/images/devices/` | Optional; an absent directory becomes empty |
-| `snippets/` | `src/snippets/` | Optional trusted build-time code; an absent directory becomes empty |
+| `snippets/` | `src/snippets/` | Optional trusted maintainer HTML/JavaScript; an absent directory becomes empty |
 | `ads.txt` | `public/ads.txt` | Optional; removed from generated output when absent |
 
 All present mapped inputs must be regular files or directories of the declared
@@ -64,22 +65,40 @@ identifies the preserved recovery directory.
 The external build uses a disposable copy of `apps/site`. It copies the built
 `dist` to a sibling staging directory and replaces `apps/site/dist` only after
 the build succeeds. If the replacement fails, it restores the previous `dist`
-or reports the preserved recovery path. Only static `dist` is installed;
-generated `functions/` output is outside this POC's contract.
+or reports the preserved recovery path. On the next invocation, startup
+recovery restores a backup when `dist` is absent, keeps an already installed
+`dist` when present, then removes stale staging directories. Only static `dist`
+is installed; generated `functions/` output is outside this POC's contract.
+
+Publication and recovery are serialized by the canonical destination path.
+Builds targeting the same `dist` wait for one another; different destinations
+can proceed independently. The filesystem ticket records process identity, is
+reclaimed only after its owner is verified dead, and has a bounded wait. A
+publisher holds its ticket through staging recovery, build-temp cleanup, and
+dist installation. Temporary build directories include the full SHA-256 of
+the canonical destination, so recovery removes only that destination's stale
+workspaces and cannot clean another active target's workspace.
 
 The child build receives `KIRARI_SITE_SOURCE` and
-`KIRARI_BUILD_ONLY=true`. The latter skips both IndexNow and Google Indexing
-API submissions in postbuild. The builder filters inherited environment
-variables to selected build settings and `PUBLIC_*` values; `PUBLIC_*` remains
-public and must never contain secrets.
+`KIRARI_BUILD_ONLY=true`. IndexNow and Google Indexing API submissions require
+`KIRARI_ALLOW_INDEXING_SUBMISSIONS=true`, and are vetoed by either
+`KIRARI_BUILD_ONLY=true` or `NODE_ENV=test`. The external builder always sets
+build-only mode and does not forward `KIRARI_ALLOW_INDEXING_SUBMISSIONS` to the
+child. It filters other inherited environment variables to selected build
+settings and `PUBLIC_*` values; `PUBLIC_*` remains public and must never
+contain secrets.
 
 ## Trust boundary
 
-This POC is not an operating-system sandbox. Site MDX and snippets can execute
-code during the build with the invoking user's filesystem and network
-permissions. Build only trusted, reviewed Site input. The temporary workspace
-and environment filtering do not isolate build code from files the current
-user can read or from network access.
+Materialization validates and stages the mapped source paths and does not write
+to the original Site Source. It does not enforce read-only filesystem
+permissions. This POC is not an operating-system sandbox: MDX and other
+build-time code can execute with the invoking user's filesystem and network
+permissions. Snippets are loaded as raw text and emitted as browser-executable
+HTML/JavaScript; they are trusted owner code, but current code does not run
+snippet JavaScript in the Node build process. The temporary workspace and
+environment filtering do not isolate build code from files the current user
+can read or from network access.
 
 Future CI must treat Site changes as executable input: provide no production
 credentials to the build and isolate untrusted changes before executing them.
@@ -91,8 +110,10 @@ separate steps.
 `pnpm site:test` exercises the actual `./build.sh --site` entry with equivalent
 and distinct external Site fixtures. It compares default/equivalent routes,
 page metadata, and selected public asset hashes; verifies custom content
-replaces demo posts; checks that indexing endpoints are not contacted when both
-submission settings are enabled; and confirms source files remain unchanged.
+replaces demo posts; checks that build-only and test modes cannot submit to
+IndexNow or Google even with both integrations configured and dummy credentials;
+and confirms source files remain unchanged. It also checks that ordinary builds
+need explicit authorization before either submitter runs.
 Materializer tests cover required and malformed inputs, source/destination
 symlinks and overlap, failed copies and replacement rollback, optional-file
 removal, stale-output cleanup, and paths containing spaces and non-ASCII

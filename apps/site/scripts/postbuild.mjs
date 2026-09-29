@@ -1,13 +1,12 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { basename, join, relative, sep } from "node:path";
+import { join, relative, sep } from "node:path";
 import { spawnSync } from "node:child_process";
-import { webcrypto } from "node:crypto";
 import { parse } from "smol-toml";
 import sanitizeHtml from "sanitize-html";
 import { buildContentSecurityPolicy, SECURITY_HEADERS } from "./security-policy.mjs";
+import { submitIndexingNotifications } from "./indexing.mjs";
 import { resolveSearchProvider } from "../src/utils/search-provider.mjs";
 
-const crypto = globalThis.crypto || webcrypto;
 const distDir = new URL("../dist", import.meta.url).pathname;
 const astroDir = join(distDir, "_astro");
 const configPath = new URL("../kirari.config.toml", import.meta.url).pathname;
@@ -367,136 +366,17 @@ function generateLlms() {
 	}
 }
 
-function sitemapUrls() {
-	const xmlFiles = walk(distDir).filter((file) => file.endsWith(".xml") && basename(file).includes("sitemap"));
-	const urls = [];
-	for (const file of xmlFiles) {
-		const xml = readFileSync(file, "utf8");
-		for (const match of xml.matchAll(/<loc>(.*?)<\/loc>/g)) urls.push(match[1]);
-	}
-	return Array.from(new Set(urls.filter((url) => !url.endsWith(".xml"))));
-}
-
-async function submitIndexNow() {
-	const enabled = process.env.PUBLIC_INDEXNOW_ENABLE === "true" || getTomlBool("seo", "indexNow", false);
-	const key = process.env.PUBLIC_INDEXNOW_KEY || getTomlString("seo", "indexNowKey");
-	if (!enabled || !key) return;
-
-	writeFileSync(join(distDir, `${key}.txt`), key);
-	const urls = sitemapUrls();
-	if (urls.length === 0) return;
-	const endpoint = "https://api.indexnow.org/indexnow";
-	const host = new URL(siteUrl()).host;
-	const response = await fetch(endpoint, {
-		method: "POST",
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify({
-			host,
-			key,
-			keyLocation: `${siteUrl()}${basePath()}${key}.txt`.replace(/([^:]\/)\/+/g, "$1"),
-			urlList: urls,
-		}),
-	});
-	if (!response.ok) {
-		console.warn(`[postbuild] IndexNow submission failed: ${response.status} ${response.statusText}`);
-	}
-}
-
-function base64UrlEncode(value) {
-	return Buffer.from(value)
-		.toString("base64")
-		.replace(/=/g, "")
-		.replace(/\+/g, "-")
-		.replace(/\//g, "_");
-}
-
-async function createGoogleAccessToken(serviceAccountJson) {
-	const header = base64UrlEncode(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-	const now = Math.floor(Date.now() / 1000);
-	const payload = base64UrlEncode(JSON.stringify({
-		iss: serviceAccountJson.client_email,
-		scope: "https://www.googleapis.com/auth/indexing",
-		aud: "https://oauth2.googleapis.com/token",
-		iat: now,
-		exp: now + 3600,
-	}));
-	const key = await crypto.subtle.importKey(
-		"pkcs8",
-		Buffer.from(serviceAccountJson.private_key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, ""), "base64"),
-		{ name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-		false,
-		["sign"],
-	);
-	const signature = await crypto.subtle.sign(
-		"RSASSA-PKCS1-v1_5",
-		key,
-		new TextEncoder().encode(`${header}.${payload}`),
-	);
-	const assertion = `${header}.${payload}.${base64UrlEncode(Buffer.from(signature))}`;
-	const response = await fetch("https://oauth2.googleapis.com/token", {
-		method: "POST",
-		headers: { "content-type": "application/x-www-form-urlencoded" },
-		body: new URLSearchParams({
-			grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-			assertion,
-		}),
-	});
-	if (!response.ok) {
-		throw new Error(`Google OAuth token request failed: ${response.status} ${response.statusText}`);
-	}
-	const data = await response.json();
-	if (!data.access_token) throw new Error("Google OAuth token response did not include access_token.");
-	return data.access_token;
-}
-
-async function submitGoogleIndexing() {
-	const enabled = getTomlBool("seo.google", "indexingApi", false);
-	if (!enabled) return;
-
-	const envName = getTomlString("seo.google", "serviceAccountJsonEnv", "GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON");
-	const rawCredentials = process.env[envName];
-	if (!rawCredentials) {
-		console.warn(`[postbuild] Google Indexing API enabled but ${envName} is not set.`);
-		return;
-	}
-
-	try {
-		const serviceAccountJson = JSON.parse(rawCredentials);
-		if (!serviceAccountJson.client_email || !serviceAccountJson.private_key) {
-			console.warn(`[postbuild] Google Indexing API skipped: ${envName} is missing client_email or private_key.`);
-			return;
-		}
-		const token = await createGoogleAccessToken(serviceAccountJson);
-		const urls = sitemapUrls();
-		for (const url of urls) {
-			const response = await fetch("https://indexing.googleapis.com/v3/urlNotifications:publish", {
-				method: "POST",
-				headers: {
-					authorization: `Bearer ${token}`,
-					"content-type": "application/json",
-				},
-				body: JSON.stringify({
-					url,
-					type: "URL_UPDATED",
-				}),
-			});
-			if (!response.ok) {
-				console.warn(`[postbuild] Google Indexing API submission failed for ${url}: ${response.status} ${response.statusText}`);
-			}
-		}
-	} catch (error) {
-		console.warn("[postbuild] Google Indexing API submission skipped:", error);
-	}
-}
-
 generateHeadersAndRedirects();
 generateRobots();
 obfuscateMailtoLinks();
 generatePagefind();
 generateLlms();
-if (process.env.KIRARI_BUILD_ONLY === "true") {
-	console.log("[postbuild] Indexing submissions skipped in build-only mode.");
-} else {
-	await submitIndexNow();
-	await submitGoogleIndexing();
+const indexingSubmissionsAuthorized = await submitIndexingNotifications({
+	config,
+	distDir,
+	siteUrl: siteUrl(),
+	basePath: basePath(),
+});
+if (!indexingSubmissionsAuthorized) {
+	console.log("[postbuild] Indexing submissions skipped by the fail-closed authorization policy.");
 }

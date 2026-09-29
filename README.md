@@ -67,7 +67,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 |---|---|
 | materialize | `functions/ghc/` or `api/ghc/` (only when `githubCard.adapter.enabled`; Cloudflare output is written to the deployment root, including `apps/site` monorepos) |
 | astro build | `dist/` (SSG) |
-| postbuild | `_headers`, `_redirects`, `robots.txt`, Pagefind index, `llms.txt`, IndexNow submit |
+| postbuild | `_headers`, `_redirects`, `robots.txt`, Pagefind index, LLM files, optional IndexNow/Google indexing submissions (explicit opt-in only) |
 
 **Performance invariants**:
 
@@ -121,16 +121,19 @@ pnpm build
 
 `./build.sh --site /path/to/site` builds an external Site directory locally into
 `apps/site/dist`. The no-argument `./build.sh` and `pnpm build` continue to use
-`packages/site-profile`. The external source is read-only; required files,
-types, JSON/TOML and symlinks are validated before materialization. See
+`packages/site-profile`. Required files, types, JSON/TOML and symlinks are
+validated before materialization. Materialization stages mapped inputs and
+does not write to the original Site Source. See
 [`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md) for the input
 contract and security limits.
 
 This POC builds static output only. It does not fetch refs, commit, push,
 deploy, package Cloudflare Pages Functions, or submit IndexNow/Google indexing
-notifications. Site MDX and snippets are trusted owner code and can execute
-during the build. The temporary workspace is not an OS sandbox; do not build
-unreviewed Site input on a machine where its code could access sensitive files.
+notifications. Site MDX and other build-time code are trusted inputs and can
+run with the invoking user's filesystem and network permissions. Snippets are
+also trusted owner code; their HTML/JavaScript is emitted into the site for
+browser execution. The build is not an OS sandbox. Do not build unreviewed Site
+input on a machine where build-time code could access sensitive files.
 It is a local build entry point, not the deployment workflow described in
 [DEPLOY.md](./DEPLOY.md).
 

@@ -1,0 +1,4 @@
+{"file":".trellis/spec/site/frontend/quality-guidelines.md","reason":"Use as the acceptance contract for build-only indexing, concurrent publication, and crash recovery verification."}
+{"file":".trellis/spec/guides/repository-workflow.md","reason":"Use the checked-in workflow and repository verification requirements for the final gate."}
+{"file":".trellis/tasks/09-29-09-29-pr1-audit-remediation/research/pnpm-audit-2026-09-29.md","reason":"Record full pnpm audit execution and findings separately from engineering gate status."}
+{"file":".trellis/tasks/09-29-09-29-pr1-audit-remediation/research/security-dependencies.md","reason":"Preserve independent F3/F7 advisory ranges, reachability, compatibility, and separate security PR recommendations."}

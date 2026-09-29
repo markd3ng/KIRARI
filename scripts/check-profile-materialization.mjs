@@ -4,11 +4,12 @@ import { execFileSync } from "node:child_process";
 import { existsSync, lstatSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PROFILE_MAPPINGS } from "../apps/site/scripts/profile-manifest.mjs";
+import { PROFILE_MAPPINGS, validateProfileSource } from "../apps/site/scripts/profile-manifest.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const profileRoot = join(repoRoot, "packages/site-profile");
 const siteRoot = join(repoRoot, "apps/site");
+validateProfileSource(profileRoot, siteRoot);
 const targets = PROFILE_MAPPINGS.map(({ target }) => `apps/site/${target}`);
 targets.push("apps/site/.kirari-profile-manifest.json");
 const tracked = execFileSync("git", ["ls-files", "--", ...targets], {

@@ -31,9 +31,9 @@ shortened summaries.
 - The authoritative source-to-target map is `apps/site/scripts/profile-manifest.mjs` (`PROFILE_MAPPINGS`).
 - Required: `kirari.config.toml`; `content/spec/{about,friends,projects}.md`; `data/friends.json` (array of objects with string `siteTitle`, `siteDesc`, `siteUrl`, `siteIcon`); `assets/images/{demo-avatar,demo-banner}.png`; eight `assets/favicon/favicon-{light,dark}-{32,128,180,192}.png`; `assets/og/default.png`.
 - Optional: `content/posts/`, `data/devices.json`, `assets/images/devices/`, `snippets/`, `ads.txt`. Absent optional directories become empty; absent optional files are removed from generated output.
-- `KIRARI_SITE_SOURCE` selects the profile during the copied app build. `KIRARI_BUILD_ONLY=true` suppresses both postbuild indexing submission paths. The external builder passes only selected OS/build settings and `PUBLIC_*` variables to the child.
-- The input root must resolve to a directory disjoint from `apps/site`; mapped inputs must be regular files/directories with no symlinks or special files. The source is never a write target. Successful external build replaces only `apps/site/dist`, with rollback on replacement failure.
-- This is not an OS sandbox. Site MDX and snippets can execute code with the invoking user's filesystem and network permissions. Build only trusted, reviewed Site input; an environment allowlist does not isolate filesystem access.
+- `KIRARI_SITE_SOURCE` selects the profile during the copied app build. Indexing submissions require `KIRARI_ALLOW_INDEXING_SUBMISSIONS=true`; `KIRARI_BUILD_ONLY=true` and `NODE_ENV=test` each veto both postbuild submission paths. The external builder sets build-only mode and does not pass the authorization variable to the child.
+- The input root must resolve to a directory disjoint from `apps/site`; mapped inputs must be regular files/directories with no symlinks or special files. Materialization validates and stages the input without using the original Site Source as a write target. Successful external build replaces only `apps/site/dist`, with rollback on replacement failure.
+- This is not an OS sandbox or enforced read-only source. MDX and other build-time code can execute with the invoking user's filesystem and network permissions. Snippets are loaded as raw text and emitted as browser-executable HTML/JavaScript; they are trusted owner code, but current code does not run snippet JavaScript in the Node build process. Environment filtering does not isolate filesystem access.
 - This is a local static build. It does not fetch Git refs, mutate Git, deploy, or package `functions/` alongside `dist`.
 - The workflow-independent contract is also recorded in `docs/EXTERNAL_SITE_BUILD.md` so future engineering-guide changes do not make the POC assumptions disappear.
 
@@ -45,6 +45,9 @@ shortened summaries.
 | Missing optional directory | Materialize an empty directory to prevent stale content |
 | External Astro build fails | Preserve previous `apps/site/dist` |
 | External build succeeds | Install its static `dist` as `apps/site/dist` |
+| Next invocation finds a stale publication stage | Restore its backup if `dist` is absent; otherwise keep installed `dist`; remove the stale stage |
+| Concurrent builds target the same `dist` | Serialize recovery and publication with a destination-keyed filesystem ticket; reclaim only a verified dead owner |
+| External builds target different `dist` paths | Allow independent builds; each recovers only its SHA-256-keyed build temp roots |
 | QA regression script sees `KIRARI_SITE_SOURCE` | Exit 2; demo-only assertions are not run |
 
 ### 5. Good/Base/Bad Cases
@@ -53,8 +56,8 @@ shortened summaries.
 - Bad: missing `friends.json`, symlinked input, invalid config, source/destination overlap, failed copy, or unreviewed executable Site content (which is outside this trust model).
 
 ### 6. Tests Required
-- `node --test apps/site/scripts/tests/*.test.mjs` asserts required/optional inputs, types, symlinks, source immutability, rollback/stale replacement, and demo-QA refusal.
-- `pnpm site:test` additionally compares default and equivalent external routes/metadata/assets; custom fixture assertions check route presence, demo-route absence, and no indexing request with both indexing options enabled.
+- `node --test apps/site/scripts/tests/*.test.mjs` asserts required/optional inputs, types, symlinks, staged replacement/rollback, stale-stage recovery, and demo-QA refusal.
+- `pnpm site:test` additionally compares default and equivalent external routes/metadata/assets; custom fixture assertions check route presence, demo-route absence, and verify build-only/test indexing vetoes with both integrations enabled and dummy credentials.
 - Run `pnpm site:profile:check -- --site <fixture>`, `pnpm profile:check`, `node apps/site/scripts/qa-regression-check.mjs`, `pnpm site:type-check`, `pnpm site:astro-check`, `pnpm build`, and `git diff --check` for the affected change.
 
 ### 7. Wrong vs Correct
