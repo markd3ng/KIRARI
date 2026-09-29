@@ -45,3 +45,36 @@ Rebuilt package specs from current code reality, audited repository documentatio
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: PR-1 Finalization
+
+**Date**: 2026-09-29
+**Task**: PR-1 Finalization
+**Branch**: `codex/external-site-build-poc`
+
+### Summary
+
+Completed PR-1 engineering remediation on codex/external-site-build-poc; frozen install, site:test 39/39, pnpm check, both 112-page builds, release checks and independent audit passed. Full pnpm audit executed successfully with 61 findings; F3/F7 and other reported dependency risks remain a blocked security release gate. Local commit only; no push, PR, deployment, or indexing submission.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9d489a1` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
