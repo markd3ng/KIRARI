@@ -39,6 +39,22 @@ committed. Treat every `PUBLIC_*` value as browser/build-visible and non-secret.
 Do not store private tokens, database URLs, or write-capable API keys in public
 config.
 
+## External Site Build POC
+
+`./build.sh --site <directory>` treats mapped Site files as trusted owner input,
+validates paths/types and rejects symlinks before copying them into a disposable
+site workspace. The source directory is read-only. MDX and snippets can execute
+code during the build. The temporary workspace and child-environment allowlist
+are not an OS sandbox: build code retains the invoking user's filesystem and
+network permissions. Do not build unreviewed Site input where it can access
+sensitive files. `PUBLIC_*` values are still public and must not contain
+secrets. Build-only mode suppresses IndexNow and Google Indexing API
+submissions. This local POC does not package or deploy generated Pages
+Functions.
+
+The complete mapping and verification contract is documented in
+[`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md).
+
 ## Search Providers
 
 `search.google.cx` is a public Google Programmable Search Engine ID, not a

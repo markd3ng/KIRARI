@@ -23,10 +23,14 @@ The following paths are build inputs copied by
 - `src/_data/friends.json`, `src/_data/devices.json`
 - `public/images/devices/`, `public/favicon/`, `public/og/`
 - `src/snippets/`
+- `src/assets/images/` (generic images such as profile avatar/banner)
+- `public/ads.txt` (optional)
 
-The script clears each mapped destination before copying and records
-`.kirari-profile-manifest.json`. Do not hand-edit a materialized copy and expect
-it to survive the next command.
+`scripts/profile-manifest.mjs` owns the map for default and external Site
+materialization. It stages replacements and records
+`.kirari-profile-manifest.json`. Do not hand-edit a materialized copy and
+expect it to survive the next command. External Site source paths are described
+in `.trellis/spec/site/frontend/quality-guidelines.md`.
 
 Generated directories such as `.astro/` and `dist/` are outputs, not source.
 The `tmp/Firefly` and `tmp/Mizuki` trees are historical references, not current

@@ -1,7 +1,9 @@
 # Materialization Lifecycle
 
-Profile files are copied before `site:dev`, `site:type-check`,
-`site:astro-check`, and `site:build`.
+Default Profile files are copied before `site:dev`, `site:type-check`,
+`site:astro-check`, and `site:build`. The external `./build.sh --site` path
+builds in a disposable copy of `apps/site` and installs only successful static
+output into `apps/site/dist`.
 
 For each mapping, destination directory contents are removed before copying.
 Missing source paths are skipped with a warning. A manifest records the copied

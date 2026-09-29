@@ -116,6 +116,20 @@ pnpm build
 
 > pnpm ≥ 9.14.4，通过 `packageManager` 字段强制。
 
+### 外部 Site 本地构建 POC
+
+`./build.sh --site /path/to/site` 可在本地从外部 Site 目录构建到
+`apps/site/dist`。不带参数的 `./build.sh` 和 `pnpm build` 仍使用
+`packages/site-profile`。外部源只读；程序会在 materialize 前验证必需文件、类型、
+JSON/TOML 内容和符号链接。输入约定与安全边界见
+[`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md)。
+
+此 POC 只生成静态产物：不拉取 Git ref、不提交、不推送、不部署、不打包
+Cloudflare Pages Functions，也不发送 IndexNow/Google 收录通知。Site 的 MDX 和
+snippets 是可信的所有者代码，构建时可能执行；临时目录不是操作系统沙箱。不要在
+能访问敏感文件的机器上构建未经审阅的 Site 输入。这是本地构建入口，不是
+[DEPLOY.md](./DEPLOY.md) 中的部署流程。
+
 ## Fork 后最小修改清单
 
 仅修改以下文件。不要修改 `apps/site/src/components/`、`apps/site/src/layouts/`、
@@ -125,11 +139,16 @@ pnpm build
 |---|---|---|
 | `packages/site-profile/kirari.config.toml` | 设置 `site.url`、`site.title`、`profile.*`、`navBar.*`、`landingPage.*` | 是 |
 | `packages/site-profile/content/posts/` | 删除示例文章，添加自己的 `.md`/`.mdx` | 是 |
-| `packages/site-profile/content/spec/about.md` | 替换关于页内容 | 推荐 |
+| `packages/site-profile/content/spec/{about,friends,projects}.md` | 替换内置页面 | 推荐 |
+| `packages/site-profile/data/friends.json` | 替换友链数据（可使用空数组） | 推荐 |
+| `packages/site-profile/assets/images/` | 替换通用图片，包括示例头像和横幅 | 推荐 |
 | `packages/site-profile/assets/` | 替换 favicon、OG 图片和 profile 资产 | 推荐 |
-| `packages/site-profile/content/spec/friends.md` | 替换或移除 Friends 导航 | 可选 |
-| `packages/site-profile/content/spec/projects.md` | 替换 GitHub 项目卡片或移除 Projects 导航 | 可选 |
-| `packages/site-profile/data/friends.json` | 替换友链数据 | 可选 |
+
+使用 `./build.sh --site` 时，TOML、`content/spec/{about,friends,projects}.md`、
+`data/friends.json`、包含 `demo-avatar.png` 和 `demo-banner.png` 的
+`assets/images/`、8 个 favicon 文件及 `assets/og/default.png` 都是必需项。
+posts、devices 数据/图片、snippets 和 `ads.txt` 可选；缺少可选目录时会生成空目录，
+避免旧内容混入构建。
 
 验证：
 

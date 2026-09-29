@@ -1,0 +1,4 @@
+{"file":".trellis/spec/site/frontend/quality-guidelines.md","reason":"External build command, input manifest, environment flags, validation matrix, test requirements, and trusted-input boundary."}
+{"file":".trellis/spec/site-profile/frontend/directory-structure.md","reason":"Authoritative default/external Profile paths and required versus optional source inputs."}
+{"file":".trellis/spec/site-profile/frontend/quality-guidelines.md","reason":"Default versus external Site materialization checks and validation commands."}
+{"file":".trellis/spec/guides/repository-workflow.md","reason":"Documentation synchronization requirements for build/materialization behavior."}

@@ -494,5 +494,9 @@ generateRobots();
 obfuscateMailtoLinks();
 generatePagefind();
 generateLlms();
-await submitIndexNow();
-await submitGoogleIndexing();
+if (process.env.KIRARI_BUILD_ONLY === "true") {
+	console.log("[postbuild] Indexing submissions skipped in build-only mode.");
+} else {
+	await submitIndexNow();
+	await submitGoogleIndexing();
+}

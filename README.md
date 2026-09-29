@@ -117,6 +117,23 @@ pnpm build
 
 > pnpm ≥ 9.14.4 enforced via `packageManager` field.
 
+### Local external Site build POC
+
+`./build.sh --site /path/to/site` builds an external Site directory locally into
+`apps/site/dist`. The no-argument `./build.sh` and `pnpm build` continue to use
+`packages/site-profile`. The external source is read-only; required files,
+types, JSON/TOML and symlinks are validated before materialization. See
+[`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md) for the input
+contract and security limits.
+
+This POC builds static output only. It does not fetch refs, commit, push,
+deploy, package Cloudflare Pages Functions, or submit IndexNow/Google indexing
+notifications. Site MDX and snippets are trusted owner code and can execute
+during the build. The temporary workspace is not an OS sandbox; do not build
+unreviewed Site input on a machine where its code could access sensitive files.
+It is a local build entry point, not the deployment workflow described in
+[DEPLOY.md](./DEPLOY.md).
+
 ## Fork Checklist
 
 Only edit files listed below. Do not modify program files under `apps/site/src/components/`,
@@ -126,11 +143,17 @@ Only edit files listed below. Do not modify program files under `apps/site/src/c
 |---|---|---|
 | `packages/site-profile/kirari.config.toml` | Set `site.url`, `site.title`, `profile.*`, `navBar.*`, `landingPage.*` | Yes |
 | `packages/site-profile/content/posts/` | Delete demo posts, add your `.md`/`.mdx` | Yes |
-| `packages/site-profile/content/spec/about.md` | Replace About content | Recommended |
+| `packages/site-profile/content/spec/{about,friends,projects}.md` | Replace the built-in pages | Recommended |
+| `packages/site-profile/data/friends.json` | Replace friend-link data (an empty array is valid) | Recommended |
+| `packages/site-profile/assets/images/` | Replace generic images, including demo avatar/banner | Recommended |
 | `packages/site-profile/assets/` | Replace favicon, OG images, and profile assets | Recommended |
-| `packages/site-profile/content/spec/friends.md` | Replace or remove Friends nav in config | Optional |
-| `packages/site-profile/content/spec/projects.md` | Replace GitHub project cards or remove Projects nav in config | Optional |
-| `packages/site-profile/data/friends.json` | Replace friend-link data | Optional |
+
+For `./build.sh --site`, the TOML, `content/spec/{about,friends,projects}.md`,
+`data/friends.json`, `assets/images/` (with `demo-avatar.png` and
+`demo-banner.png`), all eight favicon files, and `assets/og/default.png` are
+required. Posts, devices data/images, snippets, and `ads.txt` are optional;
+missing optional directories materialize empty so prior content cannot leak
+into the build.
 
 Validation:
 

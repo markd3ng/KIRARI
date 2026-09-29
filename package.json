@@ -25,10 +25,12 @@
     "edge:deploy": "\"$npm_execpath\" --filter @kirari/edge deploy",
     "deploy:config:check": "node apps/site/scripts/generate-vercel-config.mjs --check",
     "profile:check": "node scripts/check-profile-materialization.mjs",
+    "site:profile:check": "node apps/site/scripts/check-site-profile.mjs",
+    "site:test": "\"$npm_execpath\" --filter @kirari/site test",
     "trellis:check": "node scripts/check-trellis-adapter-sync.mjs",
     "release:check": "node scripts/release-regression-check.mjs",
     "release:version-check": "node scripts/release-version-check.mjs",
-		"check": "\"$npm_execpath\" site:type-check && \"$npm_execpath\" site:astro-check && \"$npm_execpath\" edge:type-check && \"$npm_execpath\" edge:test && \"$npm_execpath\" profile:check && \"$npm_execpath\" trellis:check",
+    "check": "\"$npm_execpath\" site:type-check && \"$npm_execpath\" site:astro-check && \"$npm_execpath\" edge:type-check && \"$npm_execpath\" edge:test && \"$npm_execpath\" profile:check && \"$npm_execpath\" trellis:check",
     "build": "\"$npm_execpath\" site:build",
     "audit": "\"$npm_execpath\" --filter @kirari/site audit"
   },

@@ -3,6 +3,11 @@ import { execFileSync } from "node:child_process";
 
 const checks = [];
 
+if (process.env.KIRARI_SITE_SOURCE) {
+	console.error("The regression QA script targets packages/site-profile and refuses an external Site source.");
+	process.exit(2);
+}
+
 function readOptional(path) {
 	try {
 		return readFileSync(new URL(path, import.meta.url), "utf8");

@@ -10,6 +10,7 @@
     "astro": "astro",
     "type-check": "node scripts/materialize-profile.mjs && astro sync && tsc --noEmit",
     "check": "node scripts/materialize-profile.mjs && astro check",
+    "test": "node --test scripts/tests/*.test.mjs",
     "audit": "pnpm audit --audit-level moderate",
     "new-post": "node scripts/new-post.js",
     "preinstall": "node scripts/ensure-pnpm.mjs",

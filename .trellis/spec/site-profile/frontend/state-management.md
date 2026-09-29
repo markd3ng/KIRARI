@@ -1,7 +1,8 @@
 # Ownership And Configuration State
 
 The profile is the editable default state; the copies under `apps/site` are
-materialized state.
+materialized state. `./build.sh --site <directory>` can supply a separate,
+read-only Site tree for one local build; it does not change default ownership.
 
 Configuration priority inside the site is environment override, then TOML,
 then loader default. This does not mean every TOML field has an environment
