@@ -98,6 +98,7 @@ const searchPage = readOptional("../src/pages/search.astro");
 const localizedSearchPage = readOptional("../src/pages/[lang]/search.astro");
 const postbuildScript = readOptional("../scripts/postbuild.mjs");
 const vercelJson = readOptional("../../../vercel.json");
+const vercelConfig = JSON.parse(vercelJson || "{}");
 const guestbookPage = readOptional("../src/pages/guestbook.astro");
 const sponsorPage = readOptional("../src/pages/sponsor.astro");
 const bangumiPage = readOptional("../src/pages/bangumi.astro");
@@ -617,6 +618,12 @@ addCheck(
 		/"source": "\/:lang\/search"/.test(vercelJson) &&
 		/"destination": "\/:lang\/search\/"/.test(vercelJson),
 	"Vercel and static _redirects output must rewrite /search?q=... to the generated trailing-slash search page without changing the visible URL",
+);
+const deploymentEnabled = vercelConfig.git?.deploymentEnabled;
+addCheck(
+	"Vercel Git deployments are disabled only for main",
+	deploymentEnabled?.main === false && Object.keys(deploymentEnabled).length === 1,
+	"Only main must be disabled; dev, test, and unspecified branches must retain Vercel defaults",
 );
 addCheck(
 	"search results render untrusted content as text",
