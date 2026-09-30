@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
@@ -40,14 +40,6 @@ function versionAtLeast(actual, minimum) {
 		if (difference !== 0) return difference > 0;
 	}
 	return true;
-}
-
-function walk(directory) {
-	if (!existsSync(directory)) return [];
-	return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-		const path = join(directory, entry.name);
-		return entry.isDirectory() ? walk(path) : [path];
-	});
 }
 
 test("Astro's resolved Sharp/libheif stack builds an AVIF source into WebP", () => {
