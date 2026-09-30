@@ -43,6 +43,7 @@ Documentation sync is blocking when a change alters a documented contract:
 | Astro/Svelte dependency | `README.md` tech stack |
 | Transition lifecycle | `.trellis/spec/site/frontend/hook-guidelines.md` and affected user docs |
 | Build/materialization pipeline | `.trellis/spec/site/frontend/quality-guidelines.md` and README build section |
+| External Site build POC | Site quality contract, `site-profile` lifecycle/quality specs, README/README_CN, DEPLOY, and SECURITY_MODEL |
 | Head/Footer snippet trust boundary | `SECURITY_MODEL.md`, snippet docs, and component/type-safety specs |
 | Search/SEO provider | Profile TOML, `README.md`, `README_CN.md`, `SECURITY_MODEL.md`, and site state/quality specs |
 | Package boundary or generated ownership | Relevant package specs and architecture/profile docs |

@@ -1,100 +1,93 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, lstatSync, readdirSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { PROFILE_MAPPINGS, validateProfileSource } from "../apps/site/scripts/profile-manifest.mjs";
 
-const repoRoot = resolve(new URL("..", import.meta.url).pathname);
-
-const mappings = [
-	["packages/site-profile/kirari.config.toml", "apps/site/kirari.config.toml"],
-	["packages/site-profile/content/posts", "apps/site/src/content/posts"],
-	["packages/site-profile/content/spec", "apps/site/src/content/spec"],
-	["packages/site-profile/data/friends.json", "apps/site/src/_data/friends.json"],
-	["packages/site-profile/data/devices.json", "apps/site/src/_data/devices.json"],
-	["packages/site-profile/assets/images/devices", "apps/site/public/images/devices"],
-	["packages/site-profile/assets/favicon", "apps/site/public/favicon"],
-	["packages/site-profile/assets/og", "apps/site/public/og"],
-	["packages/site-profile/snippets", "apps/site/src/snippets"],
-];
-
-const materializedTargets = mappings.map(([, target]) => target);
-const tracked = execFileSync("git", ["ls-files", "--", ...materializedTargets], {
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const profileRoot = join(repoRoot, "packages/site-profile");
+const siteRoot = join(repoRoot, "apps/site");
+validateProfileSource(profileRoot, siteRoot);
+const targets = PROFILE_MAPPINGS.map(({ target }) => `apps/site/${target}`);
+targets.push("apps/site/.kirari-profile-manifest.json");
+const tracked = execFileSync("git", ["ls-files", "--", ...targets], {
 	cwd: repoRoot,
 	encoding: "utf8",
-}).trim();
+})
+	.trim()
+	.split("\n")
+	.filter(Boolean);
 
-if (tracked) {
-	console.error("Materialized profile outputs must not be tracked:");
-	console.error(tracked);
+if (tracked.length > 0) {
+	console.error("Generated profile outputs must not be tracked:");
+	for (const path of tracked) console.error(`- ${path}`);
 	process.exit(1);
 }
 
 const mismatches = [];
-for (const [source, target] of mappings) {
-	const sourcePath = join(repoRoot, source);
-	const targetPath = join(repoRoot, target);
-	if (!existsSync(targetPath)) continue;
-	comparePath(sourcePath, targetPath, source, target);
+for (const mapping of PROFILE_MAPPINGS) {
+	const sourcePath = join(profileRoot, mapping.source);
+	const targetPath = join(siteRoot, mapping.target);
+	const sourceExists = existsSync(sourcePath);
+	const targetExists = existsSync(targetPath);
+	if (!sourceExists) {
+		if (mapping.emptyWhenMissing && targetExists) {
+			const targetStat = lstatSync(targetPath);
+			if (!targetStat.isDirectory() || readdirSync(targetPath).length > 0) {
+				mismatches.push(`${mapping.target} should be empty because optional ${mapping.source} is absent`);
+			}
+		} else if (targetExists) {
+			mismatches.push(`${mapping.target} exists without optional source ${mapping.source}`);
+		}
+		continue;
+	}
+	if (!targetExists) {
+		mismatches.push(`${mapping.target} has not been materialized from ${mapping.source}`);
+		continue;
+	}
+	comparePath(sourcePath, targetPath, mapping.source, mapping.target);
 }
 
 if (mismatches.length > 0) {
-	console.error("Materialized profile outputs are out of sync:");
+	console.error("Default profile materialization is out of sync:");
 	for (const mismatch of mismatches) console.error(`- ${mismatch}`);
 	process.exit(1);
 }
 
+console.log("Default profile materialization matches packages/site-profile.");
+
 function comparePath(sourcePath, targetPath, sourceLabel, targetLabel) {
-	const sourceStat = statSync(sourcePath);
-	const targetStat = statSync(targetPath);
+	const sourceStat = lstatSync(sourcePath);
+	const targetStat = lstatSync(targetPath);
+	if (sourceStat.isSymbolicLink() || targetStat.isSymbolicLink()) {
+		mismatches.push(`${targetLabel} or ${sourceLabel} contains a symlink`);
+		return;
+	}
 	if (sourceStat.isDirectory() !== targetStat.isDirectory()) {
 		mismatches.push(`${targetLabel} has a different file type from ${sourceLabel}`);
 		return;
 	}
-
 	if (!sourceStat.isDirectory()) {
-		if (readFileSync(sourcePath).compare(readFileSync(targetPath)) !== 0) {
+		if (!sourceStat.isFile() || !targetStat.isFile() || readFileSync(sourcePath).compare(readFileSync(targetPath)) !== 0) {
 			mismatches.push(`${targetLabel} differs from ${sourceLabel}`);
 		}
 		return;
 	}
 
-	const sourceEntries = listRelativeFiles(sourcePath);
-	const targetEntries = listRelativeFiles(targetPath);
+	const sourceEntries = readdirSync(sourcePath).sort();
+	const targetEntries = readdirSync(targetPath).sort();
 	const sourceSet = new Set(sourceEntries);
 	const targetSet = new Set(targetEntries);
-
 	for (const entry of sourceEntries) {
 		if (!targetSet.has(entry)) {
 			mismatches.push(`${targetLabel}/${entry} is missing`);
 			continue;
 		}
-		comparePath(
-			join(sourcePath, entry),
-			join(targetPath, entry),
-			`${sourceLabel}/${entry}`,
-			`${targetLabel}/${entry}`,
-		);
+		comparePath(join(sourcePath, entry), join(targetPath, entry), `${sourceLabel}/${entry}`, `${targetLabel}/${entry}`);
 	}
 	for (const entry of targetEntries) {
 		if (!sourceSet.has(entry)) mismatches.push(`${targetLabel}/${entry} has no profile source`);
-	}
-}
-
-function listRelativeFiles(root) {
-	const output = [];
-	walk(root, "");
-	return output.sort();
-
-	function walk(base, relative) {
-		for (const entry of readdirSync(join(base, relative))) {
-			const child = join(relative, entry);
-			const childPath = join(base, child);
-			if (statSync(childPath).isDirectory()) {
-				walk(base, child);
-			} else {
-				output.push(child);
-			}
-		}
 	}
 }

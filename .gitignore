@@ -74,9 +74,12 @@ apps/site/src/content/posts/
 apps/site/src/content/spec/
 apps/site/src/_data/friends.json
 apps/site/src/_data/devices.json
+apps/site/src/assets/images/
 apps/site/public/images/devices/
 apps/site/public/favicon/
 apps/site/public/og/
 apps/site/src/snippets/
+apps/site/public/ads.txt
 apps/site/.kirari-profile-manifest.json
+apps/site/.kirari-external-publish-locks-*/
 .codegraph/

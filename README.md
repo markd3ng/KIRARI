@@ -67,7 +67,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 |---|---|
 | materialize | `functions/ghc/` or `api/ghc/` (only when `githubCard.adapter.enabled`; Cloudflare output is written to the deployment root, including `apps/site` monorepos) |
 | astro build | `dist/` (SSG) |
-| postbuild | `_headers`, `_redirects`, `robots.txt`, Pagefind index, `llms.txt`, IndexNow submit |
+| postbuild | `_headers`, `_redirects`, `robots.txt`, Pagefind index, LLM files, optional IndexNow/Google indexing submissions (explicit opt-in only) |
 
 **Performance invariants**:
 
@@ -117,6 +117,26 @@ pnpm build
 
 > pnpm ≥ 9.14.4 enforced via `packageManager` field.
 
+### Local external Site build POC
+
+`./build.sh --site /path/to/site` builds an external Site directory locally into
+`apps/site/dist`. The no-argument `./build.sh` and `pnpm build` continue to use
+`packages/site-profile`. Required files, types, JSON/TOML and symlinks are
+validated before materialization. Materialization stages mapped inputs and
+does not write to the original Site Source. See
+[`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md) for the input
+contract and security limits.
+
+This POC builds static output only. It does not fetch refs, commit, push,
+deploy, package Cloudflare Pages Functions, or submit IndexNow/Google indexing
+notifications. Site MDX and other build-time code are trusted inputs and can
+run with the invoking user's filesystem and network permissions. Snippets are
+also trusted owner code; their HTML/JavaScript is emitted into the site for
+browser execution. The build is not an OS sandbox. Do not build unreviewed Site
+input on a machine where build-time code could access sensitive files.
+It is a local build entry point, not the deployment workflow described in
+[DEPLOY.md](./DEPLOY.md).
+
 ## Fork Checklist
 
 Only edit files listed below. Do not modify program files under `apps/site/src/components/`,
@@ -126,11 +146,17 @@ Only edit files listed below. Do not modify program files under `apps/site/src/c
 |---|---|---|
 | `packages/site-profile/kirari.config.toml` | Set `site.url`, `site.title`, `profile.*`, `navBar.*`, `landingPage.*` | Yes |
 | `packages/site-profile/content/posts/` | Delete demo posts, add your `.md`/`.mdx` | Yes |
-| `packages/site-profile/content/spec/about.md` | Replace About content | Recommended |
+| `packages/site-profile/content/spec/{about,friends,projects}.md` | Replace the built-in pages | Recommended |
+| `packages/site-profile/data/friends.json` | Replace friend-link data (an empty array is valid) | Recommended |
+| `packages/site-profile/assets/images/` | Replace generic images, including demo avatar/banner | Recommended |
 | `packages/site-profile/assets/` | Replace favicon, OG images, and profile assets | Recommended |
-| `packages/site-profile/content/spec/friends.md` | Replace or remove Friends nav in config | Optional |
-| `packages/site-profile/content/spec/projects.md` | Replace GitHub project cards or remove Projects nav in config | Optional |
-| `packages/site-profile/data/friends.json` | Replace friend-link data | Optional |
+
+For `./build.sh --site`, the TOML, `content/spec/{about,friends,projects}.md`,
+`data/friends.json`, `assets/images/` (with `demo-avatar.png` and
+`demo-banner.png`), all eight favicon files, and `assets/og/default.png` are
+required. Posts, devices data/images, snippets, and `ads.txt` are optional;
+missing optional directories materialize empty so prior content cannot leak
+into the build.
 
 Validation:
 

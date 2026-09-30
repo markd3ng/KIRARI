@@ -4,6 +4,11 @@
 
 **阅读耗时**：按步骤操作约 15 分钟（不含 DNS 生效等待）。
 
+> **外部 Site 构建 POC**：`./build.sh --site <目录>` 仅用于本地构建静态文件，
+> 输出到 `apps/site/dist`。它不会部署、发送收录通知或打包 `functions/`；本指南中
+> 的 `pnpm build` 平台部署设置仍适用于默认 `packages/site-profile` 流程。完整输入与
+> 信任边界见 [`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md)。
+
 ---
 
 ## 目录

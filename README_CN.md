@@ -66,7 +66,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 |---|---|
 | materialize | `functions/ghc/` 或 `api/ghc/`（仅 `githubCard.adapter.enabled` 时；Cloudflare 产物会写入部署根目录，兼容 `apps/site` monorepo） |
 | astro build | `dist/`（SSG） |
-| postbuild | `_headers`、`_redirects`、`robots.txt`、Pagefind 索引、`llms.txt`、IndexNow 提交 |
+| postbuild | `_headers`、`_redirects`、`robots.txt`、Pagefind 索引、LLM 文件、可选的 IndexNow/Google 收录提交（仅显式授权时） |
 
 **性能保证**：
 
@@ -116,6 +116,23 @@ pnpm build
 
 > pnpm ≥ 9.14.4，通过 `packageManager` 字段强制。
 
+### 外部 Site 本地构建 POC
+
+`./build.sh --site /path/to/site` 可在本地从外部 Site 目录构建到
+`apps/site/dist`。不带参数的 `./build.sh` 和 `pnpm build` 仍使用
+`packages/site-profile`。程序会在 materialize 前验证必需文件、类型、JSON/TOML
+内容和符号链接。materialize 会将映射输入暂存后写入生成的站点副本，
+不会修改原始 Site Source。输入约定与安全边界见
+[`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md)。
+
+此 POC 只生成静态产物：不拉取 Git ref、不提交、不推送、不部署、不打包
+Cloudflare Pages Functions，也不发送 IndexNow/Google 收录通知。
+Site MDX 和其他构建时代码属于可信输入，可使用调用者进程的文件系统和网络权限。
+snippets 也是可信的所有者代码；其中的 HTML/JavaScript 会输出到网站并在浏览器中执行。
+构建并非操作系统沙箱。不要在能访问敏感文件的机器上构建未经审阅的 Site
+输入。这是本地构建入口，不是
+[DEPLOY.md](./DEPLOY.md) 中的部署流程。
+
 ## Fork 后最小修改清单
 
 仅修改以下文件。不要修改 `apps/site/src/components/`、`apps/site/src/layouts/`、
@@ -125,11 +142,16 @@ pnpm build
 |---|---|---|
 | `packages/site-profile/kirari.config.toml` | 设置 `site.url`、`site.title`、`profile.*`、`navBar.*`、`landingPage.*` | 是 |
 | `packages/site-profile/content/posts/` | 删除示例文章，添加自己的 `.md`/`.mdx` | 是 |
-| `packages/site-profile/content/spec/about.md` | 替换关于页内容 | 推荐 |
+| `packages/site-profile/content/spec/{about,friends,projects}.md` | 替换内置页面 | 推荐 |
+| `packages/site-profile/data/friends.json` | 替换友链数据（可使用空数组） | 推荐 |
+| `packages/site-profile/assets/images/` | 替换通用图片，包括示例头像和横幅 | 推荐 |
 | `packages/site-profile/assets/` | 替换 favicon、OG 图片和 profile 资产 | 推荐 |
-| `packages/site-profile/content/spec/friends.md` | 替换或移除 Friends 导航 | 可选 |
-| `packages/site-profile/content/spec/projects.md` | 替换 GitHub 项目卡片或移除 Projects 导航 | 可选 |
-| `packages/site-profile/data/friends.json` | 替换友链数据 | 可选 |
+
+使用 `./build.sh --site` 时，TOML、`content/spec/{about,friends,projects}.md`、
+`data/friends.json`、包含 `demo-avatar.png` 和 `demo-banner.png` 的
+`assets/images/`、8 个 favicon 文件及 `assets/og/default.png` 都是必需项。
+posts、devices 数据/图片、snippets 和 `ads.txt` 可选；缺少可选目录时会生成空目录，
+避免旧内容混入构建。
 
 验证：
 
