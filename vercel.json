@@ -2,6 +2,11 @@
   "buildCommand": "pnpm build",
   "outputDirectory": "apps/site/dist",
   "framework": "astro",
+  "git": {
+    "deploymentEnabled": {
+      "main": false
+    }
+  },
   "rewrites": [
     {
       "source": "/search",
