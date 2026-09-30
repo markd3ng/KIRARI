@@ -29,6 +29,7 @@ function makeFixture() {
 	mkdirSync(source, { recursive: true });
 	mkdirSync(bin, { recursive: true });
 	cpSync(join(repoRoot, "scripts/build-external-site.mjs"), publisher);
+	cpSync(join(repoRoot, "scripts/composition-provenance.mjs"), join(root, "scripts/composition-provenance.mjs"));
 	writeFileSync(join(bin, "pnpm"), `#!/usr/bin/env node
 const fs = require("node:fs");
 if (process.env.PUBLIC_TEST_HOLD_BUILD_CHILD === "1") {

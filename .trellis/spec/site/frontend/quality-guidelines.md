@@ -15,7 +15,7 @@ LLM files, optionally submit IndexNow, and optionally submit Google Indexing
 API notifications. Read the script before changing the list; old docs contain
 shortened summaries.
 
-## Scenario: External Site Build POC
+## Scenario: External Site Build and Composition
 
 ### 1. Scope / Trigger
 - Trigger: local `./build.sh --site <directory>` composes owner input into `apps/site/dist`.
@@ -24,8 +24,10 @@ shortened summaries.
 ### 2. Signatures
 - `./build.sh` → default `pnpm build`.
 - `./build.sh --site <directory>` → `node scripts/build-external-site.mjs <directory>`.
+- `./build.sh --compose --core-ref <ref> --site <path> --site-ref <ref> --artifact-dir <new-directory>` → pinned Core/Site artifact composition.
 - `pnpm site:profile:check -- --site <directory>` validates external input without writing it.
 - `pnpm site:test` runs Node built-in tests for materialization, QA guard, and external output.
+- `pnpm composition:test` checks provenance, local composition, and the CI artifact contract.
 
 ### 3. Contracts
 - The authoritative source-to-target map is `apps/site/scripts/profile-manifest.mjs` (`PROFILE_MAPPINGS`).
@@ -35,7 +37,10 @@ shortened summaries.
 - The input root must resolve to a directory disjoint from `apps/site`; mapped inputs must be regular files/directories with no symlinks or special files. Materialization validates and stages the input without using the original Site Source as a write target. Successful external build replaces only `apps/site/dist`, with rollback on replacement failure.
 - This is not an OS sandbox or enforced read-only source. MDX and other build-time code can execute with the invoking user's filesystem and network permissions. Snippets are loaded as raw text and emitted as browser-executable HTML/JavaScript; they are trusted owner code, but current code does not run snippet JavaScript in the Node build process. Environment filtering does not isolate filesystem access.
 - This is a local static build. It does not fetch Git refs, mutate Git, deploy, or package `functions/` alongside `dist`.
-- The workflow-independent contract is also recorded in `docs/EXTERNAL_SITE_BUILD.md` so future engineering-guide changes do not make the POC assumptions disappear.
+- The authoritative contract is also recorded in `docs/EXTERNAL_SITE_BUILD.md` so future engineering-guide changes do not erase it.
+- Composition records full Core and Git-backed Site SHAs. Both checkouts must be clean of staged, unstaged, and untracked changes; the Site checkout must be distinct from Core. A non-Git Site input receives a content digest, never a Git SHA.
+- Composition writes static output and `provenance.json` to a new artifact directory. Its normalized SHA-256 covers sorted relative paths and file bytes, excluding the manifest; it normalizes Astro hydration UIDs and Pagefind language-key order while keeping all other bytes significant. Matching digests mean semantic output equivalence, not byte-for-byte identity. The manual CI workflow uses the same entry point, read-only repository access, and uploads the artifact without deployment credentials or indexing side effects.
+- Run `pnpm install --frozen-lockfile` before local composition. The entry point verifies the active pnpm version and installed lock state, and fingerprints the selected child-build environment without exposing its values.
 
 ### 4. Validation & Error Matrix
 | Condition | Result |
@@ -54,10 +59,12 @@ shortened summaries.
 - Good: external fixture with valid required files and a custom article builds without changing its source; custom output contains it and omits demo posts.
 - Base: no `--site` argument uses the unchanged default profile.
 - Bad: missing `friends.json`, symlinked input, invalid config, source/destination overlap, failed copy, or unreviewed executable Site content (which is outside this trust model).
+- Composition bad: dirty Git input, a requested ref that does not resolve to the checked-out `HEAD`, reusing the Core checkout as Site, or an existing artifact destination.
 
 ### 6. Tests Required
 - `node --test apps/site/scripts/tests/*.test.mjs` asserts required/optional inputs, types, symlinks, staged replacement/rollback, stale-stage recovery, and demo-QA refusal.
 - `pnpm site:test` additionally compares default and equivalent external routes/metadata/assets; custom fixture assertions check route presence, demo-route absence, and verify build-only/test indexing vetoes with both integrations enabled and dummy credentials.
+- `pnpm composition:test` checks the provenance schema/digest, distinct input revisions, rebuild stability, and the manual CI artifact contract.
 - Run `pnpm site:profile:check -- --site <fixture>`, `pnpm profile:check`, `node apps/site/scripts/qa-regression-check.mjs`, `pnpm site:type-check`, `pnpm site:astro-check`, `pnpm build`, and `git diff --check` for the affected change.
 
 ### 7. Wrong vs Correct

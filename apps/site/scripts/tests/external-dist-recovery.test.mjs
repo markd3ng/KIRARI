@@ -28,6 +28,7 @@ function makeFixture() {
 	mkdirSync(source, { recursive: true });
 	mkdirSync(bin, { recursive: true });
 	cpSync(join(repoRoot, "scripts/build-external-site.mjs"), publisher);
+	cpSync(join(repoRoot, "scripts/composition-provenance.mjs"), join(root, "scripts/composition-provenance.mjs"));
 	writeFileSync(join(bin, "pnpm"), `#!/bin/sh
 set -eu
 if [ "\${PUBLIC_TEST_BUILD_FAIL:-}" = "1" ]; then exit 42; fi

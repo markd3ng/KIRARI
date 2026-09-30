@@ -33,6 +33,7 @@ function makeFixture(parent, repoName = "repo") {
 	mkdirSync(source, { recursive: true });
 	mkdirSync(bin, { recursive: true });
 	cpSync(join(repoRoot, "scripts/build-external-site.mjs"), publisher);
+	cpSync(join(repoRoot, "scripts/composition-provenance.mjs"), join(fixtureRoot, "scripts/composition-provenance.mjs"));
 	writeFileSync(join(bin, "pnpm"), `#!/bin/sh
 set -eu
 if [ -n "\${PUBLIC_TEST_BUILD_READY:-}" ]; then

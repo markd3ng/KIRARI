@@ -27,6 +27,7 @@
     "profile:check": "node scripts/check-profile-materialization.mjs",
     "site:profile:check": "node apps/site/scripts/check-site-profile.mjs",
     "site:test": "\"$npm_execpath\" --filter @kirari/site test",
+    "composition:test": "node --test apps/site/scripts/tests/composition-provenance.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs",
     "trellis:check": "node scripts/check-trellis-adapter-sync.mjs",
     "release:check": "node scripts/release-regression-check.mjs",
     "release:version-check": "node scripts/release-version-check.mjs",

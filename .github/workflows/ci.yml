@@ -6,6 +6,27 @@ on:
     tags: ["v*"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      core_ref:
+        description: Core branch, tag, or commit to build
+        required: true
+        default: main
+        type: string
+      site_repository:
+        description: Site repository in owner/repository form
+        required: true
+        default: markd3ng/KIRARI
+        type: string
+      site_ref:
+        description: Site branch, tag, or commit to build
+        required: true
+        default: main
+        type: string
+      site_subdirectory:
+        description: Site source directory inside the Site checkout
+        required: true
+        default: packages/site-profile
+        type: string
 
 permissions:
   contents: read
@@ -46,3 +67,96 @@ jobs:
       - run: pnpm release:version-check
       - run: pnpm audit --audit-level moderate
       - run: git diff --check
+
+  composition:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout Core
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ inputs.core_ref }}
+          path: core
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout Site
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.site_repository }}
+          ref: ${{ inputs.site_ref }}
+          path: site
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: core/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: core/.nvmrc
+          cache: pnpm
+          cache-dependency-path: core/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+        working-directory: core
+
+      - run: pnpm composition:test
+        working-directory: core
+
+      - name: Compose selected revisions
+        working-directory: core
+        env:
+          CORE_REF: ${{ inputs.core_ref }}
+          SITE_REF: ${{ inputs.site_ref }}
+          SITE_SUBDIRECTORY: ${{ inputs.site_subdirectory }}
+        run: |
+          set -euo pipefail
+          case "$SITE_SUBDIRECTORY" in
+            ""|/*) echo "Site subdirectory must be a relative path" >&2; exit 1 ;;
+          esac
+          case "/$SITE_SUBDIRECTORY/" in
+            */../*) echo "Site subdirectory cannot escape the Site checkout" >&2; exit 1 ;;
+          esac
+
+          site_root="$(realpath "$GITHUB_WORKSPACE/site")"
+          site_source="$(realpath "$site_root/$SITE_SUBDIRECTORY")"
+          if [[ ! -d "$site_source" || "$site_source" == "$site_root" || "$site_source" != "$site_root/"* ]]; then
+            echo "Site subdirectory must exist inside the Site checkout" >&2
+            exit 1
+          fi
+
+          artifact_dir="$RUNNER_TEMP/kirari-composed-artifact"
+          ./build.sh --compose \
+            --core-ref "$CORE_REF" \
+            --site "$site_source" \
+            --site-ref "$SITE_REF" \
+            --artifact-dir "$artifact_dir"
+
+      - name: Upload composed artifact
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: kirari-composition-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/kirari-composed-artifact/dist
+            ${{ runner.temp }}/kirari-composed-artifact/provenance.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Add artifact details to summary
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          printf '%s\n' \
+            '## Composed artifact' \
+            '' \
+            "- Download: [$ARTIFACT_URL]($ARTIFACT_URL)" \
+            "- Artifact ID: \`$ARTIFACT_ID\`" \
+            "- Uploaded artifact SHA-256: \`$ARTIFACT_DIGEST\`" \
+            >> "$GITHUB_STEP_SUMMARY"

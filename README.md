@@ -117,7 +117,7 @@ pnpm build
 
 > pnpm ≥ 9.14.4 enforced via `packageManager` field.
 
-### Local external Site build POC
+### External Site build modes
 
 `./build.sh --site /path/to/site` builds an external Site directory locally into
 `apps/site/dist`. The no-argument `./build.sh` and `pnpm build` continue to use
@@ -127,10 +127,29 @@ does not write to the original Site Source. See
 [`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md) for the input
 contract and security limits.
 
-This POC builds static output only. It does not fetch refs, commit, push,
-deploy, package Cloudflare Pages Functions, or submit IndexNow/Google indexing
-notifications. Site MDX and other build-time code are trusted inputs and can
-run with the invoking user's filesystem and network permissions. Snippets are
+P1 adds an immutable two-input artifact mode. Check out Core and Site revisions
+separately, then run from the Core checkout:
+
+```bash
+./build.sh --compose \
+  --core-ref <core-branch-tag-or-sha> \
+  --site /path/to/site-checkout/packages/site-profile \
+  --site-ref <site-branch-tag-or-sha> \
+  --artifact-dir /path/to/new-artifact
+```
+
+Install the Core dependencies with `pnpm install --frozen-lockfile` first.
+The command validates both revisions, then writes static output and
+`provenance.json` to the artifact directory. The manual GitHub Actions
+composition job uses the same entry point and uploads the output for 30 days.
+Git checkouts must have no staged, unstaged, or untracked changes.
+See the build guide for ref selection, schema/toolchain identity, diagnostics,
+and input-pair rebuild instructions.
+
+Both modes build static output only. They do not fetch or switch refs, commit,
+push, deploy, package Cloudflare Pages Functions, or submit IndexNow/Google
+indexing notifications. Site MDX and other build-time code are trusted inputs
+and can run with the invoking user's filesystem and network permissions. Snippets are
 also trusted owner code; their HTML/JavaScript is emitted into the site for
 browser execution. The build is not an OS sandbox. Do not build unreviewed Site
 input on a machine where build-time code could access sensitive files.
