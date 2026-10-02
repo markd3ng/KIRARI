@@ -1,8 +1,8 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
-import { spawnSync } from "node:child_process";
 import { parse } from "smol-toml";
 import sanitizeHtml from "sanitize-html";
+import { buildPagefindIndex } from "./pagefind-index.mjs";
 import { buildContentSecurityPolicy, SECURITY_HEADERS } from "./security-policy.mjs";
 import { submitIndexingNotifications } from "./indexing.mjs";
 import { resolveSearchProvider } from "../src/utils/search-provider.mjs";
@@ -329,14 +329,9 @@ function obfuscateMailtoLinks() {
 	}
 }
 
-function generatePagefind() {
+async function generatePagefind() {
 	if (activeSearchProvider() !== "pagefind") return;
-	const executable = process.platform === "win32" ? "pagefind.cmd" : "pagefind";
-	const result = spawnSync(executable, ["--site", distDir], {
-		stdio: "inherit",
-		shell: process.platform === "win32",
-	});
-	if (result.status !== 0) process.exit(result.status ?? 1);
+	await buildPagefindIndex(distDir);
 }
 
 function generateLlms() {
@@ -369,7 +364,7 @@ function generateLlms() {
 generateHeadersAndRedirects();
 generateRobots();
 obfuscateMailtoLinks();
-generatePagefind();
+await generatePagefind();
 generateLlms();
 const indexingSubmissionsAuthorized = await submitIndexingNotifications({
 	config,
