@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -29,6 +29,9 @@ function makeFixture() {
 	mkdirSync(bin, { recursive: true });
 	cpSync(join(repoRoot, "scripts/build-external-site.mjs"), publisher);
 	cpSync(join(repoRoot, "scripts/composition-provenance.mjs"), join(root, "scripts/composition-provenance.mjs"));
+	const parse5 = join(root, "node_modules/parse5");
+	mkdirSync(join(root, "node_modules"), { recursive: true });
+	symlinkSync(realpathSync(join(repoRoot, "node_modules/parse5")), parse5, "dir");
 	writeFileSync(join(bin, "pnpm"), `#!/bin/sh
 set -eu
 if [ "\${PUBLIC_TEST_BUILD_FAIL:-}" = "1" ]; then exit 42; fi

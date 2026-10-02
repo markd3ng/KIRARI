@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { hostname, tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,6 +30,9 @@ function makeFixture() {
 	mkdirSync(bin, { recursive: true });
 	cpSync(join(repoRoot, "scripts/build-external-site.mjs"), publisher);
 	cpSync(join(repoRoot, "scripts/composition-provenance.mjs"), join(root, "scripts/composition-provenance.mjs"));
+	const parse5 = join(root, "node_modules/parse5");
+	mkdirSync(join(root, "node_modules"), { recursive: true });
+	symlinkSync(realpathSync(join(repoRoot, "node_modules/parse5")), parse5, "dir");
 	writeFileSync(join(bin, "pnpm"), `#!/usr/bin/env node
 const fs = require("node:fs");
 if (process.env.PUBLIC_TEST_HOLD_BUILD_CHILD === "1") {
