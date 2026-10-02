@@ -39,21 +39,24 @@ committed. Treat every `PUBLIC_*` value as browser/build-visible and non-secret.
 Do not store private tokens, database URLs, or write-capable API keys in public
 config.
 
-## External Site Build POC
+## External Site Build and Composition
 
-`./build.sh --site <directory>` treats mapped Site files as trusted owner input,
-validates paths/types and rejects symlinks before copying them into a disposable
-site workspace. Materialization stages the mapped inputs and does not write to
-the original Site Source; the source is not enforced as read-only. MDX and
-other build-time code can execute during the build with the invoking user's
-filesystem and network permissions. Snippets are loaded as raw text and
-injected into generated HTML/JavaScript for browser execution; they are trusted
-owner code, but current code does not execute snippet JavaScript in the Node
-build process. The temporary workspace and child-environment allowlist are not
-an OS sandbox. Do not build unreviewed Site input where build-time code could
-access sensitive files. `PUBLIC_*` values are still public and must not
-contain secrets. This local POC does not package or deploy generated Pages
-Functions.
+`./build.sh --site <directory>` treats mapped Site files as trusted owner input.
+`./build.sh --compose` pins separate Core and Site inputs, requires clean Git
+checkouts for Git-backed inputs, and writes static output with a provenance
+manifest. Both validate paths/types and reject symlinks before copying mapped
+files into a disposable site workspace. Materialization stages the mapped
+inputs and does not write to the original Site Source; the source is not
+enforced as read-only. MDX and other build-time code can execute during the
+build with the invoking user's filesystem and network permissions. Snippets are
+loaded as raw text and injected into generated HTML/JavaScript for browser
+execution; they are trusted owner code, but current code does not execute
+snippet JavaScript in the Node build process. The temporary workspace and
+child-environment allowlist are not an OS sandbox. Do not build unreviewed Site
+input where build-time code could access sensitive files. `PUBLIC_*` values are
+still public and must not contain secrets. The manual composition CI workflow
+uses read-only repository permissions, publishes only a downloadable static
+artifact, and does not package Pages Functions or deploy.
 
 Postbuild indexing submissions require
 `KIRARI_ALLOW_INDEXING_SUBMISSIONS=true`; `KIRARI_BUILD_ONLY=true` and
@@ -61,8 +64,8 @@ Postbuild indexing submissions require
 The external builder always sets build-only mode and does not forward the
 authorization variable to its child process.
 
-The complete mapping and verification contract is documented in
-[`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md).
+The complete mapping, composition identity, and verification contract is
+documented in [`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md).
 
 ## Search Providers
 

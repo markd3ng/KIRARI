@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -33,6 +33,10 @@ function makeFixture(parent, repoName = "repo") {
 	mkdirSync(source, { recursive: true });
 	mkdirSync(bin, { recursive: true });
 	cpSync(join(repoRoot, "scripts/build-external-site.mjs"), publisher);
+	cpSync(join(repoRoot, "scripts/composition-provenance.mjs"), join(fixtureRoot, "scripts/composition-provenance.mjs"));
+	const parse5 = join(fixtureRoot, "node_modules/parse5");
+	mkdirSync(join(fixtureRoot, "node_modules"), { recursive: true });
+	symlinkSync(realpathSync(join(repoRoot, "node_modules/parse5")), parse5, "dir");
 	writeFileSync(join(bin, "pnpm"), `#!/bin/sh
 set -eu
 if [ -n "\${PUBLIC_TEST_BUILD_READY:-}" ]; then

@@ -1,11 +1,12 @@
 ---
 
 import { footerConfig, llmsConfig, profileConfig } from "../config";
+import { getBuildDate } from "../utils/build-clock.mjs";
 import { resolveBuildCommit } from "../utils/build-commit";
 import { getLangHomeUrl } from "../utils/i18n-utils";
 import { url } from "../utils/url-utils";
 
-const currentYear = new Date().getFullYear();
+const currentYear = getBuildDate().getFullYear();
 const lang = Astro.props.lang;
 const rssUrl = lang ? getLangHomeUrl(lang).replace(/\/$/, "/rss.xml") : url("rss.xml");
 const buildCommit = resolveBuildCommit();

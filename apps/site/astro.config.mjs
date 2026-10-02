@@ -45,6 +45,10 @@ export default defineConfig({
 	site: Config.site.url,
 	base: Config.site.base,
 	trailingSlash: "always",
+	cacheDir:
+		process.env.KIRARI_DETERMINISTIC_BUILD_CLOCK === "true"
+			? "./.astro"
+			: undefined,
 	build: {
 		inlineStylesheets: "auto",
 	},

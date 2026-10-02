@@ -8,8 +8,14 @@ if [[ $# -eq 0 ]]; then
 	exec env -u KIRARI_SITE_SOURCE -u KIRARI_BUILD_ONLY pnpm build
 fi
 
+if [[ "${1:-}" == "--compose" ]]; then
+	shift
+	cd "$ROOT_DIR"
+	exec node scripts/build-composed-site.mjs "$@"
+fi
+
 if [[ $# -ne 2 || "$1" != "--site" || -z "$2" ]]; then
-	printf 'Usage: ./build.sh [--site <directory>]\n' >&2
+	printf 'Usage: ./build.sh [--site <directory>] | --compose --core-ref <ref> --site <directory> [--site-ref <ref>] --artifact-dir <new-directory>\n' >&2
 	exit 2
 fi
 

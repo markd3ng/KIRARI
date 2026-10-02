@@ -2,6 +2,7 @@
 import packageJson from "../../../package.json";
 import { widgetsConfig } from "../../config";
 import { resolveBuildCommit } from "../../utils/build-commit";
+import { getBuildDate } from "../../utils/build-clock.mjs";
 import WidgetLayout from "./WidgetLayout.astro";
 
 interface Props {
@@ -19,7 +20,7 @@ const commitLabel = buildCommit.full ? buildCommit.short : "local";
 const commitHref = buildCommit.full
 	? `https://github.com/markd3ng/KIRARI/commit/${buildCommit.full}`
 	: "https://github.com/markd3ng/KIRARI";
-const buildTime = new Date().toISOString();
+const buildTime = getBuildDate().toISOString();
 const items = [
 	["KIRARI", `v${packageJson.version}`],
 	["Commit", commitLabel],

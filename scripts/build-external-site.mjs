@@ -3,9 +3,10 @@
 import { spawn, spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import { cpSync, existsSync, linkSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
-import { dirname, join, relative, resolve, sep } from "node:path";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { hostname } from "node:os";
 import { fileURLToPath } from "node:url";
+import { selectBuildEnvironment } from "./composition-provenance.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
@@ -133,23 +134,23 @@ run().catch(async (error) => {
 });
 `;
 
-function main(siteArgument) {
-	if (!siteArgument) throw new Error("Usage: ./build.sh --site <directory>");
+function main(siteArgument, distOutputArgument, sourceDateEpochArgument) {
+	if (!siteArgument) throw new Error("Usage: node scripts/build-external-site.mjs <site-directory> [--dist-output <directory>] [--source-date-epoch <seconds>]");
 	const sourceSite = realpathSync(resolve(siteArgument));
 	if (!lstatSync(sourceSite).isDirectory()) throw new Error(`Site input must be a directory: ${siteArgument}`);
+	const destination = resolveDistDestination(distOutputArgument);
 	const dependencies = join(sitePackage, "node_modules");
 	if (!existsSync(dependencies) || !lstatSync(realpathSync(dependencies)).isDirectory()) {
 		throw new Error("Site dependencies are not installed. Run the repository's pinned pnpm install first.");
 	}
 
-	const destination = join(realpathSync(sitePackage), "dist");
 	const temporaryParent = dirname(realpathSync(repoRoot));
 	const destinationLock = acquireDestinationLock(destination);
 	let temporaryRoot;
 	let outputStage;
 	let preserveOutputStage = false;
 	try {
-		recoverDistPublication();
+		recoverDistPublication(destination);
 		recoverExternalBuildTemps(temporaryParent, destination);
 		temporaryRoot = mkdtempSync(join(temporaryParent, `.kirari-external-build-${destinationHash(destination)}-`));
 		const temporarySite = join(temporaryRoot, "site");
@@ -166,13 +167,12 @@ function main(siteArgument) {
 		});
 		symlinkSync(realpathSync(dependencies), join(temporarySite, "node_modules"), "dir");
 
-		const inheritedBuildEnv = new Set([
-			"PATH", "HOME", "TMPDIR", "TMP", "TEMP", "LANG", "LC_ALL", "LC_CTYPE",
-			"CI", "FORCE_COLOR", "NO_COLOR", "NODE_OPTIONS", "NODE_ENV", "VERCEL", "CF_PAGES", "PAGES",
-		]);
-		const buildEnvironment = Object.fromEntries(
-			Object.entries(process.env).filter(([name]) => inheritedBuildEnv.has(name) || name.startsWith("PUBLIC_")),
-		);
+		const buildEnvironment = selectBuildEnvironment(process.env);
+		if (sourceDateEpochArgument !== undefined) {
+			buildEnvironment.SOURCE_DATE_EPOCH = String(sourceDateEpochArgument);
+			buildEnvironment.KIRARI_DETERMINISTIC_BUILD_CLOCK = "true";
+			buildEnvironment.TZ = "UTC";
+		}
 		const build = runBuildGuarded(destinationLock, temporarySite, {
 			...buildEnvironment,
 			KIRARI_SITE_SOURCE: sourceSite,
@@ -191,16 +191,16 @@ function main(siteArgument) {
 		if (!existsSync(entryPoint) || !lstatSync(entryPoint).isFile()) {
 			throw new Error(`External Site build produced an invalid dist/: expected a regular index.html at ${entryPoint}`);
 		}
-		outputStage = mkdtempSync(join(sitePackage, ".kirari-external-dist-"));
+		outputStage = mkdtempSync(join(dirname(destination), publicationStagePrefix(destination)));
 		const candidateDist = join(outputStage, "dist");
 		cpSync(builtDist, candidateDist, { recursive: true });
 		try {
-			installDist(candidateDist, outputStage);
+			installDist(candidateDist, outputStage, destination);
 		} catch (error) {
 			preserveOutputStage = error.preserveStage === true;
 			throw error;
 		}
-		console.log(`[external-build] Wrote static output to ${join(sitePackage, "dist")}`);
+		console.log(`[external-build] Wrote static output to ${destination}`);
 	} finally {
 		try {
 			if (temporaryRoot) rmSync(temporaryRoot, { recursive: true, force: false });
@@ -209,6 +209,15 @@ function main(siteArgument) {
 			releaseDestinationLock(destinationLock);
 		}
 	}
+}
+
+function validateSourceDateEpoch(value) {
+	if (!/^(0|[1-9]\d*)$/.test(value)) throw new Error("SOURCE_DATE_EPOCH must be a nonnegative whole number of seconds.");
+	const timestamp = Number(value);
+	if (!Number.isSafeInteger(timestamp) || timestamp > 8_640_000_000_000) {
+		throw new Error("SOURCE_DATE_EPOCH must be within the valid JavaScript Date range.");
+	}
+	return timestamp;
 }
 
 function runBuildGuarded(lock, cwd, buildEnvironment) {
@@ -282,7 +291,7 @@ function runBuildGuarded(lock, cwd, buildEnvironment) {
 }
 
 function acquireDestinationLock(destination) {
-	const lockRoot = join(dirname(destination), `.kirari-external-publish-locks-${destinationHash(destination)}`);
+	const lockRoot = join(realpathSync(sitePackage), `.kirari-external-publish-locks-${destinationHash(destination)}`);
 	mkdirSync(lockRoot, { recursive: true });
 	const lockRootStat = lstatSync(lockRoot);
 	if (lockRootStat.isSymbolicLink() || !lockRootStat.isDirectory()) {
@@ -526,6 +535,22 @@ function destinationHash(destination) {
 	return createHash("sha256").update(destination).digest("hex");
 }
 
+function publicationStagePrefix(destination) {
+	return destination === join(realpathSync(sitePackage), "dist")
+		? ".kirari-external-dist-"
+		: `.kirari-external-dist-${destinationHash(destination)}-`;
+}
+
+function resolveDistDestination(argument) {
+	if (!argument) return join(realpathSync(sitePackage), "dist");
+	const absolute = resolve(argument);
+	const name = basename(absolute);
+	if (!name || name === ".") throw new Error(`Invalid dist output path: ${argument}`);
+	const parent = realpathSync(dirname(absolute));
+	if (!lstatSync(parent).isDirectory()) throw new Error(`Dist output parent must be a directory: ${parent}`);
+	return join(parent, name);
+}
+
 function recoverExternalBuildTemps(parent, destination) {
 	const prefix = `.kirari-external-build-${destinationHash(destination)}-`;
 	for (const name of readdirSync(parent).filter((entry) => entry.startsWith(prefix)).sort()) {
@@ -536,15 +561,16 @@ function recoverExternalBuildTemps(parent, destination) {
 	}
 }
 
-function recoverDistPublication() {
-	const destination = join(sitePackage, "dist");
+function recoverDistPublication(destination) {
 	assertReplaceableDist(destination, lstatMaybe(destination));
-	const staleStages = readdirSync(sitePackage)
-		.filter((name) => name.startsWith(".kirari-external-dist-"))
+	const publicationRoot = dirname(destination);
+	const stagePrefix = publicationStagePrefix(destination);
+	const staleStages = readdirSync(publicationRoot)
+		.filter((name) => name.startsWith(stagePrefix))
 		.sort();
 
 	for (const name of staleStages) {
-		const stageRoot = join(sitePackage, name);
+		const stageRoot = join(publicationRoot, name);
 		const stageStat = lstatSync(stageRoot);
 		if (stageStat.isSymbolicLink() || !stageStat.isDirectory()) {
 			throw new Error(`Refusing to recover an unexpected dist staging path: ${stageRoot}`);
@@ -562,8 +588,7 @@ function recoverDistPublication() {
 	}
 }
 
-function installDist(candidateDist, stageRoot) {
-	const destination = join(sitePackage, "dist");
+function installDist(candidateDist, stageRoot, destination) {
 	assertReplaceableDist(destination, lstatMaybe(destination));
 	const backup = join(stageRoot, "previous-dist");
 	let backedUp = false;
@@ -613,7 +638,22 @@ function lstatMaybe(path) {
 }
 
 try {
-	main(process.argv[2]);
+	const args = process.argv.slice(2);
+	const options = new Map();
+	for (let index = 1; index < args.length; index += 1) {
+		const name = args[index];
+		if (name !== "--dist-output" && name !== "--source-date-epoch") throw new Error(`Unknown external build option: ${name}`);
+		if (options.has(name)) throw new Error(`External build option was supplied more than once: ${name}`);
+		const value = args[index + 1];
+		if (!value || value.startsWith("--")) throw new Error(`Missing value for ${name}`);
+		options.set(name, value);
+		index += 1;
+	}
+	if (!args[0]) throw new Error("Usage: node scripts/build-external-site.mjs <site-directory> [--dist-output <directory>] [--source-date-epoch <seconds>]");
+	const sourceDateEpoch = options.has("--source-date-epoch")
+		? validateSourceDateEpoch(options.get("--source-date-epoch"))
+		: undefined;
+	main(args[0], options.get("--dist-output"), sourceDateEpoch);
 } catch (error) {
 	console.error(`[external-build] ERROR  ${error.message}`);
 	process.exitCode = 1;

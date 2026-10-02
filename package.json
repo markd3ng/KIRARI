@@ -27,6 +27,7 @@
     "profile:check": "node scripts/check-profile-materialization.mjs",
     "site:profile:check": "node apps/site/scripts/check-site-profile.mjs",
     "site:test": "\"$npm_execpath\" --filter @kirari/site test",
+    "composition:test": "node --test apps/site/scripts/tests/composition-provenance.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs",
     "trellis:check": "node scripts/check-trellis-adapter-sync.mjs",
     "release:check": "node scripts/release-regression-check.mjs",
     "release:version-check": "node scripts/release-version-check.mjs",
@@ -39,7 +40,7 @@
     "overrides": {
       "dompurify": "3.4.13",
       "brace-expansion@^2.0.0": "2.1.7",
-      "devalue": "5.9.2",
+      "devalue": "5.9.3",
       "esbuild": "0.28.1",
       "fflate@^0.7.0": "0.7.5",
       "fast-uri@^3.0.0": "3.1.8",
@@ -56,5 +57,8 @@
       "ws": "8.21.0",
       "yaml": "2.9.0"
     }
+  },
+  "devDependencies": {
+    "parse5": "7.3.0"
   }
 }

@@ -25,6 +25,8 @@ const DEFAULT_FAVICONS = [
 	"favicon-dark-192.png",
 ];
 
+export const SITE_SCHEMA_VERSION = 1;
+
 /**
  * The single source of truth for Site-owned paths and their generated targets.
  * Optional directory inputs use an empty directory when absent so old data
