@@ -1,6 +1,7 @@
 /// <reference types="mdast" />
 import { h } from "hastscript";
 import {
+	resolveGithubCardId,
 	resolveGithubCardApiBase,
 	toScriptLiteral,
 } from "./github-card-api-base.mjs";
@@ -29,7 +30,7 @@ export function GithubCardComponent(properties, children, githubCardApiBase) {
 	const repo = properties.repo;
 	const apiBase = resolveGithubCardApiBase(githubCardApiBase);
 	const repoApiUrl = `${apiBase}/repos/${repo}`;
-	const cardUuid = `GC${Math.random().toString(36).slice(-6)}`; // Collisions are not important
+	const cardUuid = resolveGithubCardId("GC", properties);
 
 	const nAvatar = h(`div#${cardUuid}-avatar`, { class: "gc-avatar" });
 	const nLanguage = h(

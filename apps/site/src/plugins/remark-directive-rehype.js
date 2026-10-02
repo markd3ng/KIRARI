@@ -1,8 +1,9 @@
 import { h } from "hastscript";
 import { visit } from "unist-util-visit";
+import { createGithubCardSourceId } from "./github-card-api-base.mjs";
 
 export function parseDirectiveNode() {
-	return (tree, { _data }) => {
+	return (tree, file) => {
 		visit(tree, (node) => {
 			if (
 				node.type === "containerDirective" ||
@@ -21,6 +22,12 @@ export function parseDirectiveNode() {
 					node.attributes["has-directive-label"] = true;
 				}
 				const hast = h(node.name, node.attributes);
+				if (
+					process.env.KIRARI_DETERMINISTIC_BUILD_CLOCK === "true" &&
+					(node.name === "github" || node.name === "githubfile")
+				) {
+					hast.properties.kirariCardId = createGithubCardSourceId(node.name, file, node.position);
+				}
 
 				data.hName = hast.tagName;
 				data.hProperties = hast.properties;
