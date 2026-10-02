@@ -138,8 +138,10 @@ P1 还增加了绑定 Core 和 Site 两个不可变 revision 的 artifact 构建
 
 构建会验证两个 revision，并在 artifact 目录中写入静态输出和
 `provenance.json`。GitHub Actions 的手动 composition job 使用同一入口，
-artifact 保留 30 天。revision 选择、Site schema、toolchain、错误诊断和
-按原始 SHA pair 重建方式见外部 Site 构建文档。Git checkout 不能有暂存、未暂存或未跟踪的改动。
+artifact 保留 30 天。组合构建使用 UTC，并以所选输入中较晚的 commit 时间作为构建时钟
+（Site 不是 Git checkout 时使用 Core 的时间）；该值会记录在 provenance 中。普通构建仍使用当前运行时钟。
+revision 选择、Site schema、toolchain、错误诊断和按原始 SHA pair 重建方式见外部 Site 构建文档。
+Git checkout 不能有暂存、未暂存或未跟踪的改动。
 
 这两种模式都只生成静态产物：不拉取或切换 Git ref、不提交、不推送、不部署、不打包
 Cloudflare Pages Functions，也不发送 IndexNow/Google 收录通知。

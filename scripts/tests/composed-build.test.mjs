@@ -23,6 +23,17 @@ test("composition preserves independent refs and rebuilds a historical pair", ()
 	assert.equal(aa.core.resolved_sha, fixture.coreShaA);
 	assert.equal(aa.site.resolved_sha, fixture.siteShaA);
 	assert.match(aa.build.configuration.inherited_environment_digest, /^sha256:[a-f0-9]{64}$/);
+	const aaClock = {
+		source: "max-input-commit-time",
+		source_date_epoch: Math.max(commitTimestamp(fixture.coreA, fixture.coreShaA), commitTimestamp(fixture.siteA, fixture.siteShaA)),
+		timezone: "UTC",
+	};
+	assert.deepEqual(aa.build.configuration.build_clock, aaClock);
+	assert.deepEqual(JSON.parse(readFileSync(join(fixture.artifacts, "aa/dist/build-clock.json"), "utf8")), {
+		source_date_epoch: String(aaClock.source_date_epoch),
+		timezone: "UTC",
+		deterministic: "true",
+	});
 	assert.equal(ab.core.resolved_sha, aa.core.resolved_sha);
 	assert.equal(ab.site.resolved_sha, fixture.siteShaB);
 	assert.equal(ba.core.resolved_sha, fixture.coreShaB);
@@ -43,6 +54,24 @@ test("composition preserves independent refs and rebuilds a historical pair", ()
 
 	assert.equal(aaAgain.core.resolved_sha, fixture.coreShaA, "historical Core ref must remain selectable");
 	assert.equal(aaAgain.site.resolved_sha, fixture.siteShaA, "historical Site ref must remain selectable");
+	assert.deepEqual(aaAgain.build.configuration.build_clock, aaClock, "same input pair must resolve to the same build clock");
+});
+
+test("a content-only Site uses the selected Core commit time for its build clock", () => {
+	const fixture = makeFixture();
+	const site = join(fixture.root, "standalone-site");
+	mkdirSync(site);
+	writeFileSync(join(site, "site-marker"), "content-site\n");
+	const artifact = join(fixture.artifacts, "content-site");
+	const result = runComposition(fixture, fixture.coreA, site, fixture.coreShaA, undefined, artifact);
+	assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+	const manifest = JSON.parse(readFileSync(join(artifact, "provenance.json"), "utf8"));
+	assert.equal(manifest.site.kind, "content");
+	assert.deepEqual(manifest.build.configuration.build_clock, {
+		source: "max-input-commit-time",
+		source_date_epoch: commitTimestamp(fixture.coreA, fixture.coreShaA),
+		timezone: "UTC",
+	});
 });
 
 test("composition rejects a mismatched pnpm or installed lock state before building", () => {
@@ -80,6 +109,7 @@ if [ "\${1:-}" = "--version" ]; then printf '%s\\n' "\${KIRARI_TEST_PNPM_VERSION
 if [ "\${1:-}" != "run" ] || [ "\${2:-}" != "build" ]; then exit 2; fi
 mkdir -p dist
 printf '%s:%s\\n' "$(cat core-marker)" "$(cat "$KIRARI_SITE_SOURCE/site-marker")" > dist/index.html
+printf '{"source_date_epoch":"%s","timezone":"%s","deterministic":"%s"}\\n' "$SOURCE_DATE_EPOCH" "$TZ" "$KIRARI_DETERMINISTIC_BUILD_CLOCK" > dist/build-clock.json
 `);
 	chmodSync(join(bin, "pnpm"), 0o755);
 
@@ -169,11 +199,18 @@ function compose(fixture, core, site, coreRef, siteRef, name) {
 }
 
 function runComposition(fixture, core, site, coreRef, siteRef, artifact, extraEnvironment = {}) {
-	return spawnSync("bash", [join(core, "build.sh"), "--compose", "--core-ref", coreRef, "--site", site, "--site-ref", siteRef, "--artifact-dir", artifact], {
+	const args = [join(core, "build.sh"), "--compose", "--core-ref", coreRef, "--site", site];
+	if (siteRef) args.push("--site-ref", siteRef);
+	args.push("--artifact-dir", artifact);
+	return spawnSync("bash", args, {
 		cwd: core,
 		encoding: "utf8",
 		env: { ...process.env, PATH: `${fixture.bin}${process.platform === "win32" ? ";" : ":"}${process.env.PATH ?? ""}`, ...extraEnvironment },
 	});
+}
+
+function commitTimestamp(repository, sha) {
+	return Number(git(repository, "show", "-s", "--format=%ct", sha));
 }
 
 function readdirFixture(path) {

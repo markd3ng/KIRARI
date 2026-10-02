@@ -1,5 +1,6 @@
 ---
 import { widgetsConfig } from "../../config";
+import { getBuildDate } from "../../utils/build-clock.mjs";
 import { url } from "../../utils/url-utils";
 import WidgetLayout from "./WidgetLayout.astro";
 
@@ -15,7 +16,7 @@ const componentName = "Advertisement";
 const config = widgetsConfig.advertisement;
 const storageKey = `kirari-widget-ad:${config.id}`;
 const expiresAt = config.expireDate ? new Date(config.expireDate) : null;
-const isExpired = expiresAt ? Date.now() > expiresAt.getTime() : false;
+const isExpired = expiresAt ? getBuildDate().getTime() > expiresAt.getTime() : false;
 const imageSrc = config.imageSrc.startsWith("/") ? url(config.imageSrc) : config.imageSrc;
 const hasBody = config.content.trim().length > 0 || config.imageSrc.trim().length > 0;
 const shouldRender = config.enabled && hasBody && !isExpired;

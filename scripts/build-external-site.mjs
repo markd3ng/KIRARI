@@ -134,8 +134,8 @@ run().catch(async (error) => {
 });
 `;
 
-function main(siteArgument, distOutputArgument) {
-	if (!siteArgument) throw new Error("Usage: node scripts/build-external-site.mjs <site-directory> [--dist-output <directory>]");
+function main(siteArgument, distOutputArgument, sourceDateEpochArgument) {
+	if (!siteArgument) throw new Error("Usage: node scripts/build-external-site.mjs <site-directory> [--dist-output <directory>] [--source-date-epoch <seconds>]");
 	const sourceSite = realpathSync(resolve(siteArgument));
 	if (!lstatSync(sourceSite).isDirectory()) throw new Error(`Site input must be a directory: ${siteArgument}`);
 	const destination = resolveDistDestination(distOutputArgument);
@@ -168,6 +168,11 @@ function main(siteArgument, distOutputArgument) {
 		symlinkSync(realpathSync(dependencies), join(temporarySite, "node_modules"), "dir");
 
 		const buildEnvironment = selectBuildEnvironment(process.env);
+		if (sourceDateEpochArgument !== undefined) {
+			buildEnvironment.SOURCE_DATE_EPOCH = String(sourceDateEpochArgument);
+			buildEnvironment.KIRARI_DETERMINISTIC_BUILD_CLOCK = "true";
+			buildEnvironment.TZ = "UTC";
+		}
 		const build = runBuildGuarded(destinationLock, temporarySite, {
 			...buildEnvironment,
 			KIRARI_SITE_SOURCE: sourceSite,
@@ -204,6 +209,15 @@ function main(siteArgument, distOutputArgument) {
 			releaseDestinationLock(destinationLock);
 		}
 	}
+}
+
+function validateSourceDateEpoch(value) {
+	if (!/^(0|[1-9]\d*)$/.test(value)) throw new Error("SOURCE_DATE_EPOCH must be a nonnegative whole number of seconds.");
+	const timestamp = Number(value);
+	if (!Number.isSafeInteger(timestamp) || timestamp > 8_640_000_000_000) {
+		throw new Error("SOURCE_DATE_EPOCH must be within the valid JavaScript Date range.");
+	}
+	return timestamp;
 }
 
 function runBuildGuarded(lock, cwd, buildEnvironment) {
@@ -625,10 +639,21 @@ function lstatMaybe(path) {
 
 try {
 	const args = process.argv.slice(2);
-	if (args.length !== 1 && (args.length !== 3 || args[1] !== "--dist-output" || !args[2])) {
-		throw new Error("Usage: node scripts/build-external-site.mjs <site-directory> [--dist-output <directory>]");
+	const options = new Map();
+	for (let index = 1; index < args.length; index += 1) {
+		const name = args[index];
+		if (name !== "--dist-output" && name !== "--source-date-epoch") throw new Error(`Unknown external build option: ${name}`);
+		if (options.has(name)) throw new Error(`External build option was supplied more than once: ${name}`);
+		const value = args[index + 1];
+		if (!value || value.startsWith("--")) throw new Error(`Missing value for ${name}`);
+		options.set(name, value);
+		index += 1;
 	}
-	main(args[0], args[2]);
+	if (!args[0]) throw new Error("Usage: node scripts/build-external-site.mjs <site-directory> [--dist-output <directory>] [--source-date-epoch <seconds>]");
+	const sourceDateEpoch = options.has("--source-date-epoch")
+		? validateSourceDateEpoch(options.get("--source-date-epoch"))
+		: undefined;
+	main(args[0], options.get("--dist-output"), sourceDateEpoch);
 } catch (error) {
 	console.error(`[external-build] ERROR  ${error.message}`);
 	process.exitCode = 1;

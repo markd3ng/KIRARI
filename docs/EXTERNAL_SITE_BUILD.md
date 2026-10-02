@@ -68,10 +68,17 @@ selected build environment are checked by comparing this normalized digest.
 The versioned provenance binds Core repository/ref/full SHA, Site
 repository/ref/full SHA (or a typed non-Git content digest), Site schema
 version, Node/pnpm/toolchain details, build configuration, and static-output
-digest. It omits run-specific timestamps and secrets. The manifest stores a
-SHA-256 fingerprint of the selected child-build environment, including public
-overrides and platform/runtime flags, without copying their values. The
-artifact contains only static output and this manifest.
+digest. Composition derives `build_clock` from the later selected Git commit
+timestamp; a non-Git Site uses the selected Core timestamp. It passes that
+value as `SOURCE_DATE_EPOCH` and sets `TZ=UTC` for the child build, so rendered
+build dates, age counters, expiry checks, calendar years, and local date
+formatting use the same UTC clock on each rebuild. The provenance records the
+clock source, epoch, and timezone. Ordinary default and `--site` builds retain
+the current runtime clock. The manifest omits run-specific timestamps and
+secrets. It stores a SHA-256 fingerprint of the selected child-build
+environment, including public overrides and platform/runtime flags, without
+copying their values. The artifact contains only static output and this
+manifest.
 
 ## Input-based rebuild and diagnostics
 

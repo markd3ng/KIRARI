@@ -142,7 +142,10 @@ Install the Core dependencies with `pnpm install --frozen-lockfile` first.
 The command validates both revisions, then writes static output and
 `provenance.json` to the artifact directory. The manual GitHub Actions
 composition job uses the same entry point and uploads the output for 30 days.
-Git checkouts must have no staged, unstaged, or untracked changes.
+Git checkouts must have no staged, unstaged, or untracked changes. Composed
+build dates use UTC and the later selected input commit time (the Core time
+for a non-Git Site), which provenance records; ordinary builds keep the current
+runtime clock.
 See the build guide for ref selection, schema/toolchain identity, diagnostics,
 and input-pair rebuild instructions.
 

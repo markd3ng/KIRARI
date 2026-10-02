@@ -1,5 +1,6 @@
 ---
 import { widgetsConfig } from "../../config";
+import { getBuildDate } from "../../utils/build-clock.mjs";
 import { getSortedPosts } from "../../utils/content-utils";
 import WidgetLayout from "./WidgetLayout.astro";
 
@@ -14,7 +15,7 @@ const className = Astro.props.class;
 const componentName = "Calendar";
 const config = widgetsConfig.calendar;
 const posts = config.enabled ? await getSortedPosts(lang) : [];
-const currentYear = new Date().getFullYear();
+const currentYear = getBuildDate().getFullYear();
 const counts = new Map<string, number>();
 for (const post of posts) {
 	const date = new Date(post.data.updated || post.data.published);

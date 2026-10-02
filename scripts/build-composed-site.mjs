@@ -67,10 +67,13 @@ function main(args) {
 
 		stage = "toolchain-validation";
 		const toolchain = describeToolchain();
+
+		stage = "build-clock";
+		const buildClock = resolveBuildClock(core, site);
 		stagingDirectory = mkdtempSync(join(dirname(artifactPath), ".kirari-composition-"));
 
 		stage = "site-build";
-		const build = spawnSync(process.execPath, [externalBuilder, siteDirectory, "--dist-output", join(stagingDirectory, "dist")], {
+		const build = spawnSync(process.execPath, [externalBuilder, siteDirectory, "--dist-output", join(stagingDirectory, "dist"), "--source-date-epoch", String(buildClock.source_date_epoch)], {
 			cwd: repoRoot,
 			stdio: "inherit",
 		});
@@ -93,6 +96,7 @@ function main(args) {
 			output: "dist/",
 			build_only: true,
 			indexing_submissions: false,
+			build_clock: buildClock,
 			inherited_environment_digest: digestBuildEnvironment(),
 		};
 		const manifest = createProvenanceManifest({
@@ -184,6 +188,33 @@ function describeToolchain() {
 		architecture: process.arch,
 		lockfile: { path: "pnpm-lock.yaml", digest: `sha256:${lockfileDigest}` },
 	};
+}
+
+function resolveBuildClock(core, site) {
+	const timestamps = [commitTimestamp(core, "Core")];
+	if (site.kind === "git") timestamps.push(commitTimestamp(site, "Site"));
+	return {
+		source: "max-input-commit-time",
+		source_date_epoch: Math.max(...timestamps),
+		timezone: "UTC",
+	};
+}
+
+function commitTimestamp(identity, label) {
+	const result = spawnSync("git", ["-C", identity.checkout_root, "show", "-s", "--format=%ct", identity.resolved_sha], {
+		encoding: "utf8",
+		stdio: ["ignore", "pipe", "pipe"],
+	});
+	if (result.error || result.status !== 0) {
+		throw new Error(`${label} commit timestamp: Git could not read ${identity.resolved_sha}: ${result.stderr?.trim() || result.error?.message || `exit ${result.status}`}.`);
+	}
+	const value = result.stdout.trim();
+	if (!/^(0|[1-9]\d*)$/.test(value)) throw new Error(`${label} commit timestamp: Git returned an invalid epoch value.`);
+	const timestamp = Number(value);
+	if (!Number.isSafeInteger(timestamp) || timestamp > 8_640_000_000_000) {
+		throw new Error(`${label} commit timestamp: Git returned an epoch outside the valid Date range.`);
+	}
+	return timestamp;
 }
 
 function lstatMaybe(path) {
