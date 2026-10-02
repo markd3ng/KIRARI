@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
@@ -33,6 +33,36 @@ function runBuild(sitePath) {
 	});
 	assert.equal(result.error, undefined, result.error?.message);
 	assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+}
+
+function runComposedBuild(sitePath, distPath) {
+	const result = spawnSync(process.execPath, [
+		"scripts/build-external-site.mjs",
+		sitePath,
+		"--dist-output",
+		distPath,
+		"--source-date-epoch",
+		"1790899200",
+	], {
+		cwd: repoRoot,
+		encoding: "utf8",
+		maxBuffer: 20 * 1024 * 1024,
+	});
+	assert.equal(result.error, undefined, result.error?.message);
+	assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+}
+
+function cardIds(distRoot) {
+	return walk(distRoot)
+		.filter((file) => file.endsWith(".html"))
+		.sort()
+		.flatMap((file) => {
+			const html = readFileSync(file, "utf8");
+			return [...html.matchAll(/\bid="((?:GC|GFC)[^"]+-card)"/g)].map(([, id]) => [
+				relative(distRoot, file).replaceAll("\\", "/"),
+				id,
+			]);
+		});
 }
 
 function snapshotOutput(distRoot) {
@@ -92,6 +122,30 @@ test("default and identical external Site builds preserve routes, metadata, and 
 	assert.deepEqual(externalOutput.metadata, defaultOutput.metadata);
 	assert.deepEqual(externalOutput.assets, defaultOutput.assets);
 	assert.equal(profileHash(fixture), sourceBefore, "external build must not write into Site source");
+});
+
+test("composition ignores ordinary-build GitHub card renders cached in shared dependencies", () => {
+	const root = makeTempRoot();
+	const fixture = copyProfile(join(root, "warm-cache Site"));
+	const aboutPath = join(fixture, "content/spec/about.md");
+	writeFileSync(aboutPath, `${readFileSync(aboutPath, "utf8")}\nCache warm-up ${randomUUID()}.\n`);
+	runBuild(fixture);
+
+	const ordinaryIds = cardIds(join(repoRoot, "apps/site/dist"));
+	assert.ok(ordinaryIds.length > 0, "ordinary build fixture should render GitHub cards");
+	assert.ok(
+		ordinaryIds.some(([, id]) => /^(?:GC|GFC)[a-z0-9]{1,6}-card$/.test(id)),
+		"ordinary build should cache a random GitHub card ID",
+	);
+
+	const composedDist = join(root, "composed-dist");
+	runComposedBuild(fixture, composedDist);
+	const composedIds = cardIds(composedDist);
+	assert.equal(composedIds.length, ordinaryIds.length, "composition should render the same cards");
+	assert.ok(composedIds.length > 0, "composition should render GitHub cards");
+	for (const [, id] of composedIds) {
+		assert.match(id, /^(?:GC|GFC)[a-f0-9]{20}-card$/);
+	}
 });
 
 test("a distinct external Site replaces demo articles and never submits indexing notifications", () => {
