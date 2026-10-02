@@ -40,7 +40,7 @@
     "overrides": {
       "dompurify": "3.4.13",
       "brace-expansion@^2.0.0": "2.1.7",
-      "devalue": "5.9.2",
+      "devalue": "5.9.3",
       "esbuild": "0.28.1",
       "fflate@^0.7.0": "0.7.5",
       "fast-uri@^3.0.0": "3.1.8",
