@@ -1,0 +1,7 @@
+{"file":".trellis/spec/site/frontend/directory-structure.md","reason":"Source ownership and materialized Site boundaries for the v2 contract."}
+{"file":".trellis/spec/site/frontend/type-safety.md","reason":"TOML, content schema, and external Site trust-boundary validation."}
+{"file":".trellis/spec/site/frontend/quality-guidelines.md","reason":"Existing external build safety and required verification."}
+{"file":".trellis/spec/site-profile/frontend/directory-structure.md","reason":"Current v1 Profile mapping inventory to migrate explicitly."}
+{"file":".trellis/spec/site-profile/frontend/quality-guidelines.md","reason":"Preserve v1 Profile checks while adding v2 fixtures."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Reuse the existing composition and materialization pipeline."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Trace Site contract inputs through schema, routes, outputs, and CI."}

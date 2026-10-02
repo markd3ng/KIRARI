@@ -20,8 +20,14 @@ const externalBuilder = join(repoRoot, "scripts/build-external-site.mjs");
 
 function parseArguments(args) {
 	const values = new Map();
+	let requireSiteContractV2 = false;
 	for (let index = 0; index < args.length; index += 1) {
 		const name = args[index];
+		if (name === "--require-site-contract-v2") {
+			if (requireSiteContractV2) throw new Error("Composition option was supplied more than once: --require-site-contract-v2");
+			requireSiteContractV2 = true;
+			continue;
+		}
 		if (!["--core-ref", "--site", "--site-ref", "--artifact-dir"].includes(name)) {
 			throw new Error(`Unknown composition option: ${name}`);
 		}
@@ -39,10 +45,11 @@ function parseArguments(args) {
 		siteDirectory: resolve(values.get("--site")),
 		siteRef: values.get("--site-ref"),
 		artifactDirectory: resolve(values.get("--artifact-dir")),
+		requireSiteContractV2,
 	};
 }
 
-function main(args) {
+async function main(args) {
 	let stage = "cli";
 	let stagingDirectory;
 	try {
@@ -58,6 +65,17 @@ function main(args) {
 			throw new Error("Git Site input must be a separate checkout or worktree from the Core checkout.");
 		}
 		const siteDirectory = realpathSync(siteInputPath);
+		stage = "site-contract-validation";
+		const siteContractPath = join(siteDirectory, ".kirari", "site.toml");
+		const hasSiteContractV2 = existsSync(siteContractPath);
+		if (options.requireSiteContractV2 && !hasSiteContractV2) {
+			throw new Error("Site Contract v2 is required for this composition, but .kirari/site.toml is missing at the selected Site root.");
+		}
+		let siteContract;
+		if (hasSiteContractV2) {
+			const { validateSiteContractV2 } = await import("../apps/site/scripts/site-contract-v2.mjs");
+			siteContract = validateSiteContractV2(siteDirectory, { selectedCoreSha: core.resolved_sha });
+		}
 
 		stage = "artifact-path";
 		const artifactPath = resolveArtifactPath(options.artifactDirectory);
@@ -76,6 +94,7 @@ function main(args) {
 		const build = spawnSync(process.execPath, [externalBuilder, siteDirectory, "--dist-output", join(stagingDirectory, "dist"), "--source-date-epoch", String(buildClock.source_date_epoch)], {
 			cwd: repoRoot,
 			stdio: "inherit",
+			env: { ...process.env, KIRARI_SELECTED_CORE_SHA: core.resolved_sha },
 		});
 		if (build.error) throw build.error;
 		if (build.status !== 0) throw new Error(`External Site builder exited ${build.signal ? `with signal ${build.signal}` : `with status ${build.status}`}.`);
@@ -85,6 +104,13 @@ function main(args) {
 		const siteAfter = resolveSiteInput({ directory: siteInputPath, requestedRef: options.siteRef });
 		if (coreAfter.resolved_sha !== core.resolved_sha) throw new Error("Core checkout changed while the composed build was running.");
 		if (identityKey(siteAfter) !== identityKey(site)) throw new Error("Site input changed while the composed build was running.");
+		if (siteContract) {
+			const { validateSiteContractV2 } = await import("../apps/site/scripts/site-contract-v2.mjs");
+			const siteContractAfter = validateSiteContractV2(siteDirectory, { selectedCoreSha: core.resolved_sha });
+			if (JSON.stringify(siteContractAfter) !== JSON.stringify(siteContract)) {
+				throw new Error("Site Contract v2 changed while the composed build was running.");
+			}
+		}
 
 		stage = "artifact-digest";
 		const artifactDigest = digestArtifactTree(join(stagingDirectory, "dist"));
@@ -102,7 +128,7 @@ function main(args) {
 		const manifest = createProvenanceManifest({
 			core,
 			site,
-			siteSchemaVersion: SITE_SCHEMA_VERSION,
+			siteSchemaVersion: siteContract?.schemaVersion ?? SITE_SCHEMA_VERSION,
 			toolchain,
 			configuration,
 			artifactDigest,
@@ -226,4 +252,4 @@ function lstatMaybe(path) {
 	}
 }
 
-main(process.argv.slice(2));
+await main(process.argv.slice(2));

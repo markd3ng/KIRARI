@@ -34,6 +34,12 @@ function makeFixture(parent, repoName = "repo") {
 	mkdirSync(bin, { recursive: true });
 	cpSync(join(repoRoot, "scripts/build-external-site.mjs"), publisher);
 	cpSync(join(repoRoot, "scripts/composition-provenance.mjs"), join(fixtureRoot, "scripts/composition-provenance.mjs"));
+	const contractScripts = join(sitePackage, "scripts");
+	mkdirSync(contractScripts, { recursive: true });
+	for (const name of ["profile-manifest.mjs", "site-contract-v2.mjs"]) {
+		cpSync(join(repoRoot, "apps/site/scripts", name), join(contractScripts, name));
+	}
+	symlinkSync(realpathSync(join(repoRoot, "apps/site/node_modules/smol-toml")), join(sitePackage, "node_modules/smol-toml"), "dir");
 	const parse5 = join(fixtureRoot, "node_modules/parse5");
 	mkdirSync(join(fixtureRoot, "node_modules"), { recursive: true });
 	symlinkSync(realpathSync(join(repoRoot, "node_modules/parse5")), parse5, "dir");

@@ -144,8 +144,11 @@ export function validateProfileSource(profilePath, sitePath) {
 	return { profileDir, siteDir, mappings };
 }
 
-export function materializeProfile(profilePath, sitePath) {
+export function materializeProfile(profilePath, sitePath, {
+	preserveMissingOptionalTargets = process.env.KIRARI_SITE_CONTRACT_V2 === "true" ? ["public/ads.txt"] : [],
+} = {}) {
 	const contract = validateProfileSource(profilePath, sitePath);
+	const preservedOptionalTargets = new Set(preserveMissingOptionalTargets);
 	mkdirSync(contract.siteDir, { recursive: true });
 	const siteDir = realpathSync(contract.siteDir);
 	assertDisjointRoots(contract.profileDir, siteDir);
@@ -162,6 +165,7 @@ export function materializeProfile(profilePath, sitePath) {
 	let manifest;
 	try {
 		for (const mapping of contract.mappings) {
+			if (!mapping.present && preservedOptionalTargets.has(mapping.target)) continue;
 			const stagePath = resolve(stageDir, "next", mapping.target);
 			assertContained(join(stageDir, "next"), stagePath, `staged Site target ${mapping.target}`);
 			if (mapping.present) {
@@ -185,6 +189,7 @@ export function materializeProfile(profilePath, sitePath) {
 		const operations = [];
 		try {
 			for (const mapping of contract.mappings) {
+				if (!mapping.present && preservedOptionalTargets.has(mapping.target)) continue;
 				installStagedPath(
 					resolve(siteDir, mapping.target),
 					resolve(stageDir, "next", mapping.target),
@@ -364,6 +369,7 @@ function copyValidatedTree(sourcePath, targetPath, profileDir) {
 	if (stat.isDirectory()) {
 		mkdirSync(targetPath, { recursive: true });
 		for (const name of readdirSync(sourcePath)) {
+			if (isExcludedMetadata(name)) continue;
 			copyValidatedTree(join(sourcePath, name), join(targetPath, name), profileDir);
 		}
 		return;
@@ -371,6 +377,10 @@ function copyValidatedTree(sourcePath, targetPath, profileDir) {
 	if (!stat.isFile()) throw new Error(`Site input has an unsupported type: ${sourcePath}`);
 	mkdirSync(dirname(targetPath), { recursive: true });
 	copyFileSync(sourcePath, targetPath);
+}
+
+function isExcludedMetadata(name) {
+	return [".DS_Store", "package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock"].includes(name);
 }
 
 function installStagedPath(targetPath, stagePath, backupPath, operations) {

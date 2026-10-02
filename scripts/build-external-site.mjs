@@ -7,6 +7,7 @@ import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { hostname } from "node:os";
 import { fileURLToPath } from "node:url";
 import { selectBuildEnvironment } from "./composition-provenance.mjs";
+import { isSiteContractV2, materializeSiteContractV2, validateSiteContractV2 } from "../apps/site/scripts/site-contract-v2.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
@@ -134,10 +135,18 @@ run().catch(async (error) => {
 });
 `;
 
-function main(siteArgument, distOutputArgument, sourceDateEpochArgument) {
+function main(siteArgument, distOutputArgument, sourceDateEpochArgument, requireSiteContractV2) {
 	if (!siteArgument) throw new Error("Usage: node scripts/build-external-site.mjs <site-directory> [--dist-output <directory>] [--source-date-epoch <seconds>]");
 	const sourceSite = realpathSync(resolve(siteArgument));
 	if (!lstatSync(sourceSite).isDirectory()) throw new Error(`Site input must be a directory: ${siteArgument}`);
+	const hasSiteContractV2 = isSiteContractV2(sourceSite);
+	if (requireSiteContractV2 && !hasSiteContractV2) throw new Error("Site Contract v2 is required, but .kirari/site.toml is missing.");
+	let selectedCoreSha;
+	let siteContract;
+	if (hasSiteContractV2) {
+		selectedCoreSha = process.env.KIRARI_SELECTED_CORE_SHA || gitHead(repoRoot);
+		siteContract = validateSiteContractV2(sourceSite, { selectedCoreSha });
+	}
 	const destination = resolveDistDestination(distOutputArgument);
 	const dependencies = join(sitePackage, "node_modules");
 	if (!existsSync(dependencies) || !lstatSync(realpathSync(dependencies)).isDirectory()) {
@@ -166,6 +175,13 @@ function main(siteArgument, distOutputArgument, sourceDateEpochArgument) {
 			},
 		});
 		symlinkSync(realpathSync(dependencies), join(temporarySite, "node_modules"), "dir");
+		let buildSiteSource = sourceSite;
+		if (siteContract) {
+			const materializedInputDir = join(temporaryRoot, "site-inputs-v1-bridge");
+			const materialized = materializeSiteContractV2(sourceSite, materializedInputDir, { selectedCoreSha });
+			buildSiteSource = materialized.materializedDir;
+			if (materialized.publicDir) overlaySitePublic(materialized.publicDir, join(temporarySite, "public"));
+		}
 
 		const buildEnvironment = selectBuildEnvironment(process.env);
 		if (sourceDateEpochArgument !== undefined) {
@@ -175,7 +191,8 @@ function main(siteArgument, distOutputArgument, sourceDateEpochArgument) {
 		}
 		const build = runBuildGuarded(destinationLock, temporarySite, {
 			...buildEnvironment,
-			KIRARI_SITE_SOURCE: sourceSite,
+			KIRARI_SITE_SOURCE: buildSiteSource,
+			KIRARI_SITE_CONTRACT_V2: siteContract ? "true" : "false",
 			KIRARI_BUILD_ONLY: "true",
 		});
 		if (build.error) throw build.error;
@@ -208,6 +225,43 @@ function main(siteArgument, distOutputArgument, sourceDateEpochArgument) {
 		} finally {
 			releaseDestinationLock(destinationLock);
 		}
+	}
+}
+
+function gitHead(directory) {
+	const result = spawnSync("git", ["-C", directory, "rev-parse", "--verify", "HEAD^{commit}"], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+	if (result.error || result.status !== 0 || !/^[a-f0-9]{40}$/.test(result.stdout.trim())) {
+		throw new Error(`Unable to select the checked-out Core commit: ${result.stderr?.trim() || result.error?.message || "invalid git SHA"}`);
+	}
+	return result.stdout.trim();
+}
+
+function overlaySitePublic(sourceRoot, targetRoot) {
+	const copy = (source, target) => {
+		const sourceStat = lstatSync(source);
+		if (sourceStat.isSymbolicLink()) throw new Error(`Site public input became a symlink while copying: ${source}`);
+		if (sourceStat.isDirectory()) {
+			const targetStat = lstatMaybe(target);
+			if (targetStat && (targetStat.isSymbolicLink() || !targetStat.isDirectory())) {
+				throw new Error(`Site public directory collides with a Core public file: ${relative(targetRoot, target)}`);
+			}
+			mkdirSync(target, { recursive: true });
+			for (const name of readdirSync(source).sort()) {
+				if (name === ".DS_Store") continue;
+				copy(join(source, name), join(target, name));
+			}
+			return;
+		}
+		if (!sourceStat.isFile()) throw new Error(`Site public input has an unsupported file type: ${source}`);
+		const targetStat = lstatMaybe(target);
+		if (targetStat) throw new Error(`Site public file collides with a Core public path: ${relative(targetRoot, target)}`);
+		mkdirSync(dirname(target), { recursive: true });
+		cpSync(source, target);
+	};
+	if (!existsSync(sourceRoot)) return;
+	for (const name of readdirSync(sourceRoot).sort()) {
+		if (name === ".DS_Store") continue;
+		copy(join(sourceRoot, name), join(targetRoot, name));
 	}
 }
 
@@ -642,6 +696,11 @@ try {
 	const options = new Map();
 	for (let index = 1; index < args.length; index += 1) {
 		const name = args[index];
+		if (name === "--require-site-contract-v2") {
+			if (options.has(name)) throw new Error(`External build option was supplied more than once: ${name}`);
+			options.set(name, true);
+			continue;
+		}
 		if (name !== "--dist-output" && name !== "--source-date-epoch") throw new Error(`Unknown external build option: ${name}`);
 		if (options.has(name)) throw new Error(`External build option was supplied more than once: ${name}`);
 		const value = args[index + 1];
@@ -653,7 +712,7 @@ try {
 	const sourceDateEpoch = options.has("--source-date-epoch")
 		? validateSourceDateEpoch(options.get("--source-date-epoch"))
 		: undefined;
-	main(args[0], options.get("--dist-output"), sourceDateEpoch);
+	main(args[0], options.get("--dist-output"), sourceDateEpoch, options.has("--require-site-contract-v2"));
 } catch (error) {
 	console.error(`[external-build] ERROR  ${error.message}`);
 	process.exitCode = 1;
