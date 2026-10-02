@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main, dev, config]
     tags: ["v*"]
   pull_request:
   workflow_dispatch:
@@ -20,12 +20,12 @@ on:
       site_ref:
         description: Site branch, tag, or commit to build
         required: true
-        default: main
+        default: config
         type: string
       site_subdirectory:
         description: Site source directory inside the Site checkout
         required: true
-        default: packages/site-profile
+        default: site
         type: string
 
 permissions:
@@ -50,10 +50,11 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: node --test scripts/tests/ci-profile-contract.test.mjs
+      - run: node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs
       - run: node apps/site/scripts/materialize-profile.mjs
       - run: pnpm profile:check
       - run: pnpm site:test
+      - run: pnpm site:contract:test
       - run: pnpm trellis:check
       - run: node apps/site/scripts/qa-regression-check.mjs
       - run: pnpm site:type-check
@@ -69,25 +70,145 @@ jobs:
       - run: git diff --check
 
   composition:
-    if: github.event_name == 'workflow_dispatch'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/config') ||
+      (github.event_name == 'pull_request' && github.base_ref == 'config')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - name: Checkout Core
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository }}
-          ref: ${{ inputs.core_ref }}
-          path: core
-          fetch-depth: 0
-          persist-credentials: false
+      - name: Select Site revision
+        id: site_selection
+        env:
+          MANUAL_SITE_REPOSITORY: ${{ inputs.site_repository }}
+          MANUAL_SITE_REF: ${{ inputs.site_ref }}
+          MANUAL_SITE_SUBDIRECTORY: ${{ inputs.site_subdirectory }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_REPOSITORY: ${{ github.repository }}
+          EVENT_SHA: ${{ github.sha }}
+          PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          case "$EVENT_NAME" in
+            workflow_dispatch)
+              site_repository="$MANUAL_SITE_REPOSITORY"
+              site_ref="$MANUAL_SITE_REF"
+              site_subdirectory="$MANUAL_SITE_SUBDIRECTORY"
+              ;;
+            push)
+              [[ "$GITHUB_REF" == "refs/heads/config" ]] || { echo "Composition only accepts config pushes" >&2; exit 1; }
+              site_repository="$EVENT_REPOSITORY"
+              site_ref="$EVENT_SHA"
+              site_subdirectory="site"
+              ;;
+            pull_request)
+              [[ "$GITHUB_BASE_REF" == "config" ]] || { echo "Composition only accepts pull requests targeting config" >&2; exit 1; }
+              site_repository="$PR_HEAD_REPOSITORY"
+              site_ref="$PR_HEAD_SHA"
+              site_subdirectory="site"
+              ;;
+            *)
+              echo "Unsupported composition event: $EVENT_NAME" >&2
+              exit 1
+              ;;
+          esac
+
+          [[ "$site_repository" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || { echo "Site repository must be owner/repository" >&2; exit 1; }
+          for value in "$site_ref" "$site_subdirectory"; do
+            case "$value" in *$'\n'*|*$'\r'*) echo "Site selection values cannot contain line breaks" >&2; exit 1 ;; esac
+          done
+          [[ -n "$site_ref" && -n "$site_subdirectory" ]] || { echo "Site ref and subdirectory are required" >&2; exit 1; }
+          if [[ "$EVENT_NAME" != "workflow_dispatch" && ! "$site_ref" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "Automatic config composition requires the exact 40-character event Site SHA" >&2
+            exit 1
+          fi
+
+          {
+            printf 'repository=%s\n' "$site_repository"
+            printf 'ref=%s\n' "$site_ref"
+            printf 'subdirectory=%s\n' "$site_subdirectory"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Checkout Site
         uses: actions/checkout@v4
         with:
-          repository: ${{ inputs.site_repository }}
-          ref: ${{ inputs.site_ref }}
+          repository: ${{ steps.site_selection.outputs.repository }}
+          ref: ${{ steps.site_selection.outputs.ref }}
           path: site
+          submodules: recursive
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate Site boundary and resolve Core ref
+        id: site_contract
+        env:
+          SITE_SUBDIRECTORY: ${{ steps.site_selection.outputs.subdirectory }}
+          MANUAL_CORE_REF: ${{ inputs.core_ref }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          site_checkout="$GITHUB_WORKSPACE/site"
+          if [[ -L "$site_checkout" || ! -d "$site_checkout" ]]; then
+            echo "Site checkout root must be a directory and cannot be a symlink" >&2
+            exit 1
+          fi
+          site_root="$(realpath "$site_checkout")"
+
+          case "$SITE_SUBDIRECTORY" in
+            ""|/*) echo "Site subdirectory must be a non-empty relative path" >&2; exit 1 ;;
+          esac
+          case "/$SITE_SUBDIRECTORY/" in
+            */../*) echo "Site subdirectory cannot traverse above the checkout" >&2; exit 1 ;;
+          esac
+
+          site_candidate="$site_root"
+          if [[ "$SITE_SUBDIRECTORY" != "." ]]; then
+            IFS='/' read -r -a site_segments <<< "$SITE_SUBDIRECTORY"
+            for segment in "${site_segments[@]}"; do
+              case "$segment" in ""|.) continue ;; ..) echo "Site subdirectory cannot contain traversal segments" >&2; exit 1 ;; esac
+              site_candidate="$site_candidate/$segment"
+              if [[ -L "$site_candidate" ]]; then
+                echo "Site subdirectory cannot traverse a symlink: $site_candidate" >&2
+                exit 1
+              fi
+            done
+          fi
+          site_source="$(realpath "$site_candidate")"
+          if [[ ! -d "$site_source" || ( "$site_source" != "$site_root" && "$site_source" != "$site_root/"* ) ]]; then
+            echo "Site subdirectory must resolve inside the Site checkout" >&2
+            exit 1
+          fi
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            core_ref="$MANUAL_CORE_REF"
+            [[ -n "$core_ref" ]] || { echo "Core ref is required for manual composition" >&2; exit 1; }
+            case "$core_ref" in *$'\n'*|*$'\r'*) echo "Core ref cannot contain line breaks" >&2; exit 1 ;; esac
+          else
+            gitlink_root="${SITE_SUBDIRECTORY%/}"
+            if [[ "$gitlink_root" == "." || -z "$gitlink_root" ]]; then
+              gitlink_path=".kirari/core"
+            else
+              gitlink_path="${gitlink_root#./}/.kirari/core"
+            fi
+            gitlink_record="$(git -C "$site_checkout" ls-tree HEAD -- "$gitlink_path")"
+            read -r gitlink_mode gitlink_type gitlink_sha gitlink_name <<< "$gitlink_record"
+            if [[ "$gitlink_mode" != "160000" || "$gitlink_type" != "commit" || "$gitlink_name" != "$gitlink_path" || ! "$gitlink_sha" =~ ^[a-f0-9]{40}$ ]]; then
+              echo "Site input $SITE_SUBDIRECTORY/.kirari/core must be a full 40-character Core submodule gitlink" >&2
+              exit 1
+            fi
+            core_ref="$gitlink_sha"
+          fi
+
+          printf 'source=%s\n' "$site_source" >> "$GITHUB_OUTPUT"
+          printf 'core_ref=%s\n' "$core_ref" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Core
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ steps.site_contract.outputs.core_ref }}
+          path: core
           fetch-depth: 0
           persist-credentials: false
 
@@ -110,31 +231,23 @@ jobs:
       - name: Compose selected revisions
         working-directory: core
         env:
-          CORE_REF: ${{ inputs.core_ref }}
-          SITE_REF: ${{ inputs.site_ref }}
-          SITE_SUBDIRECTORY: ${{ inputs.site_subdirectory }}
+          CORE_REF: ${{ steps.site_contract.outputs.core_ref }}
+          SITE_REF: ${{ steps.site_selection.outputs.ref }}
+          SITE_SOURCE: ${{ steps.site_contract.outputs.source }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          case "$SITE_SUBDIRECTORY" in
-            ""|/*) echo "Site subdirectory must be a relative path" >&2; exit 1 ;;
-          esac
-          case "/$SITE_SUBDIRECTORY/" in
-            */../*) echo "Site subdirectory cannot escape the Site checkout" >&2; exit 1 ;;
-          esac
-
-          site_root="$(realpath "$GITHUB_WORKSPACE/site")"
-          site_source="$(realpath "$site_root/$SITE_SUBDIRECTORY")"
-          if [[ ! -d "$site_source" || "$site_source" == "$site_root" || "$site_source" != "$site_root/"* ]]; then
-            echo "Site subdirectory must exist inside the Site checkout" >&2
-            exit 1
-          fi
-
           artifact_dir="$RUNNER_TEMP/kirari-composed-artifact"
-          ./build.sh --compose \
-            --core-ref "$CORE_REF" \
-            --site "$site_source" \
-            --site-ref "$SITE_REF" \
+          compose_args=(
+            --core-ref "$CORE_REF"
+            --site "$SITE_SOURCE"
+            --site-ref "$SITE_REF"
             --artifact-dir "$artifact_dir"
+          )
+          if [[ "$EVENT_NAME" != "workflow_dispatch" ]]; then
+            compose_args+=(--require-site-contract-v2)
+          fi
+          ./build.sh --compose "${compose_args[@]}"
 
       - name: Upload composed artifact
         id: upload

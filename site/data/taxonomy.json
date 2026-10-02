@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "tags": [
+    {
+      "id": "getting-started",
+      "slug": "getting-started",
+      "labels": {
+        "zh-Hans": "入门",
+        "zh-Hant": "入門",
+        "en": "Getting started",
+        "ja": "はじめに"
+      },
+      "descriptions": {
+        "zh-Hans": "入门文章。",
+        "zh-Hant": "入門文章。",
+        "en": "Getting started with this Site.",
+        "ja": "このサイトの入門記事。"
+      },
+      "aliases": {
+        "zh-Hans": [],
+        "zh-Hant": [],
+        "en": [],
+        "ja": []
+      }
+    }
+  ],
+  "categories": [
+    {
+      "id": "notes",
+      "slug": "notes",
+      "labels": {
+        "zh-Hans": "笔记",
+        "zh-Hant": "筆記",
+        "en": "Notes",
+        "ja": "ノート"
+      },
+      "descriptions": {
+        "zh-Hans": "个人笔记与文章。",
+        "zh-Hant": "個人筆記與文章。",
+        "en": "Personal notes and articles.",
+        "ja": "個人のノートと記事。"
+      },
+      "aliases": {
+        "zh-Hans": [],
+        "zh-Hant": [],
+        "en": [],
+        "ja": []
+      }
+    }
+  ]
+}

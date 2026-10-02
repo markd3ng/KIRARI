@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">KIRARI Site mark</title>
+  <rect width="64" height="64" rx="16" fill="#171717"/>
+  <path d="M18 15h7v16l14-16h9L33 30l16 19h-9L28 35l-3 3v11h-7z" fill="#fff"/>
+</svg>

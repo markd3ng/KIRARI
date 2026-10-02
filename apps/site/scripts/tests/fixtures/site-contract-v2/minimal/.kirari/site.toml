@@ -1,0 +1,6 @@
+schema-version = 2
+setup-state = "ready"
+
+[core]
+repository = "example/kirari-core"
+commit = "0000000000000000000000000000000000000000"

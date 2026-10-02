@@ -1,0 +1,6 @@
+schema-version = 2
+setup-state = "ready"
+
+[core]
+repository = "markd3ng/KIRARI"
+commit = "8cbc0b3935fccd94883a613934d81ee56c1e58b6"

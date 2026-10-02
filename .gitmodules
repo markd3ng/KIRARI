@@ -1,0 +1,3 @@
+[submodule "site-core"]
+	path = site/.kirari/core
+	url = https://github.com/markd3ng/KIRARI.git

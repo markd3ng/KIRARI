@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "legacyRouteAliases": {
+    "en-US": "en",
+    "zh-CN": "zh-Hans",
+    "zh-TW": "zh-Hant",
+    "zh-HK": "zh-Hant",
+    "ja-JP": "ja"
+  }
+}

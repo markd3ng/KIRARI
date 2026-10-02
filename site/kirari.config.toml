@@ -1,0 +1,46 @@
+# Site product settings. Add owner-specific values here; keep credentials in the runtime environment.
+[site]
+url = "https://example.com"
+title = "My KIRARI Site"
+subtitle = "A personal site"
+base = "/"
+default-language = "en"
+
+[i18n]
+enable = true
+default-language-in-subdir = false
+
+[i18n.languages.en]
+label = "English"
+locale = "en"
+direction = "ltr"
+weight = 1
+disabled = false
+
+[i18n.languages.zh-Hans]
+label = "简体中文"
+locale = "zh-Hans"
+direction = "ltr"
+weight = 2
+disabled = true
+
+[i18n.languages.zh-Hant]
+label = "繁體中文"
+locale = "zh-Hant"
+direction = "ltr"
+weight = 3
+disabled = true
+
+[i18n.languages.ja]
+label = "日本語"
+locale = "ja"
+direction = "ltr"
+weight = 4
+disabled = true
+
+# Replace this clearly marked template value with the Site owner's display name.
+[profile]
+name = "Your name"
+
+[og]
+defaultImage = "/og/default.png"

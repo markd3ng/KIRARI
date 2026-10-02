@@ -1,0 +1,55 @@
+name: Site CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.14.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .kirari/core/.nvmrc
+          cache: pnpm
+          cache-dependency-path: .kirari/core/pnpm-lock.yaml
+
+      - name: Install pinned Core dependencies
+        working-directory: .kirari/core
+        run: pnpm install --frozen-lockfile
+
+      - name: Build read-only Site artifact
+        working-directory: .kirari/core
+        env:
+          ARTIFACT_DIR: ${{ runner.temp }}/kirari-site-artifact-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          ./build.sh --compose \
+            --require-site-contract-v2 \
+            --core-ref HEAD \
+            --site "$GITHUB_WORKSPACE" \
+            --site-ref "$GITHUB_SHA" \
+            --artifact-dir "$ARTIFACT_DIR"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kirari-site-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/kirari-site-artifact-${{ github.run_id }}-${{ github.run_attempt }}/dist
+            ${{ runner.temp }}/kirari-site-artifact-${{ github.run_id }}-${{ github.run_attempt }}/provenance.json
+          if-no-files-found: error
+          retention-days: 30
