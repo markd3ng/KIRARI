@@ -158,26 +158,89 @@ test("tree digest ignores metadata, changes with file bytes, and rejects symlink
 	}
 });
 
-test("artifact digest normalizes Astro hydration ids and Pagefind language key order", (t) => {
+test("artifact digest normalizes only the bare Astro UID and Pagefind language ordering", (t) => {
 	const root = tempDirectory(t);
 	const pagefind = join(root, "pagefind");
 	mkdirSync(pagefind);
-	writeFileSync(join(root, "index.html"), '<astro-island uid="build-one"><p>static</p></astro-island>');
+	writeFileSync(join(root, "index.html"), '<astro-island uid="build-one" data-uid="data-one" aria-uid="aria-one"><p>static</p></astro-island>');
 	writeFileSync(join(pagefind, "pagefind-entry.json"), JSON.stringify({
 		version: "1.5.2",
 		languages: { "zh-cn": { hash: "zh-cn_1", page_count: 1 }, "en-us": { hash: "en-us_1", page_count: 1 } },
 	}));
 	const first = digestArtifactTree(root);
 
-	writeFileSync(join(root, "index.html"), '<astro-island uid="build-two"><p>static</p></astro-island>');
+	writeFileSync(join(root, "index.html"), '<astro-island uid="build-two" data-uid="data-one" aria-uid="aria-one"><p>static</p></astro-island>');
 	writeFileSync(join(pagefind, "pagefind-entry.json"), JSON.stringify({
 		version: "1.5.2",
 		languages: { "en-us": { hash: "en-us_1", page_count: 1 }, "zh-cn": { hash: "zh-cn_1", page_count: 1 } },
 	}));
 	assert.equal(digestArtifactTree(root), first);
+	writeFileSync(join(pagefind, "pagefind-entry.json"), JSON.stringify({
+		version: "1.5.2",
+		languages: { "en-us": { hash: "en-us_1", page_count: 1 }, "zh-cn": { hash: "zh-cn_1", page_count: 1 } },
+	}, null, 2));
+	assert.equal(digestArtifactTree(root), first, "Pagefind JSON formatting is reserialized");
+	writeFileSync(join(root, "index.html"), '<astro-island uid="build-two" data-uid="data-two" aria-uid="aria-one"><p>static</p></astro-island>');
+	assert.notEqual(digestArtifactTree(root), first, "data-uid remains significant");
+	writeFileSync(join(root, "index.html"), '<astro-island uid="build-two" data-uid="data-one" aria-uid="aria-two"><p>static</p></astro-island>');
+	assert.notEqual(digestArtifactTree(root), first, "aria-uid remains significant");
+	writeFileSync(join(root, "index.html"), '<astro-island uid="build-two" data-uid="data-one" aria-uid="aria-one"><p>static</p></astro-island>');
 
-	writeFileSync(join(root, "index.html"), '<astro-island uid="build-two"><p>changed</p></astro-island>');
+	writeFileSync(join(pagefind, "pagefind-entry.json"), JSON.stringify({
+		version: "1.5.2",
+		languages: { "zh-cn": { hash: "zh-cn_1", page_count: 1 }, "en-us": { hash: "en-us_2", page_count: 1 } },
+	}));
+	assert.notEqual(digestArtifactTree(root), first, "nested Pagefind values remain significant");
+	writeFileSync(join(pagefind, "pagefind-entry.json"), JSON.stringify({
+		version: "1.5.2",
+		languages: { "en-us": { hash: "en-us_1", page_count: 1 }, "zh-cn": { hash: "zh-cn_1", page_count: 1 } },
+	}));
+
+	writeFileSync(join(root, "index.html"), '<astro-island uid="build-two" data-uid="data-one" aria-uid="aria-one"><p>changed</p></astro-island>');
 	assert.notEqual(digestArtifactTree(root), first);
+});
+
+test("Astro-looking text in quoted attributes, comments, raw text, and templates remains significant", (t) => {
+	const root = tempDirectory(t);
+	const htmlPath = join(root, "index.html");
+	const html = (label, uid) => [
+		`<!-- <astro-island uid="comment-${label}"> -->`,
+		`<script><!--<script><astro-island uid="script-${label}"></script><astro-island uid="script-double-${label}"></astro-island>--></script>`,
+		`<style>.example::after { content: '<astro-island uid="style-${label}">'; }</style>`,
+		`<textarea><astro-island uid="textarea-${label}"></textarea>`,
+		`<title><astro-island uid="title-${label}"></title>`,
+		`<template><astro-island uid="template-${label}"></astro-island></template>`,
+		`<svg><astro-island uid="svg-${label}"></astro-island></svg>`,
+		`<math><astro-island uid="math-${label}"></astro-island></math>`,
+		`<astro-island data-note='literal <astro-island uid="quoted-${label}"> > remains data' uid="${uid}" data-tail="tail-${label}"><p>static</p></astro-island>`,
+	].join("");
+	writeFileSync(htmlPath, html("one", "build-one"));
+	const first = digestArtifactTree(root);
+
+	writeFileSync(htmlPath, html("two", "build-one"));
+	assert.notEqual(digestArtifactTree(root), first, "fake UIDs and surrounding tag metadata remain significant");
+
+	writeFileSync(htmlPath, html("one", "build-two"));
+	assert.equal(digestArtifactTree(root), first, "only the actual UID value is normalized");
+
+	writeFileSync(htmlPath, '<astro-island data-note=\'unfinished uid="fake-one\'');
+	const malformed = digestArtifactTree(root);
+	writeFileSync(htmlPath, '<astro-island data-note=\'unfinished uid="fake-two\'');
+	assert.notEqual(digestArtifactTree(root), malformed, "an unterminated tag is left unchanged");
+});
+
+test("HTML UID spans preserve UTF-8 bytes and invalid UTF-8 fails closed", (t) => {
+	const root = tempDirectory(t);
+	const htmlPath = join(root, "index.html");
+	writeFileSync(htmlPath, '<p>雪🦥</p><astro-island title="雪" uid="build-one"></astro-island>');
+	const first = digestArtifactTree(root);
+	writeFileSync(htmlPath, '<p>雪🦥</p><astro-island title="雪" uid="build-two"></astro-island>');
+	assert.equal(digestArtifactTree(root), first);
+
+	writeFileSync(htmlPath, Buffer.concat([Buffer.from('<astro-island uid="build-one">'), Buffer.from([0xff])]));
+	const invalidUtf8 = digestArtifactTree(root);
+	writeFileSync(htmlPath, Buffer.concat([Buffer.from('<astro-island uid="build-two">'), Buffer.from([0xff])]));
+	assert.notEqual(digestArtifactTree(root), invalidUtf8, "invalid UTF-8 bytes remain untouched");
 });
 
 test("build environment identity hashes only the inherited allowlist and public overrides", () => {
@@ -223,6 +286,7 @@ test("creates and validates versioned provenance, rejecting invalid schema and m
 			build_only: true,
 			indexing_submissions: false,
 			inherited_environment_digest: digestBuildEnvironment({ PUBLIC_SITE_TITLE: "safe-to-hash" }),
+			build_clock: { source: "max-input-commit-time", source_date_epoch: 1_793_524_800, timezone: "UTC" },
 		},
 		artifactDigest,
 	});
@@ -234,6 +298,18 @@ test("creates and validates versioned provenance, rejecting invalid schema and m
 	assert.equal(validateProvenanceManifest(manifest, { core, site, artifactDigest }), true);
 	assert.throws(() => validateProvenanceManifest({ ...manifest, schema_version: 2 }), /schema_version must be 1/i);
 	assert.throws(() => validateProvenanceManifest({ ...manifest, build: { toolchain: {}, configuration: {} } }), /build\.toolchain must contain exactly/i);
+	assert.throws(() => validateProvenanceManifest({
+		...manifest,
+		build: { ...manifest.build, configuration: { ...manifest.build.configuration, build_clock: { source: "unknown", source_date_epoch: 1, timezone: "UTC" } } },
+	}), /build\.configuration\.build_clock\.source/i);
+	assert.throws(() => validateProvenanceManifest({
+		...manifest,
+		build: { ...manifest.build, configuration: { ...manifest.build.configuration, build_clock: { source: "max-input-commit-time", source_date_epoch: -1, timezone: "UTC" } } },
+	}), /build\.configuration\.build_clock\.source_date_epoch/i);
+	assert.throws(() => validateProvenanceManifest({
+		...manifest,
+		build: { ...manifest.build, configuration: { ...manifest.build.configuration, build_clock: { source: "max-input-commit-time", source_date_epoch: 8_640_000_000_000_001, timezone: "UTC" } } },
+	}), /build\.configuration\.build_clock\.source_date_epoch/i);
 	assert.throws(
 		() => validateProvenanceManifest(manifest, { core: { ...core, resolved_sha: "0".repeat(40) } }),
 		/Provenance mismatch: core\.resolved_sha/i,

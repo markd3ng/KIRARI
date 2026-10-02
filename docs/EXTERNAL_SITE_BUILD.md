@@ -56,14 +56,23 @@ The artifact destination must not already exist. The builder stages the
 completed static output and provenance together before publishing the
 directory. The manifest's SHA-256 covers a normalized tree of sorted relative
 paths and file bytes in `dist/`; it excludes `provenance.json` to avoid a
-self-referential digest, ignores timestamps and file modes, replaces Astro's
-build-specific `uid` values on `<astro-island>` elements, and sorts Pagefind's
-language keys. All other bytes remain significant. These two normalizations
-cover non-semantic output variation, so matching digests establish semantic
-output equivalence rather than byte-for-byte identity. The digest does not
-claim that a GitHub-generated ZIP archive or builds across different operating
-systems are bit-for-bit identical. Builds with the same inputs, toolchain, and
-selected build environment are checked by comparing this normalized digest.
+self-referential digest and ignores timestamps and file modes. It normalizes
+only the quoted bare `uid` value on actual HTML `<astro-island>` elements,
+identified in the HTML namespace; comments, attributes, raw-text/RCDATA,
+template contents, and SVG/MathML elements are left byte-significant. In
+`pagefind/pagefind-entry.json`, it sorts only the `languages` keys and then
+reserializes parsed JSON with `JSON.stringify`, so formatting is ignored and
+JavaScript's normal JSON serialization/key-enumeration rules apply. No other
+fields are intentionally omitted or sorted. A matching digest is a
+semantic-equivalence signal only for the
+verified KIRARI Site output whose code does not consume Astro's generated UID.
+Trusted Site JavaScript can inspect that attribute, so the digest is not a
+general semantic guarantee for arbitrary Site code. It does not establish
+byte-for-byte identity or prove equivalence across arbitrary generated output.
+The digest does not claim that a GitHub-generated ZIP archive or builds across
+different operating systems are bit-for-bit identical. Builds with the same
+inputs, toolchain, and selected build environment are checked by comparing
+this normalized digest.
 
 The versioned provenance binds Core repository/ref/full SHA, Site
 repository/ref/full SHA (or a typed non-Git content digest), Site schema

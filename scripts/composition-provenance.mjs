@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { lstatSync, readFileSync, readdirSync, realpathSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { parse } from "parse5";
 
 const SHA1 = /^[a-f0-9]{40}$/;
 const SHA256 = /^sha256:[a-f0-9]{64}$/;
@@ -11,9 +12,12 @@ const ARTIFACT_KEYS = ["format", "digest_algorithm", "scope", "digest"];
 const BUILD_KEYS = ["toolchain", "configuration"];
 const TOOLCHAIN_KEYS = ["node", "pnpm", "platform", "architecture", "lockfile"];
 const LOCKFILE_KEYS = ["path", "digest"];
-const CONFIGURATION_KEYS = ["entrypoint", "build_mode", "output", "build_only", "indexing_submissions", "inherited_environment_digest"];
+const CONFIGURATION_KEYS = ["entrypoint", "build_mode", "output", "build_only", "indexing_submissions", "inherited_environment_digest", "build_clock"];
+const BUILD_CLOCK_KEYS = ["source", "source_date_epoch", "timezone"];
 const ARTIFACT_FORMAT = "static-site-tree";
-const ARTIFACT_SCOPE = "dist-tree-excluding-provenance.json+normalized-astro-island-uid-and-pagefind-language-order";
+const ARTIFACT_SCOPE = "dist-tree-excluding-provenance.json+bare-astro-island-uid+pagefind-language-order-and-json-reserialization";
+const NORMALIZED_UID = Buffer.from("normalized");
+const HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
 const BUILD_ENVIRONMENT_ALLOWLIST = new Set([
 	"PATH", "HOME", "TMPDIR", "TMP", "TEMP", "LANG", "LC_ALL", "LC_CTYPE",
 	"CI", "FORCE_COLOR", "NO_COLOR", "NODE_OPTIONS", "NODE_ENV", "VERCEL", "CF_PAGES", "PAGES",
@@ -148,7 +152,7 @@ function digestTree(directory, domain, normalizeContent) {
 
 function normalizeArtifactContent(relativePath, contents) {
 	if (relativePath.endsWith(".html")) {
-		return Buffer.from(contents.toString("utf8").replace(/(<astro-island\b[^>]*\buid=")[^"]*(")/g, "$1normalized$2"));
+		return normalizeAstroIslandUids(contents);
 	}
 	if (relativePath === "pagefind/pagefind-entry.json") {
 		const entry = JSON.parse(contents.toString("utf8"));
@@ -156,6 +160,73 @@ function normalizeArtifactContent(relativePath, contents) {
 		return Buffer.from(JSON.stringify(entry));
 	}
 	return contents;
+}
+
+function normalizeAstroIslandUids(contents) {
+	const source = contents.toString("utf8");
+	if (!Buffer.from(source).equals(contents)) return contents;
+
+	const parseErrors = [];
+	const document = parse(source, { sourceCodeLocationInfo: true, onParseError: (error) => parseErrors.push(error) });
+	const uidRanges = [];
+	const visit = (node) => {
+		if (node.namespaceURI === HTML_NAMESPACE && node.tagName === "astro-island") {
+			const startTag = node.sourceCodeLocation?.startTag;
+			const uidLocation = startTag?.attrs?.uid;
+			const malformed = startTag && parseErrors.some((error) => error.code !== "missing-doctype" && error.startOffset >= startTag.startOffset && error.startOffset < startTag.endOffset);
+			const range = malformed ? null : quotedAttributeValueRange(source, uidLocation);
+			if (range) uidRanges.push(range);
+		}
+		for (const child of node.childNodes ?? []) visit(child);
+		// Template contents can be cloned and inspected by Site JavaScript.
+	};
+	visit(document);
+	if (uidRanges.length === 0) return contents;
+	uidRanges.sort((left, right) => left.start - right.start);
+
+	const offsets = utf16OffsetsToBytes(source, uidRanges.flatMap(({ start, end }) => [start, end]));
+	if (!offsets) return contents;
+	const parts = [];
+	let cursor = 0;
+	for (const { start, end } of uidRanges) {
+		const byteStart = offsets.get(start);
+		const byteEnd = offsets.get(end);
+		parts.push(contents.subarray(cursor, byteStart), NORMALIZED_UID);
+		cursor = byteEnd;
+	}
+	parts.push(contents.subarray(cursor));
+	return Buffer.concat(parts);
+}
+
+function quotedAttributeValueRange(source, location) {
+	if (!location) return null;
+	const attribute = source.slice(location.startOffset, location.endOffset);
+	const equals = attribute.indexOf("=");
+	if (equals === -1) return null;
+	let index = equals + 1;
+	while (/\s/.test(attribute[index] ?? "")) index++;
+	const quote = attribute[index];
+	if (quote !== '"' && quote !== "'") return null;
+	const end = attribute.lastIndexOf(quote);
+	if (end <= index || end !== attribute.length - 1) return null;
+	return { start: location.startOffset + index + 1, end: location.startOffset + end };
+}
+
+function utf16OffsetsToBytes(source, offsets) {
+	const result = new Map();
+	let sourceOffset = 0;
+	let byteOffset = 0;
+	for (const targetOffset of [...new Set(offsets)].sort((left, right) => left - right)) {
+		while (sourceOffset < targetOffset) {
+			const codePoint = source.codePointAt(sourceOffset);
+			const codeUnits = codePoint > 0xffff ? 2 : 1;
+			if (sourceOffset + codeUnits > targetOffset) return null;
+			sourceOffset += codeUnits;
+			byteOffset += codePoint <= 0x7f ? 1 : codePoint <= 0x7ff ? 2 : codePoint <= 0xffff ? 3 : 4;
+		}
+		result.set(targetOffset, byteOffset);
+	}
+	return result;
 }
 
 export function createProvenanceManifest({ core, site, siteSchemaVersion, toolchain, configuration, artifactDigest } = {}) {
@@ -446,6 +517,14 @@ function validateBuildConfiguration(configuration) {
 	if (typeof configuration.inherited_environment_digest !== "string" || !SHA256.test(configuration.inherited_environment_digest)) {
 		invalid("build.configuration.inherited_environment_digest must be a SHA-256 digest");
 	}
+	const clock = configuration.build_clock;
+	assertRecord(clock, "build.configuration.build_clock");
+	assertExactKeys(clock, BUILD_CLOCK_KEYS, "build.configuration.build_clock");
+	if (clock.source !== "max-input-commit-time") invalid('build.configuration.build_clock.source must be "max-input-commit-time"');
+	if (!Number.isSafeInteger(clock.source_date_epoch) || clock.source_date_epoch < 0 || Number.isNaN(new Date(clock.source_date_epoch).getTime())) {
+		invalid("build.configuration.build_clock.source_date_epoch must be a nonnegative safe integer in the valid Date range");
+	}
+	if (clock.timezone !== "UTC") invalid('build.configuration.build_clock.timezone must be "UTC"');
 }
 
 function assertRecord(value, label) {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, test } from "node:test";
-import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -169,6 +169,9 @@ function addBuildDependency(checkout) {
 	mkdirSync(module, { recursive: true });
 	writeFileSync(join(module, "package.json"), JSON.stringify({ name: "smol-toml", type: "module", exports: "./index.js" }));
 	writeFileSync(join(module, "index.js"), "export const parse = () => ({});\n");
+	const parse5 = join(checkout, "node_modules/parse5");
+	mkdirSync(dirname(parse5), { recursive: true });
+	symlinkSync(realpathSync(join(repoRoot, "node_modules/parse5")), parse5, "dir");
 	const installedLockfile = join(checkout, "node_modules/.pnpm/lock.yaml");
 	mkdirSync(dirname(installedLockfile), { recursive: true });
 	copyFileSync(join(checkout, "pnpm-lock.yaml"), installedLockfile);
