@@ -288,15 +288,18 @@ test("creates and validates versioned provenance, rejecting invalid schema and m
 			inherited_environment_digest: digestBuildEnvironment({ PUBLIC_SITE_TITLE: "safe-to-hash" }),
 			build_clock: { source: "max-input-commit-time", source_date_epoch: 1_793_524_800, timezone: "UTC" },
 		},
+		artifactId: "kirari-composition-test",
 		artifactDigest,
 	});
 
-	assert.equal(manifest.schema_version, 1);
+	assert.equal(manifest.schema_version, 2);
+	assert.equal(manifest.artifact.id, "kirari-composition-test");
 	assert.equal(manifest.site_schema_version, SITE_SCHEMA_VERSION);
 	assert.equal(manifest.site.resolved_sha, null);
 	assert.equal("checkout_root" in manifest.core, false);
-	assert.equal(validateProvenanceManifest(manifest, { core, site, artifactDigest }), true);
-	assert.throws(() => validateProvenanceManifest({ ...manifest, schema_version: 2 }), /schema_version must be 1/i);
+	assert.equal(validateProvenanceManifest(manifest, { core, site, artifactId: "kirari-composition-test", artifactDigest }), true);
+	assert.throws(() => validateProvenanceManifest({ ...manifest, schema_version: 1 }), /schema_version must be 2/i);
+	assert.throws(() => validateProvenanceManifest({ ...manifest, artifact: { ...manifest.artifact, id: "" } }), /artifact\.id/i);
 	assert.throws(() => validateProvenanceManifest({ ...manifest, build: { toolchain: {}, configuration: {} } }), /build\.toolchain must contain exactly/i);
 	assert.throws(() => validateProvenanceManifest({
 		...manifest,
@@ -321,6 +324,7 @@ test("creates and validates versioned provenance, rejecting invalid schema and m
 		siteSchemaVersion: SITE_SCHEMA_VERSION,
 		toolchain: manifest.build.toolchain,
 		configuration: manifest.build.configuration,
+		artifactId: "kirari-composition-test",
 		artifactDigest: "not-a-digest",
 	}), /artifact\.digest/i);
 	assert.equal(readFileSync(join(siteRoot, "post.md"), "utf8"), "site content\n");
