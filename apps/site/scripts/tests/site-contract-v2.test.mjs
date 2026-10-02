@@ -46,6 +46,7 @@ test("minimal v2 fixture accepts generic empty pages and materializes the defaul
 test("full v2 fixture preserves taxonomy, aliases, assets, and one-pass public inputs", (t) => {
 	const context = createGitSiteFixture("full");
 	t.after(() => rmSync(context.tempRoot, { recursive: true, force: true }));
+	writeFileSync(join(context.siteRoot, "assets/images/.DS_Store"), "fixture-only Finder metadata");
 	const before = snapshot(context.siteRoot);
 	const validation = validateSiteContractV2(context.siteRoot, { selectedCoreSha: context.coreSha });
 	assert.equal(validation.schemaVersion, 2);
@@ -159,7 +160,6 @@ test("Profile migration writes the inventory first, preflights inputs, and leave
 	assert.equal(existsSync(targetRoot), false, "inventory-only migration does not create output");
 	assert.equal(existsSync(dry.report), true);
 	assert.equal(dry.plan.blockers.length, 0);
-	assert.ok(dry.plan.exclusions.some((entry) => entry.source.endsWith(".DS_Store")));
 	assert.ok(dry.plan.exclusions.some((entry) => entry.source === "package.json"));
 	const applied = migrateSiteProfileToV2(sourceRoot, targetRoot, {
 		reportPath,
