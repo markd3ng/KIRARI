@@ -57,6 +57,27 @@ test("composition preserves independent refs and rebuilds a historical pair", ()
 	assert.deepEqual(aaAgain.build.configuration.build_clock, aaClock, "same input pair must resolve to the same build clock");
 });
 
+test("automatic config composition rejects a Site without Contract v2", () => {
+	const fixture = makeFixture();
+	const artifact = join(fixture.artifacts, "missing-site-contract-v2");
+	const result = spawnSync("bash", [
+		join(fixture.coreA, "build.sh"),
+		"--compose",
+		"--core-ref", fixture.coreShaA,
+		"--site", fixture.siteA,
+		"--site-ref", fixture.siteShaA,
+		"--artifact-dir", artifact,
+		"--require-site-contract-v2",
+	], {
+		cwd: fixture.coreA,
+		encoding: "utf8",
+		env: process.env,
+	});
+	assert.equal(result.status, 1, result.stdout + "\n" + result.stderr);
+	assert.match(result.stdout + "\n" + result.stderr, /\[composition:site-contract-validation\] ERROR Site Contract v2 is required/);
+	assert.equal(existsSync(artifact), false);
+});
+
 test("a content-only Site uses the selected Core commit time for its build clock", () => {
 	const fixture = makeFixture();
 	const site = join(fixture.root, "standalone-site");
@@ -146,6 +167,7 @@ function makeCoreRepository(root) {
 		"scripts/build-composed-site.mjs",
 		"scripts/composition-provenance.mjs",
 		"apps/site/scripts/profile-manifest.mjs",
+		"apps/site/scripts/site-contract-v2.mjs",
 	]) {
 		const source = join(repoRoot, file);
 		const destination = join(root, file);
@@ -168,7 +190,7 @@ function addBuildDependency(checkout) {
 	const module = join(checkout, "apps/site/node_modules/smol-toml");
 	mkdirSync(module, { recursive: true });
 	writeFileSync(join(module, "package.json"), JSON.stringify({ name: "smol-toml", type: "module", exports: "./index.js" }));
-	writeFileSync(join(module, "index.js"), "export const parse = () => ({});\n");
+	writeFileSync(join(module, "index.js"), "export const parse = () => ({}); export const stringify = () => '';\n");
 	const parse5 = join(checkout, "node_modules/parse5");
 	mkdirSync(dirname(parse5), { recursive: true });
 	symlinkSync(realpathSync(join(repoRoot, "node_modules/parse5")), parse5, "dir");
