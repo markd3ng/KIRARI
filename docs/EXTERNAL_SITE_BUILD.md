@@ -89,6 +89,14 @@ environment, including public overrides and platform/runtime flags, without
 copying their values. The artifact contains only static output and this
 manifest.
 
+Composition also isolates Astro's content cache inside the temporary Site
+workspace, so previously rendered ordinary-build content cannot enter the
+artifact. GitHub Card DOM IDs derive from the logical source path and directive
+offsets during composition. Pagefind uses the installed Node API to ingest HTML
+in sorted relative-path order, keeping search page numbers stable across
+filesystems. These generated IDs, executable references, and search assets
+remain byte-significant in the artifact digest.
+
 ## Input-based rebuild and diagnostics
 
 To rebuild or roll back, check out the recorded Core and Site SHAs into

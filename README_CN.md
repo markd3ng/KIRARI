@@ -140,6 +140,7 @@ P1 还增加了绑定 Core 和 Site 两个不可变 revision 的 artifact 构建
 `provenance.json`。GitHub Actions 的手动 composition job 使用同一入口，
 artifact 保留 30 天。组合构建使用 UTC，并以所选输入中较晚的 commit 时间作为构建时钟
 （Site 不是 Git checkout 时使用 Core 的时间）；该值会记录在 provenance 中。普通构建仍使用当前运行时钟。
+组合构建还会隔离内容缓存，并按稳定顺序生成搜索索引。
 revision 选择、Site schema、toolchain、错误诊断和按原始 SHA pair 重建方式见外部 Site 构建文档。
 Git checkout 不能有暂存、未暂存或未跟踪的改动。
 

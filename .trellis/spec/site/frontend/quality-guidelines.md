@@ -15,6 +15,12 @@ LLM files, optionally submit IndexNow, and optionally submit Google Indexing
 API notifications. Read the script before changing the list; old docs contain
 shortened summaries.
 
+Pagefind uses its installed Node API and ingests HTML in sorted dist-relative
+path order; its filesystem walker otherwise assigns unstable search page numbers.
+Composition keeps Astro's content cache inside the temporary Site workspace and
+derives rendered GitHub Card IDs from logical source paths and directive offsets.
+Card IDs, their script references, and search assets remain byte-significant.
+
 ## Scenario: External Site Build and Composition
 
 ### 1. Scope / Trigger

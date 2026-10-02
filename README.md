@@ -146,6 +146,7 @@ Git checkouts must have no staged, unstaged, or untracked changes. Composed
 build dates use UTC and the later selected input commit time (the Core time
 for a non-Git Site), which provenance records; ordinary builds keep the current
 runtime clock.
+Composed builds also isolate content caches and index search pages in a stable order.
 See the build guide for ref selection, schema/toolchain identity, diagnostics,
 and input-pair rebuild instructions.
 
