@@ -153,7 +153,12 @@ function main(siteArgument, distOutputArgument, sourceDateEpochArgument, require
 		throw new Error("Site dependencies are not installed. Run the repository's pinned pnpm install first.");
 	}
 
-	const temporaryParent = dirname(realpathSync(repoRoot));
+	const coreParent = dirname(realpathSync(repoRoot));
+	const coreParentFromSite = relative(sourceSite, coreParent);
+	const temporaryParent = coreParentFromSite === ""
+		|| (coreParentFromSite !== ".." && !coreParentFromSite.startsWith(`..${sep}`))
+		? dirname(sourceSite)
+		: coreParent;
 	const destinationLock = acquireDestinationLock(destination);
 	let temporaryRoot;
 	let outputStage;

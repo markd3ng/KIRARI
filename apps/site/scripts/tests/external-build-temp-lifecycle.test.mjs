@@ -20,10 +20,10 @@ function makeParent() {
 	return parent;
 }
 
-function makeFixture(parent, repoName = "repo") {
-	const fixtureRoot = join(parent, repoName);
-	const sitePackage = join(fixtureRoot, "apps/site");
+function makeFixture(parent, repoName = "repo", coreInsideSite = false) {
 	const source = join(parent, `${repoName}-external-site`);
+	const fixtureRoot = coreInsideSite ? join(source, ".kirari/core") : join(parent, repoName);
+	const sitePackage = join(fixtureRoot, "apps/site");
 	const bin = join(parent, `${repoName}-bin`);
 	const publisher = join(fixtureRoot, "scripts/build-external-site.mjs");
 	const preload = join(parent, `${repoName}-temp-failpoints.cjs`);
@@ -195,6 +195,29 @@ test("a same-destination contender waits while the publisher owns its temp works
 	}
 	assert.deepEqual(active.exit, { code: 0, signal: null }, `${active.stdout}\n${active.stderr}`);
 	assert.deepEqual(contender?.exit, { code: 0, signal: null }, `${contender?.stdout}\n${contender?.stderr}`);
+	assert.deepEqual(buildTempRoots(fixture), []);
+});
+
+test("a Core submodule nested in Site keeps temporary workspaces outside Site inputs", async () => {
+	const parent = makeParent();
+	const fixture = makeFixture(parent, "nested", true);
+	const ready = join(parent, "nested-build-ready");
+	const release = join(parent, "nested-build-release");
+	const active = startBuild(fixture, {
+		PUBLIC_TEST_BUILD_READY: ready,
+		PUBLIC_TEST_BUILD_RELEASE: release,
+	});
+	try {
+		await waitForFile(ready, active);
+		assert.deepEqual(readdirSync(join(fixture.source, ".kirari")).sort(), ["core"]);
+	} finally {
+		writeFileSync(release, "release");
+		if (active.child.exitCode === null && active.child.signalCode === null) {
+			const exit = await waitForExit(active);
+			if (!exit) active.child.kill("SIGKILL");
+		}
+	}
+	assert.deepEqual(active.exit, { code: 0, signal: null }, `${active.stdout}\n${active.stderr}`);
 	assert.deepEqual(buildTempRoots(fixture), []);
 });
 
