@@ -1,0 +1,45 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { test } from "node:test";
+
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
+const staging = readFileSync(join(repoRoot, ".github/workflows/site-staging.yml"), "utf8");
+const ci = readFileSync(join(repoRoot, ".github/workflows/ci.yml"), "utf8");
+const browserPackage = JSON.parse(readFileSync(join(repoRoot, "scripts/p3-browser/package.json"), "utf8"));
+const browserValidator = readFileSync(join(repoRoot, "scripts/p3-browser/validate.mjs"), "utf8");
+
+test("Site staging is manual, exact-artifact-only, Preview-only, and secret-isolated", () => {
+	assert.match(staging, /^  workflow_dispatch:/m);
+	assert.doesNotMatch(staging, /^  (?:push|pull_request|workflow_run):/m);
+	assert.match(staging, /github\.actor == github\.repository_owner/);
+	assert.match(staging, /GITHUB_ACTOR.*GITHUB_REPOSITORY_OWNER/);
+	assert.match(staging, /APPROVE KIRARI PREVIEW DEPLOYMENT TO kirari-test/);
+	assert.match(staging, /environment:\n\s+name: Preview – kirari-test/);
+	assert.match(staging, /actions: read/);
+	assert.match(staging, /contents: read/);
+	assert.match(staging, /persist-credentials: false/);
+	assert.match(staging, /\.event == "workflow_dispatch"/);
+	assert.match(staging, /\.head_branch == "main"/);
+	assert.match(staging, /\.digest == \$digest/);
+	assert.match(staging, /sha256sum .*site-package\.zip/);
+	assert.match(staging, /any\(part in \("", "\.", "\.\."\) for part in parts\)/);
+	assert.match(staging, /if path_name in seen/);
+	assert.match(staging, /verify-site-package\.mjs/);
+	assert.match(staging, /node_modules\/\.bin\/vercel" deploy[\s\S]*--prebuilt[\s\S]*--target=preview/);
+	assert.equal(browserPackage.devDependencies.vercel, "56.3.2");
+	assert.equal(browserPackage.devDependencies.playwright, "1.62.1");
+	assert.doesNotMatch(staging, /--prod|vercel promote|vercel alias|workflow_run:/);
+	assert.match(staging, /VERCEL_AUTOMATION_BYPASS_SECRET/);
+	assert.match(staging, /vars\.VERCEL_ORG_ID/);
+	assert.match(staging, /vars\.VERCEL_PROJECT_ID/);
+	assert.doesNotMatch(staging, /secrets\.VERCEL_(?:ORG|PROJECT)_ID/);
+	assert.match(staging, /uses: actions\/checkout@[a-f0-9]{40}/);
+	assert.match(staging, /uses: actions\/setup-node@[a-f0-9]{40}/);
+	assert.doesNotMatch(ci, /VERCEL_TOKEN|VERCEL_AUTOMATION_BYPASS_SECRET/);
+	assert.match(ci, /scripts\/tests\/composed-build\.test\.mjs/);
+	assert.match(ci, /build-fixtures\.mjs/);
+	assert.match(ci, /npm audit --prefix scripts\/p3-browser/);
+	assert.match(browserValidator, /requireNoindex\(response, route\.path\)/);
+});

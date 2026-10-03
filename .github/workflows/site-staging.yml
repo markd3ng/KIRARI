@@ -1,0 +1,290 @@
+name: P3 Site Preview Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: Successful CI workflow_dispatch run on main that produced the Site package
+        required: true
+        type: string
+      site_package_artifact_id:
+        description: Exact GitHub artifact ID of kirari-site-package
+        required: true
+        type: string
+      site_package_archive_digest:
+        description: Exact GitHub artifact SHA-256 digest (sha256:...)
+        required: true
+        type: string
+      owner_authorization:
+        description: Type the exact approval phrase for this one Preview deployment
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: kirari-p3-site-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy-and-validate:
+    if: github.ref == 'refs/heads/main' && github.actor == github.repository_owner
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment:
+      name: Preview – kirari-test
+    permissions:
+      actions: read
+      contents: read
+    env:
+      SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+      PACKAGE_ARTIFACT_ID: ${{ inputs.site_package_artifact_id }}
+      PACKAGE_ARCHIVE_DIGEST: ${{ inputs.site_package_archive_digest }}
+      OWNER_AUTHORIZATION: ${{ inputs.owner_authorization }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: main
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+
+      - name: Check explicit one-time authorization
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REF" == "refs/heads/main" ]] || { echo 'Staging workflow must run from main' >&2; exit 1; }
+          [[ "$GITHUB_ACTOR" == "$GITHUB_REPOSITORY_OWNER" ]] || { echo 'Only the repository owner may authorize a staging deployment' >&2; exit 1; }
+          [[ "$OWNER_AUTHORIZATION" == 'APPROVE KIRARI PREVIEW DEPLOYMENT TO kirari-test' ]] || { echo 'The required target-specific owner authorization phrase is missing' >&2; exit 1; }
+          [[ "$SOURCE_RUN_ID" =~ ^[0-9]+$ && "$PACKAGE_ARTIFACT_ID" =~ ^[0-9]+$ ]] || { echo 'Run and artifact IDs must be numeric' >&2; exit 1; }
+          [[ "$PACKAGE_ARCHIVE_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo 'Artifact digest must be a SHA-256 digest' >&2; exit 1; }
+
+      - name: Verify trusted successful source CI run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID" > "$RUNNER_TEMP/source-run.json"
+          jq -e '
+            .event == "workflow_dispatch" and
+            .head_branch == "main" and
+            .status == "completed" and
+            .conclusion == "success" and
+            .path == ".github/workflows/ci.yml"
+          ' "$RUNNER_TEMP/source-run.json" > /dev/null
+          echo "source_run_sha=$(jq -r .head_sha "$RUNNER_TEMP/source-run.json")" >> "$GITHUB_OUTPUT"
+          echo "source_run_attempt=$(jq -r .run_attempt "$RUNNER_TEMP/source-run.json")" >> "$GITHUB_OUTPUT"
+        id: source_run
+
+      - name: Verify and download exact immutable Site package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          attempt="$(jq -r .run_attempt "$RUNNER_TEMP/source-run.json")"
+          expected_name="kirari-site-package-${SOURCE_RUN_ID}-${attempt}"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$PACKAGE_ARTIFACT_ID" > "$RUNNER_TEMP/package-artifact.json"
+          jq -e --arg id "$PACKAGE_ARTIFACT_ID" --arg digest "$PACKAGE_ARCHIVE_DIGEST" --arg name "$expected_name" --arg run "$SOURCE_RUN_ID" '
+            .id == ($id | tonumber) and
+            .name == $name and
+            .digest == $digest and
+            .expired == false and
+            .workflow_run.id == ($run | tonumber)
+          ' "$RUNNER_TEMP/package-artifact.json" > /dev/null
+
+          curl --fail --location --silent --show-error \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'Accept: application/vnd.github+json' \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$PACKAGE_ARTIFACT_ID/zip" \
+            --output "$RUNNER_TEMP/site-package.zip"
+          actual_digest="sha256:$(sha256sum "$RUNNER_TEMP/site-package.zip" | cut -d ' ' -f 1)"
+          [[ "$actual_digest" == "$PACKAGE_ARCHIVE_DIGEST" ]] || { echo 'Downloaded package archive digest mismatch' >&2; exit 1; }
+
+          mkdir -p "$RUNNER_TEMP/site-package"
+          python3 - "$RUNNER_TEMP/site-package.zip" "$RUNNER_TEMP/site-package" <<'PY'
+          import os, shutil, stat, sys, zipfile
+          archive, root = sys.argv[1:]
+          root = os.path.realpath(root)
+          seen = set()
+          with zipfile.ZipFile(archive) as package:
+              for info in package.infolist():
+                  name = info.filename
+                  is_directory = info.is_dir()
+                  path_name = name[:-1] if is_directory and name.endswith("/") else name
+                  parts = path_name.split("/")
+                  if not name or name.startswith("/") or "\\" in name or any(part in ("", ".", "..") for part in parts):
+                      raise SystemExit(f"unsafe artifact path: {name!r}")
+                  mode = stat.S_IFMT(info.external_attr >> 16)
+                  expected_mode = stat.S_IFDIR if is_directory else stat.S_IFREG
+                  if mode not in (0, expected_mode):
+                      raise SystemExit(f"unsupported artifact file type: {name!r}")
+                  if path_name in seen:
+                      raise SystemExit(f"duplicate artifact path: {name!r}")
+                  seen.add(path_name)
+                  destination = os.path.realpath(os.path.join(root, *parts))
+                  if os.path.commonpath((root, destination)) != root:
+                      raise SystemExit(f"artifact path escapes extraction root: {name!r}")
+                  if is_directory:
+                      os.makedirs(destination, exist_ok=True)
+                  else:
+                      os.makedirs(os.path.dirname(destination), exist_ok=True)
+                      with package.open(info) as source, open(destination, "xb") as target:
+                          shutil.copyfileobj(source, target)
+          PY
+
+          node scripts/verify-site-package.mjs "$RUNNER_TEMP/site-package"
+          manifest="$RUNNER_TEMP/site-package/site-package-manifest.json"
+          source_id="$(jq -r .upstream_github_artifact.id "$manifest")"
+          source_digest="$(jq -r .upstream_github_artifact.digest "$manifest")"
+          source_name="$(jq -r .upstream_github_artifact.name "$manifest")"
+          [[ "$(jq -r .upstream_github_artifact.run_id "$manifest")" == "$SOURCE_RUN_ID" ]] || { echo 'Upstream artifact run ID mismatch' >&2; exit 1; }
+          [[ "$(jq -r .upstream_github_artifact.run_attempt "$manifest")" == "$attempt" ]] || { echo 'Upstream artifact attempt mismatch' >&2; exit 1; }
+          [[ "$source_name" == "kirari-composition-${SOURCE_RUN_ID}-${attempt}" ]] || { echo 'Upstream composition artifact name mismatch' >&2; exit 1; }
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$source_id" > "$RUNNER_TEMP/source-artifact.json"
+          jq -e --arg id "$source_id" --arg digest "$source_digest" --arg name "$source_name" --arg run "$SOURCE_RUN_ID" '
+            .id == ($id | tonumber) and
+            .name == $name and
+            .digest == $digest and
+            .expired == false and
+            .workflow_run.id == ($run | tonumber)
+          ' "$RUNNER_TEMP/source-artifact.json" > /dev/null
+          echo "package_artifact_url=$(jq -r .archive_download_url "$RUNNER_TEMP/package-artifact.json")" >> "$GITHUB_OUTPUT"
+        id: package
+
+      - name: Install and audit Vercel CLI and browser validator
+        run: |
+          set -euo pipefail
+          npm ci --prefix scripts/p3-browser
+          npm audit --prefix scripts/p3-browser --audit-level moderate
+          npx --prefix scripts/p3-browser playwright install --with-deps chromium
+
+      - name: Verify exact nonproduction Vercel project
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -euo pipefail
+          [[ -n "$VERCEL_TOKEN" && -n "$VERCEL_ORG_ID" && -n "$VERCEL_PROJECT_ID" && -n "$VERCEL_AUTOMATION_BYPASS_SECRET" ]] || { echo 'Preview environment is missing Vercel token, team ID, project ID, or Preview protection bypass secret' >&2; exit 1; }
+          curl --fail --silent --show-error --get \
+            --header "Authorization: Bearer $VERCEL_TOKEN" \
+            --data-urlencode "teamId=$VERCEL_ORG_ID" \
+            "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID" \
+            --output "$RUNNER_TEMP/vercel-project.json"
+          jq -e --arg id "$VERCEL_PROJECT_ID" --arg org "$VERCEL_ORG_ID" '
+            .id == $id and .name == "kirari-test" and .accountId == $org
+          ' "$RUNNER_TEMP/vercel-project.json" > /dev/null
+
+      - name: Deploy exact prebuilt artifact to Preview
+        id: deploy
+        working-directory: ${{ runner.temp }}/site-package
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          mkdir -p .vercel
+          node -e 'require("node:fs").writeFileSync(".vercel/project.json", JSON.stringify({ orgId: process.env.VERCEL_ORG_ID, projectId: process.env.VERCEL_PROJECT_ID }) + "\n", { flag: "wx" })'
+          "$GITHUB_WORKSPACE/scripts/p3-browser/node_modules/.bin/vercel" deploy \
+            --prebuilt \
+            --target=preview \
+            --yes \
+            --token "$VERCEL_TOKEN" \
+            > "$RUNNER_TEMP/deployment-url.txt"
+          node --input-type=module - "$RUNNER_TEMP/deployment-url.txt" "$GITHUB_OUTPUT" <<'NODE'
+          import { readFileSync, appendFileSync } from "node:fs";
+          const value = readFileSync(process.argv[2], "utf8").trim();
+          const url = new URL(value.startsWith("http") ? value : `https://${value}`);
+          if (url.protocol !== "https:" || !url.hostname.startsWith("kirari-test-") || !url.hostname.endsWith(".vercel.app") || url.username || url.password) {
+            throw new Error(`Unexpected Preview deployment URL: ${value}`);
+          }
+          appendFileSync(process.argv[3], `url=${url.href}\n`);
+          NODE
+          echo "deployment_url=$(cat "$RUNNER_TEMP/deployment-url.txt")" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify deployment identity and Preview target
+        id: deployment_identity
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          set -euo pipefail
+          deployment_host="${DEPLOYMENT_URL#https://}"
+          curl --fail --silent --show-error --get \
+            --header "Authorization: Bearer $VERCEL_TOKEN" \
+            --data-urlencode "teamId=$VERCEL_ORG_ID" \
+            "https://api.vercel.com/v13/deployments/$deployment_host" \
+            --output "$RUNNER_TEMP/deployment.json"
+          jq -e --arg host "$deployment_host" --arg project "$VERCEL_PROJECT_ID" '
+            (.id | startswith("dpl_")) and
+            .url == $host and
+            .projectId == $project and
+            .readyState == "READY" and
+            .target == null
+          ' "$RUNNER_TEMP/deployment.json" > /dev/null
+          echo "deployment_id=$(jq -r .id "$RUNNER_TEMP/deployment.json")" >> "$GITHUB_OUTPUT"
+          jq '{id,url,target,readyState,projectId,createdAt}' "$RUNNER_TEMP/deployment.json" > "$RUNNER_TEMP/deployment-evidence.json"
+
+      - name: Validate deployed Preview in a real browser
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -euo pipefail
+          node scripts/p3-browser/validate.mjs \
+            --base-url "$DEPLOYMENT_URL" \
+            --manifest "$RUNNER_TEMP/site-package/site-package-manifest.json" \
+            --report "$RUNNER_TEMP/browser-validation.json"
+
+      - name: Write staging evidence record
+        if: always() && steps.deployment_identity.outcome == 'success' && steps.deploy.outcome == 'success' && steps.package.outcome == 'success' && steps.source_run.outcome == 'success'
+        env:
+          SITE_PACKAGE_MANIFEST: ${{ runner.temp }}/site-package/site-package-manifest.json
+          DEPLOYMENT_JSON: ${{ runner.temp }}/deployment-evidence.json
+          BROWSER_REPORT: ${{ runner.temp }}/browser-validation.json
+          STAGING_RECORD: ${{ runner.temp }}/staging-record.json
+          SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+          SOURCE_RUN_SHA: ${{ steps.source_run.outputs.source_run_sha }}
+          PACKAGE_ARTIFACT_ID: ${{ inputs.site_package_artifact_id }}
+          PACKAGE_ARCHIVE_DIGEST: ${{ inputs.site_package_archive_digest }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+        run: node scripts/p3-browser/create-staging-record.mjs
+
+      - name: Upload staging and browser evidence
+        if: always()
+        id: evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: kirari-p3-staging-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/staging-record.json
+            ${{ runner.temp }}/browser-validation.json
+            ${{ runner.temp }}/deployment-evidence.json
+            ${{ runner.temp }}/site-package/site-package-manifest.json
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Add target and evidence links to summary
+        if: always()
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
+          DEPLOYMENT_ID: ${{ steps.deployment_identity.outputs.deployment_id }}
+          RECORD_URL: ${{ steps.evidence.outputs.artifact-url }}
+        run: |
+          {
+            echo '## P3 nonproduction staging evidence'
+            echo "- Target: Vercel project `kirari-test`, Preview"
+            echo "- Deployment: [${DEPLOYMENT_ID:-not-created}](${DEPLOYMENT_URL:-})"
+            echo "- Evidence artifact: ${RECORD_URL:-upload unavailable}"
+            echo '- Production, DNS, indexing, release, and source writeback: none'
+          } >> "$GITHUB_STEP_SUMMARY"
+        id: summary
