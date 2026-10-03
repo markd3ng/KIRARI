@@ -47,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
 
@@ -80,6 +80,7 @@ jobs:
           ' "$RUNNER_TEMP/source-run.json" > /dev/null
           source_run_sha="$(jq -r .head_sha "$RUNNER_TEMP/source-run.json")"
           [[ "$source_run_sha" =~ ^[a-f0-9]{40}$ ]] || { echo 'Source CI run head SHA is invalid' >&2; exit 1; }
+          [[ "$source_run_sha" == "$GITHUB_SHA" ]] || { echo 'Source CI run must use the same main commit as this staging workflow' >&2; exit 1; }
           echo "source_run_sha=$source_run_sha" >> "$GITHUB_OUTPUT"
         id: source_run
 
@@ -286,7 +287,7 @@ jobs:
         run: |
           {
             echo '## P3 nonproduction staging evidence'
-            echo "- Target: Vercel project `kirari-test`, Preview"
+            echo '- Target: Vercel project `kirari-test`, Preview'
             echo "- Deployment: [${DEPLOYMENT_ID:-not-created}](${DEPLOYMENT_URL:-})"
             echo "- Evidence artifact: ${RECORD_URL:-upload unavailable}"
             echo '- Production, DNS, indexing, release, and source writeback: none'

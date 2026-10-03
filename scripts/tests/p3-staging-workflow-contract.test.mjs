@@ -32,6 +32,8 @@ test("Site staging is manual, exact-artifact-only, Preview-only, and secret-isol
 	assert.match(staging, /github\.actor == github\.repository_owner/);
 	assert.match(staging, /github\.triggering_actor == github\.repository_owner/);
 	assert.match(staging, /github\.run_attempt == 1/);
+	assert.match(staging, /ref: \$\{\{ github\.sha \}\}/);
+	assert.match(staging, /source_run_sha.*== "\$GITHUB_SHA"/);
 	assert.match(staging, /GITHUB_ACTOR.*GITHUB_REPOSITORY_OWNER/);
 	assert.match(staging, /GITHUB_TRIGGERING_ACTOR.*GITHUB_RUN_ATTEMPT/);
 	assert.match(staging, /APPROVE KIRARI PREVIEW DEPLOYMENT TO kirari-test/);
@@ -78,6 +80,7 @@ test("Site staging is manual, exact-artifact-only, Preview-only, and secret-isol
 	assert.match(ci, /node "\$GITHUB_WORKSPACE\/scripts\/package-vercel-site\.mjs"/);
 	assert.match(ci, /build-fixtures\.mjs/);
 	assert.match(ci, /npm audit --prefix scripts\/p3-browser/);
+	assert.match(ci, /^    if: github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.repo\.full_name == github\.repository$/m);
 	assert.match(browserValidator, /requireNoindex\(response, route\.path\)/);
 	assert.match(browserValidator, /requestGithubOidcToken\(\)/);
 	assert.match(browserValidator, /VERCEL_TRUSTED_OIDC_TOKEN/);

@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { deploymentFiles, uniqueUploads } from "../deploy-vercel-preview.mjs";
+import { deploymentFiles, request, uniqueUploads } from "../deploy-vercel-preview.mjs";
 import { parseHeaders } from "../package-vercel-site.mjs";
 
 function fixture() {
@@ -55,6 +55,22 @@ test("upload deduplication rejects different files that claim the same digest", 
 		], root), /SHA-1 collision in Vercel output/);
 	} finally {
 		rmSync(root, { recursive: true, force: true });
+	}
+});
+
+test("deployment status requests retry transient API failures", async () => {
+	const originalFetch = globalThis.fetch;
+	let attempts = 0;
+	globalThis.fetch = async () => {
+		attempts += 1;
+		return attempts === 1 ? new Response("temporarily unavailable", { status: 503 }) : new Response('{"readyState":"READY"}');
+	};
+	try {
+		const response = await request("/v13/deployments/dpl_test", {}, true);
+		assert.equal((await response.json()).readyState, "READY");
+		assert.equal(attempts, 2);
+	} finally {
+		globalThis.fetch = originalFetch;
 	}
 });
 

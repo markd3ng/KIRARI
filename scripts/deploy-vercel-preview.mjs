@@ -57,15 +57,28 @@ function teamUrl(path) {
 	return url;
 }
 
-async function request(path, options = {}) {
-	const response = await fetch(teamUrl(path), {
-		...options,
-		redirect: "error",
-		signal: AbortSignal.timeout(120_000),
-		headers: { Authorization: `Bearer ${token}`, ...options.headers },
-	});
-	if (!response.ok) throw new Error(`Vercel API ${options.method ?? "GET"} ${path} returned ${response.status}: ${(await response.text()).slice(0, 2000)}`);
-	return response;
+async function request(path, options = {}, retryTransient = false) {
+	for (let attempt = 0; ; attempt += 1) {
+		let response;
+		try {
+			response = await fetch(teamUrl(path), {
+				...options,
+				redirect: "error",
+				signal: AbortSignal.timeout(120_000),
+				headers: { Authorization: `Bearer ${token}`, ...options.headers },
+			});
+		} catch (error) {
+			if (!retryTransient || attempt === 4) throw error;
+			await pause(250 * 2 ** attempt);
+			continue;
+		}
+		if (response.ok) return response;
+		const message = (await response.text()).slice(0, 2000);
+		if (!retryTransient || (response.status < 500 && response.status !== 429) || attempt === 4) {
+			throw new Error(`Vercel API ${options.method ?? "GET"} ${path} returned ${response.status}: ${message}`);
+		}
+		await pause(250 * 2 ** attempt);
+	}
 }
 
 const pause = (milliseconds) => new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds));
@@ -126,7 +139,7 @@ async function main() {
 		if (["ERROR", "CANCELED"].includes(deployment.readyState)) throw new Error(`Vercel deployment ${deployment.id} ended in ${deployment.readyState}: ${deployment.errorMessage ?? deployment.errorCode ?? "unknown error"}`);
 		if (Date.now() >= deadline) throw new Error(`Vercel deployment ${deployment.id} did not become ready within 20 minutes`);
 		await pause(5000);
-		deployment = await (await request(`/v13/deployments/${encodeURIComponent(created.id)}`)).json();
+		deployment = await (await request(`/v13/deployments/${encodeURIComponent(created.id)}`, {}, true)).json();
 	}
 	if (deployment.projectId !== projectId || deployment.target !== null) throw new Error(`Vercel returned a non-Preview or unexpected-project deployment: ${JSON.stringify({ id: deployment.id, projectId: deployment.projectId, target: deployment.target })}`);
 	const url = new URL(`https://${deployment.url}`);
@@ -143,4 +156,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
 	}
 }
 
-export { deploymentFiles, uniqueUploads };
+export { deploymentFiles, request, uniqueUploads };
