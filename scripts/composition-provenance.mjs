@@ -277,7 +277,7 @@ export function validateProvenanceManifest(manifest, expected) {
 
 function validateArtifactId(value) {
 	if (typeof value !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(value)) {
-		invalid("artifact.id must be a nonempty identifier containing only letters, digits, dots, underscores, or hyphens");
+		invalid("artifact.id must start with a letter or digit and contain only letters, digits, dots, underscores, or hyphens");
 	}
 }
 
