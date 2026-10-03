@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "playwright": "1.62.1",
-    "vercel": "56.3.2"
+    "playwright": "1.62.1"
   }
 }

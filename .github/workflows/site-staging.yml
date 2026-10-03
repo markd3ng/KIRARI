@@ -156,7 +156,7 @@ jobs:
           echo "package_artifact_url=$(jq -r .archive_download_url "$RUNNER_TEMP/package-artifact.json")" >> "$GITHUB_OUTPUT"
         id: package
 
-      - name: Install and audit Vercel CLI and browser validator
+      - name: Install and audit browser validator
         run: |
           set -euo pipefail
           npm ci --prefix scripts/p3-browser
@@ -183,20 +183,14 @@ jobs:
 
       - name: Deploy exact prebuilt artifact to Preview
         id: deploy
-        working-directory: ${{ runner.temp }}/site-package
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
         run: |
           set -euo pipefail
-          mkdir -p .vercel
-          node -e 'require("node:fs").writeFileSync(".vercel/project.json", JSON.stringify({ orgId: process.env.VERCEL_ORG_ID, projectId: process.env.VERCEL_PROJECT_ID }) + "\n", { flag: "wx" })'
-          "$GITHUB_WORKSPACE/scripts/p3-browser/node_modules/.bin/vercel" deploy \
-            --prebuilt \
-            --target=preview \
-            --yes \
-            --token "$VERCEL_TOKEN" \
+          node "$GITHUB_WORKSPACE/scripts/deploy-vercel-preview.mjs" \
+            --site-package "$RUNNER_TEMP/site-package" \
             > "$RUNNER_TEMP/deployment-url.txt"
           node --input-type=module - "$RUNNER_TEMP/deployment-url.txt" "$GITHUB_OUTPUT" <<'NODE'
           import { readFileSync, appendFileSync } from "node:fs";

@@ -9,6 +9,7 @@ const staging = readFileSync(join(repoRoot, ".github/workflows/site-staging.yml"
 const ci = readFileSync(join(repoRoot, ".github/workflows/ci.yml"), "utf8");
 const browserPackage = JSON.parse(readFileSync(join(repoRoot, "scripts/p3-browser/package.json"), "utf8"));
 const browserValidator = readFileSync(join(repoRoot, "scripts/p3-browser/validate.mjs"), "utf8");
+const deployScript = readFileSync(join(repoRoot, "scripts/deploy-vercel-preview.mjs"), "utf8");
 
 test("Site staging is manual, exact-artifact-only, Preview-only, and secret-isolated", () => {
 	assert.match(staging, /^  workflow_dispatch:/m);
@@ -27,8 +28,8 @@ test("Site staging is manual, exact-artifact-only, Preview-only, and secret-isol
 	assert.match(staging, /any\(part in \("", "\.", "\.\."\) for part in parts\)/);
 	assert.match(staging, /if path_name in seen/);
 	assert.match(staging, /verify-site-package\.mjs/);
-	assert.match(staging, /node_modules\/\.bin\/vercel" deploy[\s\S]*--prebuilt[\s\S]*--target=preview/);
-	assert.equal(browserPackage.devDependencies.vercel, "56.3.2");
+	assert.match(staging, /scripts\/deploy-vercel-preview\.mjs[\s\S]*--site-package/);
+	assert.equal(browserPackage.devDependencies.vercel, undefined);
 	assert.equal(browserPackage.devDependencies.playwright, "1.62.1");
 	assert.doesNotMatch(staging, /--prod|vercel promote|vercel alias|workflow_run:/);
 	assert.match(staging, /VERCEL_AUTOMATION_BYPASS_SECRET/);
@@ -42,4 +43,10 @@ test("Site staging is manual, exact-artifact-only, Preview-only, and secret-isol
 	assert.match(ci, /build-fixtures\.mjs/);
 	assert.match(ci, /npm audit --prefix scripts\/p3-browser/);
 	assert.match(browserValidator, /requireNoindex\(response, route\.path\)/);
+	assert.match(deployScript, /"\/v2\/files"/);
+	assert.match(deployScript, /"x-vercel-digest"/);
+	assert.match(deployScript, /"\/v13\/deployments"/);
+	assert.match(deployScript, /source: "cli", files \}/);
+	assert.match(deployScript, /target !== null/);
+	assert.doesNotMatch(deployScript, /target:\s*"production"|"--prod"|vercel promote|vercel alias/);
 });
