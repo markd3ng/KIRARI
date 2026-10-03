@@ -76,16 +76,21 @@ async function main() {
 	const routeResults = [];
 	let browser;
 	let context;
+	let validationComplete = false;
 	try {
 		browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}) });
 		context = await browser.newContext({ serviceWorkers: "block" });
 		const page = await context.newPage();
-		await context.route("**/*", createTrustedRequestHandler({
+		const trustedRequestHandler = createTrustedRequestHandler({
 			deploymentOrigin: origin,
 			oidcToken: VERCEL_TRUSTED_OIDC_TOKEN,
 			onExpectedExternal: (request) => expectedExternalRequests.push(request),
 			onUnexpectedExternal: (request) => externalRequests.push(request),
-		}));
+			onRequestFailure: (request) => {
+				if (!validationComplete) failedRequests.push({ ...request, error: "route fetch failed" });
+			},
+		});
+		await context.route("**/*", trustedRequestHandler);
 		page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
 		page.on("pageerror", (error) => pageErrors.push(error.message));
 		page.on("requestfailed", (request) => {
@@ -153,6 +158,7 @@ async function main() {
 		if (externalRequests.length) throw new Error(`Unexpected external browser calls: ${externalRequests.map((item) => item.url).join(", ")}`);
 		if (consoleErrors.length || pageErrors.length) throw new Error(`Browser console errors: ${consoleErrors.length + pageErrors.length}`);
 
+		validationComplete = true;
 		const report = {
 			result: "PASS",
 			baseUrl: origin,
@@ -168,6 +174,8 @@ async function main() {
 		};
 		writeFileSync(args.get("--report"), `${JSON.stringify(report, null, 2)}\n`);
 		console.log(JSON.stringify(report, null, 2));
+		await page.close().catch(() => {});
+		await trustedRequestHandler.waitForIdle();
 	} catch (error) {
 		const report = {
 			result: "FAIL",

@@ -83,6 +83,7 @@ test("deployment redirect to an allowed external origin drops OIDC and browser c
 	assert.equal(fetches.length, 2);
 	assert.equal(fetches[0].headers[trustedOidcHeader], oidcToken);
 	assert.equal(fetches[0].maxRedirects, 0);
+	assert.equal(fetches[0].timeout, 10_000);
 	assert.equal(fetches[1].url, "https://api.iconify.design/example");
 	assert.equal(Object.keys(fetches[1].headers).some((name) => name.toLowerCase() === trustedOidcHeader), false);
 	assert.equal("authorization" in fetches[1].headers, false);
@@ -110,11 +111,12 @@ test("unexpected external redirects are blocked before the next request", async 
 	assert.equal(unexpected[0].url, "https://attacker.example/collect");
 });
 
-test("request failures cannot include the OIDC token in diagnostics", async () => {
+test("request failures become sanitized browser failures and cannot expose the OIDC token", async () => {
 	const { route } = makeRoute(`${deploymentOrigin}/page`, []);
 	route.fetch = async () => { throw new Error(`failed request header: ${oidcToken}`); };
-	await assert.rejects(
-		createTrustedRequestHandler({ deploymentOrigin, oidcToken })(route),
-		(error) => error.message === "Browser request failed while validating the deployment" && !error.message.includes(oidcToken),
-	);
+	const failures = [];
+	await createTrustedRequestHandler({ deploymentOrigin, oidcToken, onRequestFailure: (request) => failures.push(request) })(route);
+	assert.equal(route.aborted, "failed");
+	assert.equal(failures[0].url, `${deploymentOrigin}/page`);
+	assert.equal(JSON.stringify(failures).includes(oidcToken), false);
 });

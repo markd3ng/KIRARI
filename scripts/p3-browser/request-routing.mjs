@@ -23,8 +23,9 @@ export function headersForRequest(url, requestHeaders, deploymentOrigin, oidcTok
 	return headers;
 }
 
-export function createTrustedRequestHandler({ deploymentOrigin, oidcToken, onExpectedExternal, onUnexpectedExternal }) {
-	return async (route) => {
+export function createTrustedRequestHandler({ deploymentOrigin, oidcToken, onExpectedExternal, onUnexpectedExternal, onRequestFailure }) {
+	const activeRequests = new Set();
+	const handleRequest = async (route) => {
 		const request = route.request();
 		const originalHeaders = await request.allHeaders();
 		const resourceType = request.resourceType();
@@ -39,27 +40,33 @@ export function createTrustedRequestHandler({ deploymentOrigin, oidcToken, onExp
 				if (expectedExternalOrigins.has(requestUrl.origin)) onExpectedExternal?.(observedRequest);
 				else {
 					onUnexpectedExternal?.(observedRequest);
-					await route.abort("blockedbyclient");
+					await route.abort("blockedbyclient").catch(() => {});
 					return;
 				}
 			}
 
 			const headers = headersForRequest(requestUrl.href, originalHeaders, deploymentOrigin, oidcToken);
-			const fetchOptions = { url: requestUrl.href, headers, maxRedirects: 0, method };
+			const fetchOptions = { url: requestUrl.href, headers, maxRedirects: 0, method, timeout: 10_000 };
 			if (postData) fetchOptions.postData = postData;
 			let response;
 			try {
 				response = await route.fetch(fetchOptions);
 			} catch {
-				throw new Error("Browser request failed while validating the deployment");
+				onRequestFailure?.({ url: requestUrl.href, resourceType });
+				await route.abort("failed").catch(() => {});
+				return;
 			}
 			const location = response.headers().location;
 			if (!redirectStatuses.has(response.status()) || !location) {
-				await route.fulfill({ response });
+				await route.fulfill({ response }).catch(() => {});
 				return;
 			}
 
-			if (redirects === maxRedirects) throw new Error("Browser request exceeded the redirect limit");
+			if (redirects === maxRedirects) {
+				onRequestFailure?.({ url: requestUrl.href, resourceType });
+				await route.abort("failed").catch(() => {});
+				return;
+			}
 			requestUrl = new URL(location, requestUrl);
 			if ((response.status() === 303 && method !== "HEAD") || ([301, 302].includes(response.status()) && method === "POST")) {
 				method = "GET";
@@ -70,4 +77,21 @@ export function createTrustedRequestHandler({ deploymentOrigin, oidcToken, onExp
 			}
 		}
 	};
+	const handler = async (route) => {
+		const requestTask = handleRequest(route);
+		activeRequests.add(requestTask);
+		try {
+			await requestTask;
+		} catch {
+			const request = route.request();
+			onRequestFailure?.({ url: request.url(), resourceType: request.resourceType() });
+			await route.abort("failed").catch(() => {});
+		} finally {
+			activeRequests.delete(requestTask);
+		}
+	};
+	handler.waitForIdle = async () => {
+		while (activeRequests.size) await Promise.allSettled([...activeRequests]);
+	};
+	return handler;
 }
