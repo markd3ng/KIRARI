@@ -5,12 +5,8 @@ import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { extname, join, resolve, sep } from "node:path";
 import { chromium } from "playwright";
 import { browserContract } from "./contract.mjs";
-
-const expectedExternalOrigins = new Set([
-	"https://api.iconify.design",
-	"https://api.unisvg.com",
-	"https://api.simplesvg.com",
-]);
+import { requestGithubOidcToken } from "./github-oidc.mjs";
+import { createTrustedRequestHandler, expectedExternalOrigins } from "./request-routing.mjs";
 
 function argumentsMap(args) {
 	const values = new Map();
@@ -21,7 +17,10 @@ function argumentsMap(args) {
 		if (!value || value.startsWith("--")) throw new Error(`Missing value for ${key}`);
 		values.set(key, value);
 	}
-	if (!values.has("--report") || (!values.has("--base-url") && !values.has("--dist-root"))) {
+	const hasBaseUrl = values.has("--base-url");
+	const hasDistRoot = values.has("--dist-root");
+	const hasManifest = values.has("--manifest");
+	if (!values.has("--report") || hasBaseUrl === hasDistRoot || (hasBaseUrl && !hasManifest) || (hasDistRoot && hasManifest)) {
 		throw new Error("Usage: validate.mjs --report <file> (--base-url <url> --manifest <file> | --dist-root <dir>)");
 	}
 	return values;
@@ -64,8 +63,9 @@ async function main() {
 	const contract = manifest?.browser_contract ?? browserContract(distRoot);
 	const local = distRoot ? await serveStatic(distRoot) : undefined;
 	const baseUrl = new URL(args.get("--base-url") ?? local.url);
-	if (!/^https?:$/.test(baseUrl.protocol) || baseUrl.username || baseUrl.password || baseUrl.search || baseUrl.hash) throw new Error("Base URL must be a plain HTTP(S) origin or path");
+	if (!/^https?:$/.test(baseUrl.protocol) || baseUrl.username || baseUrl.password || baseUrl.pathname !== "/" || baseUrl.search || baseUrl.hash) throw new Error("Base URL must be a plain HTTP(S) origin");
 	const origin = baseUrl.origin;
+	const VERCEL_TRUSTED_OIDC_TOKEN = distRoot ? undefined : await requestGithubOidcToken();
 	const consoleErrors = [];
 	const pageErrors = [];
 	const failedRequests = [];
@@ -78,28 +78,14 @@ async function main() {
 	let context;
 	try {
 		browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}) });
-		context = await browser.newContext({
-			serviceWorkers: "block",
-			...(process.env.VERCEL_AUTOMATION_BYPASS_SECRET ? {
-				extraHTTPHeaders: { "x-vercel-protection-bypass": process.env.VERCEL_AUTOMATION_BYPASS_SECRET },
-			} : {}),
-		});
+		context = await browser.newContext({ serviceWorkers: "block" });
 		const page = await context.newPage();
-		await context.route("**/*", async (route) => {
-			const requestUrl = new URL(route.request().url());
-			if (requestUrl.origin !== origin) {
-				const request = { url: requestUrl.href, resourceType: route.request().resourceType() };
-				if (expectedExternalOrigins.has(requestUrl.origin)) {
-					expectedExternalRequests.push(request);
-					await route.continue();
-					return;
-				}
-				externalRequests.push(request);
-				await route.abort("blockedbyclient");
-				return;
-			}
-			await route.continue();
-		});
+		await context.route("**/*", createTrustedRequestHandler({
+			deploymentOrigin: origin,
+			oidcToken: VERCEL_TRUSTED_OIDC_TOKEN,
+			onExpectedExternal: (request) => expectedExternalRequests.push(request),
+			onUnexpectedExternal: (request) => externalRequests.push(request),
+		}));
 		page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
 		page.on("pageerror", (error) => pageErrors.push(error.message));
 		page.on("requestfailed", (request) => {

@@ -3,7 +3,7 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join, relative, resolve, sep } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { digestArtifactTree, validateProvenanceManifest } from "./composition-provenance.mjs";
 import { browserContract } from "./p3-browser/contract.mjs";
 
@@ -61,12 +61,12 @@ function globSource(pattern) {
 	return "^" + pattern.split("*").map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("(.*)") + "$";
 }
 
-function parseHeaders(file) {
+export function parseHeaders(file) {
 	if (!existsSync(file)) return [];
 	const groups = [];
 	let current;
 	for (const [index, raw] of readFileSync(file, "utf8").split(/\r?\n/).entries()) {
-		if (!raw.trim()) continue;
+		if (!raw.trim() || raw.trimStart().startsWith("#")) continue;
 		if (!/^\s/.test(raw)) {
 			current = { src: globSource(raw.trim()), headers: {}, continue: true };
 			groups.push(current);
@@ -144,9 +144,11 @@ function main() {
 	console.log(`[site-package] Wrote immutable Vercel package to ${output} (${outputDigest})`);
 }
 
-try {
-	main();
-} catch (error) {
-	console.error(`[site-package] ERROR ${error.message}`);
-	process.exitCode = 1;
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+	try {
+		main();
+	} catch (error) {
+		console.error(`[site-package] ERROR ${error.message}`);
+		process.exitCode = 1;
+	}
 }

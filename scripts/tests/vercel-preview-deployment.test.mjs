@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { deploymentFiles, uniqueUploads } from "../deploy-vercel-preview.mjs";
+import { parseHeaders } from "../package-vercel-site.mjs";
 
 function fixture() {
 	const root = mkdtempSync(join(tmpdir(), "kirari-vercel-preview-"));
@@ -52,6 +53,21 @@ test("upload deduplication rejects different files that claim the same digest", 
 			{ file: ".vercel/output/static/index.html", sha: "forced-collision", size: firstBytes.length },
 			{ file: ".vercel/output/static/other.html", sha: "forced-collision", size: firstBytes.length },
 		], root), /SHA-1 collision in Vercel output/);
+	} finally {
+		rmSync(root, { recursive: true, force: true });
+	}
+});
+
+test("Build Output header parsing ignores comments outside and inside groups", () => {
+	const root = mkdtempSync(join(tmpdir(), "kirari-vercel-headers-"));
+	try {
+		const headers = join(root, "_headers");
+		writeFileSync(headers, "# global note\n/assets/*\n  Cache-Control: public, max-age=3600\n  # inline note\n\n# another note\n");
+		assert.deepEqual(parseHeaders(headers), [{
+			src: "^/assets/(.*)$",
+			headers: { "Cache-Control": "public, max-age=3600" },
+			continue: true,
+		}]);
 	} finally {
 		rmSync(root, { recursive: true, force: true });
 	}

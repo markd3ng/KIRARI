@@ -30,7 +30,7 @@ concurrency:
 
 jobs:
   deploy-and-validate:
-    if: github.ref == 'refs/heads/main' && github.actor == github.repository_owner
+    if: github.ref == 'refs/heads/main' && github.actor == github.repository_owner && github.triggering_actor == github.repository_owner && github.run_attempt == 1
     runs-on: ubuntu-latest
     timeout-minutes: 35
     environment:
@@ -38,6 +38,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      id-token: write
     env:
       SOURCE_RUN_ID: ${{ inputs.source_run_id }}
       PACKAGE_ARTIFACT_ID: ${{ inputs.site_package_artifact_id }}
@@ -59,6 +60,7 @@ jobs:
           set -euo pipefail
           [[ "$GITHUB_REF" == "refs/heads/main" ]] || { echo 'Staging workflow must run from main' >&2; exit 1; }
           [[ "$GITHUB_ACTOR" == "$GITHUB_REPOSITORY_OWNER" ]] || { echo 'Only the repository owner may authorize a staging deployment' >&2; exit 1; }
+          [[ "$GITHUB_TRIGGERING_ACTOR" == "$GITHUB_REPOSITORY_OWNER" && "$GITHUB_RUN_ATTEMPT" == '1' ]] || { echo 'Staging authorization cannot be replayed by a rerun' >&2; exit 1; }
           [[ "$OWNER_AUTHORIZATION" == 'APPROVE KIRARI PREVIEW DEPLOYMENT TO kirari-test' ]] || { echo 'The required target-specific owner authorization phrase is missing' >&2; exit 1; }
           [[ "$SOURCE_RUN_ID" =~ ^[0-9]+$ && "$PACKAGE_ARTIFACT_ID" =~ ^[0-9]+$ ]] || { echo 'Run and artifact IDs must be numeric' >&2; exit 1; }
           [[ "$PACKAGE_ARCHIVE_DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo 'Artifact digest must be a SHA-256 digest' >&2; exit 1; }
@@ -76,13 +78,15 @@ jobs:
             .conclusion == "success" and
             .path == ".github/workflows/ci.yml"
           ' "$RUNNER_TEMP/source-run.json" > /dev/null
-          echo "source_run_sha=$(jq -r .head_sha "$RUNNER_TEMP/source-run.json")" >> "$GITHUB_OUTPUT"
-          echo "source_run_attempt=$(jq -r .run_attempt "$RUNNER_TEMP/source-run.json")" >> "$GITHUB_OUTPUT"
+          source_run_sha="$(jq -r .head_sha "$RUNNER_TEMP/source-run.json")"
+          [[ "$source_run_sha" =~ ^[a-f0-9]{40}$ ]] || { echo 'Source CI run head SHA is invalid' >&2; exit 1; }
+          echo "source_run_sha=$source_run_sha" >> "$GITHUB_OUTPUT"
         id: source_run
 
       - name: Verify and download exact immutable Site package
         env:
           GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_SHA: ${{ steps.source_run.outputs.source_run_sha }}
         run: |
           set -euo pipefail
           attempt="$(jq -r .run_attempt "$RUNNER_TEMP/source-run.json")"
@@ -137,7 +141,7 @@ jobs:
                           shutil.copyfileobj(source, target)
           PY
 
-          node scripts/verify-site-package.mjs "$RUNNER_TEMP/site-package"
+          node scripts/verify-site-package.mjs "$RUNNER_TEMP/site-package" kirari-test "$SOURCE_RUN_SHA"
           manifest="$RUNNER_TEMP/site-package/site-package-manifest.json"
           source_id="$(jq -r .upstream_github_artifact.id "$manifest")"
           source_digest="$(jq -r .upstream_github_artifact.digest "$manifest")"
@@ -168,10 +172,9 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
           set -euo pipefail
-          [[ -n "$VERCEL_TOKEN" && -n "$VERCEL_ORG_ID" && -n "$VERCEL_PROJECT_ID" && -n "$VERCEL_AUTOMATION_BYPASS_SECRET" ]] || { echo 'Preview environment is missing Vercel token, team ID, project ID, or Preview protection bypass secret' >&2; exit 1; }
+          [[ -n "$VERCEL_TOKEN" && -n "$VERCEL_ORG_ID" && -n "$VERCEL_PROJECT_ID" ]] || { echo 'Preview environment is missing Vercel token, team ID, or project ID' >&2; exit 1; }
           curl --fail --silent --show-error --get \
             --header "Authorization: Bearer $VERCEL_TOKEN" \
             --data-urlencode "teamId=$VERCEL_ORG_ID" \
@@ -196,10 +199,10 @@ jobs:
           import { readFileSync, appendFileSync } from "node:fs";
           const value = readFileSync(process.argv[2], "utf8").trim();
           const url = new URL(value.startsWith("http") ? value : `https://${value}`);
-          if (url.protocol !== "https:" || !url.hostname.startsWith("kirari-test-") || !url.hostname.endsWith(".vercel.app") || url.username || url.password) {
+          if (url.protocol !== "https:" || !url.hostname.startsWith("kirari-test-") || !url.hostname.endsWith(".vercel.app") || url.username || url.password || url.port || url.pathname !== "/" || url.search || url.hash) {
             throw new Error(`Unexpected Preview deployment URL: ${value}`);
           }
-          appendFileSync(process.argv[3], `url=${url.href}\n`);
+          appendFileSync(process.argv[3], `url=${url.origin}\nhost=${url.hostname}\n`);
           NODE
           echo "deployment_url=$(cat "$RUNNER_TEMP/deployment-url.txt")" >> "$GITHUB_STEP_SUMMARY"
 
@@ -209,29 +212,36 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
-          DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
+          DEPLOYMENT_HOST: ${{ steps.deploy.outputs.host }}
         run: |
           set -euo pipefail
-          deployment_host="${DEPLOYMENT_URL#https://}"
-          curl --fail --silent --show-error --get \
-            --header "Authorization: Bearer $VERCEL_TOKEN" \
-            --data-urlencode "teamId=$VERCEL_ORG_ID" \
-            "https://api.vercel.com/v13/deployments/$deployment_host" \
-            --output "$RUNNER_TEMP/deployment.json"
-          jq -e --arg host "$deployment_host" --arg project "$VERCEL_PROJECT_ID" '
-            (.id | startswith("dpl_")) and
-            .url == $host and
-            .projectId == $project and
-            .readyState == "READY" and
-            .target == null
-          ' "$RUNNER_TEMP/deployment.json" > /dev/null
+          verified=false
+          for attempt in {1..10}; do
+            if curl --fail --silent --show-error --get \
+              --header "Authorization: Bearer $VERCEL_TOKEN" \
+              --data-urlencode "teamId=$VERCEL_ORG_ID" \
+              "https://api.vercel.com/v13/deployments/$DEPLOYMENT_HOST" \
+              --output "$RUNNER_TEMP/deployment.json" && \
+              jq -e --arg host "$DEPLOYMENT_HOST" --arg project "$VERCEL_PROJECT_ID" '
+                (.id | startswith("dpl_")) and
+                .url == $host and
+                .projectId == $project and
+                .readyState == "READY" and
+                .target == null
+              ' "$RUNNER_TEMP/deployment.json" > /dev/null; then
+              verified=true
+              break
+            fi
+            sleep 5
+          done
+          [[ "$verified" == true ]] || { echo 'Deployment identity did not reach READY in the configured Preview project' >&2; exit 1; }
           echo "deployment_id=$(jq -r .id "$RUNNER_TEMP/deployment.json")" >> "$GITHUB_OUTPUT"
           jq '{id,url,target,readyState,projectId,createdAt}' "$RUNNER_TEMP/deployment.json" > "$RUNNER_TEMP/deployment-evidence.json"
 
       - name: Validate deployed Preview in a real browser
+        id: browser_validation
         env:
           DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
-          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
           set -euo pipefail
           node scripts/p3-browser/validate.mjs \
@@ -240,7 +250,7 @@ jobs:
             --report "$RUNNER_TEMP/browser-validation.json"
 
       - name: Write staging evidence record
-        if: always() && steps.deployment_identity.outcome == 'success' && steps.deploy.outcome == 'success' && steps.package.outcome == 'success' && steps.source_run.outcome == 'success'
+        if: always() && steps.browser_validation.outcome == 'success' && steps.deployment_identity.outcome == 'success' && steps.deploy.outcome == 'success' && steps.package.outcome == 'success' && steps.source_run.outcome == 'success'
         env:
           SITE_PACKAGE_MANIFEST: ${{ runner.temp }}/site-package/site-package-manifest.json
           DEPLOYMENT_JSON: ${{ runner.temp }}/deployment-evidence.json

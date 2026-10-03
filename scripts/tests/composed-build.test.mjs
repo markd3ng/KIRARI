@@ -126,11 +126,17 @@ test("Vercel package carries the exact composition provenance and route metadata
 		"--source-run-attempt", "1",
 	], { cwd: repoRoot, encoding: "utf8" });
 	assert.equal(packaged.status, 0, `${packaged.stdout}\n${packaged.stderr}`);
-	const verified = spawnSync(process.execPath, [join(repoRoot, "scripts/verify-site-package.mjs"), packageRoot], {
+	const verified = spawnSync(process.execPath, [join(repoRoot, "scripts/verify-site-package.mjs"), packageRoot, "kirari-test", fixture.coreShaA], {
 		cwd: repoRoot,
 		encoding: "utf8",
 	});
 	assert.equal(verified.status, 0, `${verified.stdout}\n${verified.stderr}`);
+	const mismatchedSourceRun = spawnSync(process.execPath, [join(repoRoot, "scripts/verify-site-package.mjs"), packageRoot, "kirari-test", fixture.coreShaB], {
+		cwd: repoRoot,
+		encoding: "utf8",
+	});
+	assert.equal(mismatchedSourceRun.status, 1, `${mismatchedSourceRun.stdout}\n${mismatchedSourceRun.stderr}`);
+	assert.match(`${mismatchedSourceRun.stdout}\n${mismatchedSourceRun.stderr}`, /Core SHA does not match the verified source CI run SHA/);
 	const manifest = JSON.parse(readFileSync(join(packageRoot, "site-package-manifest.json"), "utf8"));
 	assert.equal(manifest.source_artifact.id, sourceArtifactName);
 	assert.equal(manifest.upstream_github_artifact.name, sourceArtifactName);

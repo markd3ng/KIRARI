@@ -37,6 +37,8 @@ test("normal deterministic CI remains intact and composition is limited to manua
 		"scripts/tests/ci-composed-artifact-contract.test.mjs",
 		"scripts/tests/composed-build.test.mjs",
 		"scripts/tests/ocr-review-workflow-contract.test.mjs",
+		"scripts/tests/p3-browser-contract.test.mjs",
+		"scripts/tests/p3-browser-oidc.test.mjs",
 		"scripts/tests/p3-staging-workflow-contract.test.mjs",
 		"scripts/tests/vercel-preview-deployment.test.mjs",
 	]) assert.ok(nodeTests.includes(file), `verify must run ${file}`);
