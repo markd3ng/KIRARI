@@ -8,7 +8,7 @@ const SHA1 = /^[a-f0-9]{40}$/;
 const SHA256 = /^sha256:[a-f0-9]{64}$/;
 const MANIFEST_KEYS = ["schema_version", "core", "site", "site_schema_version", "build", "artifact"];
 const GIT_IDENTITY_KEYS = ["kind", "repository", "requested_ref", "resolved_sha"];
-const ARTIFACT_KEYS = ["format", "digest_algorithm", "scope", "digest"];
+const ARTIFACT_KEYS = ["id", "format", "digest_algorithm", "scope", "digest"];
 const BUILD_KEYS = ["toolchain", "configuration"];
 const TOOLCHAIN_KEYS = ["node", "pnpm", "platform", "architecture", "lockfile"];
 const LOCKFILE_KEYS = ["path", "digest"];
@@ -229,14 +229,15 @@ function utf16OffsetsToBytes(source, offsets) {
 	return result;
 }
 
-export function createProvenanceManifest({ core, site, siteSchemaVersion, toolchain, configuration, artifactDigest } = {}) {
+export function createProvenanceManifest({ core, site, siteSchemaVersion, toolchain, configuration, artifactId, artifactDigest } = {}) {
 	const manifest = {
-		schema_version: 1,
+		schema_version: 2,
 		core: manifestGitIdentity(core, "Core"),
 		site: manifestSiteIdentity(site),
 		site_schema_version: siteSchemaVersion,
 		build: { toolchain: cloneJsonObject(toolchain, "build.toolchain"), configuration: cloneJsonObject(configuration, "build.configuration") },
 		artifact: {
+			id: artifactId,
 			format: ARTIFACT_FORMAT,
 			digest_algorithm: "sha256",
 			scope: ARTIFACT_SCOPE,
@@ -250,7 +251,7 @@ export function createProvenanceManifest({ core, site, siteSchemaVersion, toolch
 export function validateProvenanceManifest(manifest, expected) {
 	assertRecord(manifest, "manifest");
 	assertExactKeys(manifest, MANIFEST_KEYS, "manifest");
-	if (manifest.schema_version !== 1) invalid("schema_version must be 1");
+	if (manifest.schema_version !== 2) invalid("schema_version must be 2");
 	validateGitIdentity(manifest.core, "core");
 	validateSiteIdentity(manifest.site);
 	if (!Number.isInteger(manifest.site_schema_version) || manifest.site_schema_version < 1) {
@@ -262,6 +263,7 @@ export function validateProvenanceManifest(manifest, expected) {
 	validateBuildConfiguration(manifest.build.configuration);
 	assertRecord(manifest.artifact, "artifact");
 	assertExactKeys(manifest.artifact, ARTIFACT_KEYS, "artifact");
+	validateArtifactId(manifest.artifact.id);
 	if (manifest.artifact.format !== ARTIFACT_FORMAT) invalid(`artifact.format must be ${JSON.stringify(ARTIFACT_FORMAT)}`);
 	if (manifest.artifact.digest_algorithm !== "sha256") invalid('artifact.digest_algorithm must be "sha256"');
 	if (manifest.artifact.scope !== ARTIFACT_SCOPE) invalid(`artifact.scope must be ${JSON.stringify(ARTIFACT_SCOPE)}`);
@@ -271,6 +273,12 @@ export function validateProvenanceManifest(manifest, expected) {
 
 	if (expected !== undefined) validateExpected(manifest, expected);
 	return true;
+}
+
+function validateArtifactId(value) {
+	if (typeof value !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(value)) {
+		invalid("artifact.id must start with a letter or digit and contain only letters, digits, dots, underscores, or hyphens");
+	}
 }
 
 function canonicalDirectory(directory, label) {
@@ -483,7 +491,10 @@ function validateExpected(manifest, expected) {
 		}
 	}
 	for (const key of Object.keys(expected)) {
-		if (!["core", "site", "artifactDigest"].includes(key)) invalid(`expected.${key} is not a supported expectation`);
+		if (!["core", "site", "artifactId", "artifactDigest"].includes(key)) invalid(`expected.${key} is not a supported expectation`);
+	}
+	if (expected.artifactId !== undefined && expected.artifactId !== manifest.artifact.id) {
+		throw new Error("Provenance mismatch: artifact.id does not match the expected identity.");
 	}
 	if (expected.artifactDigest !== undefined && expected.artifactDigest !== manifest.artifact.digest) {
 		throw new Error("Provenance mismatch: artifact digest does not match the expected output.");
