@@ -9,6 +9,7 @@ const workflow = readFileSync(join(repoRoot, ".github/workflows/ci.yml"), "utf8"
 const triggers = workflow.match(/^on:\n([\s\S]*?)^permissions:/m)?.[1] ?? "";
 const dispatchInputs = workflow.match(/^  workflow_dispatch:\n([\s\S]*?)^permissions:/m)?.[1] ?? "";
 const verifyJob = workflow.match(/^  verify:\n([\s\S]*?)(?=^  composition:)/m)?.[1] ?? "";
+const verifyCheckout = verifyJob.match(/^      - uses: actions\/checkout@v4\n([\s\S]*?)(?=^      - |$(?![\s\S]))/m)?.[1] ?? "";
 const compositionJob = workflow.match(/^  composition:\n([\s\S]*)$/m)?.[1] ?? "";
 
 function step(name) {
@@ -25,6 +26,7 @@ test("normal deterministic CI remains intact and composition is limited to manua
 	assert.match(dispatchInputs, /^      site_ref:[\s\S]*?        default: config/m);
 	assert.match(dispatchInputs, /^      site_subdirectory:[\s\S]*?        default: site/m);
 	assert.ok(verifyJob, "regular deterministic verify job must remain");
+	assert.match(verifyCheckout, /fetch-depth: 0[\s\S]*?persist-credentials: false/, "verify checkout must retain full history without persisting credentials");
 	assert.doesNotMatch(verifyJob, /^\s+if:/m, "verify must not be event-gated");
 	for (const command of ["pnpm install --frozen-lockfile", "pnpm site:test", "pnpm edge:test", "pnpm build", "pnpm release:check", "pnpm audit --audit-level moderate"]) {
 		assert.ok(verifyJob.includes(command), `verify job must retain ${command}`);
