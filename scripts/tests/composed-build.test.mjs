@@ -22,6 +22,8 @@ test("composition preserves independent refs and rebuilds a historical pair", ()
 
 	assert.equal(aa.core.resolved_sha, fixture.coreShaA);
 	assert.equal(aa.site.resolved_sha, fixture.siteShaA);
+	assert.equal(aa.artifact.id, `kirari-composition-${fixture.coreShaA}-${fixture.siteShaA}`);
+	assert.equal(aaAgain.artifact.id, aa.artifact.id, "same immutable inputs must receive the same local artifact ID");
 	assert.match(aa.build.configuration.inherited_environment_digest, /^sha256:[a-f0-9]{64}$/);
 	const aaClock = {
 		source: "max-input-commit-time",
@@ -93,6 +95,16 @@ test("a content-only Site uses the selected Core commit time for its build clock
 		source_date_epoch: commitTimestamp(fixture.coreA, fixture.coreShaA),
 		timezone: "UTC",
 	});
+});
+
+test("composition records the explicit upload artifact name in provenance", () => {
+	const fixture = makeFixture();
+	const artifactId = "kirari-composition-123456789-2";
+	const artifact = join(fixture.artifacts, "explicit-artifact-id");
+	const result = runComposition(fixture, fixture.coreA, fixture.siteA, fixture.coreShaA, fixture.siteShaA, artifact, {}, artifactId);
+	assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+	const manifest = JSON.parse(readFileSync(join(artifact, "provenance.json"), "utf8"));
+	assert.equal(manifest.artifact.id, artifactId);
 });
 
 test("composition rejects a mismatched pnpm or installed lock state before building", () => {
@@ -223,10 +235,11 @@ function compose(fixture, core, site, coreRef, siteRef, name) {
 	return JSON.parse(readFileSync(join(artifact, "provenance.json"), "utf8"));
 }
 
-function runComposition(fixture, core, site, coreRef, siteRef, artifact, extraEnvironment = {}) {
+function runComposition(fixture, core, site, coreRef, siteRef, artifact, extraEnvironment = {}, artifactId) {
 	const args = [join(core, "build.sh"), "--compose", "--core-ref", coreRef, "--site", site];
 	if (siteRef) args.push("--site-ref", siteRef);
 	args.push("--artifact-dir", artifact);
+	if (artifactId !== undefined) args.push("--artifact-id", artifactId);
 	return spawnSync("bash", args, {
 		cwd: core,
 		encoding: "utf8",

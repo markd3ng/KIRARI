@@ -4,4 +4,4 @@ setup-state = "ready"
 # This Site input exercises the same-repository config CI pilot rooted at site/.
 [core]
 repository = "markd3ng/KIRARI"
-commit = "8cbc0b3935fccd94883a613934d81ee56c1e58b6"
+commit = "fcb1968484b46b3b6b4925c958bdc6d89e4228a0"

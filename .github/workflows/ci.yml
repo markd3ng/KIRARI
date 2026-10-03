@@ -76,6 +76,8 @@ jobs:
       (github.event_name == 'pull_request' && github.base_ref == 'config')
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      ARTIFACT_NAME: kirari-composition-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Select Site revision
         id: site_selection
@@ -243,6 +245,7 @@ jobs:
             --site "$SITE_SOURCE"
             --site-ref "$SITE_REF"
             --artifact-dir "$artifact_dir"
+            --artifact-id "$ARTIFACT_NAME"
           )
           if [[ "$EVENT_NAME" != "workflow_dispatch" ]]; then
             compose_args+=(--require-site-contract-v2)
@@ -253,7 +256,7 @@ jobs:
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: kirari-composition-${{ github.run_id }}-${{ github.run_attempt }}
+          name: ${{ env.ARTIFACT_NAME }}
           path: |
             ${{ runner.temp }}/kirari-composed-artifact/dist
             ${{ runner.temp }}/kirari-composed-artifact/provenance.json
@@ -262,6 +265,7 @@ jobs:
 
       - name: Add artifact details to summary
         env:
+          ARTIFACT_NAME: ${{ env.ARTIFACT_NAME }}
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
           ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
           ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
@@ -270,6 +274,7 @@ jobs:
             '## Composed artifact' \
             '' \
             "- Download: [$ARTIFACT_URL]($ARTIFACT_URL)" \
-            "- Artifact ID: \`$ARTIFACT_ID\`" \
+            "- Provenance/upload name: \`$ARTIFACT_NAME\`" \
+            "- GitHub artifact ID: \`$ARTIFACT_ID\`" \
             "- Uploaded artifact SHA-256: \`$ARTIFACT_DIGEST\`" \
             >> "$GITHUB_STEP_SUMMARY"

@@ -77,12 +77,15 @@ test("composition uses the canonical builder, requires Contract v2 on config eve
 	assert.match(build, /SITE_REF: \$\{\{ steps\.site_selection\.outputs\.ref \}\}/);
 	assert.match(build, /SITE_SOURCE: \$\{\{ steps\.site_contract\.outputs\.source \}\}/);
 	assert.match(build, /compose_args=\([\s\S]*?--core-ref "\$CORE_REF"[\s\S]*?--site "\$SITE_SOURCE"[\s\S]*?--site-ref "\$SITE_REF"[\s\S]*?--artifact-dir "\$artifact_dir"[\s\S]*?\)/);
+	assert.match(compositionJob, /^    env:\n      ARTIFACT_NAME: kirari-composition-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}$/m);
+	assert.match(build, /--artifact-id "\$ARTIFACT_NAME"/);
 	assert.match(build, /if \[\[ "\$EVENT_NAME" != "workflow_dispatch" \]\]; then\n\s+compose_args\+\=\(--require-site-contract-v2\)/);
 	assert.match(build, /\.\/build\.sh --compose "\$\{compose_args\[@\]\}"/);
 	assert.match(compositionJob, /run: pnpm install --frozen-lockfile[\s\S]*?working-directory: core[\s\S]*?run: pnpm composition:test/);
 
 	assert.match(upload, /id: upload/);
 	assert.match(upload, /uses: actions\/upload-artifact@v4/);
+	assert.match(upload, /name: \$\{\{ env\.ARTIFACT_NAME \}\}/);
 	const uploadPaths = upload.match(/path: \|\n((?: {12}.*\n)+)/)?.[1]?.trim().split("\n").map((path) => path.trim());
 	assert.deepEqual(uploadPaths, [
 		"${{ runner.temp }}/kirari-composed-artifact/dist",
@@ -93,6 +96,7 @@ test("composition uses the canonical builder, requires Contract v2 on config eve
 	assert.match(summary, /steps\.upload\.outputs\.artifact-url/);
 	assert.match(summary, /steps\.upload\.outputs\.artifact-id/);
 	assert.match(summary, /steps\.upload\.outputs\.artifact-digest/);
+	assert.match(summary, /Provenance\/upload name:[\s\S]*?GitHub artifact ID:/);
 	assert.match(summary, /GITHUB_STEP_SUMMARY/);
 
 	assert.match(workflow, /^permissions:\n  contents: read$/m);
