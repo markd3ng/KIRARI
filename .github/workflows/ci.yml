@@ -265,6 +265,7 @@ jobs:
 
       - name: Add artifact details to summary
         env:
+          ARTIFACT_NAME: ${{ env.ARTIFACT_NAME }}
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
           ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
           ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
