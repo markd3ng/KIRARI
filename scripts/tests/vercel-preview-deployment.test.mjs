@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { deploymentFiles } from "../deploy-vercel-preview.mjs";
+import { deploymentFiles, uniqueUploads } from "../deploy-vercel-preview.mjs";
 
 function fixture() {
 	const root = mkdtempSync(join(tmpdir(), "kirari-vercel-preview-"));
@@ -36,6 +36,22 @@ test("deployment manifest rejects symlinks in uploaded output", () => {
 	try {
 		symlinkSync(join(output, "static/index.html"), join(output, "static/linked.html"));
 		assert.throws(() => deploymentFiles(root), /Symlink in Vercel output/);
+	} finally {
+		rmSync(root, { recursive: true, force: true });
+	}
+});
+
+test("upload deduplication rejects different files that claim the same digest", () => {
+	const { root, output } = fixture();
+	try {
+		const second = join(output, "static/other.html");
+		writeFileSync(second, "<main>PYTHON</main>");
+		const firstBytes = Buffer.from("<main>KIRARI</main>");
+		assert.equal(firstBytes.length, Buffer.byteLength("<main>PYTHON</main>"));
+		assert.throws(() => uniqueUploads([
+			{ file: ".vercel/output/static/index.html", sha: "forced-collision", size: firstBytes.length },
+			{ file: ".vercel/output/static/other.html", sha: "forced-collision", size: firstBytes.length },
+		], root), /SHA-1 collision in Vercel output/);
 	} finally {
 		rmSync(root, { recursive: true, force: true });
 	}

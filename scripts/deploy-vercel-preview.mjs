@@ -36,6 +36,21 @@ function deploymentFiles(packageRoot) {
 	return files;
 }
 
+function uniqueUploads(files, packageRoot) {
+	const byDigest = new Map();
+	for (const file of files) {
+		const previous = byDigest.get(file.sha);
+		if (previous) {
+			const previousBytes = readFileSync(join(packageRoot, previous.localPath));
+			const currentBytes = readFileSync(join(packageRoot, file.file));
+			if (previous.size !== file.size || !previousBytes.equals(currentBytes)) throw new Error(`SHA-1 collision in Vercel output: ${file.sha}`);
+		} else {
+			byDigest.set(file.sha, { ...file, localPath: file.file });
+		}
+	}
+	return [...byDigest.values()];
+}
+
 function teamUrl(path) {
 	const url = new URL(path, api);
 	url.searchParams.set("teamId", teamId);
@@ -93,15 +108,7 @@ async function main() {
 	const manifest = JSON.parse(readFileSync(join(packageRoot, "site-package-manifest.json"), "utf8"));
 	if (manifest.target?.platform !== "vercel" || manifest.target?.project !== "kirari-test" || manifest.target?.environment !== "preview" || manifest.target?.deploy_mode !== "prebuilt" || manifest.functions_classification !== "STATIC_ONLY_NO_FUNCTIONS_REQUIRED") throw new Error("Site package is not approved for a kirari-test Preview deployment");
 	const files = deploymentFiles(packageRoot);
-	const uploadsByDigest = new Map();
-	for (const file of files) {
-		const localPath = file.file;
-		const previous = uploadsByDigest.get(file.sha);
-		if (previous && previous.size !== file.size) throw new Error(`SHA-1 collision in Vercel output: ${file.sha}`);
-		if (!previous) uploadsByDigest.set(file.sha, { ...file, localPath });
-	}
-
-	const uploads = [...uploadsByDigest.values()];
+	const uploads = uniqueUploads(files, packageRoot);
 	for (let offset = 0; offset < uploads.length; offset += 8) {
 		await Promise.all(uploads.slice(offset, offset + 8).map((file) => upload(file, packageRoot)));
 	}
@@ -136,4 +143,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
 	}
 }
 
-export { deploymentFiles };
+export { deploymentFiles, uniqueUploads };
