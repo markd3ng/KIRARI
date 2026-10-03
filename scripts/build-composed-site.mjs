@@ -28,7 +28,7 @@ function parseArguments(args) {
 			requireSiteContractV2 = true;
 			continue;
 		}
-		if (!["--core-ref", "--site", "--site-ref", "--artifact-dir"].includes(name)) {
+		if (!["--core-ref", "--site", "--site-ref", "--artifact-dir", "--artifact-id"].includes(name)) {
 			throw new Error(`Unknown composition option: ${name}`);
 		}
 		if (values.has(name)) throw new Error(`Composition option was supplied more than once: ${name}`);
@@ -45,6 +45,7 @@ function parseArguments(args) {
 		siteDirectory: resolve(values.get("--site")),
 		siteRef: values.get("--site-ref"),
 		artifactDirectory: resolve(values.get("--artifact-dir")),
+		artifactId: values.get("--artifact-id"),
 		requireSiteContractV2,
 	};
 }
@@ -61,6 +62,8 @@ async function main(args) {
 		stage = "site-resolution";
 		const siteInputPath = options.siteDirectory;
 		const site = resolveSiteInput({ directory: siteInputPath, requestedRef: options.siteRef });
+		const siteIdentity = site.resolved_sha ?? site.content_digest.slice("sha256:".length);
+		const artifactId = options.artifactId ?? `kirari-composition-${core.resolved_sha}-${siteIdentity}`;
 		if (site.kind === "git" && site.checkout_root === core.checkout_root) {
 			throw new Error("Git Site input must be a separate checkout or worktree from the Core checkout.");
 		}
@@ -131,9 +134,10 @@ async function main(args) {
 			siteSchemaVersion: siteContract?.schemaVersion ?? SITE_SCHEMA_VERSION,
 			toolchain,
 			configuration,
+			artifactId,
 			artifactDigest,
 		});
-		validateProvenanceManifest(manifest, { core, site, artifactDigest });
+		validateProvenanceManifest(manifest, { core, site, artifactId, artifactDigest });
 		writeFileSync(join(stagingDirectory, "provenance.json"), `${JSON.stringify(manifest, null, 2)}\n`, { flag: "wx" });
 		const contents = readdirSync(stagingDirectory).sort();
 		if (contents.length !== 2 || contents[0] !== "dist" || contents[1] !== "provenance.json") {
