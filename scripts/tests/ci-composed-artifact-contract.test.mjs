@@ -84,10 +84,13 @@ test("manual selectors and config events resolve exact Site and immutable Core r
 });
 
 test("composition uses the canonical builder, requires Contract v2 on config events, and uploads provenance", () => {
+	const sourceDependencies = step("Install workflow source dependencies");
 	const build = step("Compose selected revisions");
 	const upload = step("Upload composed artifact");
 	const summary = step("Add artifact details to summary");
-	assert.ok(build && upload && summary, "composition must build, upload, and summarize its artifact");
+	assert.ok(sourceDependencies && build && upload && summary, "composition must install workflow source dependencies, build, upload, and summarize its artifact");
+	assert.match(sourceDependencies, /run: pnpm install --frozen-lockfile --filter kirari/);
+	assert.ok(compositionJob.indexOf("- name: Install workflow source dependencies") < compositionJob.indexOf("- name: Package verified Site output for Vercel Preview"));
 	assert.match(build, /working-directory: core/);
 	assert.match(build, /CORE_REF: \$\{\{ steps\.site_contract\.outputs\.core_ref \}\}/);
 	assert.match(build, /SITE_REF: \$\{\{ steps\.site_selection\.outputs\.ref \}\}/);

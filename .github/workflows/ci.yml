@@ -233,6 +233,9 @@ jobs:
           cache: pnpm
           cache-dependency-path: core/pnpm-lock.yaml
 
+      - name: Install workflow source dependencies
+        run: pnpm install --frozen-lockfile --filter kirari
+
       - run: pnpm install --frozen-lockfile
         working-directory: core
 
