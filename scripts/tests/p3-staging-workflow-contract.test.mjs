@@ -72,7 +72,10 @@ test("Site staging is manual, exact-artifact-only, Preview-only, and secret-isol
 	assert.doesNotMatch(browserValidationStep, /VERCEL_TOKEN/);
 	assert.doesNotMatch(staging, /secrets\.VERCEL_(?:ORG|PROJECT)_ID/);
 	assert.match(staging, /uses: actions\/checkout@[a-f0-9]{40}/);
+	assert.match(staging, /uses: pnpm\/action-setup@0c17529a66aca453f9227af23103ed11469b1e47[\s\S]*?version: 9\.14\.4/);
 	assert.match(staging, /uses: actions\/setup-node@[a-f0-9]{40}/);
+	assert.match(staging, /name: Install workflow source dependencies\n        run: pnpm install --frozen-lockfile --filter kirari[\s\S]*?name: Verify trusted successful source CI run/);
+	assert.ok(staging.indexOf("- name: Install workflow source dependencies") < staging.indexOf("node scripts/verify-site-package.mjs"));
 	assert.doesNotMatch(ci, /VERCEL_TOKEN/);
 	assert.doesNotMatch(ci, new RegExp(retiredBypassSecretName));
 	assert.match(ci, /scripts\/tests\/p3-browser-oidc\.test\.mjs/);
