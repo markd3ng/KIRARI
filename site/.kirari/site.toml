@@ -3,4 +3,4 @@ setup-state = "ready"
 
 [core]
 repository = "markd3ng/KIRARI"
-commit = "3213fddf551fdeb31cdf89921b102aaf9ffc5c7e"
+commit = "c79659046cf6ea73ba69e03c3937d904c07ba93b"
