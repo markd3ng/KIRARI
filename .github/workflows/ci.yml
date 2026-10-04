@@ -81,6 +81,13 @@ jobs:
       ARTIFACT_NAME: kirari-composition-${{ github.run_id }}-${{ github.run_attempt }}
       SITE_PACKAGE_ARTIFACT_NAME: kirari-site-package-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
+      - name: Checkout workflow source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
       - name: Select Site revision
         id: site_selection
         env:

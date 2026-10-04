@@ -48,11 +48,14 @@ test("normal deterministic CI remains intact and composition is limited to manua
 });
 
 test("manual selectors and config events resolve exact Site and immutable Core revisions", () => {
+	const workflowCheckout = step("Checkout workflow source");
 	const selectSite = step("Select Site revision");
 	const checkoutSite = step("Checkout Site");
 	const validateSite = step("Validate Site boundary and resolve Core ref");
 	const checkoutCore = step("Checkout Core");
-	assert.ok(selectSite && checkoutSite && validateSite && checkoutCore, "composition must select Site, validate its boundary, and check out both inputs");
+	assert.ok(workflowCheckout && selectSite && checkoutSite && validateSite && checkoutCore, "composition must check out workflow source, select Site, validate its boundary, and check out both inputs");
+	assert.match(workflowCheckout, /uses: actions\/checkout@11bd71901bbe5b1630ceea73d27597364c9af683[\s\S]*?ref: \$\{\{ github\.sha \}\}[\s\S]*?fetch-depth: 1[\s\S]*?persist-credentials: false/);
+	assert.ok(compositionJob.indexOf("- name: Checkout workflow source") < compositionJob.indexOf("- name: Select Site revision"));
 
 	assert.match(selectSite, /site_repository="\$MANUAL_SITE_REPOSITORY"[\s\S]*?site_ref="\$MANUAL_SITE_REF"[\s\S]*?site_subdirectory="\$MANUAL_SITE_SUBDIRECTORY"/);
 	assert.match(selectSite, /site_repository="\$EVENT_REPOSITORY"[\s\S]*?site_ref="\$EVENT_SHA"[\s\S]*?site_subdirectory="site"/);
@@ -74,6 +77,7 @@ test("manual selectors and config events resolve exact Site and immutable Core r
 	assert.match(validateSite, /gitlink_mode" != "160000"[\s\S]*?gitlink_sha" =~ \^\[a-f0-9\]\{40\}\$/);
 	assert.match(validateSite, /core_ref="\$gitlink_sha"/);
 
+	assert.ok(compositionJob.indexOf("- name: Checkout workflow source") < compositionJob.indexOf("- name: Package verified Site output for Vercel Preview"));
 	assert.ok(compositionJob.indexOf("- name: Checkout Site") < compositionJob.indexOf("- name: Validate Site boundary and resolve Core ref"));
 	assert.ok(compositionJob.indexOf("- name: Validate Site boundary and resolve Core ref") < compositionJob.indexOf("- name: Checkout Core"));
 	assert.match(checkoutCore, /uses: actions\/checkout@v4[\s\S]*?repository: \$\{\{ github\.repository \}\}[\s\S]*?ref: \$\{\{ steps\.site_contract\.outputs\.core_ref \}\}[\s\S]*?path: core[\s\S]*?fetch-depth: 0[\s\S]*?persist-credentials: false/);
