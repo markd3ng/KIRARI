@@ -283,7 +283,7 @@ jobs:
           COMPOSED_ARTIFACT: ${{ runner.temp }}/kirari-composed-artifact
           SITE_PACKAGE: ${{ runner.temp }}/kirari-site-package
           SOURCE_ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
-          SOURCE_ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+          SOURCE_ARTIFACT_DIGEST: sha256:${{ steps.upload.outputs.artifact-digest }}
           SOURCE_ARTIFACT_NAME: ${{ env.ARTIFACT_NAME }}
           SOURCE_RUN_ID: ${{ github.run_id }}
           SOURCE_RUN_ATTEMPT: ${{ github.run_attempt }}
