@@ -40,9 +40,9 @@ test("composition preserves independent refs and rebuilds a historical pair", ()
 	assert.equal(ab.site.resolved_sha, fixture.siteShaB);
 	assert.equal(ba.core.resolved_sha, fixture.coreShaB);
 	assert.equal(ba.site.resolved_sha, aa.site.resolved_sha);
-	assert.equal(readFileSync(join(fixture.artifacts, "aa/dist/index.html"), "utf8"), "core-A:site-A\n");
-	assert.equal(readFileSync(join(fixture.artifacts, "ab/dist/index.html"), "utf8"), "core-A:site-B\n");
-	assert.equal(readFileSync(join(fixture.artifacts, "ba/dist/index.html"), "utf8"), "core-B:site-A\n");
+	assert.match(readFileSync(join(fixture.artifacts, "aa/dist/index.html"), "utf8"), /<h1>core-A:site-A<\/h1>/);
+	assert.match(readFileSync(join(fixture.artifacts, "ab/dist/index.html"), "utf8"), /<h1>core-A:site-B<\/h1>/);
+	assert.match(readFileSync(join(fixture.artifacts, "ba/dist/index.html"), "utf8"), /<h1>core-B:site-A<\/h1>/);
 	assert.equal(aa.artifact.digest, aaAgain.artifact.digest, "same input pair must have the same normalized output digest");
 	assert.deepEqual(readdirFixture(join(fixture.artifacts, "aa")), ["dist", "provenance.json"]);
 
@@ -107,6 +107,48 @@ test("composition records the explicit upload artifact name in provenance", () =
 	assert.equal(manifest.artifact.id, artifactId);
 });
 
+test("Vercel package carries the exact composition provenance and route metadata", () => {
+	const fixture = makeFixture();
+	const source = join(fixture.artifacts, "vercel-source");
+	const sourceArtifactName = "kirari-composition-1234567-1";
+	const result = runComposition(fixture, fixture.coreA, fixture.siteA, fixture.coreShaA, fixture.siteShaA, source, {}, sourceArtifactName);
+	assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+	const packageRoot = join(fixture.artifacts, "vercel-package");
+	const packaged = spawnSync(process.execPath, [
+		join(repoRoot, "scripts/package-vercel-site.mjs"),
+		"--input", source,
+		"--output", packageRoot,
+		"--site-root", fixture.siteA,
+		"--source-artifact-id", "1234567",
+		"--source-artifact-digest", `sha256:${"a".repeat(64)}`,
+		"--source-artifact-name", sourceArtifactName,
+		"--source-run-id", "1234567",
+		"--source-run-attempt", "1",
+	], { cwd: repoRoot, encoding: "utf8" });
+	assert.equal(packaged.status, 0, `${packaged.stdout}\n${packaged.stderr}`);
+	const verified = spawnSync(process.execPath, [join(repoRoot, "scripts/verify-site-package.mjs"), packageRoot, "kirari-test", fixture.coreShaA], {
+		cwd: repoRoot,
+		encoding: "utf8",
+	});
+	assert.equal(verified.status, 0, `${verified.stdout}\n${verified.stderr}`);
+	const mismatchedSourceRun = spawnSync(process.execPath, [join(repoRoot, "scripts/verify-site-package.mjs"), packageRoot, "kirari-test", fixture.coreShaB], {
+		cwd: repoRoot,
+		encoding: "utf8",
+	});
+	assert.equal(mismatchedSourceRun.status, 1, `${mismatchedSourceRun.stdout}\n${mismatchedSourceRun.stderr}`);
+	assert.match(`${mismatchedSourceRun.stdout}\n${mismatchedSourceRun.stderr}`, /Core SHA does not match the verified source CI run SHA/);
+	const manifest = JSON.parse(readFileSync(join(packageRoot, "site-package-manifest.json"), "utf8"));
+	assert.equal(manifest.source_artifact.id, sourceArtifactName);
+	assert.equal(manifest.upstream_github_artifact.name, sourceArtifactName);
+	assert.equal(manifest.functions_classification, "STATIC_ONLY_NO_FUNCTIONS_REQUIRED");
+	assert.equal(manifest.browser_contract.routes.some((route) => route.path === "/posts/demo/"), true);
+	const config = JSON.parse(readFileSync(join(packageRoot, ".vercel/output/config.json"), "utf8"));
+	assert.equal(config.version, 3);
+	assert.equal(config.routes.some((route) => route.src === "^/search$" && route.dest === "/search/index.html" && route.status === undefined), true);
+	assert.equal(config.routes.some((route) => route.src === "^/en-US/(.*)$" && route.dest === "/$1" && route.status === 301), true);
+	assert.equal(config.routes.some((route) => route.src === "^/(.*)$" && route.continue === true && route.headers?.["Content-Security-Policy"] === "default-src self"), true);
+});
+
 test("composition rejects a mismatched pnpm or installed lock state before building", () => {
 	const fixture = makeFixture();
 	const wrongPnpmArtifact = join(fixture.artifacts, "wrong-pnpm");
@@ -141,7 +183,12 @@ set -eu
 if [ "\${1:-}" = "--version" ]; then printf '%s\\n' "\${KIRARI_TEST_PNPM_VERSION:-9.14.4}"; exit 0; fi
 if [ "\${1:-}" != "run" ] || [ "\${2:-}" != "build" ]; then exit 2; fi
 mkdir -p dist
-printf '%s:%s\\n' "$(cat core-marker)" "$(cat "$KIRARI_SITE_SOURCE/site-marker")" > dist/index.html
+mkdir -p dist/posts/demo
+printf '<!doctype html><html><head><title>Fixture</title><link rel="stylesheet" href="/styles.css"></head><body><nav><a href="/posts/demo/">Demo</a></nav><h1>%s:%s</h1></body></html>\\n' "$(cat core-marker)" "$(cat "$KIRARI_SITE_SOURCE/site-marker")" > dist/index.html
+printf '<!doctype html><html><head><title>Demo post</title></head><body><h1>Demo post marker</h1></body></html>\\n' > dist/posts/demo/index.html
+printf 'body { color: black; }\\n' > dist/styles.css
+printf '/*\\n  Content-Security-Policy: default-src self\\n\\n/search\\n  Cache-Control: no-store\\n' > dist/_headers
+printf '/search /search/index.html 200\\n/en-US/* /:splat 301\\n' > dist/_redirects
 printf '{"source_date_epoch":"%s","timezone":"%s","deterministic":"%s"}\\n' "$SOURCE_DATE_EPOCH" "$TZ" "$KIRARI_DETERMINISTIC_BUILD_CLOCK" > dist/build-clock.json
 `);
 	chmodSync(join(bin, "pnpm"), 0o755);

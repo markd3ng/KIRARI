@@ -51,7 +51,7 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs
+      - run: node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/p3-browser-oidc.test.mjs scripts/tests/p3-staging-workflow-contract.test.mjs scripts/tests/vercel-preview-deployment.test.mjs
       - run: node apps/site/scripts/materialize-profile.mjs
       - run: pnpm profile:check
       - run: pnpm site:test
@@ -79,6 +79,7 @@ jobs:
     timeout-minutes: 25
     env:
       ARTIFACT_NAME: kirari-composition-${{ github.run_id }}-${{ github.run_attempt }}
+      SITE_PACKAGE_ARTIFACT_NAME: kirari-site-package-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Select Site revision
         id: site_selection
@@ -262,6 +263,40 @@ jobs:
             ${{ runner.temp }}/kirari-composed-artifact/dist
             ${{ runner.temp }}/kirari-composed-artifact/provenance.json
           if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 30
+
+      - name: Package verified Site output for Vercel Preview
+        working-directory: core
+        env:
+          SITE_SOURCE: ${{ steps.site_contract.outputs.source }}
+          COMPOSED_ARTIFACT: ${{ runner.temp }}/kirari-composed-artifact
+          SITE_PACKAGE: ${{ runner.temp }}/kirari-site-package
+          SOURCE_ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          SOURCE_ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+          SOURCE_ARTIFACT_NAME: ${{ env.ARTIFACT_NAME }}
+          SOURCE_RUN_ID: ${{ github.run_id }}
+          SOURCE_RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          node "$GITHUB_WORKSPACE/scripts/package-vercel-site.mjs" \
+            --input "$COMPOSED_ARTIFACT" \
+            --output "$SITE_PACKAGE" \
+            --site-root "$SITE_SOURCE" \
+            --source-artifact-id "$SOURCE_ARTIFACT_ID" \
+            --source-artifact-digest "$SOURCE_ARTIFACT_DIGEST" \
+            --source-artifact-name "$SOURCE_ARTIFACT_NAME" \
+            --source-run-id "$SOURCE_RUN_ID" \
+            --source-run-attempt "$SOURCE_RUN_ATTEMPT"
+
+      - name: Upload immutable Vercel Site package
+        id: site_package_upload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ${{ env.SITE_PACKAGE_ARTIFACT_NAME }}
+          path: ${{ runner.temp }}/kirari-site-package
+          if-no-files-found: error
+          include-hidden-files: true
           retention-days: 30
 
       - name: Add artifact details to summary
@@ -270,6 +305,10 @@ jobs:
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
           ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
           ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+          SITE_PACKAGE_URL: ${{ steps.site_package_upload.outputs.artifact-url }}
+          SITE_PACKAGE_ID: ${{ steps.site_package_upload.outputs.artifact-id }}
+          SITE_PACKAGE_DIGEST: ${{ steps.site_package_upload.outputs.artifact-digest }}
+          SITE_PACKAGE_NAME: ${{ env.SITE_PACKAGE_ARTIFACT_NAME }}
         run: |
           printf '%s\n' \
             '## Composed artifact' \
@@ -278,4 +317,47 @@ jobs:
             "- Provenance/upload name: \`$ARTIFACT_NAME\`" \
             "- GitHub artifact ID: \`$ARTIFACT_ID\`" \
             "- Uploaded artifact SHA-256: \`$ARTIFACT_DIGEST\`" \
+            '' \
+            '## Immutable Vercel Site package' \
+            '' \
+            "- Download: [$SITE_PACKAGE_URL]($SITE_PACKAGE_URL)" \
+            "- Package artifact name: \`$SITE_PACKAGE_NAME\`" \
+            "- GitHub artifact ID: \`$SITE_PACKAGE_ID\`" \
+            "- Uploaded artifact SHA-256: \`$SITE_PACKAGE_DIGEST\`" \
             >> "$GITHUB_STEP_SUMMARY"
+
+  browser-fixtures:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+        with:
+          version: 9.14.4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: npm ci --prefix scripts/p3-browser
+      - run: npm audit --prefix scripts/p3-browser --audit-level moderate
+      - run: npx --prefix scripts/p3-browser playwright install --with-deps chromium
+      - run: node scripts/p3-browser/build-fixtures.mjs "$RUNNER_TEMP/kirari-p3-browser-results"
+
+      - name: Upload fixture browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: kirari-p3-browser-fixtures-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/kirari-p3-browser-results
+          if-no-files-found: warn
+          retention-days: 30

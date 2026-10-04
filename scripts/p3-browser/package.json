@@ -1,0 +1,8 @@
+{
+  "name": "@kirari/p3-browser-validation",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

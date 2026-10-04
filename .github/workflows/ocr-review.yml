@@ -26,6 +26,8 @@ jobs:
           llm_model: ${{ vars.OCR_LLM_MODEL }}
           llm_use_anthropic: 'false'
           llm_protocol: openai
+          llm_extra_body: '{"thinking":{"type":"enabled"}}'
+          llm_reasoning_effort: low
           ocr_version: '1.12.11'
           language: Chinese
           effort: high

@@ -31,7 +31,17 @@ test("normal deterministic CI remains intact and composition is limited to manua
 	for (const command of ["pnpm install --frozen-lockfile", "pnpm site:test", "pnpm edge:test", "pnpm build", "pnpm release:check", "pnpm audit --audit-level moderate"]) {
 		assert.ok(verifyJob.includes(command), `verify job must retain ${command}`);
 	}
-	assert.match(verifyJob, /node --test scripts\/tests\/ci-profile-contract\.test\.mjs scripts\/tests\/ci-composed-artifact-contract\.test\.mjs scripts\/tests\/ocr-review-workflow-contract\.test\.mjs/);
+	const nodeTests = verifyJob.match(/^      - run: node --test (.+)$/m)?.[1]?.split(/\s+/) ?? [];
+	for (const file of [
+		"scripts/tests/ci-profile-contract.test.mjs",
+		"scripts/tests/ci-composed-artifact-contract.test.mjs",
+		"scripts/tests/composed-build.test.mjs",
+		"scripts/tests/ocr-review-workflow-contract.test.mjs",
+		"scripts/tests/p3-browser-contract.test.mjs",
+		"scripts/tests/p3-browser-oidc.test.mjs",
+		"scripts/tests/p3-staging-workflow-contract.test.mjs",
+		"scripts/tests/vercel-preview-deployment.test.mjs",
+	]) assert.ok(nodeTests.includes(file), `verify must run ${file}`);
 	assert.match(compositionJob, /^    if: >-\n([\s\S]*?)^    runs-on:/m);
 	const condition = compositionJob.match(/^    if: >-\n([\s\S]*?)^    runs-on:/m)?.[1]?.replaceAll(/\s+/g, " ").trim();
 	assert.equal(condition, "github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/config') || (github.event_name == 'pull_request' && github.base_ref == 'config')");
