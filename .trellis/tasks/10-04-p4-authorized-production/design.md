@@ -31,3 +31,9 @@ uses `https://example.com` and fails the candidate's canonical policy. Dedicated
 GitHub protection, production credential permission, and exact Production
 Trusted Sources readback are prerequisites, not assumed facts. No settings were
 changed and no production write is authorized.
+
+## Remediation boundary refinements
+
+Canonical input is a separate source branch from accepted Site SHA e739, changing only its explicit site.url to the candidate origin; exact source PR #134 is b1b488ce9491c75718a32cbcf06351d908204358 and retains Core c796. A successful manual CI run on main produces a new package through the unchanged pipeline. Existing P3 source/artifacts remain immutable.
+
+Trusted Sources validation also binds the complete configured trust set: explicit false same-repository CI flag, empty custom project rules, one unambiguous external GitHub provider container and exact existing claims/Production target. Unknown authenticated serialization remains blocked instead of inferring defaults or accepting extra callers. Source correction requires no provider setting mutation. CI records audited local Chromium before an independent tooling failure; the audit still blocks its job/merge and remains before live credential mapping.
