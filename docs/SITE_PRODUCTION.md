@@ -66,6 +66,16 @@ the exact approved HTTPS deployment origin and is never recorded in evidence
 or forwarded to external origins. Public production domains are validated
 without giving external services deployment credentials.
 
+The authenticated project readback must also explicitly report
+`enableVercelCiSameRepository: false` and an empty `trustedSources.projects`
+collection. Added Vercel project rules, customized self-access rules, and
+missing or unrecognized values fail closed. This preserves the platform's
+documented default self-access while refusing additional configured callers.
+Do not infer the stored rules from a connector projection that omits them.
+If the server serializes default self-access as configured rules, retain the
+authenticated readback for review before extending the validator; do not
+guess an accepted rule shape or bypass the check.
+
 ## Upload, validation and promotion
 
 The selected Build Output API v3 files are uploaded as staged Production using
@@ -82,6 +92,11 @@ moderate severity before credentials are mapped. A failed audit blocks merge
 and deployment; do not suppress it with a general dependency exception. Live
 readiness also requires authenticated project readback of the exact Trusted
 Sources shape checked by the runtime. An omitted or unknown field fails closed.
+
+CI runs the audited local Production Chromium fixture before the independent
+deployment-tool install and audit. This retains browser evidence even when the
+tooling gate fails; the failed audit still fails the job and blocks merge.
+The protected Production workflow audits tooling before mapping credentials.
 
 The documented existing-deployment promotion API assigns production traffic
 without rebuilding. Re-read the expected current production state immediately

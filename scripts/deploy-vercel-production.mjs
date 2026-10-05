@@ -82,8 +82,22 @@ function expectedOidc(target) {
 }
 
 function trustedSourcesFromProject(project) {
+	if (Object.hasOwn(project, "trustedSources") && Object.hasOwn(project, "trusted_sources")) {
+		throw new Error("Vercel project Trusted Sources readback is ambiguous");
+	}
 	const trustedSources = project.trustedSources ?? project.trusted_sources;
 	assertRecord(trustedSources, "Vercel project Trusted Sources readback is unavailable");
+	if (trustedSources.enableVercelCiSameRepository !== false) {
+		throw new Error("Vercel Trusted Sources same-repository CI trust must be explicitly disabled");
+	}
+	const projects = trustedSources.projects;
+	if (!projects || typeof projects !== "object" || Object.keys(projects).length !== 0) {
+		throw new Error("Vercel project Trusted Sources must explicitly contain no additional project rules");
+	}
+	const sourceFields = ["externalSources", "external_sources", "oidcProviders", "oidc_providers"];
+	if (sourceFields.filter((key) => Object.hasOwn(trustedSources, key)).length !== 1) {
+		throw new Error("Vercel project Trusted Sources provider readback is ambiguous or unavailable");
+	}
 	if (Array.isArray(trustedSources.externalSources)) return trustedSources.externalSources;
 	if (Array.isArray(trustedSources.external_sources)) return trustedSources.external_sources;
 	const providers = trustedSources.oidcProviders ?? trustedSources.oidc_providers;

@@ -33,6 +33,8 @@ function project(overrides = {}) {
 		name: target.project,
 		accountId: target.team_id,
 		trustedSources: {
+			enableVercelCiSameRepository: false,
+			projects: {},
 			externalSources: [{
 				issuer: "https://token.actions.githubusercontent.com",
 				claims: {
@@ -75,6 +77,38 @@ test("Vercel Trusted Sources reject preview, wildcard, branch and workflow subst
 	const duplicated = project();
 	duplicated.trustedSources.externalSources.push({ ...duplicated.trustedSources.externalSources[0] });
 	assert.throws(() => validateVercelTrustedSources(duplicated, target), /exactly one/);
+});
+
+test("Vercel Trusted Sources reject additional project rules and unknown CI trust", () => {
+	for (const projects of [undefined, null, "", { prj_other: {} }, { [target.project_id]: { from: "preview", to: "production" } }, ["prj_other"]]) {
+		const candidate = project();
+		candidate.trustedSources.projects = projects;
+		assert.throws(() => validateVercelTrustedSources(candidate, target), /additional project rules/);
+	}
+	for (const enabled of [undefined, null, true, "false", 0]) {
+		const candidate = project();
+		candidate.trustedSources.enableVercelCiSameRepository = enabled;
+		assert.throws(() => validateVercelTrustedSources(candidate, target), /CI trust must be explicitly disabled/);
+	}
+	const emptyList = project();
+	emptyList.trustedSources.projects = [];
+	assert.equal(validateVercelTrustedSources(emptyList, target), true);
+});
+
+test("Vercel Trusted Sources reject shadowed provider containers", () => {
+	for (const field of ["external_sources", "oidcProviders", "oidc_providers"]) {
+		const candidate = project();
+		candidate.trustedSources[field] = { "https://attacker.example": {} };
+		assert.throws(() => validateVercelTrustedSources(candidate, target), /ambiguous/);
+	}
+	const duplicated = project();
+	duplicated.trusted_sources = structuredClone(duplicated.trustedSources);
+	assert.throws(() => validateVercelTrustedSources(duplicated, target), /ambiguous/);
+	const documentedContainer = project();
+	const [source] = documentedContainer.trustedSources.externalSources;
+	delete documentedContainer.trustedSources.externalSources;
+	documentedContainer.trustedSources.oidcProviders = { [source.issuer]: [{ claims: source.claims, to: source.to }] };
+	assert.equal(validateVercelTrustedSources(documentedContainer, target), true);
 });
 
 test("deployment identity requires the exact READY Production project, team and URL", () => {

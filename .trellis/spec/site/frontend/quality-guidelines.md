@@ -190,6 +190,10 @@ Update `createVercelConfig`, regenerate `vercel.json`, and verify that only `mai
   and SHA, package ID/archive digest, Core/Site SHAs, team/project, complete
   affected domain set, canonical origin, current deployment and operation.
   Reruns, replay, drift and missing environment protection fail closed.
+- Authenticated Trusted Sources readback must include the exact sole GitHub
+  Production workflow rule, `enableVercelCiSameRepository: false`, and an empty
+  `projects` collection. Additional configured project/self-access rules or
+  unknown fields fail closed; omitted connector fields are not stored-state proof.
 - Reuse P3 artifact/package/browser boundaries. Verify both Site and upstream
   composition archive digests and provenance. Preserve approved package bytes;
   its historical Preview metadata does not authorize the Production target.
