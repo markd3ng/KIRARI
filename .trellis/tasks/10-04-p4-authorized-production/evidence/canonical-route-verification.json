@@ -1,0 +1,12 @@
+{
+  "archive_digest": "sha256:47dcbda5ed9e6ed72a6856af9700fd40b1afeeaa24623871005a515881b0c33c",
+  "actual_package_policy": {
+    "canonicalOrigin": "https://example.com",
+    "canonicalDocuments": 29,
+    "robotsSitemapCount": 1,
+    "robotsFileSha256": "sha256:ae98c82da9ff2cf25fed550222bdab763f631ba2f62ebfd2d455aa1be240468f",
+    "indexable": true
+  },
+  "candidate_target_result": "PRODUCTION_CANONICAL_TARGET_MISMATCH",
+  "production_mutation_performed": false
+}

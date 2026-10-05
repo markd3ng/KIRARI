@@ -1,0 +1,29 @@
+{
+  "id": "p4-authorized-production",
+  "name": "p4-authorized-production",
+  "title": "P4 owner-authorized immutable Site production and rollback",
+  "description": "",
+  "status": "in_progress",
+  "dev_type": "deployment",
+  "scope": "RM-05 / Issue #99",
+  "package": null,
+  "priority": "P1",
+  "creator": "Ian",
+  "assignee": "Ian",
+  "createdAt": "2026-10-04",
+  "completedAt": null,
+  "branch": "codex/p4-authorized-production",
+  "base_branch": "main",
+  "worktree_path": "/Users/ian/.codex/worktrees/p4-production/KIRARI",
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "GitHub Project 1 and #99 are control plane. No real production mutation authorized.",
+  "meta": {
+    "engineering_merge_gate": "BLOCKED_CLI_DEPENDENCY_AUDIT",
+    "production_readiness": "INCOMPLETE"
+  }
+}

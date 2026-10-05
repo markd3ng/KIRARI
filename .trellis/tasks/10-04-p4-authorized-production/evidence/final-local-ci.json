@@ -1,0 +1,133 @@
+{
+  "node": "22.12.0",
+  "commands": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit_code": 0,
+      "seconds": 2.9,
+      "log": "/tmp/kirari-p4-final-0.log"
+    },
+    {
+      "command": "node --test --test-reporter=dot scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/p3-browser-oidc.test.mjs scripts/tests/p3-staging-workflow-contract.test.mjs scripts/tests/vercel-preview-deployment.test.mjs",
+      "exit_code": 0,
+      "seconds": 8.8,
+      "log": "/tmp/kirari-p4-final-1.log"
+    },
+    {
+      "command": "node apps/site/scripts/materialize-profile.mjs",
+      "exit_code": 0,
+      "seconds": 0.1,
+      "log": "/tmp/kirari-p4-final-2.log"
+    },
+    {
+      "command": "pnpm profile:check",
+      "exit_code": 0,
+      "seconds": 0.4,
+      "log": "/tmp/kirari-p4-final-3.log"
+    },
+    {
+      "command": "pnpm site:test",
+      "exit_code": 0,
+      "seconds": 75.9,
+      "log": "/tmp/kirari-p4-final-4.log"
+    },
+    {
+      "command": "pnpm site:contract:test",
+      "exit_code": 0,
+      "seconds": 2.6,
+      "log": "/tmp/kirari-p4-final-5.log"
+    },
+    {
+      "command": "pnpm trellis:check",
+      "exit_code": 0,
+      "seconds": 0.4,
+      "log": "/tmp/kirari-p4-final-6.log"
+    },
+    {
+      "command": "node apps/site/scripts/qa-regression-check.mjs",
+      "exit_code": 0,
+      "seconds": 0.1,
+      "log": "/tmp/kirari-p4-final-7.log"
+    },
+    {
+      "command": "pnpm site:type-check",
+      "exit_code": 0,
+      "seconds": 5.5,
+      "log": "/tmp/kirari-p4-final-8.log"
+    },
+    {
+      "command": "pnpm site:astro-check",
+      "exit_code": 0,
+      "seconds": 8.6,
+      "log": "/tmp/kirari-p4-final-9.log"
+    },
+    {
+      "command": "pnpm edge:type-check",
+      "exit_code": 0,
+      "seconds": 1.1,
+      "log": "/tmp/kirari-p4-final-10.log"
+    },
+    {
+      "command": "pnpm edge:test",
+      "exit_code": 0,
+      "seconds": 0.7,
+      "log": "/tmp/kirari-p4-final-11.log"
+    },
+    {
+      "command": "pnpm edge:deploy:dry",
+      "exit_code": 0,
+      "seconds": 1.9,
+      "log": "/tmp/kirari-p4-final-12.log"
+    },
+    {
+      "command": "node apps/site/scripts/generate-vercel-config.mjs --check",
+      "exit_code": 0,
+      "seconds": 0.1,
+      "log": "/tmp/kirari-p4-final-13.log"
+    },
+    {
+      "command": "pnpm build",
+      "exit_code": 0,
+      "seconds": 13.7,
+      "log": "/tmp/kirari-p4-final-14.log"
+    },
+    {
+      "command": "pnpm release:check",
+      "exit_code": 0,
+      "seconds": 0.4,
+      "log": "/tmp/kirari-p4-final-15.log"
+    },
+    {
+      "command": "pnpm release:version-check",
+      "exit_code": 0,
+      "seconds": 0.3,
+      "log": "/tmp/kirari-p4-final-16.log"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "seconds": 0.0,
+      "log": "/tmp/kirari-p4-final-17.log"
+    }
+  ],
+  "root_audit": {
+    "command": "pnpm audit --audit-level moderate",
+    "exit_code": 0,
+    "low_advisories": 1,
+    "existing_ignored_high_advisories": 1,
+    "existing_exception_issue": "https://github.com/markd3ng/KIRARI/issues/122",
+    "new_exceptions": 0
+  },
+  "production_mutation_performed": false,
+  "p4_tests": {
+    "node": "22.12.0",
+    "passed": 87,
+    "failed": 0,
+    "skipped": 0,
+    "chromium": "LOCAL_SIMULATION_PASS"
+  },
+  "p3_shared_browser_regressions": {
+    "passed": 15,
+    "failed": 0
+  }
+}

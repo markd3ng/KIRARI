@@ -67,6 +67,25 @@ authorization variable to its child process.
 The complete mapping, composition identity, and verification contract is
 documented in [`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md).
 
+## Immutable Site Production
+
+The separate owner-authorized main-only Production workflow consumes retained
+CI Site packages and revalidates their archive digests and composition
+provenance. It uploads exact prebuilt output to staged Production, validates
+identity/content/health, then explicitly promotes the existing deployment.
+The main Git auto-deployment guard remains disabled. A dedicated protected
+GitHub Environment must hold the isolated `VERCEL_PRODUCTION_TOKEN` credential.
+Its environment-only scope requires owner verification before live readiness;
+the workflow cannot attest secret scope with its GitHub token. Production uses
+its own secret namespace and only maps it in the protected operation step.
+One-time exact target/artifact approval, consumed authorization claims,
+main/owner checks and workflow concurrency deny replay and target substitution.
+OIDC validation credentials stay on the approved HTTPS origin; evidence is
+bounded and excludes secret-bearing responses. Rollback requires a verified
+prior successful release record and restores its existing immutable deployment.
+The complete authorization, failure and owner setup contract is in
+[`docs/SITE_PRODUCTION.md`](./docs/SITE_PRODUCTION.md).
+
 ## Search Providers
 
 `search.google.cx` is a public Google Programmable Search Engine ID, not a

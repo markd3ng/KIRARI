@@ -22,6 +22,12 @@ required.
 
 ## Manual Path
 
+For RM-05 external Site production, use the separately reviewed
+[immutable Site Production workflow](./SITE_PRODUCTION.md). It requires exact
+owner approval and consumes a retained CI package. Main Git auto-deployment
+remains disabled. The local source-build example below is a separate owner
+deployment method and does not prove immutable artifact promotion.
+
 ```bash
 pnpm build
 npx vercel --prod

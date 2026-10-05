@@ -1,0 +1,33 @@
+{
+  "mode": "LOCAL_CHROMIUM_SIMULATION",
+  "package_artifact_id": "11297428920",
+  "package_archive_digest": "sha256:47dcbda5ed9e6ed72a6856af9700fd40b1afeeaa24623871005a515881b0c33c",
+  "report": {
+    "result": "PASS",
+    "mode": "production",
+    "phase": "staged",
+    "baseUrl": "https://kirari-main-production-fixture.vercel.app",
+    "canonicalOrigin": "https://example.com",
+    "indexable": true,
+    "canonicalDocuments": 29,
+    "robotsSitemapCount": 1,
+    "routes": 2,
+    "assets": {
+      "required": 18,
+      "loaded": 35
+    },
+    "expectedExternalCalls": 0,
+    "browserConsoleErrors": 0,
+    "pageErrors": 0,
+    "failedBrowserRequests": 0,
+    "badResponses": 0,
+    "unexpectedExternalCalls": 0,
+    "byteEquality": "PASS",
+    "artifactBytesVerified": true,
+    "byteOutputDigest": "sha256:bfd22fe7890399cfa7b353590a60df48ff162d0713519f2c453d90ce8618a1f2",
+    "inventoryDigest": "sha256:b779e49fb693d81f460477e5c2baceeed13310d2ace945237193f1a5802026c1",
+    "fileCount": 315,
+    "totalBytes": 8915636
+  },
+  "production_mutation_performed": false
+}

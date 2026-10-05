@@ -1,0 +1,33 @@
+# Production engineering design
+
+Boundary: production workflow_dispatch from reviewed main invokes small shared Node/Python boundaries. Separate authorization/preflight before the protected production credential job. Bind exact workflow SHA, source run/attempt/SHA, package ID/archive digest, Core/Site SHAs, team/project, complete production domain set, current deployment, operation and prior approved release record into a one-time approval. Deny reruns and reused dispatch authorization.
+
+Immutable package: consume P3 package unchanged; its embedded Preview target is historical packaging metadata, not permission to rewrite output or infer production indexing. Reverify both archives and manifest/tree digests. Production indexing expectations must be derived from actual immutable HTML/robots and target, and incompatible packages fail closed. Select documented Build Output API/no-build production staging then promotion only after identity/output/browser checks, if confirmed by official API docs. Do not mutate Vercel during research.
+
+Rollback: retained successful production workflow evidence is the approval source; exact run/artifact archive digest binds release record to deployment/package/target. Verify live READY identity and output, restore the existing immutable deployment, validate aliases/browser, emit separate truthful result. First release may have no provable prior record: report UNKNOWN rather than bless legacy deployments.
+
+Ownership: A workflow/authorization contract; B shared package/archive verification and immutable deployment helper; C production browser/evidence; MAIN target discovery, release-record/rollback integration, Project/PR/checks. Interfaces are reconciled before integration. Credential responses are minimized before logs/artifacts; no raw project or token data in evidence.
+
+## Threat boundaries
+
+| Threat | Required check |
+| --- | --- |
+| Replay or rerun | Exact short-lived nonce binding; first production attempt; immutable consumed claim; global workflow concurrency |
+| Source substitution or stale selection | Owner-dispatched successful exact CI run/attempt; full SHA; verified main ancestry; current workflow/main SHA re-read before writes |
+| Artifact substitution | Server ID/name/run/SHA/expiry; archive SHA-256; safe extraction; normalized output and upstream byte/provenance equality |
+| Target substitution | Complete target in the approval digest; protected environment; live team/project identity and domain set |
+| Credential leakage | No credentials in preflight; production secret only in protected operation; sanitized evidence; exact-origin OIDC request handling |
+| Preview confusion | Preserve package descriptor; require newly staged READY Production deployment; never promote the existing Preview |
+| Wrong alias assignment | Validate staged bytes/browser before promotion; current aliases re-read; every approved alias checked after promotion |
+| Concurrent changes | Workflow concurrency plus fresh main, metadata, environment, deployment and alias checks before writes |
+| Unverified rollback | Successful first-attempt owner production record from a reviewed main ancestor; exact retained evidence ZIP/record/package fingerprints; live READY identity and byte check |
+| False success after failure | Failed promotion/health remains FAIL; restoration is a separate result; failed restoration remains INCOMPLETE |
+| Indexing side effects | No build, postbuild, indexing endpoint or notification command in the production path; browser policy blocks unapproved origins |
+
+Discovery found `kirari-main` as the current production candidate, with three
+production aliases pointing to a legacy Git deployment. Its artifact provenance
+is UNKNOWN; no approved rollback candidate is inferred. The retained P3 package
+uses `https://example.com` and fails the candidate's canonical policy. Dedicated
+GitHub protection, production credential permission, and exact Production
+Trusted Sources readback are prerequisites, not assumed facts. No settings were
+changed and no production write is authorized.

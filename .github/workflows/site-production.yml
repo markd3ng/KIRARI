@@ -1,0 +1,169 @@
+name: P4 Site Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      approval_binding:
+        description: Exact JSON emitted by production-authorization.mjs propose for this one package, target and operation
+        required: true
+        type: string
+      owner_authorization:
+        description: Exact target-specific approval phrase emitted with the binding
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: kirari-site-production
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main' && github.actor == github.repository_owner && github.triggering_actor == github.repository_owner && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      binding_digest: ${{ steps.claim_prepare.outputs.binding_digest }}
+      claim_artifact_name: ${{ steps.claim_prepare.outputs.claim_artifact_name }}
+      claim_artifact_id: ${{ steps.claim.outputs.artifact-id }}
+      claim_artifact_digest: ${{ steps.claim.outputs.artifact-digest }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+        with:
+          version: 9.14.4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install reviewed source dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Bind and consume owner authorization before package checks
+        id: claim_prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OWNER_AUTHORIZATION: ${{ inputs.owner_authorization }}
+          PRODUCTION_APPROVAL_BINDING_JSON: ${{ inputs.approval_binding }}
+          PRODUCTION_TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          PRODUCTION_WORKFLOW_SHA: ${{ github.workflow_sha }}
+        run: node scripts/p4-production/preflight.mjs claim
+
+      - name: Consume this approval before the protected credential job
+        id: claim
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ steps.claim_prepare.outputs.claim_artifact_name }}
+          path: ${{ runner.temp }}/authorization-claim.json
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Revalidate source, package and environment after claim upload
+        id: preflight
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OWNER_AUTHORIZATION: ${{ inputs.owner_authorization }}
+          PRODUCTION_APPROVAL_BINDING_JSON: ${{ inputs.approval_binding }}
+          PRODUCTION_CLAIM_ARTIFACT_ID: ${{ steps.claim.outputs.artifact-id }}
+          PRODUCTION_CLAIM_DIGEST: ${{ steps.claim.outputs.artifact-digest }}
+          PRODUCTION_TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          PRODUCTION_WORKFLOW_SHA: ${{ github.workflow_sha }}
+        run: node scripts/p4-production/preflight.mjs prepare
+
+  production:
+    needs: prepare
+    if: needs.prepare.result == 'success' && github.ref == 'refs/heads/main' && github.actor == github.repository_owner && github.triggering_actor == github.repository_owner && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment:
+      name: kirari-site-production
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+        with:
+          version: 9.14.4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install reviewed source dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install and audit production browser validator
+        run: |
+          set -euo pipefail
+          npm ci --prefix scripts/p3-browser
+          npm audit --prefix scripts/p3-browser --audit-level moderate
+
+      - name: Install browser runtime
+        run: npx --prefix scripts/p3-browser playwright install --with-deps chromium
+
+      - name: Install pinned Vercel CLI before credentials are mapped
+        run: npm ci --prefix scripts/p4-production/tooling
+
+      - name: Audit pinned Vercel CLI dependencies
+        run: npm audit --prefix scripts/p4-production/tooling --audit-level moderate
+
+      - name: Recheck authorization and consume the exact immutable package
+        id: consume
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OWNER_AUTHORIZATION: ${{ inputs.owner_authorization }}
+          PRODUCTION_APPROVAL_BINDING_JSON: ${{ inputs.approval_binding }}
+          PRODUCTION_CLAIM_ARTIFACT_ID: ${{ needs.prepare.outputs.claim_artifact_id }}
+          PRODUCTION_CLAIM_DIGEST: ${{ needs.prepare.outputs.claim_artifact_digest }}
+          PRODUCTION_TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          PRODUCTION_WORKFLOW_SHA: ${{ github.workflow_sha }}
+        run: node scripts/p4-production/preflight.mjs consume
+
+      - name: Stage, validate and explicitly promote approved Production output
+        id: operation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_PRODUCTION_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_PRODUCTION_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PRODUCTION_PROJECT_ID }}
+          OWNER_AUTHORIZATION: ${{ inputs.owner_authorization }}
+          PRODUCTION_BINDING: ${{ steps.consume.outputs.binding_path }}
+          PRODUCTION_PACKAGE_VERIFICATION: ${{ steps.consume.outputs.package_verification_path }}
+          PRODUCTION_PACKAGE_DIR: ${{ steps.consume.outputs.package_dir }}
+          PRODUCTION_EVIDENCE_DIR: ${{ steps.consume.outputs.evidence_dir }}
+          PRODUCTION_CLAIM_ARTIFACT_ID: ${{ needs.prepare.outputs.claim_artifact_id }}
+          PRODUCTION_CLAIM_DIGEST: ${{ needs.prepare.outputs.claim_artifact_digest }}
+          PRODUCTION_TRIGGERING_ACTOR: ${{ github.triggering_actor }}
+          PRODUCTION_WORKFLOW_SHA: ${{ github.workflow_sha }}
+          VERCEL_CLI_PATH: ${{ github.workspace }}/scripts/p4-production/tooling/node_modules/.bin/vercel
+        run: node scripts/p4-production/run.mjs
+
+      - name: Upload bounded Production evidence and retained immutable package bytes
+        if: always() && steps.consume.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: kirari-p4-production-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/kirari-p4-evidence
+          if-no-files-found: error
+          retention-days: 90

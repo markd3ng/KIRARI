@@ -10,6 +10,11 @@
 > 的 `pnpm build` 平台部署设置仍适用于默认 `packages/site-profile` 流程。完整输入与
 > 信任边界见 [`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md)。
 
+> **外部 Site 生产发布（RM-05）**：使用独立的、仅仓库所有者可手动授权的
+> [不可变制品生产流程](./docs/SITE_PRODUCTION.md)。它重新验证 CI 制品，上传已有
+> 静态输出到 staged Production，验证后再切换生产域名；不会重新构建或发送收录通知。
+> `main` 的 Vercel Git 自动部署保护保持关闭。生产环境、凭据与一次性授权须先验证。
+
 ---
 
 ## 目录

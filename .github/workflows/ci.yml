@@ -52,6 +52,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/p3-browser-oidc.test.mjs scripts/tests/p3-staging-workflow-contract.test.mjs scripts/tests/vercel-preview-deployment.test.mjs
+      - name: Verify production authorization, immutable promotion, validation, and rollback contracts
+        run: node --test scripts/tests/production-authorization.test.mjs scripts/tests/p4-*.test.mjs scripts/tests/site-artifact.test.mjs scripts/tests/vercel-production-artifact.test.mjs
       - run: node apps/site/scripts/materialize-profile.mjs
       - run: pnpm profile:check
       - run: pnpm site:test
@@ -69,6 +71,30 @@ jobs:
       - run: pnpm release:version-check
       - run: pnpm audit --audit-level moderate
       - run: git diff --check
+
+  production-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+        with:
+          version: 9.14.4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+      - run: pnpm install --frozen-lockfile
+      - run: npm ci --prefix scripts/p3-browser
+      - run: npm audit --prefix scripts/p3-browser --audit-level moderate
+      - run: npx --prefix scripts/p3-browser playwright install --with-deps chromium
+      - run: npm ci --prefix scripts/p4-production/tooling
+      - run: npm audit --prefix scripts/p4-production/tooling --audit-level moderate
+      - name: Validate Production routes, assets, navigation, canonicals, robots, and byte equality locally
+        env:
+          REQUIRE_PRODUCTION_BROWSER: 'true'
+        run: node --test scripts/tests/p4-production-browser-fixture.test.mjs
 
   composition:
     if: >-

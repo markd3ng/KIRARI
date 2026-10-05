@@ -79,7 +79,7 @@ export function parseHeaders(file) {
 	return groups;
 }
 
-function parseRedirects(file) {
+export function parseRedirects(file) {
 	if (!existsSync(file)) return [];
 	return readFileSync(file, "utf8").split(/\r?\n/).flatMap((raw, index) => {
 		const line = raw.trim();

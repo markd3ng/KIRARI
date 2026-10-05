@@ -180,3 +180,32 @@ Edit `vercel.json` alone; generation checks will report drift and a later regene
 
 #### Correct
 Update `createVercelConfig`, regenerate `vercel.json`, and verify that only `main` is disabled.
+
+## Scenario: Approved Immutable Site Production (RM-05)
+
+- `.github/workflows/site-production.yml` is a separate manual owner/main
+  workflow. The protected `kirari-site-production` Environment holds isolated
+  credentials only after explicit one-time authorization and immutable claim.
+- A production proposal binds current main/workflow SHA, source CI run/attempt
+  and SHA, package ID/archive digest, Core/Site SHAs, team/project, complete
+  affected domain set, canonical origin, current deployment and operation.
+  Reruns, replay, drift and missing environment protection fail closed.
+- Reuse P3 artifact/package/browser boundaries. Verify both Site and upstream
+  composition archive digests and provenance. Preserve approved package bytes;
+  its historical Preview metadata does not authorize the Production target.
+- Stage exact Build Output API v3 output as Production with documented prebuilt
+  skip-domain behavior; validate READY identity, output bytes and browser before
+  explicitly pointing traffic to the existing deployment without rebuilding.
+- Production canonical/robots expectations derive from immutable output and
+  the approved canonical origin. A mismatched canonical or unintended noindex
+  cannot become a PASS release record. P4 makes zero indexing notifications.
+- Rollback requires a retained successful owner/main production workflow
+  evidence archive, exact record digest and approved deployment identity.
+  Restore that existing deployment, validate aliases and health, and never
+  label a simulation or incomplete restoration as live PASS.
+- Run focused production authorization/artifact/evidence/rollback negatives,
+  existing P1–P3 contracts and the full repository CI. Preserve
+  `git.deploymentEnabled.main=false` and test generated config parity.
+- Owner setup, failure behavior and official platform references are maintained
+  in `docs/SITE_PRODUCTION.md`; engineering readiness is separate from live
+  phase completion.

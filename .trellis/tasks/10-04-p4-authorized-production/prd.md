@@ -1,0 +1,7 @@
+# P4 / RM-05 — Owner-authorized immutable Site production
+
+GitHub Issue #99 and Project 1 are the execution control plane. Baseline main is c79659046cf6ea73ba69e03c3937d904c07ba93b; P3/#98 completed with source run 37189363285 and package 11297428920, digest sha256:47dcbda5ed9e6ed72a6856af9700fd40b1afeeaa24623871005a515881b0c33c.
+
+Implement a separate owner-only manual main production workflow, isolated protected environment, exact immutable artifact and target approval, replay/concurrency denial, revalidated package/composition provenance, production health/browser/robots/canonical verification, bounded secret-free evidence and rollback to a cryptographically linked approved previous release. Preserve git.deploymentEnabled.main=false. Reuse P3 verification and browser boundaries without duplicating large security flows. All P1–P3 and full repository CI must pass. Reviewed PRs and an independent gpt-6-luna/max audit are required.
+
+Only RM-05 is in scope. No Edge Gateway, indexing notifications, DNS, releases/tags, P5+, runtime redesign or automatic production via merging. No production settings/secrets/alias/deployment/rollback writes are authorized. Engineering code, tests, Project tasks, PR/review/merge after normal gates and read-only Vercel inspection are authorized. Stop at the exact owner proposal gate before any production mutation. A reviewed rollback simulation is allowed by #99; never label it live execution. Do not close #99 or mark RM-05 Done before actual authorized production evidence and Phase Exit Audit PASS.
