@@ -1,0 +1,323 @@
+{
+  "runtime": {
+    "node": "v22.12.0",
+    "npm": "10.9.0",
+    "pnpm": "9.14.4"
+  },
+  "checks": [
+    {
+      "name": "focused",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/p4-production-tooling-acceptance.test.mjs",
+        "scripts/tests/p4-production-credential-contract.test.mjs",
+        "scripts/tests/p4-owner-decision.test.mjs",
+        "scripts/tests/p4-tooling-gate.test.mjs",
+        "scripts/tests/p4-production-workflow.test.mjs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.55,
+      "log_path": "/tmp/kirari-t1-c1-checks/focused-final.log",
+      "log_sha256": "32850c5fb0c77b9c9b41893af8001995d9f4f0a726e0db7641fc62a68ea0c008",
+      "test_summary": [
+        "# tests 93",
+        "# pass 93",
+        "# fail 0",
+        "# skipped 0"
+      ]
+    },
+    {
+      "name": "p4",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/production-authorization.test.mjs",
+        "scripts/tests/p4-owner-decision.test.mjs",
+        "scripts/tests/p4-production-browser-fixture.test.mjs",
+        "scripts/tests/p4-production-credential-contract.test.mjs",
+        "scripts/tests/p4-production-preflight.test.mjs",
+        "scripts/tests/p4-production-tooling-acceptance.test.mjs",
+        "scripts/tests/p4-production-validation.test.mjs",
+        "scripts/tests/p4-production-workflow.test.mjs",
+        "scripts/tests/p4-rollback.test.mjs",
+        "scripts/tests/p4-runtime-adapter.test.mjs",
+        "scripts/tests/p4-runtime.test.mjs",
+        "scripts/tests/p4-tooling-gate.test.mjs",
+        "scripts/tests/site-artifact.test.mjs",
+        "scripts/tests/vercel-production-artifact.test.mjs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.92,
+      "log_path": "/tmp/kirari-t1-c1-checks/p4-exact-prepush.log",
+      "log_sha256": "47c50cabf49e88dfeb36fd3171a8da7a0c665b0e27395e9a8fa8a201ea1c9b0c",
+      "test_summary": [
+        "# tests 177",
+        "# pass 177",
+        "# fail 0",
+        "# skipped 0"
+      ]
+    },
+    {
+      "name": "p3",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/ci-profile-contract.test.mjs",
+        "scripts/tests/ci-composed-artifact-contract.test.mjs",
+        "scripts/tests/composed-build.test.mjs",
+        "scripts/tests/ocr-review-workflow-contract.test.mjs",
+        "scripts/tests/p3-browser-contract.test.mjs",
+        "scripts/tests/p3-browser-oidc.test.mjs",
+        "scripts/tests/p3-staging-workflow-contract.test.mjs",
+        "scripts/tests/vercel-preview-deployment.test.mjs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 7.53,
+      "log_path": "/tmp/kirari-t1-c1-checks/p3-final.log",
+      "log_sha256": "068263016e22b069dd93bd3b68a0d7b853b55f3b7e8aba18552756794fa26545",
+      "test_summary": [
+        "# tests 29",
+        "# pass 29",
+        "# fail 0",
+        "# skipped 0"
+      ]
+    },
+    {
+      "name": "root-00",
+      "command": [
+        "node",
+        "apps/site/scripts/materialize-profile.mjs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.09,
+      "log_sha256": "8225fc8313cd40f302a1dc4ae6cf0c31d95e63dcc8be166726263889ff8275fb",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-00.log"
+    },
+    {
+      "name": "root-01",
+      "command": [
+        "pnpm",
+        "profile:check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.64,
+      "log_sha256": "4902b4ccf7c7defbdb2bb237b65c8a8a5e1156eec3bf0841b9c109baa35a8add",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-01.log"
+    },
+    {
+      "name": "root-02",
+      "command": [
+        "pnpm",
+        "site:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 67.12,
+      "log_sha256": "d93a7e179f116a0d911c35870b78c912c83c840d2bc996e2f91a670ad43df59b",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-02.log"
+    },
+    {
+      "name": "root-03",
+      "command": [
+        "pnpm",
+        "site:contract:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.03,
+      "log_sha256": "51144eee6efa917e4ed8b932c0309fb06ad2974f6ad36f6a4ba790e720339bd4",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-03.log"
+    },
+    {
+      "name": "root-04",
+      "command": [
+        "pnpm",
+        "composition:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.07,
+      "log_sha256": "fec90a3fdc95ce1a29e3eab9754bca196e425b7fea6a5db62cbc826355531fff",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-04.log"
+    },
+    {
+      "name": "root-05",
+      "command": [
+        "pnpm",
+        "trellis:check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.35,
+      "log_sha256": "d3f42dfa5a5d8baa963592e9d5d7726f307c6beec34a35888e3f17716e519d99",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-05.log"
+    },
+    {
+      "name": "root-06",
+      "command": [
+        "node",
+        "apps/site/scripts/qa-regression-check.mjs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.08,
+      "log_sha256": "b64dcda0019fb9e919d5c0852787246850b9f9375cd8118107bc9e38738ecb25",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-06.log"
+    },
+    {
+      "name": "root-07",
+      "command": [
+        "pnpm",
+        "site:type-check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.84,
+      "log_sha256": "8406a2c277f4a7f994631a601c1d40ecf3e34543f311120e83ae65f8b32ceafe",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-07.log"
+    },
+    {
+      "name": "root-08",
+      "command": [
+        "pnpm",
+        "site:astro-check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.21,
+      "log_sha256": "4c3750f03b01613d3c32c8ef484c74558dc3cb41875ce57f05e6dc988ad5ad31",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-08.log"
+    },
+    {
+      "name": "root-09",
+      "command": [
+        "pnpm",
+        "edge:type-check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.03,
+      "log_sha256": "404c70b20030215413476e155fa61c985b9a7996f104957c8f5443218c5a9469",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-09.log"
+    },
+    {
+      "name": "root-10",
+      "command": [
+        "pnpm",
+        "edge:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.73,
+      "log_sha256": "9f303bcb7fc671986ad006278b87b39f413ca2aa8e34f6ed7978feffc18d63f3",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-10.log"
+    },
+    {
+      "name": "root-11",
+      "command": [
+        "pnpm",
+        "edge:deploy:dry"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.92,
+      "log_sha256": "7927bbcbc6bc36282fac2dee94381b6cedd1bf8f229f9a99436ba9efa2afbebe",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-11.log"
+    },
+    {
+      "name": "root-12",
+      "command": [
+        "node",
+        "apps/site/scripts/generate-vercel-config.mjs",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.06,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-12.log"
+    },
+    {
+      "name": "root-13",
+      "command": [
+        "pnpm",
+        "build"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 12.26,
+      "log_sha256": "9b91321eb2dd3ec921f5f1ca52aabf17077c5183b0b3c08972b4308361fe25b9",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-13.log"
+    },
+    {
+      "name": "root-14",
+      "command": [
+        "pnpm",
+        "release:check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.44,
+      "log_sha256": "37947ac33e9509b28f74170992410bc207ddbac414680e857cf552af35001fe2",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-14.log"
+    },
+    {
+      "name": "root-15",
+      "command": [
+        "pnpm",
+        "release:version-check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.32,
+      "log_sha256": "0460d4cc3a0d1deccb4d3d3f48cd1d83c63ffc1c93fc76ae6d824823f87fa52c",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-15.log"
+    },
+    {
+      "name": "root-16",
+      "command": [
+        "pnpm",
+        "audit",
+        "--audit-level",
+        "moderate"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.77,
+      "log_sha256": "6017e9e720e1846d100dff6b3b987ead27e9466c90399d1fce4a2a16a9e36048",
+      "log_path": "/tmp/kirari-t1-c1-checks/root-16.log"
+    },
+    {
+      "name": "production-chromium",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/p4-production-browser-fixture.test.mjs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.81,
+      "log_sha256": "aafe9408fbfcf94624e6a5e9144c65a66ba54f5b53795633077dc756093dd50d",
+      "log_path": "/tmp/kirari-t1-c1-checks/production-chromium.log",
+      "test_summary": [
+        "# tests 1",
+        "# pass 1",
+        "# fail 0",
+        "# skipped 0"
+      ]
+    },
+    {
+      "name": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.02,
+      "log_path": "/tmp/kirari-t1-c1-checks/diff-check-final.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "test_summary": []
+    }
+  ],
+  "root_audit": {
+    "gate": "pnpm audit --audit-level moderate",
+    "exit_code": 0,
+    "low": 1,
+    "high": 1,
+    "ignored_high": 1,
+    "exception": "existing #122 / CVE-2026-93748 only",
+    "new_exception_added": false
+  },
+  "tooling_local_admission": {
+    "raw": "FAIL",
+    "acceptance": "FAIL",
+    "separate_concrete_owner_approval": "PENDING",
+    "darwin_observation_is_not_linux_attestation": true
+  }
+}

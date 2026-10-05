@@ -1,0 +1,20 @@
+{
+  "observed_at": "2026-10-05T14:57:37.161Z",
+  "project": {
+    "id": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+    "name": "kirari-main",
+    "accountId": "team_NsBZHGUVnyygP7veiROKLuUx",
+    "trustedSources": "OMITTED_BY_CONNECTOR",
+    "git": "OMITTED_BY_CONNECTOR"
+  },
+  "team": {
+    "id": "team_NsBZHGUVnyygP7veiROKLuUx",
+    "plan": "UNKNOWN"
+  },
+  "environment": "ABSENT_GET_404",
+  "trusted_sources_api_readable": false,
+  "trusted_sources_verified": false,
+  "trusted_sources_match": "UNKNOWN",
+  "provider_git_setting": "UNKNOWN",
+  "production_mutation": false
+}

@@ -8,7 +8,7 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const workflow = readFileSync(join(repoRoot, ".github/workflows/ci.yml"), "utf8");
 const triggers = workflow.match(/^on:\n([\s\S]*?)^permissions:/m)?.[1] ?? "";
 const dispatchInputs = workflow.match(/^  workflow_dispatch:\n([\s\S]*?)^permissions:/m)?.[1] ?? "";
-const verifyJob = workflow.match(/^  verify:\n([\s\S]*?)(?=^  composition:)/m)?.[1] ?? "";
+const verifyJob = workflow.match(/^  verify:\n([\s\S]*?)(?=^  [a-zA-Z0-9_-]+:|$(?![\s\S]))/m)?.[1] ?? "";
 const verifyCheckout = verifyJob.match(/^      - uses: actions\/checkout@v4\n([\s\S]*?)(?=^      - |$(?![\s\S]))/m)?.[1] ?? "";
 const compositionJob = workflow.match(/^  composition:\n([\s\S]*)$/m)?.[1] ?? "";
 

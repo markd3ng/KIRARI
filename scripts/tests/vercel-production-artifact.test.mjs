@@ -220,6 +220,8 @@ test("Vercel CLI subprocess is isolated to its token and temporary project home"
 				assert.equal(options.env.HOME, join(options.cwd, "home"));
 				assert.equal(options.env.VERCEL_TOKEN, "test-vercel-token");
 				assert.equal(options.env.VERCEL_TELEMETRY_DISABLED, "1");
+				assert.equal(options.env.VERCEL_CLI_USE_NATIVE_BINARY, "0");
+				assert.equal(options.env.NO_UPDATE_NOTIFIER, "1");
 				for (const key of ["GH_TOKEN", "GITHUB_TOKEN", "OWNER_AUTHORIZATION", "PRODUCTION_APPROVAL_BINDING_JSON", "ACTIONS_ID_TOKEN_REQUEST_TOKEN", "ACTIONS_ID_TOKEN_REQUEST_URL", "VERCEL_TRUSTED_OIDC_TOKEN"]) assert.equal(options.env[key], undefined, `${key} must not be exposed to the CLI`);
 				assert.equal(existsSync(join(options.cwd, ".vercel/output/config.json")), true);
 				return { status: 0, signal: null, stdout: `${url}\n`, stderr: "" };

@@ -166,3 +166,23 @@ boundary as the rest of the site. Visitor-supplied or third-party API data
 must still traverse text/attribute-safe rendering paths. The edge proxy is an
 additional trust boundary between the visitor and the upstream API — it does
 not relax the rendering model.
+
+## P4 tooling and credential risk decisions
+
+T1 and C1 framework approval does not approve a CLI version, advisory inventory,
+credential or Production operation. Full unsuppressed deployment-tool audits
+retain their raw FAIL result. The separate P4 acceptance gate requires an exact
+independently reviewed, digest-bound Owner risk manifest with a finite expiry;
+changed inventory/runtime/runner/install/integrity/command paths invalidate it.
+All UNKNOWN vulnerability paths remain exposed, including bundled code and
+unproven publisher provenance or whole-tree signature coverage. Root dependency
+audits retain their existing rules.
+
+C1 requires one-project resource scope and complete Developer plus only Full
+Production Deployment grants, with concrete sanitized Owner approval and fresh
+readback. A compromised CLI can exercise the disclosed extra same-project
+capabilities; Trusted Sources and the reviewed workflow do not impose a bearer
+token verb sandbox. Unverified principal/plan/group/scope/expiry or extra
+elevation blocks credential admission. See docs/SITE_PRODUCTION.md and the
+T1/C1 decision packages for exact contracts. Production authorization remains
+a separate immutable-artifact/target/operation gate.

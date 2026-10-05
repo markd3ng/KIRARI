@@ -1,0 +1,31 @@
+{
+  "name": "p4",
+  "command": [
+    "node",
+    "--test",
+    "scripts/tests/production-authorization.test.mjs",
+    "scripts/tests/p4-owner-decision.test.mjs",
+    "scripts/tests/p4-production-browser-fixture.test.mjs",
+    "scripts/tests/p4-production-credential-contract.test.mjs",
+    "scripts/tests/p4-production-preflight.test.mjs",
+    "scripts/tests/p4-production-tooling-acceptance.test.mjs",
+    "scripts/tests/p4-production-validation.test.mjs",
+    "scripts/tests/p4-production-workflow.test.mjs",
+    "scripts/tests/p4-rollback.test.mjs",
+    "scripts/tests/p4-runtime-adapter.test.mjs",
+    "scripts/tests/p4-runtime.test.mjs",
+    "scripts/tests/p4-tooling-gate.test.mjs",
+    "scripts/tests/site-artifact.test.mjs",
+    "scripts/tests/vercel-production-artifact.test.mjs"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 2.92,
+  "log_path": "/tmp/kirari-t1-c1-checks/p4-final.log",
+  "log_sha256": "fd79cc6dbdfa3ae82b532d8b79190be8d245565ad1c391c6f11fef7792b50daa",
+  "test_summary": [
+    "# tests 177",
+    "# pass 177",
+    "# fail 0",
+    "# skipped 0"
+  ]
+}

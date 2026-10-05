@@ -5,6 +5,6 @@
   "description": "Pinned Vercel CLI for reviewed Build Output API production deployments",
   "license": "UNLICENSED",
   "dependencies": {
-    "vercel": "59.16.0"
+    "vercel": "62.2.0"
   }
 }

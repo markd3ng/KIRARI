@@ -1,0 +1,25 @@
+{
+  "name": "p3",
+  "command": [
+    "node",
+    "--test",
+    "scripts/tests/ci-profile-contract.test.mjs",
+    "scripts/tests/ci-composed-artifact-contract.test.mjs",
+    "scripts/tests/composed-build.test.mjs",
+    "scripts/tests/ocr-review-workflow-contract.test.mjs",
+    "scripts/tests/p3-browser-contract.test.mjs",
+    "scripts/tests/p3-browser-oidc.test.mjs",
+    "scripts/tests/p3-staging-workflow-contract.test.mjs",
+    "scripts/tests/vercel-preview-deployment.test.mjs"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 7.53,
+  "log_path": "/tmp/kirari-t1-c1-checks/p3-final.log",
+  "log_sha256": "068263016e22b069dd93bd3b68a0d7b853b55f3b7e8aba18552756794fa26545",
+  "test_summary": [
+    "# tests 29",
+    "# pass 29",
+    "# fail 0",
+    "# skipped 0"
+  ]
+}

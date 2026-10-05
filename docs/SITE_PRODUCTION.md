@@ -45,7 +45,16 @@ environment must explicitly report `can_admins_bypass: false`; missing or true
 is rejected. The reviewer rule must explicitly report `prevent_self_review: false`
 so that the sole authorized owner dispatcher can approve the protected job.
 Its deployment policy must allow only the `main` branch, and a
-policy reported as a tag is rejected. Configure a dedicated least-required
+policy reported as a tag is rejected. The C1 contract permits only an expiring PAT scoped to exactly project
+`prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk` in team `team_NsBZHGUVnyygP7veiROKLuUx`,
+with effective Team Developer plus only Full Production Deployment. A separate
+Owner decision must bind the complete sanitized principal/plan/direct and
+group role/permission/scope/expiry manifest. Owner, Member, Project Admin,
+unknown groups, extra extended grants, and broader token scopes fail closed.
+The one-project role retains extra domain, deployment, and development/preview
+variable capabilities; project-settings endpoint granularity remains UNKNOWN.
+Workflow confinement does not sandbox a compromised token-bearing process.
+Configure the dedicated
 `VERCEL_PRODUCTION_TOKEN` environment secret and environment variables
 `VERCEL_PRODUCTION_ORG_ID` / `VERCEL_PRODUCTION_PROJECT_ID` there. The production
 workflow does not reference Preview's `VERCEL_TOKEN` secret. Keep the production
@@ -69,8 +78,11 @@ without giving external services deployment credentials.
 The authenticated project readback must also explicitly report
 `enableVercelCiSameRepository: false` and an empty `trustedSources.projects`
 collection. Added Vercel project rules, customized self-access rules, and
-missing or unrecognized values fail closed. This preserves the platform's
-documented default self-access while refusing additional configured callers.
+missing or unrecognized values fail closed. This is the current source parser expectation. The provider semantics of
+`enableVercelCiSameRepository` are undocumented in the evidence available here;
+its literal value is not an Owner setup instruction or verified trust policy.
+Authenticated actual readback and authoritative semantic interpretation both
+remain required. Preserve documented implicit same-project access.
 Do not infer the stored rules from a connector projection that omits them.
 If the server serializes default self-access as configured rules, retain the
 authenticated readback for review before extending the validator; do not
@@ -87,15 +99,34 @@ network policy before promotion. Production indexing checks require the
 approved canonical/robots policy; Preview's required `noindex` is not reused
 as a Production success condition.
 
-Both CI and the production workflow audit the pinned CLI dependency lock at
-moderate severity before credentials are mapped. A failed audit blocks merge
-and deployment; do not suppress it with a general dependency exception. Live
-readiness also requires authenticated project readback of the exact Trusted
-Sources shape checked by the runtime. An omitted or unknown field fails closed.
+Both CI and the production workflow always run the full unchanged
+`npm audit --prefix scripts/p4-production/tooling --audit-level moderate`
+and retain its actual exit status plus full JSON and human advisory inventory.
+`TOOLING_RAW_AUDIT_RESULT` remains FAIL when npm reports qualifying findings.
+The approved T1 framework introduces a separate `TOOLING_P4_ACCEPTANCE_RESULT`.
+For a raw FAIL, acceptance requires a distinct current Owner decision on the
+exact concrete version/lock/artifact/runtime/runner/install/command/target and
+complete advisory manifest, with independent review, declared UNKNOWN paths
+treated as exposed, explicit provenance/SBOM/signature gaps, finite expiry and
+immediate invalidation on material changes or new/changed advisories. A policy
+approval alone is insufficient. No advisory is suppressed or ignored. Root,
+Site and Worker audit rules and the existing #122 exception are unchanged.
+
+The concrete T1 and C1 decision references are separate from the manifests.
+The current Owner comment is read from GitHub on every admission and checked
+against the entire canonical manifest digest and finite expiry; edited, revoked,
+substituted, missing or expired decisions fail closed. Both current concrete
+decisions are PENDING, so the amended gate deliberately remains FAIL.
+See the [decision packages](../.trellis/tasks/10-04-p4-authorized-production/evidence/t1-c1/)
+and [secure Owner evidence procedure](../.trellis/tasks/10-04-p4-authorized-production/evidence/t1-c1/owner-setup.md).
+These policy amendments authorize no token creation, Environment/settings/secret
+change, or Production operation. Live readiness also requires authenticated
+project readback of exact Trusted Sources and authoritative semantics; unknown
+configuration or interpretation remains blocked.
 
 CI runs the audited local Production Chromium fixture before the independent
 deployment-tool install and audit. This retains browser evidence even when the
-tooling gate fails; the failed audit still fails the job and blocks merge.
+tooling gate fails; pending concrete T1 acceptance still fails the job and blocks merge.
 The protected Production workflow audits tooling before mapping credentials.
 
 The documented existing-deployment promotion API assigns production traffic

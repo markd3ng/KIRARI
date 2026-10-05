@@ -14,6 +14,7 @@ import { assertProductionBrowserReport, verifyDeployedStaticOutput } from "./pro
 import { loadApprovedRollback, restoreApprovedRelease, assertProductionAliasSnapshot, assertRollbackDeployment } from "./rollback.mjs";
 import { verifyProductionPreflight } from "./preflight.mjs";
 import { productionApprovalDigest } from "../production-authorization.mjs";
+import { assertConcreteProductionContracts } from "./tooling-gate.mjs";
 
 function assert(condition, code) { if (!condition) throw new Error(code); }
 
@@ -52,6 +53,7 @@ export async function createProductionRuntime({ binding, packageVerification, en
 		if (target.operation === "rollback") packageVerification = loaded.packageVerification;
 	}
 	const guard = async () => {
+		await assertConcreteProductionContracts({ env, fetchImpl });
 		const context = { eventName: env.GITHUB_EVENT_NAME, ref: env.GITHUB_REF, actor: env.GITHUB_ACTOR,
 			triggeringActor: env.PRODUCTION_TRIGGERING_ACTOR ?? env.GITHUB_TRIGGERING_ACTOR,
 			repositoryOwner: env.GITHUB_REPOSITORY_OWNER, repository: env.GITHUB_REPOSITORY,

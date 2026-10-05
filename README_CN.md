@@ -148,6 +148,9 @@ Git checkout 不能有暂存、未暂存或未跟踪的改动。
 验证生产健康状态，并支持基于已批准发布记录的回滚。合并 `main` 不会启用 Vercel Git
 自动部署。发布前置条件与一次性授权边界见 [Site Production](./docs/SITE_PRODUCTION.md)。
 
+T1/C1 策略框架仍要求分别批准精确、有限有效期的工具链清单与脱敏凭据清单；
+具体决策尚未批准时，生产发布继续阻断。
+
 这两种模式都只生成静态产物：不拉取或切换 Git ref、不提交、不推送、不部署、不打包
 Cloudflare Pages Functions，也不发送 IndexNow/Google 收录通知。
 Site MDX 和其他构建时代码属于可信输入，可使用调用者进程的文件系统和网络权限。

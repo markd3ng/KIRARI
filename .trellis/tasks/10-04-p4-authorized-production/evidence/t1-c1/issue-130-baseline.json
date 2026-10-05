@@ -1,0 +1,15 @@
+{
+  "body": "PARENT_CONTRACT=#99 / RM-05\nPROPOSED_PHASE=P4_AUTHORIZED_PRODUCTION_DEPLOYMENT\nWORKSTREAM=B\n\nSCOPE\nShared P3/P4 archive and provenance checks; documented no-build production upload and target/output verification.\n\nDEPENDENCY\nIndependent of A/C/D after interface freeze.\n\nACCEPTANCE_CRITERIA\n- Deliver the scoped engineering implementation with focused negative/positive checks and reviewed PR.\n- Preserve P1\u2013P3, the main Git deployment guard and immutable no-rebuild chain.\n- No production mutation, production settings/secrets, DNS, release/tag, indexing, Gateway or P5+ action is authorized.\n\nDELIVERY_EVIDENCE\nBoth archives/digests revalidated; artifact substitution and no-rebuild tests.\n\nSTATUS\nEngineering in progress. #99 remains open until separately authorized production evidence and independent Phase Exit Audit pass.\n",
+  "number": 130,
+  "projectItems": [
+    {
+      "status": {
+        "optionId": "bfd7f099",
+        "name": "Blocked"
+      },
+      "title": "KIRARI \u2014 Development & Security"
+    }
+  ],
+  "state": "OPEN",
+  "title": "[P4-B] Immutable Site artifact verification and production upload"
+}

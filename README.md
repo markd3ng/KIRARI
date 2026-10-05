@@ -156,6 +156,9 @@ rollback. Merging main keeps Vercel Git auto-deployment disabled. See
 [Site Production](./docs/SITE_PRODUCTION.md) for release prerequisites and the
 exact one-time authorization boundary.
 
+T1/C1 policy frameworks require separate exact, expiring tooling and sanitized credential
+manifest approvals; pending concrete decisions block Production.
+
 Both modes build static output only. They do not fetch or switch refs, commit,
 push, deploy, package Cloudflare Pages Functions, or submit IndexNow/Google
 indexing notifications. Site MDX and other build-time code are trusted inputs

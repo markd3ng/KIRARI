@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { normalizeProductionBinding, productionApprovalDigest } from "../production-authorization.mjs";
 import { assertProductionTargetSnapshot, deriveProductionIndexingPolicy } from "./production-validation.mjs";
 import { createProductionReleaseRecord } from "./evidence.mjs";
+import { assertConcreteProductionContracts } from "./tooling-gate.mjs";
 
 function assert(condition, code) {
 	if (!condition) throw new Error(code);
@@ -115,6 +116,7 @@ export function writeOperationEvidence(directory, result) {
 
 async function main() {
 	for (const name of ["PRODUCTION_BINDING", "PRODUCTION_PACKAGE_VERIFICATION", "PRODUCTION_PACKAGE_DIR", "PRODUCTION_EVIDENCE_DIR", "VERCEL_CLI_PATH"]) assert(process.env[name], "PRODUCTION_INPUT_MISSING");
+	await assertConcreteProductionContracts();
 	const binding = normalizeProductionBinding(JSON.parse(readFileSync(process.env.PRODUCTION_BINDING, "utf8")));
 	assert(process.env.VERCEL_ORG_ID === binding.target.team_id && process.env.VERCEL_PROJECT_ID === binding.target.project_id, "PRODUCTION_CREDENTIAL_TARGET_MISMATCH");
 	const verification = JSON.parse(readFileSync(process.env.PRODUCTION_PACKAGE_VERIFICATION, "utf8"));

@@ -14,16 +14,16 @@
   "completedAt": null,
   "branch": "codex/p4-authorized-production",
   "base_branch": "main",
-  "worktree_path": "/Users/ian/.codex/worktrees/p4-remediation/KIRARI",
+  "worktree_path": "/Users/ian/.codex/worktrees/p4-t1-c1/KIRARI",
   "commit": null,
   "pr_url": "https://github.com/markd3ng/KIRARI/pull/133",
   "subtasks": [],
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "P4-only remediation continuation; GitHub Project 1 and #99 control plane. No Production write authorized. Tool audit, immutable canonical artifact, and trust boundary are independent prerequisites.",
+  "notes": "T1/C1 framework application and concrete decision-package continuation; GitHub Project 1 and #99 control plane. Raw CLI audit remains FAIL, concrete T1 approval PENDING, C1 actual metadata incomplete. No Production write authorized.",
   "meta": {
-    "engineering_merge_gate": "BLOCKED_UPSTREAM_TOOLING_AUDIT",
-    "production_readiness": "OWNER_SETUP_AND_AUTHENTICATED_READBACK_REQUIRED"
+    "engineering_merge_gate": "BLOCKED_PENDING_CONCRETE_T1_OWNER_DECISION",
+    "production_readiness": "C1_OWNER_SETUP_AUTHENTICATED_READBACK_AND_SEPARATE_DECISION_REQUIRED"
   }
 }

@@ -73,7 +73,10 @@ jobs:
       - run: git diff --check
 
   production-fixtures:
-    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -86,15 +89,74 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: pnpm install --frozen-lockfile
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
       - run: npm ci --prefix scripts/p3-browser
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
       - run: npm audit --prefix scripts/p3-browser --audit-level moderate
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
       - run: npx --prefix scripts/p3-browser playwright install --with-deps chromium
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
       - name: Validate Production routes, assets, navigation, canonicals, robots, and byte equality locally
         env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
           REQUIRE_PRODUCTION_BROWSER: 'true'
-        run: node --test scripts/tests/p4-production-browser-fixture.test.mjs
-      - run: npm ci --prefix scripts/p4-production/tooling
-      - run: npm audit --prefix scripts/p4-production/tooling --audit-level moderate
+        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" --test scripts/tests/p4-production-browser-fixture.test.mjs
+      - run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-install.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
+      - name: Retain raw full audit and evaluate the separate concrete T1 gate
+        if: always()
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
+          GH_TOKEN: ${{ github.token }}
+        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-gate.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
+      - name: Retain complete tooling audit and actual runner identity
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: kirari-t1-tooling-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/kirari-tooling-evidence
+          if-no-files-found: error
+          retention-days: 14
 
   composition:
     if: >-

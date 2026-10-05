@@ -1,12 +1,18 @@
+import { spawnSync } from "node:child_process";
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
+import { tmpdir } from "node:os";
+
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const workflow = readFileSync(join(repoRoot, ".github/workflows/site-production.yml"), "utf8");
-const ciWorkflow = readFileSync(join(repoRoot, ".github/workflows/ci.yml"), "utf8");
+const workflowSource = readFileSync(join(repoRoot, ".github/workflows/site-production.yml"), "utf8");
+const ciWorkflowSource = readFileSync(join(repoRoot, ".github/workflows/ci.yml"), "utf8");
+const trustedNode = '"${{ runner.tool_cache }}/node/22.12.0/x64/bin/node"';
+const workflow = workflowSource.replaceAll(trustedNode, "node");
+const ciWorkflow = ciWorkflowSource.replaceAll(trustedNode, "node");
 const preflight = readFileSync(join(repoRoot, "scripts/p4-production/preflight.mjs"), "utf8");
 const runtime = readFileSync(join(repoRoot, "scripts/p4-production/run.mjs"), "utf8");
 const cli = readFileSync(join(repoRoot, "scripts/deploy-vercel-production.mjs"), "utf8");
@@ -57,7 +63,7 @@ test("production credentials exist only on the final runtime step after browser 
 	assert.match(runtimeStep, /PRODUCTION_PACKAGE_VERIFICATION: \$\{\{ steps\.consume\.outputs\.package_verification_path \}\}/);
 	assert.match(runtimeStep, /PRODUCTION_EVIDENCE_DIR: \$\{\{ steps\.consume\.outputs\.evidence_dir \}\}/);
 	assert.match(runtimeStep, /VERCEL_CLI_PATH:/);
-	for (const step of ["Install and audit production browser validator", "Install browser runtime", "Install pinned Vercel CLI before credentials are mapped", "Recheck authorization and consume the exact immutable package"]) {
+	for (const step of ["Install and audit production browser validator", "Install browser runtime", "Install pinned Vercel CLI before credentials are mapped", "Audit full pinned CLI and evaluate separate concrete T1 acceptance", "Verify separate concrete C1 approval and sanitized credential evidence", "Recheck authorization and consume the exact immutable package"]) {
 		const block = stepBlock(productionBlock, step);
 		assert.ok(block, `missing step ${step}`);
 		assert.doesNotMatch(block, /VERCEL_TOKEN|secrets\.VERCEL/);
@@ -96,8 +102,8 @@ test("CI runs audited local Production Chromium before the independent deploymen
 	assert.ok(fixtures, "Production fixture job must exist");
 	const browserAudit = fixtures.indexOf("npm audit --prefix scripts/p3-browser --audit-level moderate");
 	const browserTest = fixtures.indexOf("node --test scripts/tests/p4-production-browser-fixture.test.mjs");
-	const toolingInstall = fixtures.indexOf("npm ci --prefix scripts/p4-production/tooling");
-	const toolingAudit = fixtures.indexOf("npm audit --prefix scripts/p4-production/tooling --audit-level moderate");
+	const toolingInstall = fixtures.indexOf("node scripts/p4-production/tooling-install.mjs");
+	const toolingAudit = fixtures.indexOf("node scripts/p4-production/tooling-gate.mjs");
 	assert.ok(browserAudit >= 0 && browserAudit < browserTest, "audit browser dependencies before executing Chromium");
 	assert.ok(browserTest < toolingInstall && toolingInstall < toolingAudit, "a deployment-tool failure must not skip local browser proof");
 	assert.match(fixtures, /REQUIRE_PRODUCTION_BROWSER: 'true'/);
@@ -121,3 +127,52 @@ function stepBlock(block, name) {
 	const next = block.indexOf("\n      - name:", start + marker.length);
 	return block.slice(start, next < 0 ? block.length : next);
 }
+
+
+test("concrete manifest admission is separate from raw audit and rechecked before Production writes", () => {
+	const gate = readFileSync(join(repoRoot, "scripts/p4-production/tooling-gate.mjs"), "utf8");
+	assert.match(gate, /TOOLING_RAW_AUDIT_RESULT: result.rawAuditResult/);
+	assert.match(gate, /TOOLING_P4_ACCEPTANCE_RESULT: result.p4AcceptanceResult/);
+	assert.match(gate, /collectFullToolingAudit/);
+	assert.match(workflow, /node scripts\/p4-production\/credential-gate.mjs/);
+	assert.match(runtime, /await assertConcreteProductionContracts\(\)/);
+	const adapter = readFileSync(join(repoRoot, "scripts/p4-production/runtime-adapter.mjs"), "utf8");
+	assert.match(adapter, /await assertConcreteProductionContracts\(\{ env, fetchImpl \}\)/);
+	assert.doesNotMatch(gate, /--omit|ignoreAdvisories|ignoredAdvisories|--audit-level.*(?:critical|high)/);
+});
+
+
+test("later Production commands use the setup-node absolute executable despite a poisoned PATH", () => {
+	const production = workflowSource.split("  production:")[1];
+	const fixtures = ciWorkflowSource.split("  production-fixtures:")[1].split("  composition:")[0];
+	assert.doesNotMatch(production, /run: node /);
+	assert.doesNotMatch(fixtures, /run: node /);
+	for (const file of ["tooling-install", "tooling-gate", "credential-gate", "preflight", "run"]) {
+		assert.ok(production.includes(`run: ${trustedNode} scripts/p4-production/${file}.mjs`));
+	}
+	assert.match(production, /issues: read/);
+	assert.match(fixtures, /issues: read/);
+});
+
+
+test("installer-supplied shell preload cannot execute before the credential-bearing runtime", () => {
+	const production = workflowSource.split("  production:")[1];
+	for (const block of production.split(/^      - /m).filter(x => /^\s+run:/m.test(x))) {
+		for (const key of ["BASH_ENV", "ENV"]) assert.match(block, new RegExp(`^          ${key}: /dev/null$`, "m"));
+		for (const key of ["NODE_OPTIONS", "NODE_PATH", "LD_PRELOAD", "LD_LIBRARY_PATH"]) assert.match(block, new RegExp(`^          ${key}: ''$`, "m"));
+	}
+	const root = mkdtempSync(join(tmpdir(), "kirari-shell-preload-"));
+	try {
+		const marker = join(root, "preload-ran");
+		const loader = join(root, "loader.sh");
+		writeFileSync(loader, `echo ran > "${marker}"\n`);
+		const inherited = { ...process.env, BASH_ENV: loader };
+		assert.equal(spawnSync("/bin/bash", ["--noprofile", "--norc", "-c", ":"], { env: inherited }).status, 0);
+		assert.equal(existsSync(marker), true, "demonstrate the inherited shell startup vector");
+		rmSync(marker);
+		const operation = stepBlock(production, "Stage, validate and explicitly promote approved Production output");
+		const overrides = Object.fromEntries([...operation.matchAll(/^          (BASH_ENV|ENV|NODE_OPTIONS|NODE_PATH|LD_PRELOAD|LD_LIBRARY_PATH): (.*)$/gm)].map(([, k, v]) => [k, v === "''" ? "" : v]));
+		assert.equal(spawnSync("/bin/bash", ["--noprofile", "--norc", "-c", ":"], { env: { ...inherited, ...overrides } }).status, 0);
+		assert.equal(existsSync(marker), false);
+	} finally { rmSync(root, { recursive: true, force: true }); }
+});

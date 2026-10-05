@@ -213,3 +213,17 @@ Update `createVercelConfig`, regenerate `vercel.json`, and verify that only `mai
 - Owner setup, failure behavior and official platform references are maintained
   in `docs/SITE_PRODUCTION.md`; engineering readiness is separate from live
   phase completion.
+
+## P4 approved T1/C1 contract
+
+Deployment tooling always runs the unchanged full npm moderate audit, retains
+its raw exit result and full inventory, and evaluates P4 acceptance separately.
+A raw FAIL requires an exact concrete Owner manifest decision, independent
+security review, content/runtime/runner/install/command binding, exposed
+UNKNOWN paths, finite expiry and invalidation on changed evidence. Framework
+approval cannot pass this gate. Do not add deployment-tool ignored advisories.
+C1 accepts exactly the target-project PAT for a complete Developer plus only
+Full Production Deployment role manifest; separate sanitized concrete approval
+and fresh complete readback are required. Extra same-project powers and
+endpoint uncertainty remain disclosed. See docs/SITE_PRODUCTION.md.
+Neither framework authorizes secrets/settings/token creation or Production.

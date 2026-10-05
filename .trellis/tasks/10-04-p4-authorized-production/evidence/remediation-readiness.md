@@ -1,5 +1,9 @@
 # Production readiness and owner setup
 
+Historical readiness snapshot. C1 credential/setup instructions below are
+superseded by evidence/t1-c1/owner-setup.md and the approved T1/C1 contract.
+No setup authorization or concrete credential approval has been given.
+
 Read-only snapshot: 2026-10-05. The full sanitized observations are in [remediation-readiness.json](remediation-readiness.json). No Production settings, credentials, aliases, or secrets were changed, and no secret values were requested or printed.
 
 The dedicated GitHub environment `kirari-site-production` is absent. Existing legacy Production environments have no protection rules or branch policy. The repository-scope Actions credential names contain no Vercel Production credential. The exact current workflow policy is recorded in the JSON evidence; in particular, the environment must be owner-only, require the single `markd3ng` user reviewer, disable administrator bypass, allow self-review, and permit only `main` through a custom branch policy. The production job alone receives the environment-scoped Vercel credential and OIDC write permission.
@@ -25,7 +29,7 @@ The current Vercel Production deployment is `dpl_7ACbEGqeC8f7yyqZqmAjzL78F5sB`, 
    - `workflow_ref`: `markd3ng/KIRARI/.github/workflows/site-production.yml@refs/heads/main`
    - target environment: Production only
 
-   The GitHub template's default audience matches this workflow; raw claims are required for `workflow_ref` according to the Vercel guide. Do not add other external providers or other Vercel project callers. Preserve the platform's documented implicit self-access. Set `enableVercelCiSameRepository` explicitly false per the fail-closed source contract; because Vercel's docs do not explain this field's semantics, obtain authoritative clarification if its behavior is material to the owner decision.
+   The GitHub template's default audience matches this workflow; raw claims are required for `workflow_ref` according to the Vercel guide. Do not add other external providers or other Vercel project callers. Preserve the platform's documented implicit self-access. The current source parser expects `enableVercelCiSameRepository` false, but that is not a provider-verified policy or an Owner setting instruction. Obtain authenticated readback and authoritative semantic interpretation; do not hand-edit an undocumented boolean to force a match.
 
 4. Before any Production owner gate, use an authenticated, read-only `GET /v9/projects/prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk?teamId=team_NsBZHGUVnyygP7veiROKLuUx` (documented in the [Project GET API reference](https://vercel.com/docs/rest-api/projects/find-a-project-by-id-or-name)) and retain only sanitized `trustedSources` keys/values. Compare the exact response to the expected policy. A connected connector projection that omits the property does not qualify. Review any serialized `projects` self-entry against actual default behavior before allowing it; unknown representation stays a failure.
 

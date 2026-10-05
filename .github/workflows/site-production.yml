@@ -86,13 +86,14 @@ jobs:
   production:
     needs: prepare
     if: needs.prepare.result == 'success' && github.ref == 'refs/heads/main' && github.actor == github.repository_owner && github.triggering_actor == github.repository_owner && github.run_attempt == 1
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     environment:
       name: kirari-site-production
     permissions:
       actions: read
       contents: read
+      issues: read
       id-token: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -111,26 +112,80 @@ jobs:
           cache: pnpm
 
       - name: Install reviewed source dependencies
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
         run: pnpm install --frozen-lockfile
 
       - name: Install and audit production browser validator
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
         run: |
           set -euo pipefail
           npm ci --prefix scripts/p3-browser
           npm audit --prefix scripts/p3-browser --audit-level moderate
 
       - name: Install browser runtime
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
         run: npx --prefix scripts/p3-browser playwright install --with-deps chromium
 
       - name: Install pinned Vercel CLI before credentials are mapped
-        run: npm ci --prefix scripts/p4-production/tooling
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
+        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-install.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
 
-      - name: Audit pinned Vercel CLI dependencies
-        run: npm audit --prefix scripts/p4-production/tooling --audit-level moderate
+      - name: Audit full pinned CLI and evaluate separate concrete T1 acceptance
+        if: always()
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
+          GH_TOKEN: ${{ github.token }}
+        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-gate.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
+
+      - name: Verify separate concrete C1 approval and sanitized credential evidence
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
+          GH_TOKEN: ${{ github.token }}
+        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/credential-gate.mjs
 
       - name: Recheck authorization and consume the exact immutable package
         id: consume
         env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
           GH_TOKEN: ${{ github.token }}
           OWNER_AUTHORIZATION: ${{ inputs.owner_authorization }}
           PRODUCTION_APPROVAL_BINDING_JSON: ${{ inputs.approval_binding }}
@@ -138,11 +193,17 @@ jobs:
           PRODUCTION_CLAIM_DIGEST: ${{ needs.prepare.outputs.claim_artifact_digest }}
           PRODUCTION_TRIGGERING_ACTOR: ${{ github.triggering_actor }}
           PRODUCTION_WORKFLOW_SHA: ${{ github.workflow_sha }}
-        run: node scripts/p4-production/preflight.mjs consume
+        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/preflight.mjs consume
 
       - name: Stage, validate and explicitly promote approved Production output
         id: operation
         env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
           GH_TOKEN: ${{ github.token }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_PRODUCTION_TOKEN }}
           VERCEL_ORG_ID: ${{ vars.VERCEL_PRODUCTION_ORG_ID }}
@@ -156,8 +217,9 @@ jobs:
           PRODUCTION_CLAIM_DIGEST: ${{ needs.prepare.outputs.claim_artifact_digest }}
           PRODUCTION_TRIGGERING_ACTOR: ${{ github.triggering_actor }}
           PRODUCTION_WORKFLOW_SHA: ${{ github.workflow_sha }}
+          PRODUCTION_TOOLING_EVIDENCE_DIR: ${{ runner.temp }}/kirari-tooling-evidence
           VERCEL_CLI_PATH: ${{ github.workspace }}/scripts/p4-production/tooling/node_modules/.bin/vercel
-        run: node scripts/p4-production/run.mjs
+        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/run.mjs
 
       - name: Upload bounded Production evidence and retained immutable package bytes
         if: always() && steps.consume.outcome == 'success'

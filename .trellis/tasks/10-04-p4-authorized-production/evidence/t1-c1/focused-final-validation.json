@@ -1,0 +1,22 @@
+{
+  "name": "focused",
+  "command": [
+    "node",
+    "--test",
+    "scripts/tests/p4-production-tooling-acceptance.test.mjs",
+    "scripts/tests/p4-production-credential-contract.test.mjs",
+    "scripts/tests/p4-owner-decision.test.mjs",
+    "scripts/tests/p4-tooling-gate.test.mjs",
+    "scripts/tests/p4-production-workflow.test.mjs"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 0.55,
+  "log_path": "/tmp/kirari-t1-c1-checks/focused-final.log",
+  "log_sha256": "32850c5fb0c77b9c9b41893af8001995d9f4f0a726e0db7641fc62a68ea0c008",
+  "test_summary": [
+    "# tests 93",
+    "# pass 93",
+    "# fail 0",
+    "# skipped 0"
+  ]
+}

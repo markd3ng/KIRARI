@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
-import { isAbsolute, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { compareRemoteFileInventory, deploymentFiles, fileInventory, verifySitePackage, vercelRequest } from "./site-artifact.mjs";
 
 const PROJECT_ID = /^prj_[A-Za-z0-9]+$/;
@@ -279,12 +279,15 @@ export async function runVercelStage({ packageRoot, expected, target, artifact, 
 		cpSync(join(packageRoot, ".vercel/output"), join(vercelDirectory, "output"), { recursive: true, errorOnExist: true, force: false, preserveTimestamps: true });
 		writeFileSync(join(vercelDirectory, "project.json"), `${JSON.stringify({ orgId: expected.teamId, projectId: expected.projectId }, null, 2)}\n`, { flag: "wx", mode: 0o600 });
 		const runtimeEnv = Object.fromEntries(["PATH", "LANG", "LC_ALL", "CI", "NO_COLOR", "FORCE_COLOR"].flatMap((name) => typeof env[name] === "string" ? [[name, env[name]]] : []));
+		runtimeEnv.PATH = `${dirname(process.execPath)}:${runtimeEnv.PATH ?? ""}`;
 		runtimeEnv.HOME = isolatedHome;
 		runtimeEnv.TMPDIR = stagingRoot;
 		runtimeEnv.VERCEL_TOKEN = env.VERCEL_TOKEN;
 		runtimeEnv.VERCEL_ORG_ID = expected.teamId;
 		runtimeEnv.VERCEL_PROJECT_ID = expected.projectId;
 		runtimeEnv.VERCEL_TELEMETRY_DISABLED = "1";
+		runtimeEnv.VERCEL_CLI_USE_NATIVE_BINARY = "0";
+		runtimeEnv.NO_UPDATE_NOTIFIER = "1";
 		if (!runtimeEnv.VERCEL_TOKEN || runtimeEnv.VERCEL_TOKEN.length < 8) throw new Error("Vercel production token is unavailable");
 		const metadata = githubDeploymentMetadata(target, artifact);
 		const args = ["deploy", "--prebuilt", "--prod", "--skip-domain", "--yes", ...Object.entries(metadata).flatMap(([key, value]) => ["--meta", `${key}=${value}`])];

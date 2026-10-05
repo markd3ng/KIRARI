@@ -24,3 +24,7 @@ Validation: pnpm install --frozen-lockfile; focused scripts/tests; pnpm site:tes
 - [ ] Merge #133 only when every engineering merge gate passes; otherwise leave open.
 - [ ] Fresh independent Phase Exit Audit; reconcile existing Issues/Project without premature closure.
 - [ ] Return final evidence/readiness/setup report and stop before first Production write.
+
+## Approved T1/C1 application — 2026-10-05
+
+Reconcile exact main/PR/control plane and store verbatim Owner approval; parallel A/B and independent D without shared-file writers; integrate gates; focused new tests then P4, P3, root checks, existing root audit, Production Chromium, diff check; freeze/push #133 after validation; exact-head CI and fresh independent code review; reconcile #129/#130/#99 and Project; return concrete pending T1/C1 decisions, stop. No merge or Production mutation.

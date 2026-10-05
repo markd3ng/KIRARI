@@ -1,0 +1,15 @@
+{
+  "body": "PARENT_CONTRACT=#99 / RM-05\nPROPOSED_PHASE=P4_AUTHORIZED_PRODUCTION_DEPLOYMENT\nWORKSTREAM=D\n\nSCOPE\nVerify retained prior successful production release record; restore existing immutable deployment; revalidate target and record truthful rollback.\n\nDEPENDENCY\nDepends on A/B/C record/API interfaces; simulation allowed before owner gate.\n\nACCEPTANCE_CRITERIA\n- Deliver the scoped engineering implementation with focused negative/positive checks and reviewed PR.\n- Preserve P1\u2013P3, the main Git deployment guard and immutable no-rebuild chain.\n- No production mutation, production settings/secrets, DNS, release/tag, indexing, Gateway or P5+ action is authorized.\n\nDELIVERY_EVIDENCE\nRecord/target substitution negatives and rollback simulation; live execution remains NOT_AUTHORIZED.\n\nSTATUS\nEngineering acceptance complete at PR #133 HEAD 30ed167ed57e18de0308e7ba1e0c9d0e70ab7570; independent audit accepted approved-record rollback simulation only. Implementation remains unmerged; no live Production evidence or operation is claimed. #99 remains open until separately authorized production evidence and independent Phase Exit Audit pass.\n",
+  "number": 132,
+  "projectItems": [
+    {
+      "status": {
+        "optionId": "bc11403b",
+        "name": "Done"
+      },
+      "title": "KIRARI \u2014 Development & Security"
+    }
+  ],
+  "state": "CLOSED",
+  "title": "[P4-D] Approved release rollback and failure recovery"
+}
