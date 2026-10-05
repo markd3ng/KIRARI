@@ -89,12 +89,12 @@ jobs:
       - run: npm ci --prefix scripts/p3-browser
       - run: npm audit --prefix scripts/p3-browser --audit-level moderate
       - run: npx --prefix scripts/p3-browser playwright install --with-deps chromium
-      - run: npm ci --prefix scripts/p4-production/tooling
-      - run: npm audit --prefix scripts/p4-production/tooling --audit-level moderate
       - name: Validate Production routes, assets, navigation, canonicals, robots, and byte equality locally
         env:
           REQUIRE_PRODUCTION_BROWSER: 'true'
         run: node --test scripts/tests/p4-production-browser-fixture.test.mjs
+      - run: npm ci --prefix scripts/p4-production/tooling
+      - run: npm audit --prefix scripts/p4-production/tooling --audit-level moderate
 
   composition:
     if: >-

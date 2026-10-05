@@ -91,6 +91,19 @@ test("main Git deployment stays disabled and Production never edits settings or 
 	assert.doesNotMatch(workflow, /generate-vercel-config|vercel\s+(?:project|settings)\s+(?:update|add|remove)|api\.indexnow\.org|indexing\.googleapis\.com|\bIndexNow\b|Google Indexing API/i);
 });
 
+test("CI runs audited local Production Chromium before the independent deployment-tool audit", () => {
+	const fixtures = ciWorkflow.match(/^  production-fixtures:[\s\S]*?(?=^  \w)/m)?.[0] ?? "";
+	assert.ok(fixtures, "Production fixture job must exist");
+	const browserAudit = fixtures.indexOf("npm audit --prefix scripts/p3-browser --audit-level moderate");
+	const browserTest = fixtures.indexOf("node --test scripts/tests/p4-production-browser-fixture.test.mjs");
+	const toolingInstall = fixtures.indexOf("npm ci --prefix scripts/p4-production/tooling");
+	const toolingAudit = fixtures.indexOf("npm audit --prefix scripts/p4-production/tooling --audit-level moderate");
+	assert.ok(browserAudit >= 0 && browserAudit < browserTest, "audit browser dependencies before executing Chromium");
+	assert.ok(browserTest < toolingInstall && toolingInstall < toolingAudit, "a deployment-tool failure must not skip local browser proof");
+	assert.match(fixtures, /REQUIRE_PRODUCTION_BROWSER: 'true'/);
+	assert.doesNotMatch(fixtures, /continue-on-error|--audit-level (?:high|critical)|secrets\.|id-token: write/);
+});
+
 function preparationActionPin(block) {
 	const claim = stepBlock(block, "Consume this approval before the protected credential job");
 	return /^\s+uses: ([^\n]+)$/m.exec(claim)?.[1] ?? "";
