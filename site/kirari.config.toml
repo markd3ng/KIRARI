@@ -1,6 +1,6 @@
 # Site product settings. Add owner-specific values here; keep credentials in the runtime environment.
 [site]
-url = "https://example.com"
+url = "https://kirari-main.vercel.app"
 title = "My KIRARI Site"
 subtitle = "A personal site"
 base = "/"
