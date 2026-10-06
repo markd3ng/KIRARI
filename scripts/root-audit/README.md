@@ -2,8 +2,12 @@
 
 `pnpm audit --json --audit-level moderate` remains the raw root audit. CI stores
 its stdout, stderr, invocation marker, and actual exit code before evaluating
-the result. It also records a successful `pnpm install --frozen-lockfile` and
-the complete `pnpm ls --recursive --depth Infinity --json` workspace output.
+the result. It also records a successful `pnpm install --frozen-lockfile
+--ignore-scripts` and the complete `pnpm ls --recursive --depth Infinity --json`
+workspace output. After installation, CI confirms HEAD still matches the PR
+event SHA and the worktree has no tracked or untracked changes. The evaluator
+runs only after this integrity gate passes, so install lifecycle scripts cannot
+change the evaluator or policy bytes before they are bound.
 The raw pnpm 9 audit report has empty `findings[].paths` arrays, so the
 evaluator joins the report's affected versions and action resolutions against
 that lock-resolved dependency tree. It requires the exact eight R3 version and

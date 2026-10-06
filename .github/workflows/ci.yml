@@ -107,6 +107,8 @@ jobs:
           printf 'Dependency tree did not start.\n' > "$evidence_dir/dependency-tree.stderr"
           printf '125\n' > "$evidence_dir/dependency-tree.exit-code"
           printf 'NO\n' > "$evidence_dir/dependency-tree.executed"
+          printf 'NOT_CHECKED\n' > "$evidence_dir/source-tree-integrity"
+          printf '{"policyEvaluation":"FAIL","reason":"The evaluator did not run."}\n' > "$evidence_dir/policy-result.json"
 
       - uses: pnpm/action-setup@v4
         with:
@@ -157,7 +159,7 @@ jobs:
         run: |
           set +e
           if command -v pnpm >/dev/null 2>&1; then
-            pnpm install --frozen-lockfile > "$RUNNER_TEMP/kirari-root-audit/dependency-install.stdout" 2> "$RUNNER_TEMP/kirari-root-audit/dependency-install.stderr"
+            pnpm install --frozen-lockfile --ignore-scripts > "$RUNNER_TEMP/kirari-root-audit/dependency-install.stdout" 2> "$RUNNER_TEMP/kirari-root-audit/dependency-install.stderr"
             install_exit_code=$?
             printf 'YES\n' > "$RUNNER_TEMP/kirari-root-audit/dependency-install.executed"
           else
@@ -166,6 +168,25 @@ jobs:
           fi
           printf '%s\n' "$install_exit_code" > "$RUNNER_TEMP/kirari-root-audit/dependency-install.exit-code"
           exit 0
+
+      - name: Verify the checkout stayed at the exact Git tree after dependency installation
+        id: source_integrity
+        if: always() && steps.checkout.outcome == 'success'
+        env:
+          EXPECTED_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -u
+          observed_head=$(git rev-parse HEAD)
+          tracked_changes=$(git diff --name-only HEAD --)
+          untracked_files=$(git ls-files --others --exclude-standard)
+          if [[ "$observed_head" == "$EXPECTED_PR_HEAD_SHA" && -z "$tracked_changes" && -z "$untracked_files" ]]; then
+            printf 'PASS\n' > "$RUNNER_TEMP/kirari-root-audit/source-tree-integrity"
+            exit 0
+          fi
+          printf 'FAIL\n' > "$RUNNER_TEMP/kirari-root-audit/source-tree-integrity"
+          printf 'Expected HEAD: %s\nObserved HEAD: %s\nTracked changes: %s\nUntracked files: %s\n' \
+            "$EXPECTED_PR_HEAD_SHA" "$observed_head" "$tracked_changes" "$untracked_files"
+          exit 1
 
       - name: Capture all lock-resolved workspace dependency trees
         if: always() && steps.checkout.outcome == 'success'
@@ -184,7 +205,7 @@ jobs:
           exit 0
 
       - name: Evaluate the exact raw audit against the fail-closed R3 policy
-        if: always() && steps.checkout.outcome == 'success'
+        if: always() && steps.checkout.outcome == 'success' && steps.source_integrity.outcome == 'success'
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number || '' }}
@@ -232,6 +253,7 @@ jobs:
             ${{ runner.temp }}/kirari-root-audit/dependency-tree.stderr
             ${{ runner.temp }}/kirari-root-audit/dependency-tree.exit-code
             ${{ runner.temp }}/kirari-root-audit/dependency-tree.executed
+            ${{ runner.temp }}/kirari-root-audit/source-tree-integrity
             ${{ runner.temp }}/kirari-root-audit/policy-result.json
           if-no-files-found: error
           retention-days: 30
