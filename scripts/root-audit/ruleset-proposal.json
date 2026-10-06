@@ -1,0 +1,14 @@
+{
+  "schema": "kirari.r3-main-ruleset-proposal/v1",
+  "target": "main",
+  "requirePullRequest": true,
+  "requiredApprovals": 1,
+  "dismissStaleApprovals": true,
+  "requireCodeOwnerReview": false,
+  "requiredStatusChecks": [],
+  "requireUpToDateBranch": false,
+  "blockForcePush": true,
+  "protectDeletion": true,
+  "bypassActors": [],
+  "applied": false
+}

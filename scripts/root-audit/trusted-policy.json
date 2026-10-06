@@ -1,0 +1,79 @@
+{
+  "schema": "kirari.r3-trusted-policy/v1",
+  "repository": "markd3ng/KIRARI",
+  "decisionIssue": 135,
+  "requiredOwnerLogin": "markd3ng",
+  "candidateFiles": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "apps/site/package.json",
+    "workers/kirari-edge/package.json",
+    "packages/site-profile/package.json",
+    ".github/workflows/ci.yml",
+    "scripts/root-audit/cli.mjs",
+    "scripts/root-audit/evaluator.mjs",
+    "scripts/root-audit/policy.json"
+  ],
+  "workspaceManifests": {
+    ".": "kirari",
+    "apps/site": "@kirari/site",
+    "workers/kirari-edge": "@kirari/edge",
+    "packages/site-profile": "@kirari/site-profile"
+  },
+  "workspaceYaml": "packages:\n  - \"apps/*\"\n  - \"workers/*\"\n  - \"packages/*\"\n",
+  "pnpmVersion": "9.14.4",
+  "auditLevel": "moderate",
+  "auditRoot": "apps/site",
+  "issue122": {
+    "number": 122,
+    "expectedState": "open",
+    "title": "[Security follow-up] Remove temporary http-cache-semantics audit exception when upstream fixes CVE-2026-93748",
+    "bodySha256": "882b7de71f43e7f2785c4fcb8003796cb34d1454775e08c60d5bd16cc4d35587",
+    "ghsa": "GHSA-ch52-4w7c-c8xp",
+    "cve": "CVE-2026-93748",
+    "package": "http-cache-semantics",
+    "version": "4.2.0",
+    "severity": "high",
+    "path": "apps/site > astro@7.3.5 > http-cache-semantics@4.2.0",
+    "paths": [
+      "apps/site > @astrojs/mdx@8.0.2 > astro@7.3.5 > http-cache-semantics@4.2.0",
+      "apps/site > @astrojs/svelte@9.0.1 > astro@7.3.5 > http-cache-semantics@4.2.0",
+      "apps/site > astro-expressive-code@0.44.2 > astro@7.3.5 > http-cache-semantics@4.2.0",
+      "apps/site > astro@7.3.5 > http-cache-semantics@4.2.0"
+    ]
+  },
+  "r3": {
+    "ghsa": "GHSA-rj75-hqrm-r3gf",
+    "severity": "moderate",
+    "package": "postcss-selector-parser",
+    "paths": [
+      "apps/site > @tailwindcss/typography@0.5.20 > postcss-selector-parser@6.0.10",
+      "apps/site > @expressive-code/core@0.44.2 > postcss-nested@6.2.0 > postcss-selector-parser@6.1.4",
+      "apps/site > @expressive-code/plugin-collapsible-sections@0.44.2 > @expressive-code/core@0.44.2 > postcss-nested@6.2.0 > postcss-selector-parser@6.1.4",
+      "apps/site > @expressive-code/plugin-line-numbers@0.44.2 > @expressive-code/core@0.44.2 > postcss-nested@6.2.0 > postcss-selector-parser@6.1.4",
+      "apps/site > astro-expressive-code@0.44.2 > rehype-expressive-code@0.44.2 > expressive-code@0.44.2 > @expressive-code/core@0.44.2 > postcss-nested@6.2.0 > postcss-selector-parser@6.1.4",
+      "apps/site > astro-expressive-code@0.44.2 > rehype-expressive-code@0.44.2 > expressive-code@0.44.2 > @expressive-code/plugin-frames@0.44.2 > @expressive-code/core@0.44.2 > postcss-nested@6.2.0 > postcss-selector-parser@6.1.4",
+      "apps/site > astro-expressive-code@0.44.2 > rehype-expressive-code@0.44.2 > expressive-code@0.44.2 > @expressive-code/plugin-shiki@0.44.2 > @expressive-code/core@0.44.2 > postcss-nested@6.2.0 > postcss-selector-parser@6.1.4",
+      "apps/site > astro-expressive-code@0.44.2 > rehype-expressive-code@0.44.2 > expressive-code@0.44.2 > @expressive-code/plugin-text-markers@0.44.2 > @expressive-code/core@0.44.2 > postcss-nested@6.2.0 > postcss-selector-parser@6.1.4"
+    ]
+  },
+  "actions": {
+    "actions/checkout": "11bd71901bbe5b1630ceea73d27597364c9af683",
+    "actions/setup-node": "49933ea5288caeca8642d1e84afbd3f7d6820020",
+    "pnpm/action-setup": "a7487c7e89a18df4991f7f222e4898a00d66ddda",
+    "actions/upload-artifact": "ea165f8d65b6e75b540449e92b4886f43607fa02"
+  },
+  "rulesetProposal": {
+    "target": "main",
+    "requirePullRequest": true,
+    "requiredApprovals": 1,
+    "dismissStaleApprovals": true,
+    "requireCodeOwnerReview": false,
+    "requiredStatusCheck": null,
+    "requireUpToDateBranch": false,
+    "blockForcePush": true,
+    "protectDeletion": true,
+    "bypassActors": []
+  }
+}
