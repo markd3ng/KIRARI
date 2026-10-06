@@ -57,11 +57,14 @@ test("root audit binds the exact PR head, saves raw output and exit status, and 
 	assert.match(rootAuditJob, /pnpm audit --json --audit-level moderate > "\$RUNNER_TEMP\/kirari-root-audit\/audit\.raw\.json" 2> "\$RUNNER_TEMP\/kirari-root-audit\/audit\.stderr"/);
 	assert.match(rootAuditJob, /audit_exit_code=\$\?[\s\S]*?printf '%s\\n' "\$audit_exit_code" > "\$RUNNER_TEMP\/kirari-root-audit\/audit\.exit-code"/);
 	assert.match(rootAuditJob, /name: Evaluate the exact raw audit[\s\S]*?if: always\(\) && steps\.checkout\.outcome == 'success'[\s\S]*?run: node scripts\/root-audit\/cli\.mjs/);
-	assert.match(rootAuditJob, /name: Upload raw audit and policy evaluation evidence[\s\S]*?if: always\(\)[\s\S]*?uses: actions\/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02[\s\S]*?path: \|\n[\s\S]*?kirari-root-audit\/audit\.raw\.json/);
+	assert.match(rootAuditJob, /name: Upload raw audit and policy evaluation evidence[\s\S]*?if: always\(\)[\s\S]*?uses: actions\/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02[\s\S]*?path: \|\n[\s\S]*?kirari-root-audit\/audit\.raw\.json[\s\S]*?kirari-root-audit\/dependency-tree\.raw\.json/);
 	assert.match(rootAuditJob, /retention-days: 30/);
 	assert.match(rootAuditJob, /Prepare a temporary audit workspace without the existing #122 ignore[\s\S]*?run: node scripts\/root-audit\/prepare-unignored-audit\.mjs/);
 	assert.match(rootAuditJob, /working-directory: \$\{\{ runner\.temp \}\}\/kirari-root-audit-unignored-project[\s\S]*?pnpm audit --json --audit-level moderate > "\$RUNNER_TEMP\/kirari-root-audit\/unignored\.audit\.raw\.json"/);
 	assert.match(rootAuditJob, /unignored\.audit\.exit-code[\s\S]*?unignored\.audit\.executed/);
+	assert.match(rootAuditJob, /name: Install the exact frozen lockfile[\s\S]*?pnpm install --frozen-lockfile/);
+	assert.match(rootAuditJob, /name: Capture all lock-resolved workspace dependency trees[\s\S]*?pnpm ls --recursive --depth Infinity --json/);
+	assert.match(rootAuditJob, /DEPENDENCY_TREE_PATH: \$\{\{ runner\.temp \}\}\/kirari-root-audit\/dependency-tree\.raw\.json/);
 	assert.doesNotMatch(rootAuditJob, /GITHUB_TOKEN|issues:\s*read|\$\{\{\s*secrets\./i, "the public comment reader must not receive a token or secret");
 	assert.doesNotMatch(rootAuditJob, /^\s+contents:\s*write\b/m);
 });

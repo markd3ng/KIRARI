@@ -4,13 +4,17 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
 	evaluateAudit,
+	canonicalJson,
 	fetchIssueComments,
 	hashCanonical,
 	existingExceptionBinding,
 	fetchIssue,
+	fetchDecisionIssue,
+	fetchPullRequest,
 	latestOwnerDecision,
 	latestOwnerEvidence,
 	sha256,
+	validateDecisionIssue,
 } from "./evaluator.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -24,6 +28,14 @@ const unignoredAuditExitCodePath = process.env.UNIGNORED_AUDIT_EXIT_CODE_PATH ??
 const unignoredAuditStderrPath = process.env.UNIGNORED_AUDIT_STDERR_PATH ?? join(process.cwd(), "root-audit-unignored.stderr");
 const unignoredAuditExecutedPath = process.env.UNIGNORED_AUDIT_EXECUTED_PATH ?? join(process.cwd(), "root-audit-unignored.executed");
 const unignoredRootManifestPath = process.env.UNIGNORED_ROOT_MANIFEST_PATH ?? join(process.cwd(), "unignored-project/package.json");
+const dependencyTreePath = process.env.DEPENDENCY_TREE_PATH ?? join(process.cwd(), "dependency-tree.raw.json");
+const dependencyTreeExitCodePath = process.env.DEPENDENCY_TREE_EXIT_CODE_PATH ?? join(process.cwd(), "dependency-tree.exit-code");
+const dependencyTreeStderrPath = process.env.DEPENDENCY_TREE_STDERR_PATH ?? join(process.cwd(), "dependency-tree.stderr");
+const dependencyTreeExecutedPath = process.env.DEPENDENCY_TREE_EXECUTED_PATH ?? join(process.cwd(), "dependency-tree.executed");
+const dependencyInstallStdoutPath = process.env.DEPENDENCY_INSTALL_STDOUT_PATH ?? join(process.cwd(), "dependency-install.stdout");
+const dependencyInstallStderrPath = process.env.DEPENDENCY_INSTALL_STDERR_PATH ?? join(process.cwd(), "dependency-install.stderr");
+const dependencyInstallExitCodePath = process.env.DEPENDENCY_INSTALL_EXIT_CODE_PATH ?? join(process.cwd(), "dependency-install.exit-code");
+const dependencyInstallExecutedPath = process.env.DEPENDENCY_INSTALL_EXECUTED_PATH ?? join(process.cwd(), "dependency-install.executed");
 
 function gitHead() {
 	return execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
@@ -37,7 +49,7 @@ function optionalDigest(path) {
 	try { return sha256(readFileSync(path)); } catch (error) { if (error?.code === "ENOENT") return null; throw error; }
 }
 
-function candidateFor({ rawAudit, rawAuditStderr, auditExitCode, auditExecuted, unignoredAudit, unignoredAuditStderr, unignoredAuditExitCode, unignoredAuditExecuted, unignoredRootManifestBytes, existingException, policy }) {
+function candidateFor({ rawAudit, rawAuditStderr, auditExitCode, auditExecuted, unignoredAudit, unignoredAuditStderr, unignoredAuditExitCode, unignoredAuditExecuted, dependencyTree, dependencyTreeStderr, dependencyTreeExitCode, dependencyTreeExecuted, dependencyInstallStdout, dependencyInstallStderr, dependencyInstallExitCode, dependencyInstallExecuted, unignoredRootManifestBytes, existingException, pullRequest, decisionIssue, policy }) {
 	const repository = process.env.GITHUB_REPOSITORY ?? "markd3ng/KIRARI";
 	const prNumber = process.env.PR_NUMBER ? Number(process.env.PR_NUMBER) : null;
 	const headSha = process.env.PR_HEAD_SHA || gitHead();
@@ -46,9 +58,21 @@ function candidateFor({ rawAudit, rawAuditStderr, auditExitCode, auditExecuted, 
 	if (prNumber !== null && (!Number.isSafeInteger(prNumber) || !/^[a-f0-9]{40}$/.test(baseSha ?? ""))) {
 		throw new Error("Pull request candidate lacks its exact base SHA or PR number");
 	}
+	if (prNumber !== null && (repository !== policy.repository || prNumber !== 133 || headSha !== gitHead() || !pullRequest ||
+		pullRequest.number !== prNumber || pullRequest.state !== "open" || pullRequest.baseRef !== "main" || pullRequest.baseRepository !== policy.repository ||
+		pullRequest.headRepository !== policy.repository || pullRequest.baseSha !== baseSha || pullRequest.headSha !== headSha)) {
+		throw new Error("PR event, checked-out source, and current public #133 API state do not match");
+	}
+	const r3Issue = prNumber === null ? null : validateDecisionIssue(decisionIssue, {
+		authenticated: true,
+		repository: policy.repository,
+		issueNumber: policy.issueNumber,
+	}, policy);
 	const policyDigest = hashCanonical(policy);
 	const auditReport = JSON.parse(rawAudit);
-	const visibleHighCount = Object.values(auditReport.advisories).filter((item) => item.severity === "high").length;
+	const visibleHighCount = Object.values(auditReport.advisories)
+		.filter((item) => item.severity === "high")
+		.reduce((count, item) => count + (Array.isArray(item.findings) ? item.findings.length : 0), 0);
 	const manifestPaths = ["package.json", "apps/site/package.json", "workers/kirari-edge/package.json", "packages/site-profile/package.json"];
 	const manifestDigests = Object.fromEntries(manifestPaths.map((path) => [path, digestFile(path)]));
 	const importerManifestPaths = manifestPaths.slice(1);
@@ -104,11 +128,34 @@ function candidateFor({ rawAudit, rawAuditStderr, auditExitCode, auditExecuted, 
 			stderrSha256: sha256(unignoredAuditStderr),
 			exitCode: unignoredAuditExitCode,
 		},
+		dependencyTree: {
+			executed: dependencyTreeExecuted,
+			sha256: sha256(dependencyTree),
+			stderrSha256: sha256(dependencyTreeStderr),
+			exitCode: dependencyTreeExitCode,
+		},
+		dependencyInstall: {
+			executed: dependencyInstallExecuted,
+			stdoutSha256: sha256(dependencyInstallStdout),
+			stderrSha256: sha256(dependencyInstallStderr),
+			exitCode: dependencyInstallExitCode,
+		},
+		pullRequest: pullRequest ? { ...pullRequest } : null,
+		r3Issue,
 	};
 	return { binding, candidateDigest: hashCanonical(binding), policyDigest, baseSha, headSha };
 }
 
-async function getAuthority(candidate) {
+async function getAuthority(candidate, policy) {
+	const decisionIssue = await fetchDecisionIssue({ issueNumber: 135 });
+	const currentR3IssueBinding = validateDecisionIssue(decisionIssue, {
+		authenticated: true,
+		repository: "markd3ng/KIRARI",
+		issueNumber: 135,
+	}, policy);
+	if (canonicalJson(currentR3IssueBinding) !== canonicalJson(candidate.binding.r3Issue)) {
+		throw new Error("R3 Issue #135 changed after candidate binding");
+	}
 	const comments = await fetchIssueComments({ repository: "markd3ng/KIRARI", issueNumber: 135 });
 	const evidence = latestOwnerEvidence(comments, candidate.candidateDigest);
 	const decision = latestOwnerDecision(comments, candidate.candidateDigest);
@@ -132,7 +179,8 @@ function writeResult(result) {
 			"",
 			`- RAW_AUDIT_EXECUTED=${result.rawAuditExecuted ? "YES" : "NO"}`,
 			`- RAW_AUDIT_EXIT_CODE=${result.rawAuditExitCode}`,
-			`- RAW_AUDIT_FINDINGS=${result.rawAuditFindingCount ?? "UNPARSED"}`,
+			`- RAW_AUDIT_FINDINGS=${JSON.stringify(result.rawAuditVulnerabilityCounts ?? "UNPARSED")}`,
+			`- RAW_AUDIT_FINDING_PATHS=${result.rawAuditFindingCount ?? "UNPARSED"}`,
 			`- UNIGNORED_AUDIT_EXECUTED=${result.unignoredAuditExecuted ? "YES" : "NO"}`,
 			`- UNIGNORED_AUDIT_EXIT_CODE=${result.unignoredAuditExitCode}`,
 			`- AUDIT_SCHEMA_SUPPORTED=${result.auditSchemaSupported ? "YES" : "NO"}`,
@@ -149,6 +197,10 @@ let rawAuditExecuted = false;
 let rawAuditExitCode = null;
 let unignoredAuditExecuted = false;
 let unignoredAuditExitCode = null;
+let dependencyTreeExecuted = false;
+let dependencyTreeExitCode = null;
+let dependencyInstallExecuted = false;
+let dependencyInstallExitCode = null;
 try {
 	const policy = JSON.parse(readFileSync(join(root, "scripts/root-audit/policy.json"), "utf8"));
 	const rawAudit = readFileSync(rawAuditPath, "utf8");
@@ -163,18 +215,34 @@ try {
 	const parsedUnignoredExitCode = /^\d+$/.test(unignoredExitText) ? Number(unignoredExitText) : null;
 	const unignoredAuditStderr = readFileSync(unignoredAuditStderrPath, "utf8");
 	unignoredAuditExecuted = readFileSync(unignoredAuditExecutedPath, "utf8").trim() === "YES";
-	const unignoredAuditExitCode = unignoredAuditExecuted && Number.isSafeInteger(parsedUnignoredExitCode) ? parsedUnignoredExitCode : null;
+	unignoredAuditExitCode = unignoredAuditExecuted && Number.isSafeInteger(parsedUnignoredExitCode) ? parsedUnignoredExitCode : null;
+	const dependencyTree = readFileSync(dependencyTreePath, "utf8");
+	const dependencyTreeExitCodeText = readFileSync(dependencyTreeExitCodePath, "utf8").trim();
+	const parsedDependencyTreeExitCode = /^\d+$/.test(dependencyTreeExitCodeText) ? Number(dependencyTreeExitCodeText) : null;
+	const dependencyTreeStderr = readFileSync(dependencyTreeStderrPath, "utf8");
+	dependencyTreeExecuted = readFileSync(dependencyTreeExecutedPath, "utf8").trim() === "YES";
+	dependencyTreeExitCode = dependencyTreeExecuted && Number.isSafeInteger(parsedDependencyTreeExitCode) ? parsedDependencyTreeExitCode : null;
+	const dependencyInstallStdout = readFileSync(dependencyInstallStdoutPath, "utf8");
+	const dependencyInstallStderr = readFileSync(dependencyInstallStderrPath, "utf8");
+	const dependencyInstallExitText = readFileSync(dependencyInstallExitCodePath, "utf8").trim();
+	const parsedDependencyInstallExitCode = /^\d+$/.test(dependencyInstallExitText) ? Number(dependencyInstallExitText) : null;
+	dependencyInstallExecuted = readFileSync(dependencyInstallExecutedPath, "utf8").trim() === "YES";
+	dependencyInstallExitCode = dependencyInstallExecuted && Number.isSafeInteger(parsedDependencyInstallExitCode) ? parsedDependencyInstallExitCode : null;
 	const unignoredRootManifestBytes = readFileSync(unignoredRootManifestPath);
 	const unignoredRootManifestDigest = sha256(unignoredRootManifestBytes);
 	const unignoredRootManifest = JSON.parse(unignoredRootManifestBytes.toString("utf8"));
 	const rootManifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 	const existingException = await fetchIssue({ issueNumber: policy.preservedExistingException.issueNumber });
 	const existingExceptionSource = { authenticated: true, repository: policy.repository, issueNumber: policy.preservedExistingException.issueNumber };
-	const candidate = candidateFor({ rawAudit, rawAuditStderr, auditExitCode, auditExecuted: rawAuditExecuted, unignoredAudit, unignoredAuditStderr, unignoredAuditExitCode, unignoredAuditExecuted, unignoredRootManifestBytes, existingException, policy });
+	const repository = process.env.GITHUB_REPOSITORY ?? policy.repository;
+	const prNumber = process.env.PR_NUMBER ? Number(process.env.PR_NUMBER) : null;
+	const pullRequest = prNumber === null ? null : await fetchPullRequest({ repository, pullNumber: prNumber });
+	const decisionIssue = prNumber === null ? null : await fetchDecisionIssue({ issueNumber: policy.issueNumber });
+	const candidate = candidateFor({ rawAudit, rawAuditStderr, auditExitCode, auditExecuted: rawAuditExecuted, unignoredAudit, unignoredAuditStderr, unignoredAuditExitCode, unignoredAuditExecuted, dependencyTree, dependencyTreeStderr, dependencyTreeExitCode, dependencyTreeExecuted, dependencyInstallStdout, dependencyInstallStderr, dependencyInstallExitCode, dependencyInstallExecuted, unignoredRootManifestBytes, existingException, pullRequest, decisionIssue, policy });
 	let authority = null;
 	if (rawAudit.includes(policy.audit.advisory.githubAdvisoryId) && candidate.binding.repository === policy.repository && candidate.binding.prNumber === 133) {
 		try {
-			authority = await getAuthority(candidate);
+			authority = await getAuthority(candidate, policy);
 		} catch (error) {
 			authority = { authenticated: false, sourceError: error instanceof Error ? error.message : "GitHub source failed" };
 		}
@@ -186,6 +254,14 @@ try {
 		unignoredAudit,
 		unignoredAuditExitCode,
 		unignoredAuditExecuted,
+		dependencyTreeRaw: dependencyTree,
+		dependencyTreeStderr,
+		dependencyTreeExitCode,
+		dependencyTreeExecuted,
+		dependencyInstallStdout,
+		dependencyInstallStderr,
+		dependencyInstallExitCode,
+		dependencyInstallExecuted,
 		unignoredRootManifest,
 		unignoredRootManifestDigest,
 		policy,
@@ -208,6 +284,10 @@ try {
 		rawAuditExitCode,
 		unignoredAuditExecuted,
 		unignoredAuditExitCode,
+		dependencyTreeExecuted,
+		dependencyTreeExitCode,
+		dependencyInstallExecuted,
+		dependencyInstallExitCode,
 		auditSchemaSupported: false,
 		policyEvaluation: "FAIL",
 		consumptionAuthorization: "NO",

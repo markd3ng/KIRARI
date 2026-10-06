@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { evaluateAudit, existingExceptionBinding, fetchIssueComments, hashCanonical, latestOwnerDecision, sha256 } from "../root-audit/evaluator.mjs";
+import { decisionIssueBinding, evaluateAudit, existingExceptionBinding, fetchDecisionIssue, fetchIssueComments, fetchPullRequest, hashCanonical, latestOwnerDecision, sha256, validateDecisionIssue } from "../root-audit/evaluator.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const policy = JSON.parse(readFileSync(join(root, "scripts/root-audit/policy.json"), "utf8"));
@@ -19,6 +19,13 @@ const existingException = {
 	title: policy.preservedExistingException.issueTitle,
 	body: policy.preservedExistingException.requiredIssueBodyPhrases.join("\n"),
 	updated_at: "2026-10-06T06:20:00Z",
+};
+const decisionIssue = {
+	number: 135,
+	state: "open",
+	title: policy.issueTitle,
+	body: policy.requiredIssueBodyPhrases.join("\n"),
+	updated_at: "2026-10-06T06:19:55Z",
 };
 
 function advisory({
@@ -52,13 +59,76 @@ function groupFindings(findings) {
 	return [...byVersion].map(([version, paths]) => ({ version, paths }));
 }
 
+function treeRaw(extraFindings = []) {
+	const rootNode = { name: "@kirari/site", version: "0.4.1", path: "/workspace/apps/site", private: true, dependencies: {} };
+	const allFindings = [...policy.audit.expectedFindings, ...policy.preservedExistingException.expectedFindings, ...extraFindings];
+	for (const finding of allFindings) {
+		const parts = finding.path.split(">");
+		assert.equal(parts.shift(), "apps__site");
+		let dependencies = rootNode.dependencies;
+		for (const [index, name] of parts.entries()) {
+			const version = index === parts.length - 1 ? finding.version : "1.0.0";
+			const node = dependencies[name] ?? {
+				from: name,
+				version,
+				resolved: `https://registry.npmjs.org/${encodeURIComponent(name)}/-/${encodeURIComponent(name)}-${version}.tgz`,
+				path: `/workspace/node_modules/${parts.slice(0, index + 1).join("/node_modules/")}`,
+				dependencies: {},
+			};
+			assert.equal(node.version, version, `fixture dependency version conflict at ${name}`);
+			dependencies[name] = node;
+			dependencies = node.dependencies;
+		}
+	}
+	return JSON.stringify([
+		{ name: "kirari", version: "0.4.1", path: "/workspace", private: true, devDependencies: {} },
+		rootNode,
+		{ name: "@kirari/site-profile", version: "0.1.0", path: "/workspace/packages/site-profile", private: true },
+		{ name: "@kirari/edge", version: "0.1.0", path: "/workspace/workers/kirari-edge", private: true, devDependencies: {} },
+	]);
+}
+
+function exceptionAdvisory() {
+	return {
+		id: 10999,
+		url: `https://github.com/advisories/${policy.preservedExistingException.githubAdvisoryId}`,
+		title: "Fixture CVE-2026-93748 advisory",
+		module_name: policy.preservedExistingException.package,
+		severity: "high",
+		vulnerable_versions: "<=4.2.0",
+		patched_versions: ">=4.3.0",
+		findings: groupFindings(policy.preservedExistingException.expectedFindings),
+		cves: [policy.preservedExistingException.cve],
+		github_advisory_id: policy.preservedExistingException.githubAdvisoryId,
+	};
+}
+
+function actionsFor(advisories) {
+	const byModule = new Map();
+	for (const item of Object.values(advisories)) {
+		const paths = item.github_advisory_id === policy.audit.advisory.githubAdvisoryId
+			? policy.audit.advisory.expectedAuditResolutionPaths
+			: item.github_advisory_id === policy.preservedExistingException.githubAdvisoryId
+				? policy.preservedExistingException.expectedAuditResolutionPaths
+				: item.findings.flatMap((finding) => finding.paths);
+		const action = byModule.get(item.module_name) ?? { action: "review", module: item.module_name, resolves: [] };
+		for (const path of paths) action.resolves.push({ id: item.id, path, dev: false, optional: false, bundled: false });
+		byModule.set(item.module_name, action);
+	}
+	return [...byModule.values()];
+}
+
 function report({ advisories = { 10001: advisory() }, counts = {}, ignoredCve = true } = {}) {
 	const countsBySeverity = { info: 0, low: 0, moderate: 0, high: 0, critical: 0, ...counts };
-	for (const item of Object.values(advisories)) countsBySeverity[item.severity] += 1;
+	for (const item of Object.values(advisories)) countsBySeverity[item.severity] += item.findings.length;
 	// pnpm 9 filters #122's exact CVE from advisories but leaves it in metadata.
 	if (ignoredCve) countsBySeverity.high += 1;
+	const actionAdvisories = { ...advisories };
+	if (ignoredCve && !Object.values(actionAdvisories).some((item) => item.github_advisory_id === policy.preservedExistingException.githubAdvisoryId)) {
+		actionAdvisories[10999] = exceptionAdvisory();
+	}
 	return {
-		actions: [],
+		actions: actionsFor(actionAdvisories),
 		advisories,
 		muted: [],
 		metadata: {
@@ -72,37 +142,14 @@ function report({ advisories = { 10001: advisory() }, counts = {}, ignoredCve = 
 }
 
 function unignoredReport() {
-	const exception = {
-		id: 10999,
-		url: `https://github.com/advisories/${policy.preservedExistingException.githubAdvisoryId}`,
-		title: "Fixture CVE-2026-93748 advisory",
-		module_name: policy.preservedExistingException.package,
-		severity: "high",
-		vulnerable_versions: "<=4.2.0",
-		patched_versions: ">=4.3.0",
-		findings: groupFindings(policy.preservedExistingException.expectedFindings),
-		cves: [policy.preservedExistingException.cve],
-		github_advisory_id: policy.preservedExistingException.githubAdvisoryId,
-	};
-	return report({ advisories: { 10001: advisory(), 10999: exception }, ignoredCve: false });
+	return report({ advisories: { 10001: advisory(), 10999: exceptionAdvisory() }, ignoredCve: false });
 }
 
 function unignoredFromPrimary(raw) {
 	try {
 		const reportValue = JSON.parse(raw);
-		const existing = {
-			id: 10999,
-			url: `https://github.com/advisories/${policy.preservedExistingException.githubAdvisoryId}`,
-			title: "Fixture CVE-2026-93748 advisory",
-			module_name: policy.preservedExistingException.package,
-			severity: "high",
-			vulnerable_versions: "<=4.2.0",
-			patched_versions: ">=4.3.0",
-			findings: groupFindings(policy.preservedExistingException.expectedFindings),
-			cves: [policy.preservedExistingException.cve],
-			github_advisory_id: policy.preservedExistingException.githubAdvisoryId,
-		};
-		reportValue.advisories[10999] = existing;
+		reportValue.advisories[10999] = exceptionAdvisory();
+		reportValue.actions = actionsFor(reportValue.advisories);
 		return JSON.stringify(reportValue);
 	} catch {
 		return JSON.stringify(unignoredReport());
@@ -113,6 +160,7 @@ const unignoredRootManifest = structuredClone(rootManifest);
 delete unignoredRootManifest.pnpm.auditConfig.ignoreCves;
 delete unignoredRootManifest.pnpm.auditConfig;
 const unignoredRootManifestDigest = sha256(JSON.stringify(unignoredRootManifest));
+const dependencyTreeRaw = treeRaw();
 
 function candidate(overrides = {}) {
 	const issue = overrides.existingException ?? existingException;
@@ -132,6 +180,8 @@ function candidate(overrides = {}) {
 		unignoredRootManifestDigest,
 		audit: { executed: true, sha256: sha256(JSON.stringify(report())), exitCode: 1, expectedR3Findings: policy.audit.expectedFindings },
 		unignoredAudit: { executed: true, sha256: sha256(JSON.stringify(unignoredReport())), exitCode: 1 },
+		dependencyTree: { executed: true, sha256: sha256(dependencyTreeRaw), stderrSha256: sha256(""), exitCode: 0 },
+		dependencyInstall: { executed: true, stdoutSha256: sha256("install stdout"), stderrSha256: sha256("install stderr"), exitCode: 0 },
 		...overrides.binding,
 	};
 	return {
@@ -211,9 +261,14 @@ function evaluate(overrides = {}) {
 	const exitCode = overrides.auditExitCode ?? 1;
 	const supplementalRaw = overrides.unignoredAudit ?? unignoredFromPrimary(rawAudit);
 	const supplementalExitCode = overrides.unignoredAuditExitCode ?? 1;
+	const currentTreeRaw = overrides.dependencyTreeRaw ?? dependencyTreeRaw;
+	const installStdout = overrides.dependencyInstallStdout ?? "install stdout";
+	const installStderr = overrides.dependencyInstallStderr ?? "install stderr";
 	const sourceCandidate = overrides.candidate ?? candidate({ binding: {
 		audit: { executed: overrides.auditExecuted ?? true, sha256: sha256(rawAudit), exitCode, expectedR3Findings: policy.audit.expectedFindings },
 		unignoredAudit: { executed: overrides.unignoredAuditExecuted ?? true, sha256: sha256(supplementalRaw), exitCode: supplementalExitCode },
+		dependencyTree: { executed: overrides.dependencyTreeExecuted ?? true, sha256: sha256(currentTreeRaw), stderrSha256: sha256(overrides.dependencyTreeStderr ?? ""), exitCode: overrides.dependencyTreeExitCode ?? 0 },
+		dependencyInstall: { executed: overrides.dependencyInstallExecuted ?? true, stdoutSha256: sha256(installStdout), stderrSha256: sha256(installStderr), exitCode: overrides.dependencyInstallExitCode ?? 0 },
 	} });
 	return evaluateAudit({
 		rawAudit,
@@ -225,6 +280,14 @@ function evaluate(overrides = {}) {
 		unignoredAudit: supplementalRaw,
 		unignoredAuditExitCode: supplementalExitCode,
 		unignoredAuditExecuted: overrides.unignoredAuditExecuted ?? true,
+		dependencyTreeRaw: currentTreeRaw,
+		dependencyTreeExitCode: overrides.dependencyTreeExitCode ?? 0,
+		dependencyTreeExecuted: overrides.dependencyTreeExecuted ?? true,
+		dependencyTreeStderr: overrides.dependencyTreeStderr ?? "",
+		dependencyInstallStdout: installStdout,
+		dependencyInstallStderr: installStderr,
+		dependencyInstallExitCode: overrides.dependencyInstallExitCode ?? 0,
+		dependencyInstallExecuted: overrides.dependencyInstallExecuted ?? true,
 		unignoredRootManifest,
 		unignoredRootManifestDigest,
 		existingException: overrides.existingException ?? existingException,
@@ -272,11 +335,11 @@ test("wrong or missing GHSA identity fails", () => {
 
 test("additional moderate, high, and critical advisories are never covered by R3 approval", () => {
 	for (const severity of ["moderate", "high", "critical"]) {
-		const advisories = { 10001: advisory(), 10002: advisory({ id: 10002, github_advisory_id: "GHSA-aaaa-bbbb-cccc", module_name: "other-package", severity, findings: [{ version: "1.0.0", paths: ["apps__site>other-package"] }] }) };
+		const advisories = { 10001: advisory() };
 		const extra = advisory({ id: 10002, github_advisory_id: "GHSA-aaaa-bbbb-cccc", module_name: "other-package", severity, findings: [{ version: "1.0.0", paths: ["apps__site>other-package"] }] });
 		advisories[10002] = extra;
 		const sourceCandidate = candidate();
-		assertFail(evaluate({ rawAudit: JSON.stringify(report({ advisories })), candidate: sourceCandidate, authority: approvedAuthority(sourceCandidate) }));
+		assertFail(evaluate({ rawAudit: JSON.stringify(report({ advisories })), candidate: sourceCandidate, authority: approvedAuthority(sourceCandidate), dependencyTreeRaw: treeRaw([{ version: "1.0.0", path: "apps__site>other-package" }]) }));
 	}
 });
 
@@ -349,10 +412,10 @@ test("the supplemental unignored audit must keep #122's exact package, version, 
 
 test("low-only findings preserve the existing moderate threshold", () => {
 	const low = advisory({ id: 10002, github_advisory_id: "GHSA-low0-low0-low0", module_name: "low-package", severity: "low", findings: [{ version: "1.0.0", paths: ["apps__site>low-package"] }] });
-	const result = evaluate({ rawAudit: JSON.stringify(report({ advisories: { 10002: low } })), auditExitCode: 0 });
+	const result = evaluate({ rawAudit: JSON.stringify(report({ advisories: { 10002: low } })), auditExitCode: 0, dependencyTreeRaw: treeRaw([{ version: "1.0.0", path: "apps__site>low-package" }]) });
 	assert.equal(result.policyEvaluation, "PASS", result.reason);
 	assert.equal(result.qualifyingFindings.length, 0);
-	const filteredReport = report({ advisories: {}, counts: { low: 1 } });
+	const filteredReport = report({ advisories: {} });
 	const filtered = evaluate({ rawAudit: JSON.stringify(filteredReport), auditExitCode: 0 });
 	assert.equal(filtered.policyEvaluation, "PASS", filtered.reason);
 	assert.equal(filtered.qualifyingFindings.length, 0);
@@ -389,6 +452,24 @@ test("wrong audit exit status and unknown metadata fields fail", () => {
 	assertFail(evaluate({ rawAudit: JSON.stringify(missingVisibleModerate) }));
 });
 
+test("dependency tree and nested pnpm 9 schema records are exact and fail closed", () => {
+	const withUnknownFinding = report();
+	withUnknownFinding.advisories[10001].findings[0].unexpected = "ignored";
+	assertFail(evaluate({ rawAudit: JSON.stringify(withUnknownFinding) }));
+	const withUnknownResolution = report();
+	withUnknownResolution.actions[0].resolves[0].future = true;
+	assertFail(evaluate({ rawAudit: JSON.stringify(withUnknownResolution) }));
+	const treeWithUnknownField = JSON.parse(dependencyTreeRaw);
+	treeWithUnknownField[0].unreviewed = true;
+	assertFail(evaluate({ dependencyTreeRaw: JSON.stringify(treeWithUnknownField) }));
+	assertFail(evaluate({ dependencyTreeExecuted: false }));
+	assertFail(evaluate({ dependencyTreeExitCode: 1 }));
+	assertFail(evaluate({ dependencyInstallExitCode: 1 }));
+	const ok = evaluate();
+	assert.equal(ok.rawAuditFindingCount, policy.audit.expectedFindings.length);
+	assert.deepEqual(ok.rawAuditVulnerabilityCounts, { info: 0, low: 0, moderate: 2, high: 1, critical: 0 });
+});
+
 test("GitHub evidence reads use only the fixed unauthenticated public API source", async () => {
 	const requests = [];
 	const response = { ok: true, json: async () => [] };
@@ -405,4 +486,45 @@ test("GitHub evidence reads use only the fixed unauthenticated public API source
 	assert.deepEqual(requests[0].options.headers, { accept: "application/vnd.github+json", "x-github-api-version": "2022-11-28" });
 	assert.equal(Object.hasOwn(requests[0].options.headers, "authorization"), false);
 	await assert.rejects(fetchIssueComments({ repository: "attacker/repo", issueNumber: 135, fetchImpl: async () => response }));
+});
+
+test("current PR source is read from the fixed public API and must identify PR #133", async () => {
+	const requests = [];
+	const pull = {
+		number: 133,
+		state: "open",
+		base: { ref: "main", sha: baseSha, repo: { full_name: "markd3ng/KIRARI" } },
+		head: { ref: "codex/p4-authorized-production", sha: headSha, repo: { full_name: "markd3ng/KIRARI" } },
+	};
+	const source = await fetchPullRequest({
+		repository: "markd3ng/KIRARI",
+		pullNumber: 133,
+		fetchImpl: async (url, options) => {
+			requests.push({ url, options });
+			return { ok: true, json: async () => pull };
+		},
+	});
+	assert.deepEqual(source, { number: 133, state: "open", baseRef: "main", headRef: "codex/p4-authorized-production", baseSha, headSha, baseRepository: "markd3ng/KIRARI", headRepository: "markd3ng/KIRARI" });
+	assert.equal(requests[0].url, "https://api.github.com/repos/markd3ng/KIRARI/pulls/133");
+	assert.equal(Object.hasOwn(requests[0].options.headers, "authorization"), false);
+	await assert.rejects(fetchPullRequest({ repository: "attacker/repo", pullNumber: 133, fetchImpl: async () => ({ ok: true, json: async () => pull }) }));
+});
+
+test("R3 authority is bound to the exact open #135 decision contract", async () => {
+	const source = { authenticated: true, repository: "markd3ng/KIRARI", issueNumber: 135 };
+	assert.deepEqual(validateDecisionIssue(decisionIssue, source, policy), decisionIssueBinding(decisionIssue));
+	assert.throws(() => validateDecisionIssue({ ...decisionIssue, state: "closed" }, source, policy), /closed or its exact decision identity changed/i);
+	assert.throws(() => validateDecisionIssue({ ...decisionIssue, body: "unrelated" }, source, policy), /contract changed or was revoked/i);
+	assert.throws(() => validateDecisionIssue(decisionIssue, { ...source, repository: "attacker/repo" }, policy), /cannot be verified/i);
+	const requests = [];
+	const fetched = await fetchDecisionIssue({
+		issueNumber: 135,
+		fetchImpl: async (url, options) => {
+			requests.push({ url, options });
+			return { ok: true, json: async () => decisionIssue };
+		},
+	});
+	assert.equal(fetched.number, 135);
+	assert.equal(requests[0].url, "https://api.github.com/repos/markd3ng/KIRARI/issues/135");
+	assert.equal(Object.hasOwn(requests[0].options.headers, "authorization"), false);
 });

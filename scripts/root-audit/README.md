@@ -2,22 +2,32 @@
 
 `pnpm audit --json --audit-level moderate` remains the raw root audit. CI stores
 its stdout, stderr, invocation marker, and actual exit code before evaluating
-the result. The evaluator does not change pnpm configuration, remove findings,
-or treat an audit error as a pass. Its JSON parser accepts the pnpm 9.14.4
-report shape only; new fields, missing identity/path data, inconsistent
-severity counts, nonempty `muted`/`actions`, and malformed output fail closed.
-Below-threshold info/low totals may exceed visible advisories because the
-existing command uses `--audit-level moderate`; any qualifying moderate+ total
-must still reconcile exactly to visible advisories and the single #122 delta.
+the result. It also records a successful `pnpm install --frozen-lockfile` and
+the complete `pnpm ls --recursive --depth Infinity --json` workspace output.
+The raw pnpm 9 audit report has empty `findings[].paths` arrays, so the
+evaluator joins the report's affected versions and action resolutions against
+that lock-resolved dependency tree. It requires the exact eight R3 version and
+path pairs plus the exact reviewed #122 action path. Both audit runs must agree
+on their action resolutions and advisory set except for #122.
+
+The evaluator accepts the observed pnpm 9.14.4 schema only. It validates
+top-level and nested action, resolution, advisory, finding, metadata, and
+dependency-tree fields; unknown fields, malformed records, unexplained
+vulnerability counts, unsuccessful commands, and mismatched paths fail
+closed. `RAW_AUDIT_FINDINGS` reports pnpm's severity counts; the separate
+`RAW_AUDIT_FINDING_PATHS` value reports lock-resolved package paths.
 
 The only candidate R3 tuple is `GHSA-rj75-hqrm-r3gf` for
 `postcss-selector-parser` at moderate severity. `policy.json` lists every
-reviewed version/path pair. The evaluator compares the sorted complete set,
-not a path count or package-name match. It binds the raw audit bytes and exit
-status, repository, Issue/PR, base and head SHAs, lockfile, manifests, policy,
-evaluator files, and workflow. Canonical JSON recursively sorts object keys,
-preserves array order, encodes UTF-8 without insignificant whitespace, and
-rejects non-JSON and non-finite values before SHA-256 hashing.
+reviewed version/path pair and the exact pnpm audit action paths. The evaluator
+compares the sorted complete lock-resolved set, not a count or package-name
+match. For PR #133 it checks the checked-out HEAD against the event SHA and
+current public GitHub PR API state, including current base/head SHAs and
+repository identity. The candidate binds the audit/tree bytes and command
+statuses, install output, repository, Issue/PR, base and head SHAs, lockfile,
+manifests, policy, evaluator files, and workflow. Canonical JSON recursively
+sorts object keys, preserves array order, encodes UTF-8 without insignificant
+whitespace, and rejects non-JSON and non-finite values before SHA-256 hashing.
 
 The only package-manager ignore remains the exact `CVE-2026-93748` entry
 already recorded under #122. CI retains the normal configured raw audit, then

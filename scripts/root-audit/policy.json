@@ -3,24 +3,41 @@
 	"policyVersion": "r3-root-audit-2026-10-06",
 	"repository": "markd3ng/KIRARI",
 	"issueNumber": 135,
+	"issueTitle": "[P4-E] Temporary root dependency exception for upstream-blocked selector parser",
+	"requiredIssueBodyPhrases": [
+		"PARENT_CONTRACT=#99 / RM-05",
+		"PROPOSED_PHASE=P4_AUTHORIZED_PRODUCTION_DEPLOYMENT",
+		"This issue records a proposal only; no exception has been approved or applied.",
+		"Keep this decision separate from T1, C1, and existing Issue #122."
+	],
 	"state": "OWNER_REVIEWED_FOR_ENGINEERING",
 	"consumptionAuthorization": "NO",
 	"audit": {
 		"minimumSeverity": "moderate",
+		"importers": [
+			{ "path": ".", "name": "kirari" },
+			{ "path": "apps/site", "name": "@kirari/site" },
+			{ "path": "packages/site-profile", "name": "@kirari/site-profile" },
+			{ "path": "workers/kirari-edge", "name": "@kirari/edge" }
+		],
 		"advisory": {
 			"githubAdvisoryId": "GHSA-rj75-hqrm-r3gf",
 			"package": "postcss-selector-parser",
-			"severity": "moderate"
+			"severity": "moderate",
+			"expectedAuditResolutionPaths": [
+				"apps__site>@expressive-code/core>postcss-nested>postcss-selector-parser",
+				"apps__site>@tailwindcss/typography>postcss-selector-parser"
+			]
 		},
 		"expectedFindings": [
 			{ "version": "6.0.10", "path": "apps__site>@tailwindcss/typography>postcss-selector-parser" },
 			{ "version": "6.1.4", "path": "apps__site>@expressive-code/core>postcss-nested>postcss-selector-parser" },
 			{ "version": "6.1.4", "path": "apps__site>@expressive-code/plugin-collapsible-sections>@expressive-code/core>postcss-nested>postcss-selector-parser" },
 			{ "version": "6.1.4", "path": "apps__site>@expressive-code/plugin-line-numbers>@expressive-code/core>postcss-nested>postcss-selector-parser" },
-			{ "version": "6.1.4", "path": "apps__site>astro-expressive-code>expressive-code>@expressive-code/core>postcss-nested>postcss-selector-parser" },
-			{ "version": "6.1.4", "path": "apps__site>astro-expressive-code>expressive-code>@expressive-code/plugin-frames>@expressive-code/core>postcss-nested>postcss-selector-parser" },
-			{ "version": "6.1.4", "path": "apps__site>astro-expressive-code>expressive-code>@expressive-code/plugin-shiki>@expressive-code/core>postcss-nested>postcss-selector-parser" },
-			{ "version": "6.1.4", "path": "apps__site>astro-expressive-code>expressive-code>@expressive-code/plugin-text-markers>@expressive-code/core>postcss-nested>postcss-selector-parser" }
+			{ "version": "6.1.4", "path": "apps__site>astro-expressive-code>rehype-expressive-code>expressive-code>@expressive-code/core>postcss-nested>postcss-selector-parser" },
+			{ "version": "6.1.4", "path": "apps__site>astro-expressive-code>rehype-expressive-code>expressive-code>@expressive-code/plugin-frames>@expressive-code/core>postcss-nested>postcss-selector-parser" },
+			{ "version": "6.1.4", "path": "apps__site>astro-expressive-code>rehype-expressive-code>expressive-code>@expressive-code/plugin-shiki>@expressive-code/core>postcss-nested>postcss-selector-parser" },
+			{ "version": "6.1.4", "path": "apps__site>astro-expressive-code>rehype-expressive-code>expressive-code>@expressive-code/plugin-text-markers>@expressive-code/core>postcss-nested>postcss-selector-parser" }
 		]
 	},
 	"preservedExistingException": {
@@ -33,6 +50,7 @@
 		"expectedFindings": [
 			{ "version": "4.2.0", "path": "apps__site>astro>http-cache-semantics" }
 		],
+		"expectedAuditResolutionPaths": ["apps__site>astro>http-cache-semantics"],
 		"manifestIgnorePath": "pnpm.auditConfig.ignoreCves",
 		"manifestIgnoreValues": ["CVE-2026-93748"],
 		"requiredIssueBodyPhrases": [
