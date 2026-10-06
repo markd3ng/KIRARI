@@ -110,7 +110,7 @@ jobs:
           printf 'NOT_CHECKED\n' > "$evidence_dir/source-tree-integrity"
           printf '{"policyEvaluation":"FAIL","reason":"The evaluator did not run."}\n' > "$evidence_dir/policy-result.json"
 
-      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
         with:
           version: 9.14.4
 

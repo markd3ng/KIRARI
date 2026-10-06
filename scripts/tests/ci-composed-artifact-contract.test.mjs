@@ -56,7 +56,7 @@ test("normal deterministic CI remains intact and composition is limited to manua
 test("root audit binds the exact PR head, saves raw output and exit status, and receives no token", () => {
 	assert.ok(rootAuditJob, "a dedicated root audit job must run");
 	assert.match(rootAuditJob, /uses: actions\/checkout@11bd71901bbe5b1630ceea73d27597364c9af683[\s\S]*?repository: \$\{\{ github\.event\.pull_request\.head\.repo\.full_name \|\| github\.repository \}\}[\s\S]*?ref: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}[\s\S]*?persist-credentials: false/);
-	assert.match(rootAuditJob, /uses: pnpm\/action-setup@[a-f0-9]{40}[\s\S]*?version: 9\.14\.4/);
+	assert.match(rootAuditJob, /uses: pnpm\/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1[\s\S]*?version: 9\.14\.4/);
 	assert.match(rootAuditJob, /uses: actions\/setup-node@[a-f0-9]{40}[\s\S]*?node-version-file: \.nvmrc/);
 	assert.match(rootAuditJob, /pnpm --config\.ignore-pnpmfile=true audit --json --audit-level moderate > "\$RUNNER_TEMP\/kirari-root-audit\/audit\.raw\.json" 2> "\$RUNNER_TEMP\/kirari-root-audit\/audit\.stderr"/);
 	assert.match(rootAuditJob, /audit_exit_code=\$\?[\s\S]*?printf '%s\\n' "\$audit_exit_code" > "\$RUNNER_TEMP\/kirari-root-audit\/audit\.exit-code"/);
