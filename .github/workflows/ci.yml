@@ -51,7 +51,7 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/root-audit-evaluator.test.mjs scripts/tests/root-audit-prepare.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/p3-browser-oidc.test.mjs scripts/tests/p3-staging-workflow-contract.test.mjs scripts/tests/vercel-preview-deployment.test.mjs
+      - run: node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/root-audit-source-integrity.test.mjs scripts/tests/root-audit-evaluator.test.mjs scripts/tests/root-audit-prepare.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/p3-browser-oidc.test.mjs scripts/tests/p3-staging-workflow-contract.test.mjs scripts/tests/vercel-preview-deployment.test.mjs
       - name: Verify production authorization, immutable promotion, validation, and rollback contracts
         run: node --test scripts/tests/production-authorization.test.mjs scripts/tests/p4-*.test.mjs scripts/tests/site-artifact.test.mjs scripts/tests/vercel-production-artifact.test.mjs
       - run: node apps/site/scripts/materialize-profile.mjs
@@ -128,7 +128,7 @@ jobs:
         run: |
           set +e
           if command -v pnpm >/dev/null 2>&1; then
-            pnpm audit --json --audit-level moderate > "$RUNNER_TEMP/kirari-root-audit/audit.raw.json" 2> "$RUNNER_TEMP/kirari-root-audit/audit.stderr"
+            pnpm --config.ignore-pnpmfile=true audit --json --audit-level moderate > "$RUNNER_TEMP/kirari-root-audit/audit.raw.json" 2> "$RUNNER_TEMP/kirari-root-audit/audit.stderr"
             audit_exit_code=$?
             printf 'YES\n' > "$RUNNER_TEMP/kirari-root-audit/audit.executed"
           else
@@ -144,7 +144,7 @@ jobs:
         run: |
           set +e
           if [[ -f package.json ]] && command -v pnpm >/dev/null 2>&1; then
-            pnpm audit --json --audit-level moderate > "$RUNNER_TEMP/kirari-root-audit/unignored.audit.raw.json" 2> "$RUNNER_TEMP/kirari-root-audit/unignored.audit.stderr"
+            pnpm --config.ignore-pnpmfile=true audit --json --audit-level moderate > "$RUNNER_TEMP/kirari-root-audit/unignored.audit.raw.json" 2> "$RUNNER_TEMP/kirari-root-audit/unignored.audit.stderr"
             audit_exit_code=$?
             printf 'YES\n' > "$RUNNER_TEMP/kirari-root-audit/unignored.audit.executed"
           else
@@ -159,7 +159,7 @@ jobs:
         run: |
           set +e
           if command -v pnpm >/dev/null 2>&1; then
-            pnpm install --frozen-lockfile --ignore-scripts --ignore-pnpmfile > "$RUNNER_TEMP/kirari-root-audit/dependency-install.stdout" 2> "$RUNNER_TEMP/kirari-root-audit/dependency-install.stderr"
+            pnpm --config.ignore-pnpmfile=true install --frozen-lockfile --ignore-scripts --ignore-pnpmfile > "$RUNNER_TEMP/kirari-root-audit/dependency-install.stdout" 2> "$RUNNER_TEMP/kirari-root-audit/dependency-install.stderr"
             install_exit_code=$?
             printf 'YES\n' > "$RUNNER_TEMP/kirari-root-audit/dependency-install.executed"
           else
@@ -169,7 +169,23 @@ jobs:
           printf '%s\n' "$install_exit_code" > "$RUNNER_TEMP/kirari-root-audit/dependency-install.exit-code"
           exit 0
 
-      - name: Verify the checkout stayed at the exact Git tree after dependency installation
+      - name: Capture all lock-resolved workspace dependency trees
+        if: always() && steps.checkout.outcome == 'success'
+        run: |
+          set +e
+          install_exit_code=$(cat "$RUNNER_TEMP/kirari-root-audit/dependency-install.exit-code")
+          if [[ "$install_exit_code" == 0 ]] && command -v pnpm >/dev/null 2>&1; then
+            pnpm --config.ignore-pnpmfile=true ls --recursive --depth Infinity --json > "$RUNNER_TEMP/kirari-root-audit/dependency-tree.raw.json" 2> "$RUNNER_TEMP/kirari-root-audit/dependency-tree.stderr"
+            tree_exit_code=$?
+            printf 'YES\n' > "$RUNNER_TEMP/kirari-root-audit/dependency-tree.executed"
+          else
+            tree_exit_code=125
+            printf 'Dependency install did not succeed; tree command was not executed.\n' > "$RUNNER_TEMP/kirari-root-audit/dependency-tree.stderr"
+          fi
+          printf '%s\n' "$tree_exit_code" > "$RUNNER_TEMP/kirari-root-audit/dependency-tree.exit-code"
+          exit 0
+
+      - name: Verify the checkout stayed at the exact Git tree before evaluation
         id: source_integrity
         if: always() && steps.checkout.outcome == 'success'
         env:
@@ -179,15 +195,45 @@ jobs:
           observed_head=$(git rev-parse HEAD)
           tracked_changes=$(git diff --name-only HEAD --)
           untracked_files=$(git ls-files --others --exclude-standard)
-          git ls-tree -r -z --name-only "$EXPECTED_PR_HEAD_SHA" > "$RUNNER_TEMP/kirari-root-audit/source-tree-paths"
-          blob_mismatch=0
-          while IFS= read -r -d '' source_path; do
-            if ! git cat-file blob "$EXPECTED_PR_HEAD_SHA:$source_path" | cmp -s - "$source_path"; then
-              printf 'Tracked source bytes differ from the candidate Git blob: %s\n' "$source_path"
-              blob_mismatch=1
+          git ls-tree -r -z "$EXPECTED_PR_HEAD_SHA" > "$RUNNER_TEMP/kirari-root-audit/source-tree-entries"
+          tree_mismatch=0
+          while IFS= read -r -d '' tree_entry; do
+            entry_header=${tree_entry%%$'\t'*}
+            source_path=${tree_entry#*$'\t'}
+            read -r expected_mode entry_type expected_object <<< "$entry_header"
+            if [[ "$entry_type" != blob || ( "$expected_mode" != 100644 && "$expected_mode" != 100755 ) ]]; then
+              printf 'Unsupported tracked Git entry type or mode: %s %s %s\n' "$expected_mode" "$entry_type" "$source_path"
+              tree_mismatch=1
+              continue
             fi
-          done < "$RUNNER_TEMP/kirari-root-audit/source-tree-paths"
-          if [[ "$observed_head" == "$EXPECTED_PR_HEAD_SHA" && "$blob_mismatch" == 0 && -z "$tracked_changes" && -z "$untracked_files" ]]; then
+            parent="$PWD"
+            remaining="$source_path"
+            parent_mismatch=0
+            while [[ "$remaining" == */* ]]; do
+              component=${remaining%%/*}
+              remaining=${remaining#*/}
+              parent="$parent/$component"
+              if [[ -L "$parent" || ! -d "$parent" ]]; then
+                parent_mismatch=1
+                break
+              fi
+            done
+            if [[ "$parent_mismatch" == 1 || -L "./$source_path" || ! -f "./$source_path" ]]; then
+              printf 'Tracked source path is missing, non-regular, or traverses a symlink: %s\n' "$source_path"
+              tree_mismatch=1
+              continue
+            fi
+            if [[ ( "$expected_mode" == 100755 && ! -x "./$source_path" ) || ( "$expected_mode" == 100644 && -x "./$source_path" ) ]]; then
+              printf 'Tracked source executable mode differs from the candidate Git tree: %s\n' "$source_path"
+              tree_mismatch=1
+              continue
+            fi
+            if ! git cat-file blob "$EXPECTED_PR_HEAD_SHA:$source_path" | cmp -s - "./$source_path"; then
+              printf 'Tracked source bytes differ from the candidate Git blob: %s\n' "$source_path"
+              tree_mismatch=1
+            fi
+          done < "$RUNNER_TEMP/kirari-root-audit/source-tree-entries"
+          if [[ "$observed_head" == "$EXPECTED_PR_HEAD_SHA" && "$tree_mismatch" == 0 && -z "$tracked_changes" && -z "$untracked_files" ]]; then
             printf 'PASS\n' > "$RUNNER_TEMP/kirari-root-audit/source-tree-integrity"
             exit 0
           fi
@@ -195,22 +241,6 @@ jobs:
           printf 'Expected HEAD: %s\nObserved HEAD: %s\nTracked changes: %s\nUntracked files: %s\n' \
             "$EXPECTED_PR_HEAD_SHA" "$observed_head" "$tracked_changes" "$untracked_files"
           exit 1
-
-      - name: Capture all lock-resolved workspace dependency trees
-        if: always() && steps.checkout.outcome == 'success'
-        run: |
-          set +e
-          install_exit_code=$(cat "$RUNNER_TEMP/kirari-root-audit/dependency-install.exit-code")
-          if [[ "$install_exit_code" == 0 ]] && command -v pnpm >/dev/null 2>&1; then
-            pnpm ls --recursive --depth Infinity --json > "$RUNNER_TEMP/kirari-root-audit/dependency-tree.raw.json" 2> "$RUNNER_TEMP/kirari-root-audit/dependency-tree.stderr"
-            tree_exit_code=$?
-            printf 'YES\n' > "$RUNNER_TEMP/kirari-root-audit/dependency-tree.executed"
-          else
-            tree_exit_code=125
-            printf 'Dependency install did not succeed; tree command was not executed.\n' > "$RUNNER_TEMP/kirari-root-audit/dependency-tree.stderr"
-          fi
-          printf '%s\n' "$tree_exit_code" > "$RUNNER_TEMP/kirari-root-audit/dependency-tree.exit-code"
-          exit 0
 
       - name: Evaluate the exact raw audit against the fail-closed R3 policy
         if: always() && steps.checkout.outcome == 'success' && steps.source_integrity.outcome == 'success'

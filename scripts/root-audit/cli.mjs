@@ -91,7 +91,7 @@ function candidateFor({ rawAudit, rawAuditStderr, auditExitCode, auditExecuted, 
 	for (const path of importerManifestPaths) {
 		if (auditWorkspaceDigests.importerManifests[path] !== manifestDigests[path]) throw new Error(`Supplemental audit importer manifest differs from source: ${path}`);
 	}
-	const pnpmVersion = execFileSync("pnpm", ["--version"], { cwd: root, encoding: "utf8" }).trim();
+	const pnpmVersion = execFileSync("pnpm", ["--version"], { cwd: dirname(unignoredRootManifestPath), encoding: "utf8" }).trim();
 	if (pnpmVersion !== "9.14.4") throw new Error(`Expected pnpm 9.14.4 but found ${pnpmVersion}`);
 	const binding = {
 		repository,

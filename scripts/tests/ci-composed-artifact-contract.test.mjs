@@ -37,6 +37,7 @@ test("normal deterministic CI remains intact and composition is limited to manua
 	for (const file of [
 		"scripts/tests/ci-profile-contract.test.mjs",
 		"scripts/tests/ci-composed-artifact-contract.test.mjs",
+		"scripts/tests/root-audit-source-integrity.test.mjs",
 		"scripts/tests/root-audit-evaluator.test.mjs",
 		"scripts/tests/root-audit-prepare.test.mjs",
 		"scripts/tests/composed-build.test.mjs",
@@ -54,18 +55,26 @@ test("normal deterministic CI remains intact and composition is limited to manua
 test("root audit binds the exact PR head, saves raw output and exit status, and receives no token", () => {
 	assert.ok(rootAuditJob, "a dedicated root audit job must run");
 	assert.match(rootAuditJob, /uses: actions\/checkout@11bd71901bbe5b1630ceea73d27597364c9af683[\s\S]*?repository: \$\{\{ github\.event\.pull_request\.head\.repo\.full_name \|\| github\.repository \}\}[\s\S]*?ref: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}[\s\S]*?persist-credentials: false/);
-	assert.match(rootAuditJob, /pnpm audit --json --audit-level moderate > "\$RUNNER_TEMP\/kirari-root-audit\/audit\.raw\.json" 2> "\$RUNNER_TEMP\/kirari-root-audit\/audit\.stderr"/);
+	assert.match(rootAuditJob, /pnpm --config\.ignore-pnpmfile=true audit --json --audit-level moderate > "\$RUNNER_TEMP\/kirari-root-audit\/audit\.raw\.json" 2> "\$RUNNER_TEMP\/kirari-root-audit\/audit\.stderr"/);
 	assert.match(rootAuditJob, /audit_exit_code=\$\?[\s\S]*?printf '%s\\n' "\$audit_exit_code" > "\$RUNNER_TEMP\/kirari-root-audit\/audit\.exit-code"/);
 	assert.match(rootAuditJob, /name: Evaluate the exact raw audit[\s\S]*?if: always\(\) && steps\.checkout\.outcome == 'success' && steps\.source_integrity\.outcome == 'success'[\s\S]*?run: node scripts\/root-audit\/cli\.mjs/);
 	assert.match(rootAuditJob, /name: Upload raw audit and policy evaluation evidence[\s\S]*?if: always\(\)[\s\S]*?uses: actions\/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02[\s\S]*?path: \|\n[\s\S]*?kirari-root-audit\/audit\.raw\.json[\s\S]*?kirari-root-audit\/dependency-tree\.raw\.json/);
 	assert.match(rootAuditJob, /retention-days: 30/);
 	assert.match(rootAuditJob, /Prepare a temporary audit workspace without the existing #122 ignore[\s\S]*?run: node scripts\/root-audit\/prepare-unignored-audit\.mjs/);
-	assert.match(rootAuditJob, /working-directory: \$\{\{ runner\.temp \}\}\/kirari-root-audit-unignored-project[\s\S]*?pnpm audit --json --audit-level moderate > "\$RUNNER_TEMP\/kirari-root-audit\/unignored\.audit\.raw\.json"/);
+	assert.match(rootAuditJob, /working-directory: \$\{\{ runner\.temp \}\}\/kirari-root-audit-unignored-project[\s\S]*?pnpm --config\.ignore-pnpmfile=true audit --json --audit-level moderate > "\$RUNNER_TEMP\/kirari-root-audit\/unignored\.audit\.raw\.json"/);
 	assert.match(rootAuditJob, /unignored\.audit\.exit-code[\s\S]*?unignored\.audit\.executed/);
-	assert.match(rootAuditJob, /name: Install the exact frozen lockfile[\s\S]*?pnpm install --frozen-lockfile --ignore-scripts --ignore-pnpmfile/);
-	assert.match(rootAuditJob, /name: Verify the checkout stayed at the exact Git tree after dependency installation[\s\S]*?git diff --name-only HEAD[\s\S]*?git cat-file blob[\s\S]*?cmp -s -/);
-	assert.match(rootAuditJob, /git ls-files --others --exclude-standard/);
-	assert.match(rootAuditJob, /name: Capture all lock-resolved workspace dependency trees[\s\S]*?pnpm ls --recursive --depth Infinity --json/);
+	const pnpmCommands = [...rootAuditJob.matchAll(/^\s+(pnpm .+)$/gm)].map((match) => match[1]);
+	assert.equal(pnpmCommands.length, 4, "the evidence job must run exactly two audits, install, and dependency-tree capture");
+	for (const command of pnpmCommands) assert.ok(command.includes("--config.ignore-pnpmfile=true"), `pnpm hooks must be disabled for: ${command}`);
+	assert.match(rootAuditJob, /name: Install the exact frozen lockfile[\s\S]*?pnpm --config\.ignore-pnpmfile=true install --frozen-lockfile --ignore-scripts --ignore-pnpmfile/);
+	assert.match(rootAuditJob, /name: Capture all lock-resolved workspace dependency trees[\s\S]*?pnpm --config\.ignore-pnpmfile=true ls --recursive --depth Infinity --json/);
+	assert.match(rootAuditJob, /name: Verify the checkout stayed at the exact Git tree before evaluation[\s\S]*?git ls-tree -r -z[\s\S]*?expected_mode[\s\S]*?entry_type[\s\S]*?100644[\s\S]*?100755[\s\S]*?Unsupported tracked Git entry type or mode/);
+	for (const integrityCheck of ['-L "$parent"', '-L "./$source_path"', 'git cat-file blob "$EXPECTED_PR_HEAD_SHA:$source_path" | cmp -s - "./$source_path"', "git diff --name-only HEAD --", "git ls-files --others --exclude-standard"]) {
+		assert.ok(rootAuditJob.includes(integrityCheck), `source integrity gate must include ${integrityCheck}`);
+	}
+	assert.ok(rootAuditJob.indexOf("- name: Capture all lock-resolved workspace dependency trees") < rootAuditJob.indexOf("- name: Verify the checkout stayed at the exact Git tree before evaluation"));
+	assert.ok(rootAuditJob.indexOf("- name: Verify the checkout stayed at the exact Git tree before evaluation") < rootAuditJob.indexOf("- name: Evaluate the exact raw audit"));
+	assert.match(rootAuditJob, /name: Evaluate the exact raw audit[\s\S]*?steps\.source_integrity\.outcome == 'success'/);
 	assert.match(rootAuditJob, /DEPENDENCY_TREE_PATH: \$\{\{ runner\.temp \}\}\/kirari-root-audit\/dependency-tree\.raw\.json/);
 	assert.match(rootAuditJob, /kirari-root-audit\/source-tree-integrity/);
 	assert.doesNotMatch(rootAuditJob, /GITHUB_TOKEN|issues:\s*read|\$\{\{\s*secrets\./i, "the public comment reader must not receive a token or secret");
