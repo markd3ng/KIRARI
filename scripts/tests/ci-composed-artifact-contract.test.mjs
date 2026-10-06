@@ -11,6 +11,7 @@ const dispatchInputs = workflow.match(/^  workflow_dispatch:\n([\s\S]*?)^permiss
 const verifyJob = workflow.match(/^  verify:\n([\s\S]*?)(?=^  [a-zA-Z0-9_-]+:|$(?![\s\S]))/m)?.[1] ?? "";
 const verifyCheckout = verifyJob.match(/^      - uses: actions\/checkout@v4\n([\s\S]*?)(?=^      - |$(?![\s\S]))/m)?.[1] ?? "";
 const rootAuditJob = workflow.match(/^  root-audit:\n([\s\S]*?)(?=^  [a-zA-Z0-9_-]+:|$(?![\s\S]))/m)?.[1] ?? "";
+const rootAuditCli = readFileSync(join(repoRoot, "scripts/root-audit/cli.mjs"), "utf8");
 const compositionJob = workflow.match(/^  composition:\n([\s\S]*)$/m)?.[1] ?? "";
 
 function step(name) {
@@ -66,6 +67,7 @@ test("root audit binds the exact PR head, saves raw output and exit status, and 
 	const pnpmCommands = [...rootAuditJob.matchAll(/^\s+(pnpm .+)$/gm)].map((match) => match[1]);
 	assert.equal(pnpmCommands.length, 4, "the evidence job must run exactly two audits, install, and dependency-tree capture");
 	for (const command of pnpmCommands) assert.ok(command.includes("--config.ignore-pnpmfile=true"), `pnpm hooks must be disabled for: ${command}`);
+	assert.match(rootAuditCli, /execFileSync\("pnpm", \["--config\.ignore-pnpmfile=true", "--version"\][\s\S]*?cwd: dirname\(unignoredRootManifestPath\)/, "the evaluator's version probe must not load a copied pnpmfile hook");
 	assert.match(rootAuditJob, /name: Install the exact frozen lockfile[\s\S]*?pnpm --config\.ignore-pnpmfile=true install --frozen-lockfile --ignore-scripts --ignore-pnpmfile/);
 	assert.match(rootAuditJob, /name: Capture all lock-resolved workspace dependency trees[\s\S]*?pnpm --config\.ignore-pnpmfile=true ls --recursive --depth Infinity --json/);
 	assert.match(rootAuditJob, /name: Verify the checkout stayed at the exact Git tree before evaluation[\s\S]*?git ls-tree -r -z[\s\S]*?expected_mode[\s\S]*?entry_type[\s\S]*?100644[\s\S]*?100755[\s\S]*?Unsupported tracked Git entry type or mode/);
