@@ -1,8 +1,9 @@
 # npm audit report
 
-@fastify/busboy  1.0.0 - 3.2.0
+@fastify/busboy  <=3.2.1
 Severity: high
 @fastify/busboy vulnerable to Denial of Service via prototype-named multipart part header - https://github.com/advisories/GHSA-x8mw-p69m-v3mx
+@fastify/busboy vulnerable to CRLF injection via multipart Content-Disposition filename and name - https://github.com/advisories/GHSA-gxm5-99cw-xjw9
 fix available via `npm audit fix --force`
 Will install vercel@54.17.3, which is a breaking change
 node_modules/@fastify/busboy
@@ -163,10 +164,11 @@ node_modules/@vercel/node/node_modules/path-to-regexp
 node_modules/@vercel/remix-builder/node_modules/path-to-regexp
 node_modules/path-to-regexp
 
-smol-toml  <=1.7.0
+smol-toml  <=1.8.0
 Severity: high
 smol-toml: Denial of Service via TOML documents containing thousands of consecutive commented lines - https://github.com/advisories/GHSA-v3rj-xjv7-4jmq
 smol-toml: Denial of Service via malformed TOML documents - https://github.com/advisories/GHSA-7w5x-hrqm-74c2
+smol-toml: Quadratic-time parse() from parseKey rescanning to end of document on each key line - https://github.com/advisories/GHSA-r4xh-jqrq-34v2
 fix available via `npm audit fix --force`
 Will install vercel@54.17.3, which is a breaking change
 node_modules/smol-toml

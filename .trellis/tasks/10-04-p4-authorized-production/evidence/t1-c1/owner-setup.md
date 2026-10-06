@@ -173,6 +173,9 @@ Trusted Sources and has not changed Vercel settings.
 
 ## Evidence ingestion into the reviewed workflow
 
+The manifest kind is `C1_CONCRETE_CREDENTIAL_MANIFEST`; its embedded
+`owner_approval` marker stays `{status: PENDING, comment_id: null, expires_at: null}`
+and cannot substitute for authenticated detached approval.
 The completed manifest path is `c1-concrete-credential-manifest.json`; its status
 becomes CONCRETE only after all metadata is verified. The current template remains
 INCOMPLETE_OWNER_SETUP_REQUIRED and fails validation. The separate decision

@@ -33,7 +33,7 @@ const EVIDENCE_SOURCES = Object.freeze([
 	"token_lifecycle",
 ]);
 
-const MANIFEST_KEYS = ["schema_version", "status", "claims", "evidence"];
+const MANIFEST_KEYS = ["schema_version", "kind", "status", "claims", "evidence", "owner_approval"];
 const CLAIM_KEYS = ["principal", "account", "team", "project", "roles", "extended_permissions", "token", "capabilities"];
 const APPROVAL_KEYS = ["schema_version", "kind", "decision", "manifest_sha256", "expires_at", "owner", "comment_id", "issue_number", "comment_url", "authenticated", "revocation_status", "revocation_checked_at"];
 const STRING_PLACEHOLDERS = new Set(["UNKNOWN", "PENDING", "TBD", "N/A", "NA", "NULL", "REQUIRED", "OWNER_SETUP_REQUIRED", "NOT_PROVIDED"]);
@@ -246,6 +246,8 @@ export function validateCredentialContract({ manifest, observed, ownerDecision, 
 			// Continue validating known fields so failures remain useful and bounded.
 		}
 		if (manifest.schema_version !== 1) errors.push("manifest.schema_version: unsupported schema");
+		if (manifest.kind !== "C1_CONCRETE_CREDENTIAL_MANIFEST") errors.push("manifest.kind: exact C1 manifest kind is required");
+		if (exactKeys(manifest.owner_approval, ["status", "comment_id", "expires_at"], "manifest.owner_approval", errors) && (manifest.owner_approval.status !== "PENDING" || manifest.owner_approval.comment_id !== null || manifest.owner_approval.expires_at !== null)) errors.push("manifest.owner_approval: must remain PENDING; authenticated approval stays detached");
 		if (manifest.status !== "CONCRETE") errors.push(`manifest.status: ${C1_CREDENTIAL_MANIFEST_INCOMPLETE}`);
 		validateClaims(manifest.claims, nowMs, errors);
 		validateEvidence(manifest.evidence, errors);

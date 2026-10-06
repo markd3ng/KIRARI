@@ -1,0 +1,98 @@
+{
+  "candidate": {
+    "cli_package": "vercel",
+    "cli_version": "62.2.0",
+    "package_lock_sha256": "sha256:4c0a503511c7f2448f17dbedd5a72a5fbbd24114c400afcf29180e3e65a05f44",
+    "tarball_integrity": "sha512-hwet6qXoOfZEc6waIx1VgI2nLl83wwuZZnFqKSsKJ47UFi9waEezPmAV7uNOx8Fq+6JTJIi+lRnxFXr9YFW3Eg==",
+    "tarball_sha256": "sha256:68a81cdbc5f8dd0b5a63d41fc702d97d28d65c6d1b473cb2f55142eaabd5be26"
+  },
+  "runtime": {
+    "node_version": "v22.12.0",
+    "npm_cli_sha256": "sha256:8e5f6f3429f8cdbe693cdc29904e9d5a7b127a494bd15c804bd54c7403bfcbe7",
+    "npm_tree_sha256": "sha256:4406efda68e7d5a39839552077b038b5b7d561282c7bd61fa45e19e80b4a283e",
+    "npm_version": "10.9.0",
+    "runner": {
+      "os": "Linux",
+      "arch": "x64",
+      "image": "ubuntu-24.04",
+      "image_version": "20260927.320.1",
+      "os_release": "Ubuntu 24.04.5 LTS"
+    }
+  },
+  "install": {
+    "command": "npm ci --prefix scripts/p4-production/tooling --registry=https://registry.npmjs.org",
+    "mode": "npm ci",
+    "lifecycle_scripts": "enabled",
+    "credential_absent": true,
+    "minimal_environment": true,
+    "temporary_home": true
+  },
+  "execution": {
+    "entrypoint": "scripts/p4-production/tooling/node_modules/.bin/vercel",
+    "resolved_entrypoint": "scripts/p4-production/tooling/node_modules/vercel/dist/vc.js",
+    "args": [
+      "deploy",
+      "--prebuilt",
+      "--prod",
+      "--skip-domain",
+      "--yes"
+    ],
+    "metadata_fields": [
+      "githubCommitOrg",
+      "githubCommitRef",
+      "githubCommitRepo",
+      "githubCommitSha",
+      "githubDeployment",
+      "githubOrg",
+      "githubRepo"
+    ],
+    "temporary_home": true,
+    "auto_update_disabled": true,
+    "native_fallback_disabled": true,
+    "env_flags": {
+      "VERCEL_CLI_USE_NATIVE_BINARY": "0",
+      "NO_UPDATE_NOTIFIER": "1"
+    },
+    "material_source_sha256": "sha256:e99e1525b4c97c457a90a1f7e46e2c5aa9c3347fbaa3db8080c4c772062511ba",
+    "material_source_hashes": {
+      ".github/workflows/ci.yml": "sha256:268fbffc1ef8e4c00ee0279874c035941faa6fac282be314b3507f7256c13fe2",
+      ".github/workflows/site-production.yml": "sha256:69a80e5b141af4aabb3dd967369318fc2aabfd8a4313d1965a1eebafbd478403",
+      "package.json": "sha256:de2386c37adf8e082781ba4da39931c6e53b5fe93d25255f146138155db123d1",
+      "pnpm-lock.yaml": "sha256:346322940876476c912caf94db63d868ab9d52e5dd580a0445279c8e2e3a3e2e",
+      "pnpm-workspace.yaml": "sha256:a0ef98ce004d5ea90ac1ace9372c8853463ea0da9ffccb70b8b3094e6fcbd115",
+      "scripts/p3-browser/package.json": "sha256:6c28fe29b15fbf2bd5d8d8d6b13c14aa092173197524e863bb87079d23e5cd70",
+      "scripts/p3-browser/package-lock.json": "sha256:9fcef97d577b91dbf59a128f36ffff8f4bc6cab9607f210e0260ed0eca5eb73e",
+      "scripts/p4-production/run.mjs": "sha256:94697ce7c1495fc0d60937c5a8cff910e500656c31d326d4ba00d16d3c2f14de",
+      "scripts/p4-production/runtime-adapter.mjs": "sha256:89936d5f7ac3fce99c9c15dee6565d90e79b512a360043df0e50865a47a34d5c",
+      "scripts/deploy-vercel-production.mjs": "sha256:e99e1525b4c97c457a90a1f7e46e2c5aa9c3347fbaa3db8080c4c772062511ba",
+      "scripts/p4-production/tooling-gate.mjs": "sha256:030dfab65bb987dca9adb4c8167b7dd8ea0e1676114fc50ebf573980c3185397",
+      "scripts/p4-production/tooling-install.mjs": "sha256:5cbea8de43094ee72e28365772374268497824595ec5de670816a0f205b46d15",
+      "scripts/p4-production/npm-runtime.mjs": "sha256:18938892cd1e95c24be199101d2aff663baf024627175ed051e384edd1dcc067",
+      "scripts/p4-production/tooling-acceptance.mjs": "sha256:1600ad7ddcf21eeeb873d2344dd0dfce53aea897345a66eb5ee2d47b8c246d4e",
+      "scripts/p4-production/owner-decision.mjs": "sha256:63ec3418e3648ec896ccf3ed556006f4924823461c03e1af2ca59182c704e5ca",
+      "scripts/p4-production/credential-gate.mjs": "sha256:2ec3142064b6ec976fad95b57e46d5b85ed7ff0816d68f00197841853b31dd52",
+      "scripts/p4-production/credential-contract.mjs": "sha256:1642a74b8946fbf469d79c23a0781bcaec1c96579282ac8cdfeac14c5659ef9e",
+      ".nvmrc": "sha256:ccb4022e91abb8575a29d306d7aff041f578bb86eb1180d69475bb86a5c4512c",
+      "scripts/p4-production/tooling/package.json": "sha256:b9ff11a1a6597730a8ff8537490a0cd8261bd0abd4fd3d66af6361b750ec879f",
+      "scripts/p4-production/tooling/package-lock.json": "sha256:4c0a503511c7f2448f17dbedd5a72a5fbbd24114c400afcf29180e3e65a05f44"
+    }
+  },
+  "target": {
+    "team_id": "team_NsBZHGUVnyygP7veiROKLuUx",
+    "project_id": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+    "project": "kirari-main"
+  },
+  "installed_tree": {
+    "sha256": "sha256:0d09e9218186c4a2e1a5a19b6d47d91bc485be052c1cc484fdafb9e02d262e03",
+    "fingerprint_algorithm": "kirari-p4-installed-tree-v2",
+    "platform_scope": "Linux/x64"
+  },
+  "audit": {
+    "plain_command": "npm audit --prefix scripts/p4-production/tooling --audit-level moderate",
+    "json_command": "npm audit --prefix scripts/p4-production/tooling --audit-level moderate --json",
+    "plain_executed": true,
+    "json_executed": true,
+    "plain_exit_code": 1,
+    "json_exit_code": 1
+  }
+}

@@ -23,7 +23,7 @@
   "relatedFiles": [],
   "notes": "T1/C1 framework application and concrete decision-package continuation; GitHub Project 1 and #99 control plane. Raw CLI audit remains FAIL, concrete T1 approval PENDING, C1 actual metadata incomplete. No Production write authorized.",
   "meta": {
-    "engineering_merge_gate": "BLOCKED_PENDING_CONCRETE_T1_OWNER_DECISION",
+    "engineering_merge_gate": "BLOCKED_CONCRETE_T1_OWNER_DECISION_AND_FRESH_ROOT_DEPENDENCY_AUDIT",
     "production_readiness": "C1_OWNER_SETUP_AUTHENTICATED_READBACK_AND_SEPARATE_DECISION_REQUIRED"
   }
 }

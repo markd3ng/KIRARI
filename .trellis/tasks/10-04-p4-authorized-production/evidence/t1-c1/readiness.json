@@ -1,5 +1,5 @@
 {
-  "observed_at": "2026-10-05T14:57:37.161Z",
+  "observed_at": "2026-10-06T02:50:50.714293+00:00",
   "project": {
     "id": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
     "name": "kirari-main",
@@ -9,7 +9,9 @@
   },
   "team": {
     "id": "team_NsBZHGUVnyygP7veiROKLuUx",
-    "plan": "UNKNOWN"
+    "identity_bound_by_project_account_id": true,
+    "plan": "UNKNOWN",
+    "plan_omitted_by_connector": true
   },
   "environment": "ABSENT_GET_404",
   "trusted_sources_api_readable": false,

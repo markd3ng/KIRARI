@@ -1,0 +1,27 @@
+{
+  "rawAuditResult": "FAIL",
+  "p4AcceptanceResult": "FAIL",
+  "manifestSha256": "sha256:3afd005fd7172c4fe4d8050591f53ea639c8eadfcfdae8be9e1fd8548e125dbd",
+  "auditSha256": "sha256:5692d1f55776c14036dbbf7bb3e1a3d6d48d2cdb130309853fb0b4d8b4f087e5",
+  "inventorySha256": "sha256:8ae91aa36cdd65090032a58fff2c6d84e238b161070e977c50211b6c524f65ba",
+  "counts": {
+    "info": 0,
+    "low": 0,
+    "moderate": 8,
+    "high": 24,
+    "critical": 1,
+    "total": 33
+  },
+  "failureCodes": [
+    "NPM_CLI_RUNTIME_IDENTITY_MISSING",
+    "NPM_RUNTIME_TREE_IDENTITY_MISSING",
+    "INSTALLED_TREE_IDENTITY_MISSING",
+    "AUDIT_JSON_HASH_MISMATCH",
+    "ADVISORY_INVENTORY_HASH_MISMATCH",
+    "ADVISORY_INVENTORY_COUNT_MISMATCH",
+    "RUNTIME_MISMATCH",
+    "INSTALLED_TREE_MISMATCH",
+    "INDEPENDENT_REVIEW_MISSING",
+    "CONCRETE_OWNER_APPROVAL_MISSING_EXPIRED_OR_MISMATCHED"
+  ]
+}

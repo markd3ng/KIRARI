@@ -2,11 +2,11 @@
 
 This file is generated from the retained raw `npm audit --audit-level moderate --json` report. Each package entry preserves all fields returned by npm, including every advisory object, dependency path, affected range, effect, and remediation proposal.
 
-- Raw npm audit report SHA-256: `sha256:3e4e1f11164b2d0eb96d27ceeb21c56c0659b4190359c4907ae7e84b39e8bb34`
+- Raw npm audit report SHA-256: `sha256:5692d1f55776c14036dbbf7bb3e1a3d6d48d2cdb130309853fb0b4d8b4f087e5`
 - npm audit report schema version: 2
 - Vulnerable package entries: 33
-- Advisory objects in package entries: 36
-- Total advisory and inherited/transitive references: 105
+- Advisory objects in package entries: 38
+- Total advisory and inherited/transitive references: 107
 - npm reported vulnerability counts: {
   "critical": 1,
   "high": 24,
@@ -29,7 +29,7 @@ Counts are npm's package-level audit metadata; package entries and advisory obje
 ## @fastify/busboy
 
 - Severity: high
-- Affected package range: 1.0.0 - 3.2.0
+- Affected package range: <=3.2.1
 - Installed dependency path: `node_modules/@fastify/busboy`
 - Direct dependency: no
 - Fixed-version/remediation proposal: `{"name":"vercel","version":"54.17.3","isSemVerMajor":true}`
@@ -55,6 +55,23 @@ Counts are npm's package-level audit metadata; package entries and advisory obje
       "source": 1240982,
       "title": "@fastify/busboy vulnerable to Denial of Service via prototype-named multipart part header",
       "url": "https://github.com/advisories/GHSA-x8mw-p69m-v3mx"
+    },
+    {
+      "advisory_id": "GHSA-gxm5-99cw-xjw9",
+      "cvss": {
+        "score": 5.8,
+        "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:L/A:N"
+      },
+      "cwe": [
+        "CWE-93"
+      ],
+      "dependency": "@fastify/busboy",
+      "name": "@fastify/busboy",
+      "range": "<3.2.2",
+      "severity": "moderate",
+      "source": 1241276,
+      "title": "@fastify/busboy vulnerable to CRLF injection via multipart Content-Disposition filename and name",
+      "url": "https://github.com/advisories/GHSA-gxm5-99cw-xjw9"
     }
   ],
   "effects": [
@@ -70,7 +87,7 @@ Counts are npm's package-level audit metadata; package entries and advisory obje
   "nodes": [
     "node_modules/@fastify/busboy"
   ],
-  "range": "1.0.0 - 3.2.0",
+  "range": "<=3.2.1",
   "severity": "high",
   "via": [
     {
@@ -88,6 +105,22 @@ Counts are npm's package-level audit metadata; package entries and advisory obje
       "source": 1240982,
       "title": "@fastify/busboy vulnerable to Denial of Service via prototype-named multipart part header",
       "url": "https://github.com/advisories/GHSA-x8mw-p69m-v3mx"
+    },
+    {
+      "cvss": {
+        "score": 5.8,
+        "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:L/A:N"
+      },
+      "cwe": [
+        "CWE-93"
+      ],
+      "dependency": "@fastify/busboy",
+      "name": "@fastify/busboy",
+      "range": "<3.2.2",
+      "severity": "moderate",
+      "source": 1241276,
+      "title": "@fastify/busboy vulnerable to CRLF injection via multipart Content-Disposition filename and name",
+      "url": "https://github.com/advisories/GHSA-gxm5-99cw-xjw9"
     }
   ]
 }
@@ -1672,7 +1705,7 @@ Counts are npm's package-level audit metadata; package entries and advisory obje
 ## smol-toml
 
 - Severity: high
-- Affected package range: <=1.7.0
+- Affected package range: <=1.8.0
 - Installed dependency path: `node_modules/smol-toml`
 - Direct dependency: no
 - Fixed-version/remediation proposal: `{"name":"vercel","version":"54.17.3","isSemVerMajor":true}`
@@ -1716,6 +1749,23 @@ Counts are npm's package-level audit metadata; package entries and advisory obje
       "source": 1193945,
       "title": "smol-toml: Denial of Service via malformed TOML documents",
       "url": "https://github.com/advisories/GHSA-7w5x-hrqm-74c2"
+    },
+    {
+      "advisory_id": "GHSA-r4xh-jqrq-34v2",
+      "cvss": {
+        "score": 5.3,
+        "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      },
+      "cwe": [
+        "CWE-407"
+      ],
+      "dependency": "smol-toml",
+      "name": "smol-toml",
+      "range": "<=1.8.0",
+      "severity": "moderate",
+      "source": 1241205,
+      "title": "smol-toml: Quadratic-time parse() from parseKey rescanning to end of document on each key line",
+      "url": "https://github.com/advisories/GHSA-r4xh-jqrq-34v2"
     }
   ],
   "effects": [
@@ -1732,7 +1782,7 @@ Counts are npm's package-level audit metadata; package entries and advisory obje
   "nodes": [
     "node_modules/smol-toml"
   ],
-  "range": "<=1.7.0",
+  "range": "<=1.8.0",
   "severity": "high",
   "via": [
     {
@@ -1767,6 +1817,22 @@ Counts are npm's package-level audit metadata; package entries and advisory obje
       "source": 1193945,
       "title": "smol-toml: Denial of Service via malformed TOML documents",
       "url": "https://github.com/advisories/GHSA-7w5x-hrqm-74c2"
+    },
+    {
+      "cvss": {
+        "score": 5.3,
+        "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      },
+      "cwe": [
+        "CWE-407"
+      ],
+      "dependency": "smol-toml",
+      "name": "smol-toml",
+      "range": "<=1.8.0",
+      "severity": "moderate",
+      "source": 1241205,
+      "title": "smol-toml: Quadratic-time parse() from parseKey rescanning to end of document on each key line",
+      "url": "https://github.com/advisories/GHSA-r4xh-jqrq-34v2"
     }
   ]
 }

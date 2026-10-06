@@ -21,12 +21,28 @@
             "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
           },
           "range": ">=1.0.0 <3.2.1"
+        },
+        {
+          "source": 1241276,
+          "name": "@fastify/busboy",
+          "dependency": "@fastify/busboy",
+          "title": "@fastify/busboy vulnerable to CRLF injection via multipart Content-Disposition filename and name",
+          "url": "https://github.com/advisories/GHSA-gxm5-99cw-xjw9",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-93"
+          ],
+          "cvss": {
+            "score": 5.8,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:L/A:N"
+          },
+          "range": "<3.2.2"
         }
       ],
       "effects": [
         "undici"
       ],
-      "range": "1.0.0 - 3.2.0",
+      "range": "<=3.2.1",
       "nodes": [
         "node_modules/@fastify/busboy"
       ],
@@ -844,13 +860,29 @@
             "vectorString": null
           },
           "range": "<=1.7.0"
+        },
+        {
+          "source": 1241205,
+          "name": "smol-toml",
+          "dependency": "smol-toml",
+          "title": "smol-toml: Quadratic-time parse() from parseKey rescanning to end of document on each key line",
+          "url": "https://github.com/advisories/GHSA-r4xh-jqrq-34v2",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 5.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+          },
+          "range": "<=1.8.0"
         }
       ],
       "effects": [
         "@vercel/rust",
         "vercel"
       ],
-      "range": "<=1.7.0",
+      "range": "<=1.8.0",
       "nodes": [
         "node_modules/smol-toml"
       ],

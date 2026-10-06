@@ -14,5 +14,15 @@
       "exit_code": 1,
       "capture_path": "t1-concrete-tooling-audit.json"
     }
-  ]
+  ],
+  "capture_platform": "Linux/x64",
+  "ci_identity_evidence": {
+    "head_sha": "6cbb44d84579fb870a808f908c94d62eb48e41b2",
+    "run_id": 37406038134,
+    "artifact_id": 11387307450,
+    "artifact_sha256": "sha256:ac55d0e300bce0885641f119fc12dcbfef5fba4d173bd7aa57b9598abb7d6e84",
+    "run_url": "https://github.com/markd3ng/KIRARI/actions/runs/37406038134",
+    "artifact_url": "https://github.com/markd3ng/KIRARI/actions/runs/37406038134/artifacts/11387307450"
+  },
+  "inventory_change_since_initial_capture": "Two new structured advisory references: @fastify/busboy and smol-toml; requires fresh independent review, no inherited acceptance."
 }

@@ -22,7 +22,9 @@ const observedSources = {
 function makeManifest() {
 	return {
 		schema_version: 1,
+		kind: "C1_CONCRETE_CREDENTIAL_MANIFEST",
 		status: "CONCRETE",
+		owner_approval: { status: "PENDING", comment_id: null, expires_at: null },
 		claims: {
 			principal: { user_id: "user_c1fixture", username: "deploy-principal" },
 			account: { id: "account_fixture", slug: "deploy-principal", type: "personal" },
@@ -243,5 +245,24 @@ test("C1 rejects missing or stale current revocation scan", () => {
 	const manifest = makeManifest();
 	for (const overrides of [{revocation_status:"UNKNOWN"},{revocation_checked_at:"2026-10-05T00:00:00Z"}]) {
 		assert.equal(evaluate({manifest,ownerDecision:makeOwnerDecision(manifest,overrides)}).result,"FAIL");
+	}
+});
+
+test("C1 binds its explicit kind and rejects another manifest kind", () => {
+	const manifest = makeManifest();
+	manifest.kind = "T1_CONCRETE_TOOLING_MANIFEST";
+	const result = evaluate({ manifest });
+	assert.equal(result.result, "FAIL");
+	assert.match(result.reasons.join(" "), /manifest.kind/);
+});
+
+test("C1 embedded approval cannot replace the separate authenticated Owner decision", () => {
+	for (const approval of [undefined, { status: "APPROVED", comment_id: 5997000001, expires_at: "2026-10-06T16:00:00Z" }]) {
+		const manifest = makeManifest();
+		if (approval === undefined) delete manifest.owner_approval;
+		else manifest.owner_approval = approval;
+		const result = evaluate({ manifest });
+		assert.equal(result.result, "FAIL");
+		assert.match(result.reasons.join(" "), /owner_approval/);
 	}
 });

@@ -1,0 +1,294 @@
+{
+  "run_id": 37406038134,
+  "head_sha": "6cbb44d84579fb870a808f908c94d62eb48e41b2",
+  "url": "https://github.com/markd3ng/KIRARI/actions/runs/37406038134",
+  "conclusion": "failure",
+  "jobs": [
+    {
+      "name": "production-fixtures",
+      "conclusion": "failure",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm ci --prefix scripts/p3-browser",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm audit --prefix scripts/p3-browser --audit-level moderate",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npx --prefix scripts/p3-browser playwright install --with-deps chromium",
+          "conclusion": "success"
+        },
+        {
+          "name": "Validate Production routes, assets, navigation, canonicals, robots, and byte equality locally",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run \"/opt/hostedtoolcache/node/22.12.0/x64/bin/node\" scripts/p4-production/tooling-install.mjs \"$RUNNER_TEMP/kirari-tooling-evidence\"",
+          "conclusion": "success"
+        },
+        {
+          "name": "Retain raw full audit and evaluate the separate concrete T1 gate",
+          "conclusion": "failure"
+        },
+        {
+          "name": "Retain complete tooling audit and actual runner identity",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "verify",
+      "conclusion": "failure",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm/action-setup@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/p3-browser-oidc.test.mjs scripts/tests/p3-staging-workflow-contract.test.mjs scripts/tests/vercel-preview-deployment.test.mjs",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify production authorization, immutable promotion, validation, and rollback contracts",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run node apps/site/scripts/materialize-profile.mjs",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm profile:check",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm site:test",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm site:contract:test",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm trellis:check",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run node apps/site/scripts/qa-regression-check.mjs",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm site:type-check",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm site:astro-check",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm edge:type-check",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm edge:test",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm edge:deploy:dry",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run node apps/site/scripts/generate-vercel-config.mjs --check",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm build",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm release:check",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm release:version-check",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm audit --audit-level moderate",
+          "conclusion": "failure"
+        },
+        {
+          "name": "Run git diff --check",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "browser-fixtures",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run pnpm install --frozen-lockfile",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm ci --prefix scripts/p3-browser",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm audit --prefix scripts/p3-browser --audit-level moderate",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npx --prefix scripts/p3-browser playwright install --with-deps chromium",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run node scripts/p3-browser/build-fixtures.mjs \"$RUNNER_TEMP/kirari-p3-browser-results\"",
+          "conclusion": "success"
+        },
+        {
+          "name": "Upload fixture browser evidence",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "name": "composition",
+      "conclusion": "skipped",
+      "steps": []
+    }
+  ],
+  "tooling_artifact": [
+    {
+      "digest": "sha256:4a6f59f10094633b4de8aeb9954127b68c56764ae5d629c91386dde3e57a4ce4",
+      "expired": false,
+      "id": 11387840757,
+      "name": "kirari-p3-browser-fixtures-37406038134-1",
+      "size_in_bytes": 3528,
+      "workflow_run": {
+        "head_branch": "codex/p4-authorized-production",
+        "head_repository_id": 1156039202,
+        "head_sha": "6cbb44d84579fb870a808f908c94d62eb48e41b2",
+        "id": 37406038134,
+        "repository_id": 1156039202
+      }
+    },
+    {
+      "digest": "sha256:ac55d0e300bce0885641f119fc12dcbfef5fba4d173bd7aa57b9598abb7d6e84",
+      "expired": false,
+      "id": 11387307450,
+      "name": "kirari-t1-tooling-37406038134-1",
+      "size_in_bytes": 17885,
+      "workflow_run": {
+        "head_branch": "codex/p4-authorized-production",
+        "head_repository_id": 1156039202,
+        "head_sha": "6cbb44d84579fb870a808f908c94d62eb48e41b2",
+        "id": 37406038134,
+        "repository_id": 1156039202
+      }
+    }
+  ],
+  "production_mutation": false
+}

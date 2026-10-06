@@ -28,3 +28,7 @@ Validation: pnpm install --frozen-lockfile; focused scripts/tests; pnpm site:tes
 ## Approved T1/C1 application — 2026-10-05
 
 Reconcile exact main/PR/control plane and store verbatim Owner approval; parallel A/B and independent D without shared-file writers; integrate gates; focused new tests then P4, P3, root checks, existing root audit, Production Chromium, diff check; freeze/push #133 after validation; exact-head CI and fresh independent code review; reconcile #129/#130/#99 and Project; return concrete pending T1/C1 decisions, stop. No merge or Production mutation.
+
+## T1/C1 application verification — 2026-10-06
+
+New admission checks PASS 96/96; full P4 PASS 180/180; P3 regressions PASS 29/29. All root checks passed at the initial local capture, and actual Production Chromium PASS. The refreshed existing-rule root dependency audit now FAILS on new published advisories; no exception was added or dependency behavior changed. Linux CI run 37406038134 verified actual runner/npm/CLI identities and executed Production Chromium. Its tooling gate correctly refused the stale inventory and pending concrete approval; final evidence replaces that inventory and adds independent review. Root audit remains a separate blocker. Exact final-head CI and fresh independent code review are recorded in the GitHub #99/#129/#130/PR #133 control plane after evidence freeze. Production remains unauthorized and untouched.
