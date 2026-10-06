@@ -1,0 +1,45 @@
+{
+	"schemaVersion": 1,
+	"policyVersion": "r3-root-audit-2026-10-06",
+	"repository": "markd3ng/KIRARI",
+	"issueNumber": 135,
+	"state": "OWNER_REVIEWED_FOR_ENGINEERING",
+	"consumptionAuthorization": "NO",
+	"audit": {
+		"minimumSeverity": "moderate",
+		"advisory": {
+			"githubAdvisoryId": "GHSA-rj75-hqrm-r3gf",
+			"package": "postcss-selector-parser",
+			"severity": "moderate"
+		},
+		"expectedFindings": [
+			{ "version": "6.0.10", "path": "apps__site>@tailwindcss/typography>postcss-selector-parser" },
+			{ "version": "6.1.4", "path": "apps__site>@expressive-code/core>postcss-nested>postcss-selector-parser" },
+			{ "version": "6.1.4", "path": "apps__site>@expressive-code/plugin-collapsible-sections>@expressive-code/core>postcss-nested>postcss-selector-parser" },
+			{ "version": "6.1.4", "path": "apps__site>@expressive-code/plugin-line-numbers>@expressive-code/core>postcss-nested>postcss-selector-parser" },
+			{ "version": "6.1.4", "path": "apps__site>astro-expressive-code>expressive-code>@expressive-code/core>postcss-nested>postcss-selector-parser" },
+			{ "version": "6.1.4", "path": "apps__site>astro-expressive-code>expressive-code>@expressive-code/plugin-frames>@expressive-code/core>postcss-nested>postcss-selector-parser" },
+			{ "version": "6.1.4", "path": "apps__site>astro-expressive-code>expressive-code>@expressive-code/plugin-shiki>@expressive-code/core>postcss-nested>postcss-selector-parser" },
+			{ "version": "6.1.4", "path": "apps__site>astro-expressive-code>expressive-code>@expressive-code/plugin-text-markers>@expressive-code/core>postcss-nested>postcss-selector-parser" }
+		]
+	},
+	"preservedExistingException": {
+		"issueNumber": 122,
+		"issueTitle": "[Security follow-up] Remove temporary http-cache-semantics audit exception when upstream fixes CVE-2026-93748",
+		"cve": "CVE-2026-93748",
+		"githubAdvisoryId": "GHSA-ch52-4w7c-c8xp",
+		"package": "http-cache-semantics",
+		"vulnerableRange": "<=4.2.0",
+		"expectedFindings": [
+			{ "version": "4.2.0", "path": "apps__site>astro>http-cache-semantics" }
+		],
+		"manifestIgnorePath": "pnpm.auditConfig.ignoreCves",
+		"manifestIgnoreValues": ["CVE-2026-93748"],
+		"requiredIssueBodyPhrases": [
+			"PROPOSED_PHASE=FOLLOW_UP / DEPENDENCY_SECURITY",
+			"CVE-2026-93748 / GHSA-ch52-4w7c-c8xp against `http-cache-semantics <=4.2.0`",
+			"a narrowly-scoped pnpm 9 `auditConfig.ignoreCves` entry for **CVE-2026-93748 only**.",
+			"Remove the CVE-2026-93748 audit exception."
+		]
+	}
+}

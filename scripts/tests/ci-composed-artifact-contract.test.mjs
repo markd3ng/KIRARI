@@ -10,6 +10,7 @@ const triggers = workflow.match(/^on:\n([\s\S]*?)^permissions:/m)?.[1] ?? "";
 const dispatchInputs = workflow.match(/^  workflow_dispatch:\n([\s\S]*?)^permissions:/m)?.[1] ?? "";
 const verifyJob = workflow.match(/^  verify:\n([\s\S]*?)(?=^  [a-zA-Z0-9_-]+:|$(?![\s\S]))/m)?.[1] ?? "";
 const verifyCheckout = verifyJob.match(/^      - uses: actions\/checkout@v4\n([\s\S]*?)(?=^      - |$(?![\s\S]))/m)?.[1] ?? "";
+const rootAuditJob = workflow.match(/^  root-audit:\n([\s\S]*?)(?=^  [a-zA-Z0-9_-]+:|$(?![\s\S]))/m)?.[1] ?? "";
 const compositionJob = workflow.match(/^  composition:\n([\s\S]*)$/m)?.[1] ?? "";
 
 function step(name) {
@@ -28,13 +29,16 @@ test("normal deterministic CI remains intact and composition is limited to manua
 	assert.ok(verifyJob, "regular deterministic verify job must remain");
 	assert.match(verifyCheckout, /fetch-depth: 0[\s\S]*?persist-credentials: false/, "verify checkout must retain full history without persisting credentials");
 	assert.doesNotMatch(verifyJob, /^\s+if:/m, "verify must not be event-gated");
-	for (const command of ["pnpm install --frozen-lockfile", "pnpm site:test", "pnpm edge:test", "pnpm build", "pnpm release:check", "pnpm audit --audit-level moderate"]) {
+	for (const command of ["pnpm install --frozen-lockfile", "pnpm site:test", "pnpm edge:test", "pnpm build", "pnpm release:check"]) {
 		assert.ok(verifyJob.includes(command), `verify job must retain ${command}`);
 	}
+	assert.doesNotMatch(verifyJob, /pnpm audit/, "the complete root audit runs in its own evidence-retaining job");
 	const nodeTests = verifyJob.match(/^      - run: node --test (.+)$/m)?.[1]?.split(/\s+/) ?? [];
 	for (const file of [
 		"scripts/tests/ci-profile-contract.test.mjs",
 		"scripts/tests/ci-composed-artifact-contract.test.mjs",
+		"scripts/tests/root-audit-evaluator.test.mjs",
+		"scripts/tests/root-audit-prepare.test.mjs",
 		"scripts/tests/composed-build.test.mjs",
 		"scripts/tests/ocr-review-workflow-contract.test.mjs",
 		"scripts/tests/p3-browser-contract.test.mjs",
@@ -45,6 +49,21 @@ test("normal deterministic CI remains intact and composition is limited to manua
 	assert.match(compositionJob, /^    if: >-\n([\s\S]*?)^    runs-on:/m);
 	const condition = compositionJob.match(/^    if: >-\n([\s\S]*?)^    runs-on:/m)?.[1]?.replaceAll(/\s+/g, " ").trim();
 	assert.equal(condition, "github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/config') || (github.event_name == 'pull_request' && github.base_ref == 'config')");
+});
+
+test("root audit binds the exact PR head, saves raw output and exit status, and receives no token", () => {
+	assert.ok(rootAuditJob, "a dedicated root audit job must run");
+	assert.match(rootAuditJob, /uses: actions\/checkout@11bd71901bbe5b1630ceea73d27597364c9af683[\s\S]*?repository: \$\{\{ github\.event\.pull_request\.head\.repo\.full_name \|\| github\.repository \}\}[\s\S]*?ref: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}[\s\S]*?persist-credentials: false/);
+	assert.match(rootAuditJob, /pnpm audit --json --audit-level moderate > "\$RUNNER_TEMP\/kirari-root-audit\/audit\.raw\.json" 2> "\$RUNNER_TEMP\/kirari-root-audit\/audit\.stderr"/);
+	assert.match(rootAuditJob, /audit_exit_code=\$\?[\s\S]*?printf '%s\\n' "\$audit_exit_code" > "\$RUNNER_TEMP\/kirari-root-audit\/audit\.exit-code"/);
+	assert.match(rootAuditJob, /name: Evaluate the exact raw audit[\s\S]*?if: always\(\) && steps\.checkout\.outcome == 'success'[\s\S]*?run: node scripts\/root-audit\/cli\.mjs/);
+	assert.match(rootAuditJob, /name: Upload raw audit and policy evaluation evidence[\s\S]*?if: always\(\)[\s\S]*?uses: actions\/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02[\s\S]*?path: \|\n[\s\S]*?kirari-root-audit\/audit\.raw\.json/);
+	assert.match(rootAuditJob, /retention-days: 30/);
+	assert.match(rootAuditJob, /Prepare a temporary audit workspace without the existing #122 ignore[\s\S]*?run: node scripts\/root-audit\/prepare-unignored-audit\.mjs/);
+	assert.match(rootAuditJob, /working-directory: \$\{\{ runner\.temp \}\}\/kirari-root-audit-unignored-project[\s\S]*?pnpm audit --json --audit-level moderate > "\$RUNNER_TEMP\/kirari-root-audit\/unignored\.audit\.raw\.json"/);
+	assert.match(rootAuditJob, /unignored\.audit\.exit-code[\s\S]*?unignored\.audit\.executed/);
+	assert.doesNotMatch(rootAuditJob, /GITHUB_TOKEN|issues:\s*read|\$\{\{\s*secrets\./i, "the public comment reader must not receive a token or secret");
+	assert.doesNotMatch(rootAuditJob, /^\s+contents:\s*write\b/m);
 });
 
 test("manual selectors and config events resolve exact Site and immutable Core revisions", () => {
