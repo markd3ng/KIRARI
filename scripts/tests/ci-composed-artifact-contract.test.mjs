@@ -61,7 +61,8 @@ test("root audit binds the exact PR head, saves raw output and exit status, and 
 	assert.match(rootAuditJob, /name: Evaluate the exact raw audit[\s\S]*?if: always\(\) && steps\.checkout\.outcome == 'success' && steps\.source_integrity\.outcome == 'success'[\s\S]*?run: node scripts\/root-audit\/cli\.mjs/);
 	assert.match(rootAuditJob, /name: Upload raw audit and policy evaluation evidence[\s\S]*?if: always\(\)[\s\S]*?uses: actions\/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02[\s\S]*?path: \|\n[\s\S]*?kirari-root-audit\/audit\.raw\.json[\s\S]*?kirari-root-audit\/dependency-tree\.raw\.json/);
 	assert.match(rootAuditJob, /retention-days: 30/);
-	assert.match(rootAuditJob, /Prepare a temporary audit workspace without the existing #122 ignore[\s\S]*?run: node scripts\/root-audit\/prepare-unignored-audit\.mjs/);
+	assert.match(rootAuditJob, /Prepare a temporary audit workspace without the existing #122 ignore[\s\S]*?AUDIT_WORKSPACE:[\s\S]*?node --input-type=module <<'NODE'[\s\S]*?Unsupported lockfile importer set[\s\S]*?rmSync\(targetRoot, \{ recursive: true, force: true \}\)[\s\S]*?NODE/);
+	assert.doesNotMatch(rootAuditJob, /prepare-unignored-audit\.mjs/, "the evidence job must not execute a checkout helper before source-integrity verification");
 	assert.match(rootAuditJob, /working-directory: \$\{\{ runner\.temp \}\}\/kirari-root-audit-unignored-project[\s\S]*?pnpm --config\.ignore-pnpmfile=true audit --json --audit-level moderate > "\$RUNNER_TEMP\/kirari-root-audit\/unignored\.audit\.raw\.json"/);
 	assert.match(rootAuditJob, /unignored\.audit\.exit-code[\s\S]*?unignored\.audit\.executed/);
 	const pnpmCommands = [...rootAuditJob.matchAll(/^\s+(pnpm .+)$/gm)].map((match) => match[1]);
@@ -71,6 +72,7 @@ test("root audit binds the exact PR head, saves raw output and exit status, and 
 	const evaluatorPnpmVersion = rootAuditCli.match(/const pnpmVersion = "([^\"]+)"/)?.[1];
 	assert.equal(setupPnpmVersion, "9.14.4", "the root audit job must pin the pnpm toolchain");
 	assert.equal(evaluatorPnpmVersion, setupPnpmVersion, "candidate toolchain binding must match the workflow pin without invoking pnpm after integrity verification");
+	assert.doesNotMatch(rootAuditCli, /execFileSync\([^\n]*pnpm|spawnSync\([^\n]*pnpm|pnpm --version/, "the evaluator must not launch pnpm after integrity verification");
 	assert.match(rootAuditJob, /name: Install the exact frozen lockfile[\s\S]*?pnpm --config\.ignore-pnpmfile=true install --frozen-lockfile --ignore-scripts --ignore-pnpmfile/);
 	assert.match(rootAuditJob, /name: Capture all lock-resolved workspace dependency trees[\s\S]*?pnpm --config\.ignore-pnpmfile=true ls --recursive --depth Infinity --json/);
 	assert.match(rootAuditJob, /name: Verify the checkout stayed at the exact Git tree before evaluation[\s\S]*?git ls-tree -r -z[\s\S]*?expected_mode[\s\S]*?entry_type[\s\S]*?100644[\s\S]*?100755[\s\S]*?Unsupported tracked Git entry type or mode/);
