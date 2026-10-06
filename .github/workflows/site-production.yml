@@ -152,7 +152,8 @@ jobs:
           NODE_PATH: ''
           LD_PRELOAD: ''
           LD_LIBRARY_PATH: ''
-        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-install.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
+        run: >-
+          "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-install.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
 
       - name: Audit full pinned CLI and evaluate separate concrete T1 acceptance
         if: always()
@@ -164,7 +165,8 @@ jobs:
           LD_PRELOAD: ''
           LD_LIBRARY_PATH: ''
           GH_TOKEN: ${{ github.token }}
-        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-gate.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
+        run: >-
+          "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-gate.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
 
       - name: Verify separate concrete C1 approval and sanitized credential evidence
         env:
@@ -175,7 +177,8 @@ jobs:
           LD_PRELOAD: ''
           LD_LIBRARY_PATH: ''
           GH_TOKEN: ${{ github.token }}
-        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/credential-gate.mjs
+        run: >-
+          "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/credential-gate.mjs
 
       - name: Recheck authorization and consume the exact immutable package
         id: consume
@@ -193,7 +196,8 @@ jobs:
           PRODUCTION_CLAIM_DIGEST: ${{ needs.prepare.outputs.claim_artifact_digest }}
           PRODUCTION_TRIGGERING_ACTOR: ${{ github.triggering_actor }}
           PRODUCTION_WORKFLOW_SHA: ${{ github.workflow_sha }}
-        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/preflight.mjs consume
+        run: >-
+          "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/preflight.mjs consume
 
       - name: Stage, validate and explicitly promote approved Production output
         id: operation
@@ -219,7 +223,8 @@ jobs:
           PRODUCTION_WORKFLOW_SHA: ${{ github.workflow_sha }}
           PRODUCTION_TOOLING_EVIDENCE_DIR: ${{ runner.temp }}/kirari-tooling-evidence
           VERCEL_CLI_PATH: ${{ github.workspace }}/scripts/p4-production/tooling/node_modules/.bin/vercel
-        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/run.mjs
+        run: >-
+          "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/run.mjs
 
       - name: Upload bounded Production evidence and retained immutable package bytes
         if: always() && steps.consume.outcome == 'success'

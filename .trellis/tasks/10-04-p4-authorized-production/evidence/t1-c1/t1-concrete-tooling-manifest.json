@@ -74,8 +74,8 @@
     },
     "material_source_sha256": "sha256:e99e1525b4c97c457a90a1f7e46e2c5aa9c3347fbaa3db8080c4c772062511ba",
     "material_source_hashes": {
-      ".github/workflows/ci.yml": "sha256:f7ffc70b0e3fd20dda1d31e7c7f600a97fc2879fa86ead0b858f84f0f1904656",
-      ".github/workflows/site-production.yml": "sha256:2c5e6b9000b26954e4836942176f8ae0248fb8abe51e6828968bedd587987ec0",
+      ".github/workflows/ci.yml": "sha256:268fbffc1ef8e4c00ee0279874c035941faa6fac282be314b3507f7256c13fe2",
+      ".github/workflows/site-production.yml": "sha256:69a80e5b141af4aabb3dd967369318fc2aabfd8a4313d1965a1eebafbd478403",
       "package.json": "sha256:de2386c37adf8e082781ba4da39931c6e53b5fe93d25255f146138155db123d1",
       "pnpm-lock.yaml": "sha256:346322940876476c912caf94db63d868ab9d52e5dd580a0445279c8e2e3a3e2e",
       "pnpm-workspace.yaml": "sha256:a0ef98ce004d5ea90ac1ace9372c8853463ea0da9ffccb70b8b3094e6fcbd115",

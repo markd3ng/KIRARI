@@ -129,8 +129,10 @@ jobs:
           LD_PRELOAD: ''
           LD_LIBRARY_PATH: ''
           REQUIRE_PRODUCTION_BROWSER: 'true'
-        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" --test scripts/tests/p4-production-browser-fixture.test.mjs
-      - run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-install.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
+        run: >-
+          "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" --test scripts/tests/p4-production-browser-fixture.test.mjs
+      - run: >-
+          "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-install.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
         env:
           BASH_ENV: /dev/null
           ENV: /dev/null
@@ -148,7 +150,8 @@ jobs:
           LD_PRELOAD: ''
           LD_LIBRARY_PATH: ''
           GH_TOKEN: ${{ github.token }}
-        run: "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-gate.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
+        run: >-
+          "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-gate.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
       - name: Retain complete tooling audit and actual runner identity
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

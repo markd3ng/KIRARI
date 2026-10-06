@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 import { test } from "node:test";
 
 import { tmpdir } from "node:os";
@@ -11,8 +12,8 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const workflowSource = readFileSync(join(repoRoot, ".github/workflows/site-production.yml"), "utf8");
 const ciWorkflowSource = readFileSync(join(repoRoot, ".github/workflows/ci.yml"), "utf8");
 const trustedNode = '"${{ runner.tool_cache }}/node/22.12.0/x64/bin/node"';
-const workflow = workflowSource.replaceAll(trustedNode, "node");
-const ciWorkflow = ciWorkflowSource.replaceAll(trustedNode, "node");
+const workflow = workflowSource.replaceAll(trustedNode, "node").replaceAll(/run: >-\n          /g, "run: ");
+const ciWorkflow = ciWorkflowSource.replaceAll(trustedNode, "node").replaceAll(/run: >-\n          /g, "run: ");
 const preflight = readFileSync(join(repoRoot, "scripts/p4-production/preflight.mjs"), "utf8");
 const runtime = readFileSync(join(repoRoot, "scripts/p4-production/run.mjs"), "utf8");
 const cli = readFileSync(join(repoRoot, "scripts/deploy-vercel-production.mjs"), "utf8");
@@ -148,7 +149,7 @@ test("later Production commands use the setup-node absolute executable despite a
 	assert.doesNotMatch(production, /run: node /);
 	assert.doesNotMatch(fixtures, /run: node /);
 	for (const file of ["tooling-install", "tooling-gate", "credential-gate", "preflight", "run"]) {
-		assert.ok(production.includes(`run: ${trustedNode} scripts/p4-production/${file}.mjs`));
+		assert.ok(production.includes(`run: >-\n          ${trustedNode} scripts/p4-production/${file}.mjs`));
 	}
 	assert.match(production, /issues: read/);
 	assert.match(fixtures, /issues: read/);
@@ -175,4 +176,19 @@ test("installer-supplied shell preload cannot execute before the credential-bear
 		assert.equal(spawnSync("/bin/bash", ["--noprofile", "--norc", "-c", ":"], { env: { ...inherited, ...overrides } }).status, 0);
 		assert.equal(existsSync(marker), false);
 	} finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+
+test("both amended workflows parse as YAML with executable absolute Node commands", () => {
+	const siteRequire = createRequire(new URL("../../apps/site/package.json", import.meta.url));
+	const YAML = createRequire(siteRequire.resolve("astro/package.json"))("yaml");
+	const production = YAML.parse(workflowSource).jobs.production;
+	const fixtures = YAML.parse(ciWorkflowSource).jobs["production-fixtures"];
+	for (const job of [production, fixtures]) {
+		assert.equal(job.permissions.issues, "read");
+		for (const step of job.steps.filter(x => x.run?.includes("scripts/p4-production/"))) {
+			assert.ok(step.run.startsWith(trustedNode + " scripts/p4-production/"));
+			assert.equal(step.env.BASH_ENV, "/dev/null");
+		}
+	}
 });
