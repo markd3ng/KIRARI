@@ -62,8 +62,9 @@ test("root audit binds the exact PR head, saves raw output and exit status, and 
 	assert.match(rootAuditJob, /Prepare a temporary audit workspace without the existing #122 ignore[\s\S]*?run: node scripts\/root-audit\/prepare-unignored-audit\.mjs/);
 	assert.match(rootAuditJob, /working-directory: \$\{\{ runner\.temp \}\}\/kirari-root-audit-unignored-project[\s\S]*?pnpm audit --json --audit-level moderate > "\$RUNNER_TEMP\/kirari-root-audit\/unignored\.audit\.raw\.json"/);
 	assert.match(rootAuditJob, /unignored\.audit\.exit-code[\s\S]*?unignored\.audit\.executed/);
-	assert.match(rootAuditJob, /name: Install the exact frozen lockfile[\s\S]*?pnpm install --frozen-lockfile --ignore-scripts/);
-	assert.match(rootAuditJob, /name: Verify the checkout stayed at the exact Git tree after dependency installation[\s\S]*?git diff --name-only HEAD[\s\S]*?git ls-files --others --exclude-standard/);
+	assert.match(rootAuditJob, /name: Install the exact frozen lockfile[\s\S]*?pnpm install --frozen-lockfile --ignore-scripts --ignore-pnpmfile/);
+	assert.match(rootAuditJob, /name: Verify the checkout stayed at the exact Git tree after dependency installation[\s\S]*?git diff --name-only HEAD[\s\S]*?git cat-file blob[\s\S]*?cmp -s -/);
+	assert.match(rootAuditJob, /git ls-files --others --exclude-standard/);
 	assert.match(rootAuditJob, /name: Capture all lock-resolved workspace dependency trees[\s\S]*?pnpm ls --recursive --depth Infinity --json/);
 	assert.match(rootAuditJob, /DEPENDENCY_TREE_PATH: \$\{\{ runner\.temp \}\}\/kirari-root-audit\/dependency-tree\.raw\.json/);
 	assert.match(rootAuditJob, /kirari-root-audit\/source-tree-integrity/);

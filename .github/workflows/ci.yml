@@ -159,7 +159,7 @@ jobs:
         run: |
           set +e
           if command -v pnpm >/dev/null 2>&1; then
-            pnpm install --frozen-lockfile --ignore-scripts > "$RUNNER_TEMP/kirari-root-audit/dependency-install.stdout" 2> "$RUNNER_TEMP/kirari-root-audit/dependency-install.stderr"
+            pnpm install --frozen-lockfile --ignore-scripts --ignore-pnpmfile > "$RUNNER_TEMP/kirari-root-audit/dependency-install.stdout" 2> "$RUNNER_TEMP/kirari-root-audit/dependency-install.stderr"
             install_exit_code=$?
             printf 'YES\n' > "$RUNNER_TEMP/kirari-root-audit/dependency-install.executed"
           else
@@ -179,7 +179,15 @@ jobs:
           observed_head=$(git rev-parse HEAD)
           tracked_changes=$(git diff --name-only HEAD --)
           untracked_files=$(git ls-files --others --exclude-standard)
-          if [[ "$observed_head" == "$EXPECTED_PR_HEAD_SHA" && -z "$tracked_changes" && -z "$untracked_files" ]]; then
+          git ls-tree -r -z --name-only "$EXPECTED_PR_HEAD_SHA" > "$RUNNER_TEMP/kirari-root-audit/source-tree-paths"
+          blob_mismatch=0
+          while IFS= read -r -d '' source_path; do
+            if ! git cat-file blob "$EXPECTED_PR_HEAD_SHA:$source_path" | cmp -s - "$source_path"; then
+              printf 'Tracked source bytes differ from the candidate Git blob: %s\n' "$source_path"
+              blob_mismatch=1
+            fi
+          done < "$RUNNER_TEMP/kirari-root-audit/source-tree-paths"
+          if [[ "$observed_head" == "$EXPECTED_PR_HEAD_SHA" && "$blob_mismatch" == 0 && -z "$tracked_changes" && -z "$untracked_files" ]]; then
             printf 'PASS\n' > "$RUNNER_TEMP/kirari-root-audit/source-tree-integrity"
             exit 0
           fi
