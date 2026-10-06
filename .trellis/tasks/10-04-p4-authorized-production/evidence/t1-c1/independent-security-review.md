@@ -4,18 +4,24 @@
 
 Reviewer: Codex independent security stream /root/independent_security
 Model/reasoning: `gpt-6-luna` / `max`
-Reviewed at: `2026-10-06T02:56:01Z`
-Review JSON raw-byte SHA-256: `sha256:1b17d29e04913c7e3e4bbf7f47f4c6c4b9cf20a19009734f2a5df808d9883d5f`. The concrete manifest digest is intentionally excluded to avoid a circular hash.
+Reviewed at: `2026-10-06T03:36:16Z`
+Review JSON raw-byte SHA-256: `sha256:f585f1e3d59258362c8c5a911ad1902684ce43a77328c7ab3a0761c4c851174c`. The concrete manifest digest is intentionally excluded to avoid a circular hash.
 
 ## Bound candidate and Linux observation
 
 - Candidate: `vercel@62.2.0` (registry dist-tag `latest` at selection).
 - Lock SHA-256: `sha256:4c0a503511c7f2448f17dbedd5a72a5fbbd24114c400afcf29180e3e65a05f44`.
 - Tarball SRI: `sha512-hwet6qXoOfZEc6waIx1VgI2nLl83wwuZZnFqKSsKJ47UFi9waEezPmAV7uNOx8Fq+6JTJIi+lRnxFXr9YFW3Eg==`; tarball SHA-256: `sha256:68a81cdbc5f8dd0b5a63d41fc702d97d28d65c6d1b473cb2f55142eaabd5be26`.
-- Candidate CI observation: head `6cbb44d84579fb870a808f908c94d62eb48e41b2`, run `37406038134`, artifact `11387307450`, retained archive digest `sha256:ac55d0e300bce0885641f119fc12dcbfef5fba4d173bd7aa57b9598abb7d6e84`. `observed.json` SHA-256 `sha256:b856c6ac9c04a53c4f8b019afd9fe38dd41b2d34bc80043af788902e457aff2c`; install receipt SHA-256 `sha256:17fb8ac21d1f8ac6645189e130ce1481e46147111bada8c05502d6eb51ac55a4`.
+- Historical candidate collection CI observation: head `6cbb44d84579fb870a808f908c94d62eb48e41b2`, run `37406038134`, artifact `11387307450`, retained archive digest `sha256:ac55d0e300bce0885641f119fc12dcbfef5fba4d173bd7aa57b9598abb7d6e84`. `observed.json` SHA-256 `sha256:b856c6ac9c04a53c4f8b019afd9fe38dd41b2d34bc80043af788902e457aff2c`; install receipt SHA-256 `sha256:17fb8ac21d1f8ac6645189e130ce1481e46147111bada8c05502d6eb51ac55a4`.
 - Runtime: Node `v22.12.0`, npm `10.9.0`, npm CLI SHA-256 `sha256:8e5f6f3429f8cdbe693cdc29904e9d5a7b127a494bd15c804bd54c7403bfcbe7`, npm distribution tree SHA-256 `sha256:4406efda68e7d5a39839552077b038b5b7d561282c7bd61fa45e19e80b4a283e`, `ubuntu-24.04 / 20260927.320.1`; `Ubuntu 24.04.5 LTS`, `Linux/x64`.
 - Vercel installed-tree fingerprint (`kirari-p4-installed-tree-v2`): `sha256:0d09e9218186c4a2e1a5a19b6d47d91bc485be052c1cc484fdafb9e02d262e03`, scope `Linux/x64`.
-- Current manifest binds 20 material source hashes. Final-head CI remeasurement remains pending for `scripts/p4-production/credential-contract.mjs` only: prior Linux observation `sha256:1642a74b8946fbf469d79c23a0781bcaec1c96579282ac8cdfeac14c5659ef9e`, current manifest `sha256:156f9966e1a6a4988716dec25240c13593addf286d0ce375d5ea880ed6616c26`. The code change adds the required pending C1 owner-approval marker. This report binds the current manifest source map but does not claim CI has remeasured that one source hash; refresh/revoke if final-head observation differs.
+- The retained CI identity above is the historical candidate collection. Since that collection, `scripts/p4-production/credential-contract.mjs` added the required pending C1 owner-approval marker and `scripts/p4-production/tooling-acceptance.mjs` gained the validator fix described below. This report binds the current manifest source map, independently checked against the current checkout (20/20 source hashes match); a new post-fix final-head CI run must remeasure all 20 paths before final-source CI confirmation.
+
+## Follow-up review of validator coverage
+
+A fresh independent code review found a P2 contract gap: three already-disclosed UNKNOWN paths were present in the evidence but were not mandatory in the T1 acceptance validator. The current `REQUIRED_UNKNOWN_PATHS` now requires all three in both `manifest.risk.unknown_paths` and the hash-bound review inventory: inherited non-Node executable lookup through credential-step `PATH`, Node/npm runtime advisory coverage, and missing Node runtime content/provenance attestation.
+
+The focused regression suite now has six omission cases: each path is removed once from the manifest and once from the independent review, and both omissions fail closed. I reran `node --test scripts/tests/p4-production-tooling-acceptance.test.mjs`: 25/25 passed. This closes the validator-completeness gap only. All ten UNKNOWN paths remain `UNKNOWN_EXPOSED`; the audit, per-advisory matrix, candidate, install/runtime/tree observations, finite expiry, and pending Owner/C1 decisions are unchanged. The source hash is `sha256:13b790a925b9ab038812f3c939fb8bcb37b887eb20498b8fe99b544bdeadab09`. A new post-fix final-head CI run is still required.
 
 The audited tooling install was exactly `npm ci --prefix scripts/p4-production/tooling --registry=https://registry.npmjs.org` (`npm ci`), with lifecycle scripts **enabled**, Vercel credentials absent, allowlisted/minimal environment and temporary HOME. The exact CLI path is `scripts/p4-production/tooling/node_modules/.bin/vercel` resolving to `scripts/p4-production/tooling/node_modules/vercel/dist/vc.js`. Fixed args prefix: `["deploy", "--prebuilt", "--prod", "--skip-domain", "--yes"]`; sorted metadata keys: `["githubCommitOrg", "githubCommitRef", "githubCommitRepo", "githubCommitSha", "githubDeployment", "githubOrg", "githubRepo"]`; target `team_NsBZHGUVnyygP7veiROKLuUx / kirari-main / prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk`. Env flags: `{"NO_UPDATE_NOTIFIER": "1", "VERCEL_CLI_USE_NATIVE_BINARY": "0"}`. `scripts/deploy-vercel-production.mjs` SHA-256: `sha256:e99e1525b4c97c457a90a1f7e46e2c5aa9c3347fbaa3db8080c4c772062511ba`.
 
@@ -121,7 +127,7 @@ The finite proposed expiry is `2026-10-07T15:31:37Z`; owner approval remains `PE
 
 ## Independent result
 
-Reviewed 33 package entries, 38 structured advisory objects, and all 107 structured/inherited references. Result: **REVIEWED_WITH_EXPOSED_RESIDUAL_RISK**. Raw npm audit stays **FAIL**; T1 P4 acceptance, T1 concrete Owner decision, C1 evidence/approval, and final-head source confirmation are not established. No concrete Owner approval or Production readiness is claimed.
+Reviewed 33 package entries, 38 structured advisory objects, and all 107 structured/inherited references. The follow-up P2 validator-completeness gap is closed in source and covered by passing omission regressions; all ten underlying UNKNOWN paths remain exposed. Result: **REVIEWED_WITH_EXPOSED_RESIDUAL_RISK**. Raw npm audit stays **FAIL**; T1 P4 acceptance, T1 concrete Owner decision, C1 evidence/approval, and post-fix final-head source confirmation are not established. No concrete Owner approval or Production readiness is claimed.
 
 ### Bound material source hashes
 
@@ -138,7 +144,7 @@ Reviewed 33 package entries, 38 structured advisory objects, and all 107 structu
 - `scripts/p4-production/tooling-gate.mjs`: `sha256:030dfab65bb987dca9adb4c8167b7dd8ea0e1676114fc50ebf573980c3185397`
 - `scripts/p4-production/tooling-install.mjs`: `sha256:5cbea8de43094ee72e28365772374268497824595ec5de670816a0f205b46d15`
 - `scripts/p4-production/npm-runtime.mjs`: `sha256:18938892cd1e95c24be199101d2aff663baf024627175ed051e384edd1dcc067`
-- `scripts/p4-production/tooling-acceptance.mjs`: `sha256:1600ad7ddcf21eeeb873d2344dd0dfce53aea897345a66eb5ee2d47b8c246d4e`
+- `scripts/p4-production/tooling-acceptance.mjs`: `sha256:13b790a925b9ab038812f3c939fb8bcb37b887eb20498b8fe99b544bdeadab09`
 - `scripts/p4-production/owner-decision.mjs`: `sha256:63ec3418e3648ec896ccf3ed556006f4924823461c03e1af2ca59182c704e5ca`
 - `scripts/p4-production/credential-gate.mjs`: `sha256:2ec3142064b6ec976fad95b57e46d5b85ed7ff0816d68f00197841853b31dd52`
 - `scripts/p4-production/credential-contract.mjs`: `sha256:156f9966e1a6a4988716dec25240c13593addf286d0ce375d5ea880ed6616c26`

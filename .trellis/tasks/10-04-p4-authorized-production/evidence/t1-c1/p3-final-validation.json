@@ -13,9 +13,9 @@
     "scripts/tests/vercel-preview-deployment.test.mjs"
   ],
   "exit_code": 0,
-  "elapsed_seconds": 7.53,
-  "log_path": "/tmp/kirari-t1-c1-checks/p3-final.log",
-  "log_sha256": "068263016e22b069dd93bd3b68a0d7b853b55f3b7e8aba18552756794fa26545",
+  "elapsed_seconds": 9.22,
+  "log_path": "/tmp/kirari-t1-c1-checks/p3-complete-final.log",
+  "log_sha256": "53143ca3582c886758d996b0d3439bc1b20c0a9bc214106cd2b2ffa98e886bcf",
   "test_summary": [
     "# tests 29",
     "# pass 29",

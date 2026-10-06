@@ -19,12 +19,13 @@
     "scripts/tests/vercel-production-artifact.test.mjs"
   ],
   "exit_code": 0,
-  "log_path": "/tmp/kirari-t1-c1-checks/p4-final-evidence.log",
-  "log_sha256": "1f1637eff416b62b5ce159e72ddfda21d7d759cd871934375062aeb4d87f5f76",
+  "log_path": "/tmp/kirari-t1-c1-checks/p4-complete-final.log",
+  "log_sha256": "61f1c381a3343b68000e7f96672da9f137b73a6ec8c7e264e69a524ca45bc6f9",
   "test_summary": [
-    "# tests 180",
-    "# pass 180",
+    "# tests 186",
+    "# pass 186",
     "# fail 0",
     "# skipped 0"
-  ]
+  ],
+  "elapsed_seconds": 2.96
 }

@@ -477,6 +477,33 @@ test("missing independent review and omitted UNKNOWN exposure fail closed", () =
 	assert.ok(evaluate({ ...reviewHidesUnknowns, independentReview: changedReview }).failureCodes.includes("INDEPENDENT_REVIEW_UNKNOWN_PATHS_NOT_EXPOSED"));
 });
 
+for (const path of [
+	"non-Node executable lookup through inherited credential-step PATH",
+	"Node/npm runtime vulnerability coverage beyond the deployment-tool lock audit",
+	"whole Node runtime content digest and source/build provenance are not attested",
+]) {
+	test(`manifest must preserve the disclosed UNKNOWN: ${path}`, () => {
+		const value = setup();
+		assert.ok(value.manifest.risk.unknown_paths.includes(path));
+		value.manifest.risk.unknown_paths = value.manifest.risk.unknown_paths.filter((entry) => entry !== path);
+		const result = evaluate(value);
+		assert.equal(result.p4AcceptanceResult, "FAIL");
+		assert.deepEqual(result.failureCodes, ["UNKNOWN_PATHS_NOT_EXPOSED"]);
+	});
+
+	test(`independent review must preserve the disclosed UNKNOWN: ${path}`, () => {
+		const value = setup();
+		const review = JSON.parse(value.independentReview);
+		assert.ok(review.unknown_paths.includes(path));
+		review.unknown_paths = review.unknown_paths.filter((entry) => entry !== path);
+		value.independentReview = JSON.stringify(review);
+		value.manifest.independent_review.sha256 = digest(value.independentReview);
+		const result = evaluate(value);
+		assert.equal(result.p4AcceptanceResult, "FAIL");
+		assert.deepEqual(result.failureCodes, ["INDEPENDENT_REVIEW_UNKNOWN_PATH_INVENTORY_INCOMPLETE"]);
+	});
+}
+
 test("a raw audit FAIL is never relabeled PASS, and audit cannot be skipped, changed, or suppressed", () => {
 	const relabeled = setup();
 	relabeled.manifest.audit.raw_result = "PASS";

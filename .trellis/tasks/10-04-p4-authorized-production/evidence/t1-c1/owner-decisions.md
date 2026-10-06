@@ -42,7 +42,7 @@ install/command/source/target/review/role changes, new reachability evidence, or
 revocation immediately require re-review and a new exact decision. A new
 comment or an edited Owner decision cannot silently inherit old acceptance.
 
-Canonical concrete manifest digest: **sha256:88cb0906b13f7d1f2ff1c00a326d7a811657cb0db6c4dc6f817ed2c2a876c8b0**.
+Canonical concrete manifest digest: **sha256:0287eda8ee977a18a7058b52b1e863826fcaa930f24316a713be2e8250020dad**.
 
 If the Owner elects to accept this exact T1 candidate and exposed inventory,
 post a new Issue #130 comment whose entire body is this JSON. It must be posted
@@ -54,7 +54,7 @@ not an approval issued by the agent:
   "schema_version": 1,
   "kind": "T1_CONCRETE_TOOLING_MANIFEST",
   "decision": "APPROVED",
-  "manifest_sha256": "sha256:88cb0906b13f7d1f2ff1c00a326d7a811657cb0db6c4dc6f817ed2c2a876c8b0",
+  "manifest_sha256": "sha256:0287eda8ee977a18a7058b52b1e863826fcaa930f24316a713be2e8250020dad",
   "expires_at": "2026-10-07T15:31:37Z"
 }
 ```

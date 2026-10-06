@@ -4,7 +4,7 @@
   "result": "REVIEWED_WITH_EXPOSED_RESIDUAL_RISK",
   "reviewer_independent": true,
   "reviewer_identity": "Codex independent security stream /root/independent_security",
-  "reviewed_at": "2026-10-06T02:56:01Z",
+  "reviewed_at": "2026-10-06T03:36:16Z",
   "decision_boundary": "Independent evidence review only; not approval of the concrete CLI, any credential, Production readiness, or a Production operation.",
   "candidate": {
     "cli_package": "vercel",
@@ -106,7 +106,7 @@
       "scripts/p4-production/tooling-gate.mjs": "sha256:030dfab65bb987dca9adb4c8167b7dd8ea0e1676114fc50ebf573980c3185397",
       "scripts/p4-production/tooling-install.mjs": "sha256:5cbea8de43094ee72e28365772374268497824595ec5de670816a0f205b46d15",
       "scripts/p4-production/npm-runtime.mjs": "sha256:18938892cd1e95c24be199101d2aff663baf024627175ed051e384edd1dcc067",
-      "scripts/p4-production/tooling-acceptance.mjs": "sha256:1600ad7ddcf21eeeb873d2344dd0dfce53aea897345a66eb5ee2d47b8c246d4e",
+      "scripts/p4-production/tooling-acceptance.mjs": "sha256:13b790a925b9ab038812f3c939fb8bcb37b887eb20498b8fe99b544bdeadab09",
       "scripts/p4-production/owner-decision.mjs": "sha256:63ec3418e3648ec896ccf3ed556006f4924823461c03e1af2ca59182c704e5ca",
       "scripts/p4-production/credential-gate.mjs": "sha256:2ec3142064b6ec976fad95b57e46d5b85ed7ff0816d68f00197841853b31dd52",
       "scripts/p4-production/credential-contract.mjs": "sha256:156f9966e1a6a4988716dec25240c13593addf286d0ce375d5ea880ed6616c26",
@@ -4976,11 +4976,23 @@
     "observed_json_sha256": "sha256:b856c6ac9c04a53c4f8b019afd9fe38dd41b2d34bc80043af788902e457aff2c",
     "install_receipt_sha256": "sha256:17fb8ac21d1f8ac6645189e130ce1481e46147111bada8c05502d6eb51ac55a4",
     "material_source_hash_confirmation": {
-      "status": "PENDING_FINAL_HEAD_CI_RECONFIRMATION",
-      "only_mismatch": "scripts/p4-production/credential-contract.mjs",
-      "prior_observed_sha256": "sha256:1642a74b8946fbf469d79c23a0781bcaec1c96579282ac8cdfeac14c5659ef9e",
-      "current_manifest_sha256": "sha256:156f9966e1a6a4988716dec25240c13593addf286d0ce375d5ea880ed6616c26",
-      "assessment": "The changed file adds the required pending C1 owner_approval marker. Current manifest binds the changed source; exact-head CI source remeasurement is still pending. The Linux CLI tree and raw audit from the retained observation are unchanged, but this does not claim the final-head workflow reran."
+      "status": "PENDING_POST_FIX_FINAL_HEAD_CI_RECONFIRMATION",
+      "prior_collection_observed_json_sha256": "sha256:b856c6ac9c04a53c4f8b019afd9fe38dd41b2d34bc80043af788902e457aff2c",
+      "pending_source_changes": [
+        {
+          "path": "scripts/p4-production/credential-contract.mjs",
+          "prior_collection_sha256": "sha256:1642a74b8946fbf469d79c23a0781bcaec1c96579282ac8cdfeac14c5659ef9e",
+          "current_manifest_sha256": "sha256:156f9966e1a6a4988716dec25240c13593addf286d0ce375d5ea880ed6616c26",
+          "change": "Adds the required pending C1 owner_approval marker."
+        },
+        {
+          "path": "scripts/p4-production/tooling-acceptance.mjs",
+          "prior_collection_sha256": "sha256:1600ad7ddcf21eeeb873d2344dd0dfce53aea897345a66eb5ee2d47b8c246d4e",
+          "current_manifest_sha256": "sha256:13b790a925b9ab038812f3c939fb8bcb37b887eb20498b8fe99b544bdeadab09",
+          "change": "Makes the three disclosed UNKNOWN paths mandatory in the manifest and independently hash-bound review."
+        }
+      ],
+      "assessment": "The recorded CI head/run/artifact remain the historical candidate collection. Candidate, locked audit, Linux runtime, and installed Vercel tree evidence remain unchanged. The review source map matches the current manifest and checkout, but this update does not claim CI has remeasured post-fix sources; require a new final-head observation over all 20 paths."
     }
   },
   "workflow_launch": {
@@ -5032,7 +5044,7 @@
       "scripts/p4-production/tooling-gate.mjs": "sha256:030dfab65bb987dca9adb4c8167b7dd8ea0e1676114fc50ebf573980c3185397",
       "scripts/p4-production/tooling-install.mjs": "sha256:5cbea8de43094ee72e28365772374268497824595ec5de670816a0f205b46d15",
       "scripts/p4-production/npm-runtime.mjs": "sha256:18938892cd1e95c24be199101d2aff663baf024627175ed051e384edd1dcc067",
-      "scripts/p4-production/tooling-acceptance.mjs": "sha256:1600ad7ddcf21eeeb873d2344dd0dfce53aea897345a66eb5ee2d47b8c246d4e",
+      "scripts/p4-production/tooling-acceptance.mjs": "sha256:13b790a925b9ab038812f3c939fb8bcb37b887eb20498b8fe99b544bdeadab09",
       "scripts/p4-production/owner-decision.mjs": "sha256:63ec3418e3648ec896ccf3ed556006f4924823461c03e1af2ca59182c704e5ca",
       "scripts/p4-production/credential-gate.mjs": "sha256:2ec3142064b6ec976fad95b57e46d5b85ed7ff0816d68f00197841853b31dd52",
       "scripts/p4-production/credential-contract.mjs": "sha256:156f9966e1a6a4988716dec25240c13593addf286d0ce375d5ea880ed6616c26",
@@ -5041,6 +5053,26 @@
       "scripts/p4-production/tooling/package-lock.json": "sha256:4c0a503511c7f2448f17dbedd5a72a5fbbd24114c400afcf29180e3e65a05f44"
     },
     "current_manifest_map_matches_prior_ci": false,
-    "pending_difference": "scripts/p4-production/credential-contract.mjs changed after the Linux tooling observation to add the required pending C1 owner_approval marker; this report binds the current manifest hash but does not claim final-head CI remeasurement of that one file."
+    "pending_difference": "The retained CI collection identity is historical. Since that collection, scripts/p4-production/credential-contract.mjs added the required pending C1 owner-approval marker and scripts/p4-production/tooling-acceptance.mjs was hardened to require the three disclosed UNKNOWN paths. This review binds the current manifest map and current source bytes; a new post-fix final-head CI run must remeasure all 20 paths before final-source CI confirmation."
+  },
+  "validator_follow_up": {
+    "finding": "The prior independent code review found that three disclosed UNKNOWN paths were not mandatory in the tooling acceptance contract.",
+    "source_path": "scripts/p4-production/tooling-acceptance.mjs",
+    "source_sha256": "sha256:13b790a925b9ab038812f3c939fb8bcb37b887eb20498b8fe99b544bdeadab09",
+    "required_unknown_paths": [
+      "non-Node executable lookup through inherited credential-step PATH",
+      "Node/npm runtime vulnerability coverage beyond the deployment-tool lock audit",
+      "whole Node runtime content digest and source/build provenance are not attested"
+    ],
+    "resolution": "REQUIRED_UNKNOWN_PATHS now includes all three strings; both manifest risk validation and independent-review validation require the complete inventory.",
+    "regression_coverage": {
+      "command": "node --test scripts/tests/p4-production-tooling-acceptance.test.mjs",
+      "tests": 25,
+      "passed": 25,
+      "failed": 0,
+      "added_omission_cases": 6,
+      "coverage": "For each of the three paths, omission from the manifest and omission from the independently hash-bound review each fail closed."
+    },
+    "assessment": "The P2 validator-completeness gap is closed in source. All ten UNKNOWN paths remain exposed; this change establishes inventory enforcement, not path safety or non-reachability. Advisory rows, raw audit result, candidate, install/runtime/tree facts, expiry, and Owner/C1 decisions are unchanged."
   }
 }

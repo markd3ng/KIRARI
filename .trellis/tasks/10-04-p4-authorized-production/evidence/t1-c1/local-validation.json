@@ -18,14 +18,14 @@
       ],
       "exit_code": 0,
       "log_path": "/tmp/kirari-t1-c1-checks/focused-complete-final.log",
-      "log_sha256": "1fa182d33d4646fcec3234278d189084b1e1b7f65ae6e754368ec6b3e11dcd23",
+      "log_sha256": "6126fcd619f0a4d172d92647164766b002a208c235ecb84212e84cfb76e371f0",
       "test_summary": [
-        "# tests 96",
-        "# pass 96",
+        "# tests 102",
+        "# pass 102",
         "# fail 0",
         "# skipped 0"
       ],
-      "elapsed_seconds": 0.38
+      "elapsed_seconds": 0.9
     },
     {
       "name": "p4",
@@ -49,14 +49,14 @@
       ],
       "exit_code": 0,
       "log_path": "/tmp/kirari-t1-c1-checks/p4-complete-final.log",
-      "log_sha256": "c4e9d6cdbe66960f5ecf3cf47d890325cc2e8a0271b4dfa17d718aa42cb85007",
+      "log_sha256": "61f1c381a3343b68000e7f96672da9f137b73a6ec8c7e264e69a524ca45bc6f9",
       "test_summary": [
-        "# tests 180",
-        "# pass 180",
+        "# tests 186",
+        "# pass 186",
         "# fail 0",
         "# skipped 0"
       ],
-      "elapsed_seconds": 2.65
+      "elapsed_seconds": 2.96
     },
     {
       "name": "p3",
@@ -73,9 +73,9 @@
         "scripts/tests/vercel-preview-deployment.test.mjs"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 7.58,
+      "elapsed_seconds": 9.22,
       "log_path": "/tmp/kirari-t1-c1-checks/p3-complete-final.log",
-      "log_sha256": "88ceb9652da2f0abfc18f050cfe1ca013ce85a0e8c0b6e565398261213439b10",
+      "log_sha256": "53143ca3582c886758d996b0d3439bc1b20c0a9bc214106cd2b2ffa98e886bcf",
       "test_summary": [
         "# tests 29",
         "# pass 29",
@@ -101,7 +101,7 @@
         "profile:check"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 0.35,
+      "elapsed_seconds": 0.51,
       "log_sha256": "4902b4ccf7c7defbdb2bb237b65c8a8a5e1156eec3bf0841b9c109baa35a8add",
       "log_path": "/tmp/kirari-t1-c1-checks/root-01-complete-final.log"
     },
@@ -112,8 +112,8 @@
         "site:test"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 61.87,
-      "log_sha256": "0151463d0acda7357bb02f8132508a043de27b02242e426738909683f36cfbfb",
+      "elapsed_seconds": 72.79,
+      "log_sha256": "5bba189524933ac5a7246a687acef01fb990332ffe31d1538a88cf91bd21334a",
       "log_path": "/tmp/kirari-t1-c1-checks/root-02-complete-final.log"
     },
     {
@@ -123,8 +123,8 @@
         "site:contract:test"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 1.99,
-      "log_sha256": "1a9bcd70b65d29b0256d057ca32aeb86d470b3e95a5ccb848136d4b7fd50a566",
+      "elapsed_seconds": 2.47,
+      "log_sha256": "6f48799efa40865a7e20a73eb2f8632d3875341241f34a784b46c12d340fb0e7",
       "log_path": "/tmp/kirari-t1-c1-checks/root-03-complete-final.log"
     },
     {
@@ -134,8 +134,8 @@
         "composition:test"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 8.15,
-      "log_sha256": "e474cb447f5f5340de28c6cb73f017e96dd448ca2e4da26ade47475e09c4c999",
+      "elapsed_seconds": 9.77,
+      "log_sha256": "a111ea9fe54e5524dbbdc4a4883a08419dbd9cbd72ff767f8cead0cd6e9f109a",
       "log_path": "/tmp/kirari-t1-c1-checks/root-04-complete-final.log"
     },
     {
@@ -145,7 +145,7 @@
         "trellis:check"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 0.34,
+      "elapsed_seconds": 0.36,
       "log_sha256": "d3f42dfa5a5d8baa963592e9d5d7726f307c6beec34a35888e3f17716e519d99",
       "log_path": "/tmp/kirari-t1-c1-checks/root-05-complete-final.log"
     },
@@ -156,7 +156,7 @@
         "apps/site/scripts/qa-regression-check.mjs"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 0.07,
+      "elapsed_seconds": 0.08,
       "log_sha256": "b64dcda0019fb9e919d5c0852787246850b9f9375cd8118107bc9e38738ecb25",
       "log_path": "/tmp/kirari-t1-c1-checks/root-06-complete-final.log"
     },
@@ -167,8 +167,8 @@
         "site:type-check"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 4.43,
-      "log_sha256": "8a530610cc90e892280e96f1d4f93511018a61a86bb46ddf807ce38a4869963e",
+      "elapsed_seconds": 5.02,
+      "log_sha256": "b4412766e73890b078e6f7d7837e6a3f79b24e8df9d5b04d9e61a89afa2f0c90",
       "log_path": "/tmp/kirari-t1-c1-checks/root-07-complete-final.log"
     },
     {
@@ -178,8 +178,8 @@
         "site:astro-check"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 8.07,
-      "log_sha256": "2ec9bc533c07c3e77a3352ec5e2d4639075703c9f289b6d480a9cfb73345aafa",
+      "elapsed_seconds": 8.69,
+      "log_sha256": "ecca4fb1b14a3ffe5b1f73209d7366a120a5718b41e9738fa6a4fb6225970594",
       "log_path": "/tmp/kirari-t1-c1-checks/root-08-complete-final.log"
     },
     {
@@ -189,7 +189,7 @@
         "edge:type-check"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 0.98,
+      "elapsed_seconds": 1.12,
       "log_sha256": "404c70b20030215413476e155fa61c985b9a7996f104957c8f5443218c5a9469",
       "log_path": "/tmp/kirari-t1-c1-checks/root-09-complete-final.log"
     },
@@ -200,8 +200,8 @@
         "edge:test"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 0.72,
-      "log_sha256": "79fb485b2124c7a88d469526d28a6dedadf92785d784c803abfe8207106e7899",
+      "elapsed_seconds": 0.77,
+      "log_sha256": "89fdc149e10e0651fbadcd60383dac716bd78dc3c0c89e05fb034fa2c712a4dc",
       "log_path": "/tmp/kirari-t1-c1-checks/root-10-complete-final.log"
     },
     {
@@ -211,8 +211,8 @@
         "edge:deploy:dry"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 1.6,
-      "log_sha256": "7927bbcbc6bc36282fac2dee94381b6cedd1bf8f229f9a99436ba9efa2afbebe",
+      "elapsed_seconds": 1.51,
+      "log_sha256": "afa5cce4b7b7e4e2e00be38ad67d5a5ab32997d095f1a9fe906d7e0c4b1d04a8",
       "log_path": "/tmp/kirari-t1-c1-checks/root-11-complete-final.log"
     },
     {
@@ -234,8 +234,8 @@
         "build"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 11.88,
-      "log_sha256": "5e8d1c00762901a12089144e1c0f005abf190588a50a9bf0f0fa01be6454d285",
+      "elapsed_seconds": 13.83,
+      "log_sha256": "f5891d1a07c44e39a01d88ec675a47fd5c21e306af197acb5ff6f0d7638d57cb",
       "log_path": "/tmp/kirari-t1-c1-checks/root-13-complete-final.log"
     },
     {
@@ -245,7 +245,7 @@
         "release:check"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 0.43,
+      "elapsed_seconds": 0.46,
       "log_sha256": "37947ac33e9509b28f74170992410bc207ddbac414680e857cf552af35001fe2",
       "log_path": "/tmp/kirari-t1-c1-checks/root-14-complete-final.log"
     },
@@ -256,7 +256,7 @@
         "release:version-check"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 0.32,
+      "elapsed_seconds": 0.35,
       "log_sha256": "0460d4cc3a0d1deccb4d3d3f48cd1d83c63ffc1c93fc76ae6d824823f87fa52c",
       "log_path": "/tmp/kirari-t1-c1-checks/root-15-complete-final.log"
     },
@@ -269,7 +269,7 @@
         "moderate"
       ],
       "exit_code": 1,
-      "elapsed_seconds": 1.54,
+      "elapsed_seconds": 1.48,
       "log_sha256": "d6c19290375ce942f6cbd009db0b90d0f79c8f991a08675280024a1bf6e144f3",
       "log_path": "/tmp/kirari-t1-c1-checks/root-16-complete-final.log",
       "expected_separate_blocker": "fresh published root advisories; existing exception unchanged"
@@ -282,8 +282,8 @@
         "scripts/tests/p4-production-browser-fixture.test.mjs"
       ],
       "exit_code": 0,
-      "elapsed_seconds": 2.83,
-      "log_sha256": "5e38faccfdbcb2950328bdf8ccad2fb3d3389282056c8c06dc317000de803a65",
+      "elapsed_seconds": 3.13,
+      "log_sha256": "0c931432170bd8df164d9479092597680830120e93661c79817734c8764f5ee2",
       "log_path": "/tmp/kirari-t1-c1-checks/production-chromium-complete-final.log",
       "test_summary": [
         "# tests 1",
@@ -331,7 +331,7 @@
     "fix": "folded run scalars and real YAML parser regression"
   },
   "fresh_root_audit": {
-    "observed_at": "2026-10-06T02:54:22.815896+00:00",
+    "observed_at": "2026-10-06T03:38:42.528626+00:00",
     "invocations": [
       {
         "command": [
@@ -363,6 +363,20 @@
       "smol-toml / GHSA-r4xh-jqrq-34v2",
       "postcss-selector-parser / GHSA-rj75-hqrm-r3gf"
     ],
-    "outside_T1_acceptance": true
+    "outside_T1_acceptance": true,
+    "reported_counts": {
+      "info": 0,
+      "low": 4,
+      "moderate": 3,
+      "high": 2,
+      "critical": 0
+    }
+  },
+  "independent_code_review_remediation": {
+    "reviewed_head": "c2740230103b0803102dabe38913d8d6fdaf56f3",
+    "finding": "P2: three disclosed UNKNOWN risks were absent from the mandatory manifest/review list",
+    "fix": "Require inherited non-Node PATH lookup, Node/npm advisory coverage, and whole-Node digest/provenance UNKNOWNs in both manifest and independent review",
+    "regression_cases": 6,
+    "fresh_post_fix_exact_head_review": "PENDING_HEAD_FREEZE"
   }
 }

@@ -87,7 +87,7 @@
       "scripts/p4-production/tooling-gate.mjs": "sha256:030dfab65bb987dca9adb4c8167b7dd8ea0e1676114fc50ebf573980c3185397",
       "scripts/p4-production/tooling-install.mjs": "sha256:5cbea8de43094ee72e28365772374268497824595ec5de670816a0f205b46d15",
       "scripts/p4-production/npm-runtime.mjs": "sha256:18938892cd1e95c24be199101d2aff663baf024627175ed051e384edd1dcc067",
-      "scripts/p4-production/tooling-acceptance.mjs": "sha256:1600ad7ddcf21eeeb873d2344dd0dfce53aea897345a66eb5ee2d47b8c246d4e",
+      "scripts/p4-production/tooling-acceptance.mjs": "sha256:13b790a925b9ab038812f3c939fb8bcb37b887eb20498b8fe99b544bdeadab09",
       "scripts/p4-production/owner-decision.mjs": "sha256:63ec3418e3648ec896ccf3ed556006f4924823461c03e1af2ca59182c704e5ca",
       "scripts/p4-production/credential-gate.mjs": "sha256:2ec3142064b6ec976fad95b57e46d5b85ed7ff0816d68f00197841853b31dd52",
       "scripts/p4-production/credential-contract.mjs": "sha256:156f9966e1a6a4988716dec25240c13593addf286d0ce375d5ea880ed6616c26",
@@ -131,7 +131,7 @@
   "independent_review": {
     "status": "REVIEWED_WITH_EXPOSED_RESIDUAL_RISK",
     "path": ".trellis/tasks/10-04-p4-authorized-production/evidence/t1-c1/independent-security-review.json",
-    "sha256": "sha256:1b17d29e04913c7e3e4bbf7f47f4c6c4b9cf20a19009734f2a5df808d9883d5f"
+    "sha256": "sha256:f585f1e3d59258362c8c5a911ad1902684ce43a77328c7ab3a0761c4c851174c"
   },
   "risk": {
     "unknown_paths_exposed": true,

@@ -44,6 +44,9 @@ const REQUIRED_UNKNOWN_PATHS = [
 	"bundled CLI code attribution outside npm lockfile audit coverage",
 	"whole-tree registry signature verification after Sigstore TUF fetch failure",
 	"published CLI source/build provenance and complete package SBOM",
+	"non-Node executable lookup through inherited credential-step PATH",
+	"Node/npm runtime vulnerability coverage beyond the deployment-tool lock audit",
+	"whole Node runtime content digest and source/build provenance are not attested",
 ];
 const REQUIRED_INVALIDATION_TRIGGERS = [
 	"new_or_changed_advisory_or_audit_inventory",
