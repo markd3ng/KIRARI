@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { deriveNormalAudit } from './evaluator.mjs';
@@ -88,6 +88,28 @@ function run(command, args, options) {
   });
 }
 
+function runnerCommand(command, args) {
+  return run('/usr/bin/sudo', ['-n', command, ...args], {
+    cwd: process.cwd(),
+    env: { PATH: process.env.PATH ?? '/usr/bin:/bin' },
+    windowsHide: true,
+  });
+}
+
+function runAsAuditUser(command, args, { cwd, env }) {
+  const forwardedEnvironment = Object.entries(env).map(([name, value]) => `${name}=${value}`);
+  const sudoArgs = [
+    '-n', '-u', 'nobody', '--',
+    '/bin/sh', '-c', 'cd "$1" && shift && exec "$@"', 'kirari-r3-audit', cwd,
+    '/usr/bin/env', '-i', ...forwardedEnvironment, command, ...args,
+  ];
+  return run('/usr/bin/sudo', sudoArgs, {
+    cwd: process.cwd(),
+    env: { PATH: process.env.PATH ?? '/usr/bin:/bin' },
+    windowsHide: true,
+  });
+}
+
 export async function prepareAuditWorkspace(workspace, candidateFiles, policy) {
   const writeManifest = async (workspacePath, file) => {
     const manifest = JSON.parse(candidateFiles[file]);
@@ -107,21 +129,25 @@ export async function prepareAuditWorkspace(workspace, candidateFiles, policy) {
 export async function runIndependentAudits(candidateFiles, policy, evidenceDirectory) {
   const tempRoot = await mkdtemp(path.join(process.env.RUNNER_TEMP ?? os.tmpdir(), 'kirari-r3-audit-'));
   const env = restrictedEnvironment();
+  env.HOME = path.join(tempRoot, 'home');
+  env.TMPDIR = path.join(tempRoot, 'tmp');
+  env.npm_config_cache = path.join(tempRoot, 'cache');
   const evidence = {};
   try {
-    const version = await run('pnpm', ['--version'], { cwd: tempRoot, env, windowsHide: true });
+    await mkdir(env.HOME, { recursive: true, mode: 0o700 });
+    await mkdir(env.TMPDIR, { recursive: true, mode: 0o700 });
+    await mkdir(env.npm_config_cache, { recursive: true, mode: 0o700 });
+    const workspace = path.join(tempRoot, 'supplemental');
+    await mkdir(workspace, { recursive: true, mode: 0o700 });
+    await prepareAuditWorkspace(workspace, candidateFiles, policy);
+    const changedOwner = await runnerCommand('/usr/bin/chown', ['-R', 'nobody', tempRoot]);
+    if (!changedOwner.executed || changedOwner.exitCode !== 0) throw new Error('could not isolate the audit workspace under the unprivileged audit user');
+    const version = await runAsAuditUser('pnpm', ['--version'], { cwd: tempRoot, env });
     evidence.pnpmVersion = version.stdout.trim();
     if (!version.executed || version.exitCode !== 0 || evidence.pnpmVersion !== policy.pnpmVersion) {
       throw new Error(`trusted pnpm version mismatch: expected ${policy.pnpmVersion}, received ${evidence.pnpmVersion || 'unavailable'}`);
     }
-    const workspace = path.join(tempRoot, 'supplemental');
-    await mkdir(workspace, { recursive: true, mode: 0o700 });
-    await prepareAuditWorkspace(workspace, candidateFiles, policy);
-    const result = await run('pnpm', ['--filter', '@kirari/site', 'audit', '--json', '--audit-level=moderate'], {
-      cwd: workspace,
-      env,
-      windowsHide: true,
-    });
+    const result = await runAsAuditUser('pnpm', ['--filter', '@kirari/site', 'audit', '--json', '--audit-level=moderate'], { cwd: workspace, env });
     evidence.supplemental = {
       executed: result.executed,
       exitCode: result.exitCode,
@@ -163,7 +189,8 @@ export async function runIndependentAudits(candidateFiles, policy, evidenceDirec
         derivationError: result.derivationError,
       }, null, 2)}\n`, { mode: 0o600 });
     }
-    await rm(tempRoot, { recursive: true, force: true });
+    const removed = await runnerCommand('/usr/bin/rm', ['-rf', '--', tempRoot]);
+    if (!removed.executed || removed.exitCode !== 0) throw new Error('could not remove the isolated audit workspace');
   }
   if (!evidence.normal || !evidence.supplemental) throw new Error('the unignored audit and trusted normal comparison are required');
   return evidence;

@@ -21,6 +21,24 @@ test('unknown importer fails closed', () => {
   assert.throws(() => parseAndValidateLockfile(candidateFiles['pnpm-lock.yaml'], candidateFiles, policy), /workspace importer set mismatch/);
 });
 
+test('package resolution entries must exactly match snapshot identities', () => {
+  const candidateFiles = createFixture();
+  candidateFiles['pnpm-lock.yaml'] = candidateFiles['pnpm-lock.yaml'].replace(
+    'packages:\n',
+    `packages:\n  "unreviewed@1.0.0":\n    resolution: {integrity: "sha512-${'A'.repeat(86)}=="}\n`,
+  );
+  assert.throws(() => parseAndValidateLockfile(candidateFiles['pnpm-lock.yaml'], candidateFiles, policy), /package resolution and snapshot identity set mismatch/);
+});
+
+test('package resolution integrity is required and validated', () => {
+  const candidateFiles = createFixture();
+  candidateFiles['pnpm-lock.yaml'] = candidateFiles['pnpm-lock.yaml'].replace(
+    /resolution: \{integrity: "sha512-[A]{86}=="\}/,
+    'resolution: {integrity: "sha1-invalid"}',
+  );
+  assert.throws(() => parseAndValidateLockfile(candidateFiles['pnpm-lock.yaml'], candidateFiles, policy), /unsupported package resolution/);
+});
+
 test('a changed lockfile parser format fails closed', () => {
   const candidateFiles = createFixture();
   candidateFiles['pnpm-lock.yaml'] = candidateFiles['pnpm-lock.yaml'].replace("lockfileVersion: '9.0'", "lockfileVersion: '10.0'");

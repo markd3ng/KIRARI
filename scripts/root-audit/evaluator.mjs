@@ -83,6 +83,15 @@ function parseAudit(raw, label, execution) {
   return report;
 }
 
+function assertRawVulnerabilityCountsMatchAdvisories(report) {
+  const actual = Object.fromEntries(['info', 'low', 'moderate', 'high', 'critical'].map((severity) => [severity, 0]));
+  for (const advisory of Object.values(report.advisories)) actual[advisory.severity] += 1;
+  const reported = report.metadata.vulnerabilities;
+  if (Object.keys(actual).some((severity) => actual[severity] !== reported[severity])) {
+    fail('unignored audit vulnerability counts do not match its advisory set');
+  }
+}
+
 export function deriveNormalAudit(raw, policy) {
   let report;
   try {
@@ -214,8 +223,11 @@ export function evaluateVerification(input) {
 
   const normal = parseAudit(audits?.normal?.raw, 'normal', audits?.normal);
   const supplemental = parseAudit(audits?.supplemental?.raw, 'supplemental', audits?.supplemental);
+  assertRawVulnerabilityCountsMatchAdvisories(supplemental);
   if (audits.pnpmVersion !== policy.pnpmVersion) fail('pnpm audit parser version mismatch');
   if (audits.normal.source !== 'trusted-filter-from-supplemental') fail('normal audit is not derived by the trusted exact #122 filter');
+  // pnpm 9.14.4 calculates metadata.vulnerabilities before applying ignoreCves.
+  // The derived normal view therefore preserves the raw counts while removing only #122's advisory row.
   if (JSON.stringify(normal.metadata) !== JSON.stringify(supplemental.metadata) ||
       JSON.stringify(normal.actions) !== JSON.stringify(supplemental.actions) ||
       JSON.stringify(normal.muted) !== JSON.stringify(supplemental.muted)) {

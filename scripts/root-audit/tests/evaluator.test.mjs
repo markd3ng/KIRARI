@@ -26,6 +26,7 @@ function addAdvisory(context, severity) {
       severity,
     };
     report.advisories['1003'] = extra[label];
+    report.metadata.vulnerabilities[severity] += 1;
     context.audits[label].raw = JSON.stringify(report);
   }
 }
@@ -37,6 +38,17 @@ test('exact candidate data without consumption approval remains pending and non-
   assert.equal(result.authorization.r3ExceptionConsumable, false);
   assert.equal(result.authorization.exceptionApplied, false);
   assert.equal(result.authorization.exceptionConsumed, false);
+});
+
+test('normal view removes only #122 while preserving pnpm raw severity totals', () => {
+  const context = createContext();
+  const raw = JSON.parse(context.audits.supplemental.raw);
+  const normal = JSON.parse(context.audits.normal.raw);
+  assert.ok(Object.values(raw.advisories).some((item) => item.github_advisory_id === policy.issue122.ghsa));
+  assert.ok(Object.values(normal.advisories).every((item) => item.github_advisory_id !== policy.issue122.ghsa));
+  assert.deepEqual(normal.metadata.vulnerabilities, raw.metadata.vulnerabilities);
+  assert.equal(normal.metadata.vulnerabilities.high, 1);
+  assert.equal(evaluateVerification(context).trustedVerification, 'PASS');
 });
 
 test('simulated exact future Owner approval is eligible only for its bound candidate and evidence', () => {
@@ -77,6 +89,16 @@ test('changed trusted pnpm audit parser version fails closed', () => {
   const context = createContext();
   context.audits.pnpmVersion = '9.15.0';
   evalError(context, /pnpm audit parser version mismatch/);
+});
+
+test('unignored audit severity totals must reconcile with advisory rows', () => {
+  const context = createContext();
+  for (const label of ['normal', 'supplemental']) {
+    const report = JSON.parse(context.audits[label].raw);
+    report.metadata.vulnerabilities.high = 500;
+    context.audits[label].raw = JSON.stringify(report);
+  }
+  evalError(context, /vulnerability counts do not match its advisory set/);
 });
 
 test('audit subprocess environment excludes GitHub and package registry credentials', () => {

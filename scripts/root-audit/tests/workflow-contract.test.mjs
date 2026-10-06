@@ -64,8 +64,17 @@ test('audit workspace is generated and child environment cannot receive GitHub c
   assert.match(audit, /safeManifest\(manifest, policy\)/);
   assert.match(audit, /await writeFile\(path\.join\(destination, 'package\.json'/);
   assert.doesNotMatch(audit, /candidateFiles\[['"](?:\.npmrc|\.pnpmfile\.cjs)['"]\]/);
-  assert.match(audit, /run\('pnpm', \['--filter', '@kirari\/site', 'audit', '--json', '--audit-level=moderate'\]/);
+  assert.match(audit, /runAsAuditUser\('pnpm', \['--filter', '@kirari\/site', 'audit', '--json', '--audit-level=moderate'\]/);
+  assert.match(audit, /'-u', 'nobody'/);
+  assert.match(audit, /'\/usr\/bin\/env', '-i'/);
   assert.doesNotMatch(audit, /--ignore-registry-errors|pnpm install|npm install/);
+});
+
+test('GitHub API reads are byte-limited while streaming before JSON allocation', async () => {
+  assert.match(cli, /response\.body\?\.getReader\(\)/);
+  assert.match(cli, /byteLength > responseLimit/);
+  assert.match(cli, /MAX_DECISION_COMMENT_BYTES/);
+  assert.match(cli, /AbortSignal\.timeout\(20_000\)/);
 });
 
 test('workflow preserves bounded evidence without downloading or executing artifacts', () => {

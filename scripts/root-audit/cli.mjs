@@ -1,11 +1,14 @@
 import { createHash } from 'node:crypto';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { runIndependentAudits } from './audit.mjs';
 import { evaluateVerification } from './evaluator.mjs';
 import { parseAndValidateLockfile } from './lockfile.mjs';
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
+const MAX_GITHUB_RESPONSE_BYTES = 20 * 1024 * 1024;
+const MAX_DECISION_COMMENT_BYTES = 32 * 1024 * 1024;
 const SHA = /^[a-f0-9]{40}$/;
 const SHA256 = /^[a-f0-9]{64}$/;
 
@@ -44,7 +47,43 @@ function validateInputs(event) {
   return { prNumber: Number(prNumber), expectedHeadSha, expectedBaseSha, expectedSecurityReviewDigest: expectedSecurityReviewDigest || null };
 }
 
-async function requestJson(url, token) {
+export async function readBoundedResponseText(response, maxBytes, byteBudget = null) {
+  const remainingBudget = byteBudget ? byteBudget.limit - byteBudget.used : maxBytes;
+  const responseLimit = Math.min(maxBytes, remainingBudget);
+  const contentLength = response.headers.get('content-length');
+  if (remainingBudget <= 0 || (contentLength && /^\d+$/.test(contentLength) && Number(contentLength) > responseLimit)) {
+    await response.body?.cancel();
+    throw new Error('GitHub API response exceeds size limit');
+  }
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('GitHub API response has no body');
+  const chunks = [];
+  let byteLength = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      byteLength += value.byteLength;
+      if (byteLength > responseLimit) {
+        await reader.cancel();
+        throw new Error('GitHub API response exceeds size limit');
+      }
+      chunks.push(Buffer.from(value));
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  let text;
+  try {
+    text = new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks, byteLength));
+  } catch {
+    throw new Error('GitHub API returned invalid UTF-8');
+  }
+  if (byteBudget) byteBudget.used += byteLength;
+  return text;
+}
+
+async function requestJson(url, token, { byteBudget } = {}) {
   const response = await fetch(url, {
     headers: {
       Accept: 'application/vnd.github+json',
@@ -53,10 +92,13 @@ async function requestJson(url, token) {
       'User-Agent': 'kirari-r3-trusted-verifier',
     },
     redirect: 'error',
+    signal: AbortSignal.timeout(20_000),
   });
-  const text = await response.text();
-  if (Buffer.byteLength(text, 'utf8') > 20 * 1024 * 1024) throw new Error('GitHub API response exceeds size limit');
-  if (!response.ok) throw new Error(`GitHub API request failed with HTTP ${response.status}`);
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new Error(`GitHub API request failed with HTTP ${response.status}`);
+  }
+  const text = await readBoundedResponseText(response, MAX_GITHUB_RESPONSE_BYTES, byteBudget);
   try {
     return JSON.parse(text);
   } catch {
@@ -90,19 +132,23 @@ async function fetchCandidateFile(apiUrl, headRepo, file, headSha, token) {
 
 async function getDecisionComments(apiUrl, issueNumber, token) {
   const comments = [];
+  const byteBudget = { limit: MAX_DECISION_COMMENT_BYTES, used: 0 };
   for (let page = 1; page <= 100; page += 1) {
     const url = new URL(`/repos/markd3ng/KIRARI/issues/${issueNumber}/comments`, apiUrl);
     url.searchParams.set('per_page', '100');
     url.searchParams.set('page', String(page));
-    const response = await requestJson(url, token);
+    const response = await requestJson(url, token, { byteBudget });
     if (!Array.isArray(response)) throw new Error('GitHub issue comments response is malformed');
-    comments.push(...response.map((comment) => ({
-      id: comment.id,
-      body: comment.body,
-      author_association: comment.author_association,
-      user: { login: comment.user?.login },
-      issueNumber,
-    })));
+    for (const comment of response) {
+      if (typeof comment.body !== 'string' || !comment.body.startsWith('KIRARI_R3_CONSUMPTION_DECISION_V1\n')) continue;
+      comments.push({
+        id: comment.id,
+        body: comment.body,
+        author_association: comment.author_association,
+        user: { login: comment.user?.login },
+        issueNumber,
+      });
+    }
     if (response.length < 100) return comments;
   }
   throw new Error('GitHub issue comment page limit exceeded');
@@ -281,4 +327,4 @@ async function main() {
   }
 }
 
-await main();
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();

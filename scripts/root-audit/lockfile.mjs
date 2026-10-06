@@ -236,6 +236,55 @@ function parseSnapshots(rows) {
   return snapshots;
 }
 
+function packageIdentity(key, where) {
+  if (typeof key !== 'string' || key.length > 1024 || /[\x00-\x1f\x7f]/.test(key)) {
+    fail(`invalid package key at ${where}`);
+  }
+  const separator = key.lastIndexOf('@');
+  if (separator <= 0) fail(`invalid package identity at ${where}`);
+  const name = key.slice(0, separator);
+  const version = key.slice(separator + 1);
+  assertSafePackageName(name, where);
+  if (!/^[0-9][0-9A-Za-z.+-]*$/.test(version)) fail(`unsupported package version at ${where}`);
+  return `${name}@${version}`;
+}
+
+function parsePackages(rows) {
+  const packages = new Map();
+  let current = null;
+  for (const row of rows) {
+    if (row.indentation === 2) {
+      const entry = splitEntry(row.body, `line ${row.line}`);
+      if (!entry || (entry.value !== '' && entry.value !== '{}')) fail(`invalid package entry at line ${row.line}`);
+      packageIdentity(entry.key, `line ${row.line}`);
+      if (packages.has(entry.key)) fail(`duplicate package ${entry.key}`);
+      current = { fields: new Set(), integrity: null };
+      packages.set(entry.key, current);
+      continue;
+    }
+    if (!current) fail(`package field without a package at line ${row.line}`);
+    if (row.indentation === 4) {
+      const entry = splitEntry(row.body, `line ${row.line}`);
+      if (!entry || typeof entry.key !== 'string' || !/^[A-Za-z][A-Za-z0-9]*$/.test(entry.key)) {
+        fail(`invalid package field at line ${row.line}`);
+      }
+      if (current.fields.has(entry.key)) fail(`duplicate package field ${entry.key}`);
+      current.fields.add(entry.key);
+      if (entry.key === 'resolution') {
+        const match = /^\{\s*integrity:\s*(?:"(sha512-[A-Za-z0-9+/]{86}==)"|'(sha512-[A-Za-z0-9+/]{86}==)'|(sha512-[A-Za-z0-9+/]{86}==))\s*\}$/.exec(entry.value);
+        if (!match) fail(`unsupported package resolution at line ${row.line}`);
+        current.integrity = match[1] ?? match[2] ?? match[3];
+      }
+      continue;
+    }
+    if (row.indentation < 6 || row.indentation % 2 !== 0) fail(`unsupported package nesting at line ${row.line}`);
+  }
+  for (const [key, value] of packages) {
+    if (!value.fields.has('resolution') || !value.integrity) fail(`package ${key} has no supported integrity resolution`);
+  }
+  return packages;
+}
+
 function assertSameKeys(actual, expected, label) {
   const left = [...actual].sort();
   const right = [...expected].sort();
@@ -280,7 +329,11 @@ const ROOT_PNPM_VERSION = '9.14.4';
 export function parseAndValidateLockfile(lockText, candidateFiles, policy) {
   const top = sectionRows(prepareLines(lockText));
   const importers = parseImporters(top.get('importers').rows);
+  const packages = parsePackages(top.get('packages').rows);
   const snapshots = parseSnapshots(top.get('snapshots').rows);
+  const packageKeys = new Set([...packages.keys()].map((key) => packageIdentity(key, 'packages')));
+  const snapshotPackageKeys = new Set([...snapshots.keys()].map((key) => packageIdentity(key.split('(', 1)[0], 'snapshots')));
+  assertSameKeys(snapshotPackageKeys, packageKeys, 'package resolution and snapshot identity set');
   const expectedImporterNames = Object.keys(policy.workspaceManifests);
   assertSameKeys(importers.keys(), expectedImporterNames, 'workspace importer set');
 

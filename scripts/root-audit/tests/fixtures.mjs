@@ -82,6 +82,11 @@ function snapshotsSection(snapshots) {
   return lines.join('\n');
 }
 
+function packagesSection(snapshots) {
+  const packageKeys = [...new Set(Object.keys(snapshots).map((key) => key.split('(', 1)[0]))].sort();
+  return packageKeys.map((key) => `  ${q(key)}:\n    resolution: {integrity: "sha512-${'A'.repeat(86)}=="}`).join('\n');
+}
+
 function makeLock(siteDependencies, snapshots) {
   const rootImporter = { devDependencies: { parse5: '7.3.0' } };
   const siteImporter = { dependencies: siteDependencies };
@@ -96,6 +101,7 @@ function makeLock(siteDependencies, snapshots) {
     importerSection('workers/kirari-edge', {}),
     importerSection('packages/site-profile', {}),
     'packages:',
+    packagesSection(snapshots),
     'snapshots:',
     snapshotsSection(snapshots),
     '',
