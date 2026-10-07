@@ -129,7 +129,7 @@ export function createFixture({ siteDependencies = { ...defaultSiteDependencies 
     '.github/workflows/r3-trusted-verifier.yml': 'run: echo candidate workflow is data only\n',
     'scripts/root-audit/cli.mjs': 'throw new Error("candidate cli executed")\n',
     'scripts/root-audit/evaluator.mjs': 'throw new Error("candidate evaluator executed")\n',
-    'scripts/root-audit/policy.json': '{"candidatePolicy":true}\n',
+    'scripts/root-audit/trusted-policy.json': `${JSON.stringify({ ...policy, r3: { ...policy.r3, ghsa: 'candidate-data-only' } })}\n`,
   };
   return candidateFiles;
 }

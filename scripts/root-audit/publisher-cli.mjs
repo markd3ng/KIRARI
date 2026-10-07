@@ -1,7 +1,7 @@
 import { appendFile, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildPublisherResult, canonicalJson, decisionIsCurrent, listChecksAcrossPages, publishCheck, sha256, validateArtifactMetadata, validatePublisherResult, validateWorkflowMetadata, validateWorkflowRunApi, validateWorkflowRunEvent } from './publisher-contract.mjs';
+import { assertVerifierRunIsLatest, buildPublisherResult, canonicalJson, decisionIsCurrent, listChecksAcrossPages, listWorkflowRunsAcrossPages, publishCheck, publishFailure, publishPending, sha256, validateArtifactMetadata, validatePublisherResult, validateWorkflowMetadata, validateWorkflowRunApi, validateWorkflowRunEvent } from './publisher-contract.mjs';
 import { digestEvidenceDirectory } from './publisher-evidence.mjs';
 
 const MAX_RESPONSE_BYTES = 20 * 1024 * 1024;
@@ -140,9 +140,70 @@ async function validateInputs({ mode }) {
   }
 
   const run = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/actions/runs/${runId}/attempts/${runAttempt}`), readToken);
-  validateWorkflowRunApi(run, source);
+  const target = validateWorkflowRunApi(run, source);
+  const mainBranch = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/branches/main`), readToken);
+  if (mainBranch?.commit?.sha !== source.mainSha) throw new Error('trusted verifier run is not based on the current main SHA');
   const workflow = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/actions/workflows/${source.workflowId}`), readToken);
   validateWorkflowMetadata(workflow, source);
+  if (target.baseSha !== source.mainSha) throw new Error('verifier run title base does not equal the trusted main SHA');
+  const pr = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/pulls/${target.prNumber}`), readToken);
+  assertRunTargetPullRequest(pr, target);
+  if (!await isLatestVerifierRun({ apiUrl, repository, readToken, source, target })) {
+    if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, 'publisher_eligible=false\n', { mode: 0o600 });
+    process.stdout.write(`Verifier run ${source.runId} attempt ${source.runAttempt} was superseded for PR #${target.prNumber}; no App check was changed.\n`);
+    return;
+  }
+
+  if (mode === 'preflight') {
+    if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, 'publisher_eligible=true\n', { mode: 0o600 });
+    process.stdout.write(`Authenticated verifier source and live PR target #${target.prNumber}; no artifact or App check was accessed.\n`);
+    return;
+  }
+
+  const appToken = process.env.R3_APP_TOKEN;
+  const appId = ['publish', 'publish-failure', 'publish-pending'].includes(mode) ? positiveInteger(process.env.R3_PUBLISHER_APP_ID, 'dedicated App ID') : null;
+  const publisher = { sha: publisherSha, policyDigest: sha256(policyBytes) };
+  const adapter = createCheckAdapter({ apiUrl, repository, readToken, checksToken: appToken, source, target });
+  if (mode === 'publish-pending') {
+    if (source.action === 'completed') throw new Error('completed verifier event cannot publish a pending App check');
+    if (typeof appToken !== 'string' || appToken.length < 20) throw new Error('dedicated GitHub App installation token is unavailable');
+    const outcome = await publishPending({ target, source, publisher, appId, adapter });
+    process.stdout.write(`Published trusted verifier in-progress check run ${outcome.checkRunId}; no success conclusion was published.\n`);
+    return;
+  }
+  if (mode === 'publish-failure') {
+    if (source.action !== 'completed') throw new Error('pending verifier event cannot publish a failure conclusion');
+    if (typeof appToken !== 'string' || appToken.length < 20) throw new Error('dedicated GitHub App installation token is unavailable');
+    const outcome = await publishFailure({
+      target,
+      source,
+      publisher,
+      appId,
+      adapter,
+      failureReason: source.conclusion === 'success' ? 'successful verifier result artifact was missing or invalid' : null,
+    });
+    process.stdout.write(`Published trusted verifier failure check run ${outcome.checkRunId}; prior success for this exact HEAD was invalidated.\n`);
+    return;
+  }
+  if (source.action !== 'completed') throw new Error('pending verifier event cannot validate or publish a result artifact');
+  if (source.conclusion !== 'success') {
+    if (mode === 'validate') {
+      if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, 'result_valid=false\n', { mode: 0o600 });
+      process.stdout.write(`Validated failed trusted verifier run for PR #${target.prNumber} at ${target.headSha}; it can invalidate an older App success.\n`);
+      return;
+    }
+    if (typeof appToken !== 'string' || appToken.length < 20) throw new Error('dedicated GitHub App installation token is unavailable');
+    const policyBytes = await readFile(new URL('./publisher-policy.json', import.meta.url));
+    const outcome = await publishFailure({
+      target,
+      source,
+      publisher,
+      appId,
+      adapter,
+    });
+    process.stdout.write(`Published trusted verifier failure check run ${outcome.checkRunId}; prior success for this exact HEAD was invalidated.\n`);
+    return;
+  }
   const artifactPage = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/actions/runs/${runId}/artifacts?per_page=100`), readToken);
   const artifact = validateArtifactMetadata(artifactPage.artifacts, source);
 
@@ -166,7 +227,9 @@ async function validateInputs({ mode }) {
   if (canonicalJson(bundle) !== canonicalJson(expectedBundle)) throw new Error('publisher result does not match canonical verifier evidence');
   validatePublisherResult(bundle, source, evidenceStats.digest);
 
-  const pr = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/pulls/${bundle.candidate.prNumber}`), readToken);
+  if (bundle.candidate.prNumber !== target.prNumber || bundle.candidate.headSha !== target.headSha || bundle.candidate.baseSha !== target.baseSha) {
+    throw new Error('successful verifier result does not match the authenticated run-title target');
+  }
   assertPullRequest(pr, bundle, bundle.candidate.headRepository);
 
   if (bundle.decisionIdentity.requestedCommentId !== null) {
@@ -175,25 +238,53 @@ async function validateInputs({ mode }) {
   }
 
   if (mode === 'validate') {
-    if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, 'publisher_eligible=true\n', { mode: 0o600 });
+    if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, 'result_valid=true\n', { mode: 0o600 });
     process.stdout.write(`Validated trusted evidence for PR #${bundle.candidate.prNumber} at ${bundle.candidate.headSha}; no App check was written.\n`);
     return;
   }
 
-  const appToken = process.env.R3_APP_TOKEN;
-  const appId = positiveInteger(process.env.R3_PUBLISHER_APP_ID, 'dedicated App ID');
   if (typeof appToken !== 'string' || appToken.length < 20) throw new Error('dedicated GitHub App installation token is unavailable');
-  const appPublisher = {
-    sha: publisherSha,
-    policyDigest: sha256(policyBytes),
-  };
-  const checksToken = appToken;
-  const adapter = {
+  const outcome = await publishCheck({ bundle, source, evidenceDigest: evidenceStats.digest, publisher, appId, adapter });
+  process.stdout.write(`Published trusted technical verifier check run ${outcome.checkRunId} (${outcome.outcome}); R3 consumption and merge authorization remain separate.\n`);
+}
+
+async function main() {
+  try {
+    const mode = process.argv[2];
+    if (!['preflight', 'validate', 'publish', 'publish-failure', 'publish-pending'].includes(mode)) throw new Error('publisher mode is unsupported');
+    await validateInputs({ mode });
+  } catch (error) {
+    process.stderr.write(`R3 publisher failed closed: ${error instanceof Error ? error.message : 'unknown error'}\n`);
+    process.exitCode = 1;
+  }
+}
+
+export { assertPullRequest };
+
+async function isLatestVerifierRun({ apiUrl, repository, readToken, source, target }) {
+  const runs = await listWorkflowRunsAcrossPages(async (page) => {
+    const url = apiEndpoint(apiUrl, `/repos/${repository}/actions/workflows/${source.workflowId}/runs`);
+    url.searchParams.set('branch', 'main');
+    url.searchParams.set('event', 'workflow_dispatch');
+    url.searchParams.set('per_page', '100');
+    url.searchParams.set('page', String(page));
+    return requestJson(url, readToken);
+  });
+  return assertVerifierRunIsLatest(runs, source, target);
+}
+
+function createCheckAdapter({ apiUrl, repository, readToken, checksToken, source, target }) {
+  return {
     apiUrl,
     async assertPullRequest(prNumber, headSha, baseSha) {
       const current = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/pulls/${prNumber}`), readToken);
       if (current.state !== 'open' || current.merged !== false || current.head?.sha !== headSha || current.base?.sha !== baseSha || current.base?.ref !== 'main') {
         throw new Error('live PR HEAD or base changed before publication');
+      }
+      const main = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/branches/main`), readToken);
+      if (main?.commit?.sha !== baseSha) throw new Error('live PR base is not the current main SHA');
+      if (!await isLatestVerifierRun({ apiUrl, repository, readToken, source, target })) {
+        throw new Error('a newer authenticated verifier run superseded this publisher attempt');
       }
     },
     async getDecisionComment(commentId) {
@@ -215,22 +306,15 @@ async function validateInputs({ mode }) {
       return requestJson(apiEndpoint(apiUrl, `/repos/${repository}/check-runs/${id}`), checksToken, { method: 'PATCH', body: payload });
     },
   };
-  const outcome = await publishCheck({ bundle, source, evidenceDigest: evidenceStats.digest, publisher: appPublisher, appId, adapter });
-  process.stdout.write(`Published trusted technical verifier check run ${outcome.checkRunId} (${outcome.outcome}); R3 consumption and merge authorization remain separate.\n`);
 }
 
-async function main() {
-  try {
-    const mode = process.argv[2];
-    if (mode !== 'validate' && mode !== 'publish') throw new Error('publisher mode must be validate or publish');
-    await validateInputs({ mode });
-  } catch (error) {
-    process.stderr.write(`R3 publisher failed closed: ${error instanceof Error ? error.message : 'unknown error'}\n`);
-    process.exitCode = 1;
+function assertRunTargetPullRequest(pr, target) {
+  if (pr?.number !== target.prNumber || pr.state !== 'open' || pr.merged !== false ||
+      pr.head?.sha !== target.headSha || pr.base?.sha !== target.baseSha || pr.base?.ref !== 'main' ||
+      typeof pr.head?.repo?.full_name !== 'string') {
+    throw new Error('authenticated verifier run title does not match the live PR head/base/state');
   }
 }
-
-export { assertPullRequest };
 
 function assertPullRequest(pr, bundle, expectedHeadRepo) {
   if (pr.number !== bundle.candidate.prNumber || pr.state !== 'open' || pr.merged !== false ||

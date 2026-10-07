@@ -1,4 +1,5 @@
 name: R3 trusted verifier
+run-name: R3 verifier|pr=${{ inputs.pr_number }}|head=${{ inputs.expected_head_sha }}|base=${{ inputs.expected_base_sha }}
 
 on:
   workflow_dispatch:
@@ -16,8 +17,8 @@ on:
         required: true
         type: string
       security_review_sha256:
-        description: Exact digest of an independent security review bound to this candidate and trusted verifier
-        required: true
+        description: Optional Owner-supplied review reference; not authenticated by this automated check
+        required: false
         type: string
       decision_comment_id:
         description: Optional exact Issue #135 decision comment ID to bind and revalidate

@@ -4,13 +4,18 @@ import { evaluateVerification } from '../evaluator.mjs';
 import { assertPullRequest } from '../publisher-cli.mjs';
 import {
   assertAllowedConclusion,
+  assertVerifierRunIsLatest,
   buildExternalId,
   buildPublisherResult,
   checkPayload,
   decisionIsCurrent,
   findIdempotentCheck,
   listChecksAcrossPages,
+  listWorkflowRunsAcrossPages,
+  parseVerifierRunName,
   publishCheck,
+  publishFailure,
+  publishPending,
   sha256,
   validateArtifactMetadata,
   validatePublisherResult,
@@ -28,10 +33,10 @@ const REVIEW_DIGEST = 'e'.repeat(64);
 const EVIDENCE_DIGEST = 'f'.repeat(64);
 const API_URL = 'https://api.github.com';
 
-function makeCase({ decision = false } = {}) {
+function makeCase({ decision = false, securityReviewDigest = REVIEW_DIGEST } = {}) {
   const commentId = 6019999999;
   const context = createContext({
-    expectedSecurityReviewDigest: decision ? 'd'.repeat(64) : REVIEW_DIGEST,
+    expectedSecurityReviewDigest: decision ? 'd'.repeat(64) : securityReviewDigest,
     ...(decision ? { expectedDecisionCommentId: commentId } : {}),
   });
   if (decision) context.comments = [ownerApproval(context)];
@@ -45,10 +50,14 @@ function makeCase({ decision = false } = {}) {
     evidenceDigest: EVIDENCE_DIGEST,
   });
   const source = {
+    action: 'completed',
+    status: 'completed',
     repositoryId: REPOSITORY_ID,
     repository: REPOSITORY,
     runId: Number(result.trustedRun.id),
+    runNumber: 124,
     runAttempt: Number(result.trustedRun.attempt),
+    conclusion: 'success',
     workflowId: WORKFLOW_ID,
     mainSha: result.trustedRun.sha,
     workflowPath: VERIFIER_WORKFLOW_PATH,
@@ -56,7 +65,7 @@ function makeCase({ decision = false } = {}) {
   return { context, result, bundle, source };
 }
 
-function makeAdapter({ bundle, appId = 7654321, headSha = bundle.candidate.headSha, baseSha = bundle.candidate.baseSha, checks = [], decisionComment = null, now = Date.parse('2026-10-06T12:00:00.000Z'), listChecks = null, createCheck = null, updateCheck = null } = {}) {
+function makeAdapter({ bundle, appId = 7654321, headSha = bundle.candidate.headSha, baseSha = bundle.candidate.baseSha, mainSha = bundle.candidate.baseSha, checks = [], decisionComment = null, now = Date.parse('2026-10-06T12:00:00.000Z'), listChecks = null, createCheck = null, updateCheck = null } = {}) {
   const created = [];
   const updates = [];
   const adapter = {
@@ -64,7 +73,7 @@ function makeAdapter({ bundle, appId = 7654321, headSha = bundle.candidate.headS
     now: () => now,
     async assertPullRequest(prNumber, expectedHead, expectedBase) {
       assert.equal(prNumber, bundle.candidate.prNumber);
-      if (headSha !== expectedHead || baseSha !== expectedBase) throw new Error('live PR HEAD or base changed');
+      if (headSha !== expectedHead || baseSha !== expectedBase || mainSha !== expectedBase) throw new Error('live PR HEAD, base, or current main changed');
     },
     async getDecisionComment(id) {
       assert.equal(id, bundle.decisionIdentity.requestedCommentId);
@@ -103,10 +112,13 @@ function workflowEvent(overrides = {}) {
       workflow: { id: WORKFLOW_ID, name: 'R3 trusted verifier' },
       workflow_run: {
         id: 123456789,
+        run_number: 124,
         run_attempt: 1,
         workflow_id: WORKFLOW_ID,
         event: 'workflow_dispatch',
+        status: 'completed',
         conclusion: 'success',
+        display_title: 'R3 verifier|pr=133|head=ef5ecc412e165ebd7f3c6f38f111c7bdcb8cfda8|base=c79659046cf6ea73ba69e03c3937d904c07ba93b',
         head_branch: 'main',
         head_sha: 'c79659046cf6ea73ba69e03c3937d904c07ba93b',
         head_repository: { full_name: REPOSITORY, id: REPOSITORY_ID },
@@ -127,7 +139,7 @@ test('A: complete bound evidence publishes only a dedicated App success on the e
   assert.equal(created[0].status, 'in_progress');
   assert.match(created[0].output.summary, /Verifier workflow path: \.github\/workflows\/r3-trusted-verifier\.yml/);
   assert.match(created[0].output.summary, /Candidate source repository: markd3ng\/KIRARI/);
-  assert.match(created[0].output.summary, /Independent security review digest:/);
+  assert.match(created[0].output.summary, /Owner-supplied security review reference \(not fetched or authenticated by this check\):/);
   assert.match(created[0].output.summary, /Decision comment requested ID: not requested/);
   assert.match(created[0].output.summary, /lookup: NOT_REQUESTED/);
   assert.match(created[0].output.summary, /Decision expires: not applicable/);
@@ -140,10 +152,13 @@ test('workflow_run webhook shape and REST path suffix bind through workflow ID t
   const source = validateWorkflowRunEvent(workflowEvent());
   const apiRun = {
     id: source.runId,
+    run_number: source.runNumber,
     run_attempt: source.runAttempt,
     workflow_id: source.workflowId,
     event: 'workflow_dispatch',
+    status: 'completed',
     conclusion: 'success',
+    display_title: source.displayTitle,
     path: `${VERIFIER_WORKFLOW_PATH}@main`,
     head_branch: 'main',
     head_sha: source.mainSha,
@@ -158,11 +173,222 @@ test('source spoofing, wrong run conclusion, workflow, branch, repository, or RE
   assert.throws(() => validateWorkflowRunEvent(workflowEvent({ eventName: 'pull_request' })), /default-branch workflow_run/);
   assert.throws(() => validateWorkflowRunEvent(workflowEvent({ ref: 'refs/pull/7/merge' })), /default-branch workflow_run/);
   assert.throws(() => validateWorkflowRunEvent(workflowEvent({ repository: 'attacker/KIRARI' })), /repository identity/);
-  assert.throws(() => validateWorkflowRunEvent(workflowEvent({ payload: { ...workflowEvent().payload, workflow_run: { ...workflowEvent().payload.workflow_run, conclusion: 'failure' } } })), /did not complete successfully/);
+  assert.equal(validateWorkflowRunEvent(workflowEvent({ payload: { ...workflowEvent().payload, workflow_run: { ...workflowEvent().payload.workflow_run, conclusion: 'failure' } } })).conclusion, 'failure');
   assert.throws(() => validateWorkflowRunEvent(workflowEvent({ payload: { ...workflowEvent().payload, workflow_run: { ...workflowEvent().payload.workflow_run, head_repository: { full_name: 'attacker/KIRARI', id: 8 } } } })), /head repository mismatch/);
   const source = validateWorkflowRunEvent(workflowEvent());
-  assert.throws(() => validateWorkflowRunApi({ id: source.runId, run_attempt: source.runAttempt, workflow_id: WORKFLOW_ID, event: 'workflow_dispatch', conclusion: 'success', path: `${VERIFIER_WORKFLOW_PATH}@feature`, head_branch: 'main', head_sha: source.mainSha, repository: { full_name: REPOSITORY, id: REPOSITORY_ID }, head_repository: { full_name: REPOSITORY, id: REPOSITORY_ID } }, source), /metadata mismatch/);
+  assert.throws(() => validateWorkflowRunApi({ id: source.runId, run_number: source.runNumber, run_attempt: source.runAttempt, workflow_id: WORKFLOW_ID, event: 'workflow_dispatch', status: 'completed', conclusion: 'success', path: `${VERIFIER_WORKFLOW_PATH}@feature`, head_branch: 'main', head_sha: source.mainSha, repository: { full_name: REPOSITORY, id: REPOSITORY_ID }, head_repository: { full_name: REPOSITORY, id: REPOSITORY_ID } }, source), /metadata mismatch/);
   assert.throws(() => validateWorkflowMetadata({ id: WORKFLOW_ID + 1, path: VERIFIER_WORKFLOW_PATH, state: 'active' }, source), /trusted verifier path/);
+});
+
+test('failed verifier run title retains a strict authenticated PR/head/base target', () => {
+  const source = validateWorkflowRunEvent(workflowEvent({ payload: {
+    ...workflowEvent().payload,
+    workflow_run: { ...workflowEvent().payload.workflow_run, conclusion: 'timed_out' },
+  } }));
+  const apiRun = {
+    id: source.runId,
+    run_number: source.runNumber,
+    run_attempt: source.runAttempt,
+    workflow_id: source.workflowId,
+    event: 'workflow_dispatch',
+    status: 'completed',
+    conclusion: 'timed_out',
+    display_title: source.displayTitle,
+    path: `${VERIFIER_WORKFLOW_PATH}@main`,
+    head_branch: 'main',
+    head_sha: source.mainSha,
+    repository: { full_name: REPOSITORY, id: REPOSITORY_ID },
+    head_repository: { full_name: REPOSITORY, id: REPOSITORY_ID },
+  };
+  assert.deepEqual(validateWorkflowRunApi(apiRun, source), {
+    prNumber: 133,
+    headSha: 'ef5ecc412e165ebd7f3c6f38f111c7bdcb8cfda8',
+    baseSha: 'c79659046cf6ea73ba69e03c3937d904c07ba93b',
+  });
+  assert.throws(() => parseVerifierRunName('R3 verifier|pr=133|head=bad|base=bad'), /valid PR\/head\/base binding/);
+});
+
+test('requested and in-progress events require a live pending run and bind the exact target', () => {
+  const payload = workflowEvent({ payload: {
+    ...workflowEvent().payload,
+    action: 'in_progress',
+    workflow_run: { ...workflowEvent().payload.workflow_run, status: 'in_progress', conclusion: null },
+  } });
+  const source = validateWorkflowRunEvent(payload);
+  const apiRun = {
+    id: source.runId,
+    run_number: source.runNumber,
+    run_attempt: source.runAttempt,
+    workflow_id: source.workflowId,
+    event: 'workflow_dispatch',
+    status: 'in_progress',
+    conclusion: null,
+    display_title: source.displayTitle,
+    path: `${VERIFIER_WORKFLOW_PATH}@main`,
+    head_branch: 'main',
+    head_sha: source.mainSha,
+    repository: { full_name: REPOSITORY, id: REPOSITORY_ID },
+    head_repository: { full_name: REPOSITORY, id: REPOSITORY_ID },
+  };
+  assert.deepEqual(validateWorkflowRunApi(apiRun, source), {
+    prNumber: 133,
+    headSha: 'ef5ecc412e165ebd7f3c6f38f111c7bdcb8cfda8',
+    baseSha: 'c79659046cf6ea73ba69e03c3937d904c07ba93b',
+  });
+  assert.throws(() => validateWorkflowRunApi({ ...apiRun, status: 'completed', conclusion: 'success' }, source), /metadata mismatch/);
+});
+
+test('a later same-target verifier run supersedes earlier publisher events', () => {
+  const source = validateWorkflowRunEvent(workflowEvent());
+  const target = { prNumber: 133, headSha: 'ef5ecc412e165ebd7f3c6f38f111c7bdcb8cfda8', baseSha: 'c79659046cf6ea73ba69e03c3937d904c07ba93b' };
+  const run = (overrides = {}) => ({
+    id: source.runId,
+    run_number: source.runNumber,
+    run_attempt: source.runAttempt,
+    workflow_id: source.workflowId,
+    event: 'workflow_dispatch',
+    head_branch: 'main',
+    head_sha: source.mainSha,
+    display_title: source.displayTitle,
+    ...overrides,
+  });
+  assert.equal(assertVerifierRunIsLatest([run()], source, target), true);
+  assert.equal(assertVerifierRunIsLatest([run(), run({ id: source.runId + 1, run_number: source.runNumber + 1 })], source, target), false);
+  assert.equal(assertVerifierRunIsLatest([run(), run({ id: source.runId + 1, run_number: source.runNumber + 1, display_title: 'R3 verifier|pr=136|head=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa|base=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' })], source, target), true);
+  assert.equal(assertVerifierRunIsLatest([run({ run_attempt: source.runAttempt + 1 })], source, target), false);
+  assert.throws(() => assertVerifierRunIsLatest([run(), run({ id: source.runId + 1, run_number: source.runNumber + 1, display_title: 'unexpected newer run' })], source, target), /valid PR\/head\/base binding/);
+});
+
+test('workflow run listing paginates consistently and fails closed on changing totals', async () => {
+  const pages = await listWorkflowRunsAcrossPages(async (page) => ({
+    total_count: 2,
+    workflow_runs: page === 1 ? [{ id: 1 }] : [{ id: 2 }],
+  }), { pageSize: 1, maximumPages: 2 });
+  assert.deepEqual(pages.map(({ id }) => id), [1, 2]);
+  await assert.rejects(listWorkflowRunsAcrossPages(async (page) => ({
+    total_count: page === 1 ? 2 : 3,
+    workflow_runs: [{ id: page }],
+  }), { pageSize: 1, maximumPages: 2 }), /pagination changed/);
+});
+
+test('verifier start invalidates same-head success and publishes an in-progress App check', async () => {
+  const { bundle, source } = makeCase();
+  const oldSuccess = {
+    id: 778,
+    name: 'KIRARI / R3 trusted verifier',
+    head_sha: bundle.candidate.headSha,
+    external_id: 'older-success',
+    status: 'completed',
+    conclusion: 'success',
+    app: { id: 7654321 },
+    output: { summary: 'Verifier run: 123456788 attempt 1' },
+  };
+  const { adapter, created, updates } = makeAdapter({ bundle, checks: [oldSuccess] });
+  const pendingSource = { ...source, action: 'in_progress', status: 'in_progress', runId: 123456789, runNumber: 125, runAttempt: 1 };
+  const outcome = await publishPending({
+    target: { prNumber: bundle.candidate.prNumber, headSha: bundle.candidate.headSha, baseSha: bundle.candidate.baseSha },
+    source: pendingSource,
+    publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) },
+    appId: 7654321,
+    adapter,
+  });
+  assert.equal(outcome.outcome, 'published-pending');
+  assert.equal(updates[0].patch.conclusion, 'failure');
+  assert.equal(created[0].status, 'in_progress');
+  assert.match(created[0].output.summary, /Verification has started/);
+});
+
+test('successful completion promotes the exact pending check for its run attempt', async () => {
+  const { bundle, source } = makeCase();
+  const pending = {
+    id: 779,
+    name: 'KIRARI / R3 trusted verifier',
+    head_sha: bundle.candidate.headSha,
+    external_id: 'kirari-r3-attempt:pending-binding',
+    status: 'in_progress',
+    app: { id: 7654321 },
+    output: { title: 'Trusted verification pending', summary: `PR #${bundle.candidate.prNumber}\nVerifier run: ${source.runId} attempt ${source.runAttempt}` },
+    details_url: `https://github.com/${REPOSITORY}/actions/runs/${source.runId}/attempts/${source.runAttempt}`,
+  };
+  let current = pending;
+  const { adapter, updates, created } = makeAdapter({
+    bundle,
+    checks: [pending],
+    updateCheck: async (id, patch) => {
+      current = { ...current, ...patch, id, app: { id: 7654321 } };
+      return current;
+    },
+  });
+  const outcome = await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
+  assert.equal(outcome.outcome, 'published-success');
+  assert.equal(created.length, 0);
+  assert.equal(updates[0].patch.external_id, outcome.externalId);
+  assert.equal(updates.at(-1).patch.conclusion, 'success');
+});
+
+test('failed authenticated verifier run invalidates earlier same-head App success', async () => {
+  const { bundle } = makeCase();
+  const oldSuccess = {
+    id: 777,
+    name: 'KIRARI / R3 trusted verifier',
+    head_sha: bundle.candidate.headSha,
+    external_id: 'older-success',
+    status: 'completed',
+    conclusion: 'success',
+    app: { id: 7654321 },
+    output: { summary: 'Verifier run: 123456788 attempt 1' },
+  };
+  const { adapter, created, updates } = makeAdapter({ bundle, checks: [oldSuccess] });
+  const source = {
+    action: 'completed',
+    repository: REPOSITORY,
+    repositoryId: REPOSITORY_ID,
+    runId: 123456789,
+    runNumber: 124,
+    runAttempt: 1,
+    mainSha: bundle.candidate.baseSha,
+    workflowPath: VERIFIER_WORKFLOW_PATH,
+    status: 'completed',
+    conclusion: 'failure',
+  };
+  const outcome = await publishFailure({
+    target: { prNumber: bundle.candidate.prNumber, headSha: bundle.candidate.headSha, baseSha: bundle.candidate.baseSha },
+    source,
+    publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) },
+    appId: 7654321,
+    adapter,
+  });
+  assert.equal(outcome.outcome, 'published-failure');
+  assert.equal(updates[0].id, oldSuccess.id);
+  assert.equal(updates[0].patch.conclusion, 'failure');
+  assert.equal(created[0].head_sha, bundle.candidate.headSha);
+  assert.equal(updates.at(-1).patch.conclusion, 'failure');
+});
+
+test('authenticated failed attempt downgrades an inconsistent same-attempt App success', async () => {
+  const { bundle } = makeCase();
+  const sameAttemptSuccess = {
+    id: 780,
+    name: 'KIRARI / R3 trusted verifier',
+    head_sha: bundle.candidate.headSha,
+    external_id: 'mismatched-success-binding',
+    status: 'completed',
+    conclusion: 'success',
+    app: { id: 7654321 },
+    output: { summary: 'Verifier run: 123456789 attempt 1' },
+  };
+  const { adapter, created, updates } = makeAdapter({ bundle, checks: [sameAttemptSuccess] });
+  const outcome = await publishFailure({
+    target: { prNumber: bundle.candidate.prNumber, headSha: bundle.candidate.headSha, baseSha: bundle.candidate.baseSha },
+    source: { repository: REPOSITORY, repositoryId: REPOSITORY_ID, action: 'completed', status: 'completed', runId: 123456789, runAttempt: 1, mainSha: bundle.candidate.baseSha, workflowPath: VERIFIER_WORKFLOW_PATH, conclusion: 'failure' },
+    publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) },
+    appId: 7654321,
+    adapter,
+  });
+  assert.equal(outcome.outcome, 'invalidated-current-attempt');
+  assert.equal(created.length, 0);
+  assert.equal(updates[0].id, sameAttemptSuccess.id);
+  assert.equal(updates[0].patch.conclusion, 'failure');
 });
 
 test('missing, expired, duplicate, or wrong-run artifact cannot enter publication', () => {
@@ -180,7 +406,7 @@ test('missing, expired, duplicate, or wrong-run artifact cannot enter publicatio
 test('B: stale candidate HEAD and M: prior-head success cannot satisfy the live candidate', async () => {
   const { bundle, source } = makeCase();
   const { adapter, created } = makeAdapter({ bundle, headSha: '1'.repeat(40) });
-  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /HEAD or base changed/);
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /HEAD, base, or current main changed/);
   assert.equal(created.length, 0);
 });
 
@@ -201,8 +427,17 @@ test('publisher revalidates current PR identity, state, source, HEAD, and base',
 test('C: stale candidate base cannot produce a successful check', async () => {
   const { bundle, source } = makeCase();
   const { adapter, created } = makeAdapter({ bundle, baseSha: '1'.repeat(40) });
-  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /HEAD or base changed/);
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /HEAD, base, or current main changed/);
   assert.equal(created.length, 0);
+});
+
+test('publisher rejects a verifier/base binding that is stale relative to current main', async () => {
+  const { bundle, source } = makeCase();
+  const staleMain = makeAdapter({ bundle, mainSha: '1'.repeat(40) });
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter: staleMain.adapter }), /current main changed/);
+  const altered = structuredClone(bundle);
+  altered.verifier.mainSha = '1'.repeat(40);
+  assert.throws(() => validatePublisherResult(altered, source, EVIDENCE_DIGEST), /exact PR base/);
 });
 
 test('I: an upstream verifier error never produces a successful publisher result', () => {
@@ -210,16 +445,16 @@ test('I: an upstream verifier error never produces a successful publisher result
   assert.throws(() => buildPublisherResult({ result: { ...result, trustedVerification: 'FAIL' }, repository: REPOSITORY, repositoryId: REPOSITORY_ID, evidenceDigest: EVIDENCE_DIGEST }), /not a passing supported result/);
   const failurePayload = workflowEvent();
   failurePayload.payload.workflow_run.conclusion = 'failure';
-  assert.throws(() => validateWorkflowRunEvent(failurePayload), /did not complete successfully/);
+  assert.equal(validateWorkflowRunEvent(failurePayload).conclusion, 'failure');
 });
 
 test('J: an upstream verifier timeout or incomplete run never starts publication', () => {
   const timedOut = workflowEvent();
   timedOut.payload.workflow_run.conclusion = 'timed_out';
-  assert.throws(() => validateWorkflowRunEvent(timedOut), /did not complete successfully/);
+  assert.equal(validateWorkflowRunEvent(timedOut).conclusion, 'timed_out');
   const cancelled = workflowEvent();
   cancelled.payload.workflow_run.conclusion = 'cancelled';
-  assert.throws(() => validateWorkflowRunEvent(cancelled), /did not complete successfully/);
+  assert.equal(validateWorkflowRunEvent(cancelled).conclusion, 'cancelled');
 });
 
 test('D/E: candidate workflow and evaluator edits remain data-only in the trusted evaluator', () => {
@@ -245,12 +480,24 @@ test('F/G: same-name Actions and user status spoofing are not trusted App check 
   assert.equal(created.length, 1, 'status-context spoof is not treated as an App check run');
 });
 
-test('H: a missing upstream artifact or publisher source leaves the required App check absent', async () => {
+test('H: missing evidence cannot produce success and an authenticated source can invalidate old success', async () => {
   const { bundle, source } = makeCase();
   assert.throws(() => validateArtifactMetadata([], source), /missing, duplicated, or expired/);
-  const { adapter, created } = makeAdapter({ bundle });
-  await assert.rejects(publishCheck({ bundle, source: {}, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /source binding is malformed/);
+  const { adapter, created, updates } = makeAdapter({ bundle });
+  await assert.rejects(publishCheck({ bundle, source: {}, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /completed successful verifier run/);
   assert.equal(created.length, 0);
+  const failed = await publishFailure({
+    target: { prNumber: bundle.candidate.prNumber, headSha: bundle.candidate.headSha, baseSha: bundle.candidate.baseSha },
+    source: { ...source, conclusion: 'success' },
+    publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) },
+    appId: 7654321,
+    adapter,
+    failureReason: 'successful verifier result artifact was missing',
+  });
+  assert.equal(failed.outcome, 'published-failure');
+  assert.equal(created[0].head_sha, bundle.candidate.headSha);
+  assert.equal(created.length, 1);
+  assert.equal(updates.at(-1).patch.conclusion, 'failure');
 });
 
 test('K: publisher API timeout or GitHub API failure leaves no success conclusion', async () => {

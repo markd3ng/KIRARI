@@ -14,7 +14,7 @@
     ".github/workflows/r3-trusted-verifier.yml",
     "scripts/root-audit/cli.mjs",
     "scripts/root-audit/evaluator.mjs",
-    "scripts/root-audit/policy.json"
+    "scripts/root-audit/trusted-policy.json"
   ],
   "workspaceManifests": {
     ".": "kirari",

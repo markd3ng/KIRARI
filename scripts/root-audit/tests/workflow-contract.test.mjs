@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -48,7 +48,7 @@ test('workflow sends only explicit SHA inputs through environment variables to b
   assert.match(workflow, /run: node scripts\/root-audit\/cli\.mjs/);
   assert.doesNotMatch(workflow, /\$\{\{\s*inputs\.[^}]+\}\}[^\n]*run:/);
   assert.doesNotMatch(workflow, /npm (install|test|run)|pnpm (install|test|run)|download-artifact|cache:/);
-  assert.match(workflow, /security_review_sha256:\n        description:[^\n]+\n        required: true/);
+  assert.match(workflow, /security_review_sha256:\n        description:[^\n]+\n        required: false/);
 });
 
 test('publisher preflights source before the main-only Environment and never executes candidate content', () => {
@@ -59,6 +59,16 @@ test('publisher preflights source before the main-only Environment and never exe
   assert.ok(sourceJob >= 0 && sourceJob < publishJob && publishJob < environment && environment < appToken);
   assert.match(publisherWorkflow, /needs: validate-source/);
   assert.match(publisherWorkflow, /needs\.validate-source\.outputs\.publisher_eligible == 'true'/);
+  assert.match(publisherWorkflow, /publisher_eligible: \$\{\{ steps\.preflight\.outputs\.publisher_eligible \}\}/);
+  assert.doesNotMatch(publisherWorkflow.slice(sourceJob, publisherWorkflow.indexOf('    runs-on:', sourceJob)), /conclusion == 'success'/);
+  assert.match(publisherWorkflow, /types: \[requested, in_progress, completed\]/);
+  assert.match(publisherWorkflow, /concurrency:\n  group: r3-trusted-publisher-\$\{\{ github\.event\.workflow_run\.display_title \}\}\n  cancel-in-progress: false/);
+  assert.match(publisherWorkflow, /if: github\.event\.workflow_run\.status == 'completed' && github\.event\.workflow_run\.conclusion == 'success'/);
+  assert.match(publisherWorkflow, /publisher-cli\.mjs publish-pending/);
+  assert.match(publisherWorkflow, /continue-on-error: true/);
+  assert.match(publisherWorkflow, /steps\.verify-evidence\.outcome != 'success'/);
+  assert.match(workflow, /^run-name: R3 verifier\|pr=\$\{\{ inputs\.pr_number \}\}\|head=\$\{\{ inputs\.expected_head_sha \}\}\|base=\$\{\{ inputs\.expected_base_sha \}\}$/m);
+  assert.match(publisherCli, /publishFailure/);
   assert.match(publisherWorkflow, /github\.event\.workflow_run\.event == 'workflow_dispatch'/);
   assert.match(publisherWorkflow, /github\.event\.workflow_run\.head_repository\.id == github\.event\.repository\.id/);
   assert.match(publisherWorkflow, /ref: \$\{\{ github\.workflow_sha \}\}/);
@@ -84,6 +94,9 @@ test('publisher preflights source before the main-only Environment and never exe
   assert.match(publisherCli, /actions\/runs\/\$\{runId\}\/attempts\/\$\{runAttempt\}/);
   assert.match(publisherCli, /actions\/workflows\/\$\{source\.workflowId\}/);
   assert.match(publisherCli, /validateWorkflowMetadata\(workflow, source\)/);
+  assert.match(publisherCli, /assertVerifierRunIsLatest/);
+  assert.match(publisherCli, /trusted verifier run is not based on the current main SHA/);
+  assert.match(publisherCli, /live PR base is not the current main SHA/);
   assert.match(publisherCli, /\/check-runs/);
   assert.doesNotMatch(publisherCli, /\/statuses/);
   assert.match(publisherCli, /redirect: 'error'/);
@@ -109,11 +122,14 @@ test('publisher and ruleset manifests remain inert until a real App identity is 
 
   assert.equal(publisherPolicy.requiredCheckSource.appId, 'PENDING_OWNER_SETUP');
   assert.deepEqual(publisherPolicy.requiredCheckSource.permissions, { checks: 'write', metadata: 'read' });
-  assert.equal(publisherPolicy.independentSecurityReview.required, true);
-  assert.equal(publisherPolicy.independentSecurityReview.missingBlocksSuccess, true);
-  assert.equal(publisherPolicy.independentSecurityReview.inputMode, 'operator_supplied_digest_after_review');
+  assert.equal(publisherPolicy.independentSecurityReview.requiredForAutomatedCheck, false);
+  assert.equal(publisherPolicy.independentSecurityReview.missingBlocksTechnicalSuccess, false);
+  assert.equal(publisherPolicy.independentSecurityReview.inputMode, 'optional_owner_supplied_reference');
   assert.equal(publisherPolicy.independentSecurityReview.reportFetchedOrInspectedByVerifier, false);
   assert.equal(publisherPolicy.independentSecurityReview.reviewerIdentityAuthenticatedByVerifier, false);
+  assert.equal(publisherPolicy.workflowRunFilter.latestRunRequiredForPublication, true);
+  assert.equal(publisherPolicy.workflowRunFilter.startedRunInvalidatesPriorSuccess, true);
+  assert.equal(publisherPolicy.workflowRunFilter.concurrencyKey, 'trusted verifier display title binding PR/head/base');
   assert.equal(publisherPolicy.appCredentialsPresent, false);
   assert.equal(publisherPolicy.applyReady, false);
 
@@ -148,6 +164,12 @@ test('candidate acquisition is bounded to trusted allowlist and exact SHA API re
   assert.match(cli, /issues\/comments\/\$\{commentId\}/);
   assert.doesNotMatch(cli, /issues\/\$\{issueNumber\}\/comments|approvalCommentCount|getDecisionComments/);
   assert.doesNotMatch(cli, /child_process|execFile|import\([^)]*candidate|eval\(/);
+});
+
+test('every candidate allowlist path exists in the checked-in tree and binds candidate policy bytes', async () => {
+  for (const file of policy.candidateFiles) await access(path.join(root, file));
+  assert.ok(policy.candidateFiles.includes('scripts/root-audit/trusted-policy.json'));
+  assert.ok(!policy.candidateFiles.includes('scripts/root-audit/policy.json'));
 });
 
 test('audit workspace is generated and child environment cannot receive GitHub credentials', () => {

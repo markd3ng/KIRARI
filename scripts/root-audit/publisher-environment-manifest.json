@@ -24,9 +24,13 @@
     "environmentReference": "job.environment",
     "sourcePredicateLocation": "job.if before the Environment-bearing job starts",
     "requiredSourcePredicate": [
+      "action is requested, in_progress, or completed",
       "event is workflow_run",
       "upstream event is workflow_dispatch",
-      "upstream conclusion is success",
+      "completed upstream conclusion is success or a supported failure that must invalidate prior success; pending events have no conclusion",
+      "authenticated workflow run title binds exact PR number, candidate head, and base",
+      "only the latest run and attempt for the exact PR/head/base may publish",
+      "requested/in_progress events invalidate prior success with an App check left in_progress",
       "upstream head branch is main",
       "upstream head repository ID equals this repository ID",
       "upstream workflow path is .github/workflows/r3-trusted-verifier.yml"

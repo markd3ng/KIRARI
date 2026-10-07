@@ -15,17 +15,24 @@
     "event": "workflow_dispatch",
     "headBranch": "main",
     "workflowPath": ".github/workflows/r3-trusted-verifier.yml",
-    "conclusion": "success",
+    "activityTypes": ["requested", "in_progress", "completed"],
+    "conclusion": "any recognized completed conclusion; non-success invalidates prior App success",
+    "runTitleBinding": "R3 verifier|pr=<number>|head=<sha>|base=<sha>",
+    "latestRunRequiredForPublication": true,
+    "startedRunInvalidatesPriorSuccess": true,
+    "concurrencyKey": "trusted verifier display title binding PR/head/base",
     "repositoryIdMustMatch": true,
     "jobConditionMustRunBeforeEnvironment": true
   },
   "independentSecurityReview": {
-    "required": true,
-    "inputMode": "operator_supplied_digest_after_review",
+    "requiredForAutomatedCheck": false,
+    "inputMode": "optional_owner_supplied_reference",
     "reportFetchedOrInspectedByVerifier": false,
     "reviewerIdentityAuthenticatedByVerifier": false,
     "boundTo": ["repository", "candidateHead", "candidateBase", "candidateDigest", "policyDigest", "verifierDigest"],
-    "missingBlocksSuccess": true
+    "enforcementClaim": "outside this technical status check; Owner must independently inspect review report and verify digest before any separate Owner decision",
+    "missingBlocksTechnicalSuccess": false,
+    "missingBlocksApprovedOwnerDecision": true
   },
   "environmentPolicy": {
     "allowBranches": ["main"],

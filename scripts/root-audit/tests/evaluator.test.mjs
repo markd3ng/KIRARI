@@ -40,9 +40,12 @@ test('exact candidate data without consumption approval remains pending and non-
   assert.equal(result.authorization.exceptionConsumed, false);
 });
 
-test('missing independent security review digest cannot produce a technical PASS', () => {
+test('technical PASS does not authenticate or require a security review reference', () => {
   const context = createContext({ expectedSecurityReviewDigest: null });
-  evalError(context, /independent security review digest is required/);
+  const result = evaluateVerification(context);
+  assert.equal(result.trustedVerification, 'PASS');
+  assert.equal(result.authorization.securityReviewDigest, null);
+  assert.equal(result.authorization.r3ExceptionConsumable, false);
 });
 
 test('normal view removes only #122 while preserving pnpm raw severity totals', () => {
@@ -181,6 +184,24 @@ test('candidate R3 verifier workflow is fetched only as data and never executed'
   const result = evaluateVerification(context);
   assert.equal(result.trustedVerification, 'PASS');
   assert.equal(result.candidate.files['.github/workflows/r3-trusted-verifier.yml'].length, 64);
+});
+
+test('candidate trusted-policy bytes are hashed as data and never replace the base policy', () => {
+  const context = createContext();
+  const originalPolicy = context.policy;
+  const originalDigest = context.candidate.digest;
+  context.candidateFiles['scripts/root-audit/trusted-policy.json'] = JSON.stringify({ repository: 'attacker/repository' });
+  const result = evaluateVerification(context);
+  assert.notEqual(result.candidate.digest, originalDigest);
+  assert.equal(context.policy, originalPolicy);
+  assert.equal(result.trustedVerification, 'PASS');
+});
+
+test('trusted verifier source SHA must equal the expected PR base SHA', () => {
+  const context = createContext();
+  context.trusted.sha = '1'.repeat(40);
+  context.trusted.workflowSha = context.trusted.sha;
+  assert.throws(() => evaluateVerification(context), /workflow run is not bound to the trusted base workflow/);
 });
 
 test('an unrelated decision marker cannot be selected implicitly', () => {

@@ -37,7 +37,7 @@ function validateInputs(event) {
   const expectedBaseSha = process.env.R3_EXPECTED_BASE_SHA ?? '';
   const expectedSecurityReviewDigest = process.env.R3_SECURITY_REVIEW_SHA256 ?? '';
   const decisionCommentId = process.env.R3_DECISION_COMMENT_ID ?? '';
-  if (!/^[1-9][0-9]{0,5}$/.test(prNumber) || !SHA.test(expectedHeadSha) || !SHA.test(expectedBaseSha)) {
+  if (!/^[1-9][0-9]{0,5}$/.test(prNumber) || !SHA.test(expectedHeadSha) || !SHA.test(expectedBaseSha) || event.sha !== expectedBaseSha) {
     throw new Error('PR number or immutable candidate SHA input is invalid');
   }
   if (eventInputs.pr_number !== prNumber || eventInputs.expected_head_sha !== expectedHeadSha ||
@@ -46,7 +46,9 @@ function validateInputs(event) {
       (eventInputs.decision_comment_id ?? '') !== decisionCommentId) {
     throw new Error('event payload does not match the validated workflow inputs');
   }
-  if (!SHA256.test(expectedSecurityReviewDigest)) throw new Error('independent security review SHA256 input is required and must be valid');
+  if (expectedSecurityReviewDigest && !SHA256.test(expectedSecurityReviewDigest)) {
+    throw new Error('Owner-supplied security review reference must be a valid SHA256 when provided');
+  }
   if (decisionCommentId && (!/^[1-9][0-9]{0,19}$/.test(decisionCommentId) || !Number.isSafeInteger(Number(decisionCommentId)))) {
     throw new Error('decision comment ID is invalid');
   }

@@ -219,7 +219,7 @@ export function evaluateVerification(input) {
   if (!issue135 || issue135.number !== policy.decisionIssue || issue135.state !== 'open') fail('decision issue metadata is unavailable or closed');
   if (!trusted || trusted.eventName !== 'workflow_dispatch' || trusted.repository !== policy.repository ||
       trusted.ref !== 'refs/heads/main' || trusted.workflowRef !== `${policy.repository}/.github/workflows/r3-trusted-verifier.yml@refs/heads/main` ||
-      trusted.workflowSha !== trusted.sha || !SHA.test(trusted.sha) || !/^\d+$/.test(trusted.runId ?? '') ||
+      trusted.workflowSha !== trusted.sha || trusted.sha !== expectedBaseSha || !SHA.test(trusted.sha) || !/^\d+$/.test(trusted.runId ?? '') ||
       !/^\d+$/.test(trusted.runAttempt ?? '') ||
       !SHA256.test(trusted.workflowDigest) || !SHA256.test(trusted.verifierDigest) || !SHA256.test(trusted.policyDigest)) {
     fail('workflow run is not bound to the trusted base workflow');
@@ -274,7 +274,9 @@ export function evaluateVerification(input) {
   if (audits.normal.exitCode !== 1 || audits.supplemental.exitCode !== 1) fail('audit command exit status did not reflect reported vulnerabilities');
 
   const expectedSecurityReviewDigest = input.expectedSecurityReviewDigest ?? null;
-  if (!SHA256.test(expectedSecurityReviewDigest ?? '')) fail('independent security review digest is required');
+  if (expectedSecurityReviewDigest !== null && expectedSecurityReviewDigest !== undefined && !SHA256.test(expectedSecurityReviewDigest)) {
+    fail('Owner-supplied security review reference digest is malformed');
+  }
   const approval = parseApproval(comments ?? [], {
     policy,
     expectedHeadSha,
@@ -285,8 +287,8 @@ export function evaluateVerification(input) {
     expectedSecurityReviewDigest,
     expectedDecisionCommentId: input.expectedDecisionCommentId ?? null,
   }, now);
-  if (!expectedSecurityReviewDigest || (approval.state === 'APPROVED' && !approval.securityReviewDigest)) {
-    fail('independent security review evidence is missing');
+  if (approval.state === 'APPROVED' && !approval.securityReviewDigest) {
+    fail('Owner decision is missing its manually reviewed security-review reference');
   }
   return {
     schema: 'kirari.r3-trusted-verification/v1',
