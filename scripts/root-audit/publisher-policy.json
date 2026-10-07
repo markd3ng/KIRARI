@@ -1,0 +1,61 @@
+{
+  "schema": "kirari.r3-publisher-policy/v1",
+  "repository": "markd3ng/KIRARI",
+  "verifierWorkflowPath": ".github/workflows/r3-trusted-verifier.yml",
+  "publisherWorkflowPath": ".github/workflows/r3-trusted-publisher.yml",
+  "environment": "r3-trusted-publisher",
+  "requiredCheckName": "KIRARI / R3 trusted verifier",
+  "requiredCheckSource": {
+    "type": "GitHub App",
+    "appId": "PENDING_OWNER_SETUP",
+    "installationRepositories": ["KIRARI"],
+    "permissions": { "checks": "write", "metadata": "read" }
+  },
+  "workflowRunFilter": {
+    "event": "workflow_dispatch",
+    "headBranch": "main",
+    "workflowPath": ".github/workflows/r3-trusted-verifier.yml",
+    "conclusion": "success",
+    "repositoryIdMustMatch": true,
+    "jobConditionMustRunBeforeEnvironment": true
+  },
+  "independentSecurityReview": {
+    "required": true,
+    "inputMode": "operator_supplied_digest_after_review",
+    "reportFetchedOrInspectedByVerifier": false,
+    "reviewerIdentityAuthenticatedByVerifier": false,
+    "boundTo": ["repository", "candidateHead", "candidateBase", "candidateDigest", "policyDigest", "verifierDigest"],
+    "missingBlocksSuccess": true
+  },
+  "environmentPolicy": {
+    "allowBranches": ["main"],
+    "protectedBranchesOnly": false,
+    "administratorBypass": false,
+    "pullRequestRefsAllowed": false,
+    "liveEnvironmentCreated": false,
+    "liveSecretCreated": false
+  },
+  "githubTokenPermissions": {
+    "actions": "read",
+    "contents": "read",
+    "issues": "read",
+    "pull-requests": "read"
+  },
+  "actionPins": {
+    "actions/checkout": "11bd71901bbe5b1630ceea73d27597364c9af683",
+    "actions/setup-node": "49933ea5288caeca8642d1e84afbd3f7d6820020",
+    "actions/download-artifact": "634f93cb2916e3fdff6788551b99b062d0335ce0",
+    "actions/create-github-app-token": "bcd2ba49218906704ab6c1aa796996da409d3eb1"
+  },
+  "artifact": {
+    "namePattern": "r3-trusted-verifier-{runId}-{runAttempt}",
+    "maximumFiles": 256,
+    "maximumBytes": 83886080,
+    "candidateMaterialExecuted": false
+  },
+  "checkConclusions": ["success", "failure"],
+  "neutralAllowed": false,
+  "skippedAllowed": false,
+  "appCredentialsPresent": false,
+  "applyReady": false
+}

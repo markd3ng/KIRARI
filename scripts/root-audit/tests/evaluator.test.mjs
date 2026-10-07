@@ -40,6 +40,11 @@ test('exact candidate data without consumption approval remains pending and non-
   assert.equal(result.authorization.exceptionConsumed, false);
 });
 
+test('missing independent security review digest cannot produce a technical PASS', () => {
+  const context = createContext({ expectedSecurityReviewDigest: null });
+  evalError(context, /independent security review digest is required/);
+});
+
 test('normal view removes only #122 while preserving pnpm raw severity totals', () => {
   const context = createContext();
   const raw = JSON.parse(context.audits.supplemental.raw);
@@ -52,7 +57,7 @@ test('normal view removes only #122 while preserving pnpm raw severity totals', 
 });
 
 test('simulated exact future Owner approval is eligible only for its bound candidate and evidence', () => {
-  const context = createContext({ expectedSecurityReviewDigest: approvalSecurityDigest });
+  const context = createContext({ expectedSecurityReviewDigest: approvalSecurityDigest, expectedDecisionCommentId: 6019999999 });
   context.comments = [ownerApproval(context)];
   const result = evaluateVerification(context);
   assert.equal(result.authorization.decision, 'APPROVED');
@@ -170,6 +175,20 @@ test('candidate workflow is hashed as data and never executed', () => {
   assert.equal(result.trustedVerification, 'PASS');
 });
 
+test('candidate R3 verifier workflow is fetched only as data and never executed', () => {
+  const context = createContext();
+  context.candidateFiles['.github/workflows/r3-trusted-verifier.yml'] = 'run: process.exit(99)\n';
+  const result = evaluateVerification(context);
+  assert.equal(result.trustedVerification, 'PASS');
+  assert.equal(result.candidate.files['.github/workflows/r3-trusted-verifier.yml'].length, 64);
+});
+
+test('an unrelated decision marker cannot be selected implicitly', () => {
+  const context = createContext();
+  context.comments = [ownerApproval(context)];
+  evalError(context, /not selected by its immutable comment ID/);
+});
+
 test('candidate-generated audit artifact is outside the allowlist and cannot be authoritative', () => {
   const context = createContext();
   context.candidateFiles['candidate-audit-artifact.json'] = JSON.stringify({ trusted: true });
@@ -262,13 +281,13 @@ test('issue #122 state drift fails closed', () => {
 });
 
 test('expired future Owner approval fails closed', () => {
-  const context = createContext({ expectedSecurityReviewDigest: approvalSecurityDigest });
+  const context = createContext({ expectedSecurityReviewDigest: approvalSecurityDigest, expectedDecisionCommentId: 6019999999 });
   context.comments = [ownerApproval(context, { expiresAt: '2026-10-05T23:59:59.000Z' })];
   evalError(context, /expired or malformed/);
 });
 
 test('unauthenticated local fake approval fails closed', () => {
-  const context = createContext({ expectedSecurityReviewDigest: approvalSecurityDigest });
+  const context = createContext({ expectedSecurityReviewDigest: approvalSecurityDigest, expectedDecisionCommentId: 6019999999 });
   const fake = ownerApproval(context);
   fake.author_association = 'NONE';
   fake.user.login = 'attacker';
@@ -277,7 +296,7 @@ test('unauthenticated local fake approval fails closed', () => {
 });
 
 test('approval posted on the wrong issue fails closed', () => {
-  const context = createContext({ expectedSecurityReviewDigest: approvalSecurityDigest });
+  const context = createContext({ expectedSecurityReviewDigest: approvalSecurityDigest, expectedDecisionCommentId: 6019999999 });
   const wrongIssue = ownerApproval(context);
   wrongIssue.issueNumber = 129;
   context.comments = [wrongIssue];
@@ -285,19 +304,19 @@ test('approval posted on the wrong issue fails closed', () => {
 });
 
 test('approval without a concrete GitHub comment ID fails closed', () => {
-  const context = createContext({ expectedSecurityReviewDigest: approvalSecurityDigest });
+  const context = createContext({ expectedSecurityReviewDigest: approvalSecurityDigest, expectedDecisionCommentId: 6019999999 });
   const noId = ownerApproval(context);
   noId.id = null;
   context.comments = [noId];
-  evalError(context, /not an authenticated repository Owner/);
+  evalError(context, /not selected by its immutable comment ID/);
 });
 
 test('approval record bound to a different GitHub comment ID fails closed', () => {
-  const context = createContext({ expectedSecurityReviewDigest: approvalSecurityDigest });
+  const context = createContext({ expectedSecurityReviewDigest: approvalSecurityDigest, expectedDecisionCommentId: 6019999999 });
   const wrongComment = ownerApproval(context);
   wrongComment.id += 1;
   context.comments = [wrongComment];
-  evalError(context, /bound to different candidate or trusted evidence/);
+  evalError(context, /not selected by its immutable comment ID/);
 });
 
 test('an internal verifier exception is surfaced as a failure', () => {

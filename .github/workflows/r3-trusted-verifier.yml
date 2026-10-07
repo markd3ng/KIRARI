@@ -16,7 +16,11 @@ on:
         required: true
         type: string
       security_review_sha256:
-        description: Optional exact digest of a fresh independent security review
+        description: Exact digest of an independent security review bound to this candidate and trusted verifier
+        required: true
+        type: string
+      decision_comment_id:
+        description: Optional exact Issue #135 decision comment ID to bind and revalidate
         required: false
         type: string
 
@@ -59,6 +63,7 @@ jobs:
           R3_EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
           R3_EXPECTED_BASE_SHA: ${{ inputs.expected_base_sha }}
           R3_SECURITY_REVIEW_SHA256: ${{ inputs.security_review_sha256 }}
+          R3_DECISION_COMMENT_ID: ${{ inputs.decision_comment_id }}
           R3_EVIDENCE_DIR: ${{ runner.temp }}/r3-evidence
         run: node scripts/root-audit/cli.mjs
 
@@ -66,7 +71,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: r3-trusted-verifier-${{ github.run_id }}
+          name: r3-trusted-verifier-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/r3-evidence/
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30

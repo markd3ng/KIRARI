@@ -1,0 +1,37 @@
+{
+  "schema": "kirari.r3-publisher-environment-setup/v1",
+  "name": "r3-trusted-publisher",
+  "applyReady": false,
+  "branchPolicy": {
+    "type": "selected_branches",
+    "allowedBranches": ["main"],
+    "protectedBranchesOnly": false,
+    "pullRequestRefsAllowed": false,
+    "administratorBypass": false
+  },
+  "secrets": [
+    {
+      "name": "KIRARI_R3_PUBLISHER_PRIVATE_KEY",
+      "value": "NOT_CREATED",
+      "consumers": ["publisher App-token mint step only"]
+    }
+  ],
+  "variables": [
+    { "name": "KIRARI_R3_PUBLISHER_APP_ID", "value": "PENDING_OWNER_SETUP" }
+  ],
+  "workflowJob": {
+    "path": ".github/workflows/r3-trusted-publisher.yml",
+    "environmentReference": "job.environment",
+    "sourcePredicateLocation": "job.if before the Environment-bearing job starts",
+    "requiredSourcePredicate": [
+      "event is workflow_run",
+      "upstream event is workflow_dispatch",
+      "upstream conclusion is success",
+      "upstream head branch is main",
+      "upstream head repository ID equals this repository ID",
+      "upstream workflow path is .github/workflows/r3-trusted-verifier.yml"
+    ]
+  },
+  "liveEnvironmentCreated": false,
+  "liveSecretCreated": false
+}

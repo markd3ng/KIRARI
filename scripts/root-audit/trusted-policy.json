@@ -11,6 +11,7 @@
     "workers/kirari-edge/package.json",
     "packages/site-profile/package.json",
     ".github/workflows/ci.yml",
+    ".github/workflows/r3-trusted-verifier.yml",
     "scripts/root-audit/cli.mjs",
     "scripts/root-audit/evaluator.mjs",
     "scripts/root-audit/policy.json"
@@ -67,13 +68,20 @@
   "rulesetProposal": {
     "target": "main",
     "requirePullRequest": true,
-    "requiredApprovals": 1,
+    "requiredApprovals": 0,
     "dismissStaleApprovals": true,
     "requireCodeOwnerReview": false,
-    "requiredStatusCheck": null,
-    "requireUpToDateBranch": false,
+    "requiredStatusChecks": [
+      {
+        "context": "KIRARI / R3 trusted verifier",
+        "expectedIntegrationId": "PENDING_OWNER_SETUP"
+      }
+    ],
+    "requireUpToDateBranch": true,
     "blockForcePush": true,
     "protectDeletion": true,
-    "bypassActors": []
+    "bypassActors": [],
+    "applied": false,
+    "applyReady": false
   }
 }

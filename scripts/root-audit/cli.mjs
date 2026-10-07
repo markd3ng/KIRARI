@@ -5,10 +5,11 @@ import { fileURLToPath } from 'node:url';
 import { runIndependentAudits } from './audit.mjs';
 import { evaluateVerification } from './evaluator.mjs';
 import { parseAndValidateLockfile } from './lockfile.mjs';
+import { buildPublisherResult } from './publisher-contract.mjs';
+import { digestEvidenceDirectory } from './publisher-evidence.mjs';
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const MAX_GITHUB_RESPONSE_BYTES = 20 * 1024 * 1024;
-const MAX_DECISION_COMMENT_BYTES = 32 * 1024 * 1024;
 const SHA = /^[a-f0-9]{40}$/;
 const SHA256 = /^[a-f0-9]{64}$/;
 
@@ -35,16 +36,27 @@ function validateInputs(event) {
   const expectedHeadSha = process.env.R3_EXPECTED_HEAD_SHA ?? '';
   const expectedBaseSha = process.env.R3_EXPECTED_BASE_SHA ?? '';
   const expectedSecurityReviewDigest = process.env.R3_SECURITY_REVIEW_SHA256 ?? '';
+  const decisionCommentId = process.env.R3_DECISION_COMMENT_ID ?? '';
   if (!/^[1-9][0-9]{0,5}$/.test(prNumber) || !SHA.test(expectedHeadSha) || !SHA.test(expectedBaseSha)) {
     throw new Error('PR number or immutable candidate SHA input is invalid');
   }
   if (eventInputs.pr_number !== prNumber || eventInputs.expected_head_sha !== expectedHeadSha ||
       eventInputs.expected_base_sha !== expectedBaseSha ||
-      (eventInputs.security_review_sha256 ?? '') !== expectedSecurityReviewDigest) {
+      (eventInputs.security_review_sha256 ?? '') !== expectedSecurityReviewDigest ||
+      (eventInputs.decision_comment_id ?? '') !== decisionCommentId) {
     throw new Error('event payload does not match the validated workflow inputs');
   }
-  if (expectedSecurityReviewDigest && !SHA256.test(expectedSecurityReviewDigest)) throw new Error('security review SHA256 input is invalid');
-  return { prNumber: Number(prNumber), expectedHeadSha, expectedBaseSha, expectedSecurityReviewDigest: expectedSecurityReviewDigest || null };
+  if (!SHA256.test(expectedSecurityReviewDigest)) throw new Error('independent security review SHA256 input is required and must be valid');
+  if (decisionCommentId && (!/^[1-9][0-9]{0,19}$/.test(decisionCommentId) || !Number.isSafeInteger(Number(decisionCommentId)))) {
+    throw new Error('decision comment ID is invalid');
+  }
+  return {
+    prNumber: Number(prNumber),
+    expectedHeadSha,
+    expectedBaseSha,
+    expectedSecurityReviewDigest: expectedSecurityReviewDigest || null,
+    decisionCommentId: decisionCommentId ? Number(decisionCommentId) : null,
+  };
 }
 
 export async function readBoundedResponseText(response, maxBytes, byteBudget = null) {
@@ -130,31 +142,61 @@ async function fetchCandidateFile(apiUrl, headRepo, file, headSha, token) {
   return content;
 }
 
-async function getDecisionComments(apiUrl, issueNumber, token) {
-  const comments = [];
-  const byteBudget = { limit: MAX_DECISION_COMMENT_BYTES, used: 0 };
-  for (let page = 1; page <= 100; page += 1) {
-    const url = new URL(`/repos/markd3ng/KIRARI/issues/${issueNumber}/comments`, apiUrl);
-    url.searchParams.set('per_page', '100');
-    url.searchParams.set('page', String(page));
-    const response = await requestJson(url, token, { byteBudget });
-    if (!Array.isArray(response)) throw new Error('GitHub issue comments response is malformed');
-    for (const comment of response) {
-      if (typeof comment.body !== 'string' || !comment.body.startsWith('KIRARI_R3_CONSUMPTION_DECISION_V1\n')) continue;
-      comments.push({
-        id: comment.id,
-        body: comment.body,
-        author_association: comment.author_association,
-        user: { login: comment.user?.login },
-        issueNumber,
-      });
-    }
-    if (response.length < 100) return comments;
+async function requestOptionalJson(url, token) {
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      Authorization: `Bearer ${token}`,
+      'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'kirari-r3-trusted-verifier',
+    },
+    redirect: 'error',
+    signal: AbortSignal.timeout(20_000),
+  });
+  if (response.status === 404) {
+    await response.body?.cancel();
+    return null;
   }
-  throw new Error('GitHub issue comment page limit exceeded');
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new Error(`GitHub API request failed with HTTP ${response.status}`);
+  }
+  const text = await readBoundedResponseText(response, MAX_GITHUB_RESPONSE_BYTES);
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error('GitHub API returned malformed JSON');
+  }
 }
 
-async function getGitHubState(apiUrl, prNumber, expectedHeadSha, expectedBaseSha, token) {
+async function getDecisionComment(apiUrl, issueNumber, commentId, token) {
+  if (commentId === null) return { comments: [], lookup: { requestedCommentId: null, state: 'NOT_REQUESTED' } };
+  const comment = await requestOptionalJson(
+    new URL(`/repos/markd3ng/KIRARI/issues/comments/${commentId}`, apiUrl), token,
+  );
+  if (comment === null) {
+    return { comments: [], lookup: { requestedCommentId: commentId, state: 'NOT_FOUND' } };
+  }
+  const expectedIssueUrl = new URL(`/repos/markd3ng/KIRARI/issues/${issueNumber}`, apiUrl).href;
+  if (!comment || comment.id !== commentId || comment.issue_url !== expectedIssueUrl || typeof comment.body !== 'string') {
+    throw new Error('selected decision comment does not match the decision issue and immutable comment ID');
+  }
+  if (!comment.body.startsWith('KIRARI_R3_CONSUMPTION_DECISION_V1\n')) {
+    return { comments: [], lookup: { requestedCommentId: commentId, state: 'UNMARKED' } };
+  }
+  return {
+    comments: [{
+      id: comment.id,
+      body: comment.body,
+      author_association: comment.author_association,
+      user: { login: comment.user?.login },
+      issueNumber,
+    }],
+    lookup: { requestedCommentId: commentId, state: 'FOUND' },
+  };
+}
+
+async function getGitHubState(apiUrl, prNumber, expectedHeadSha, expectedBaseSha, decisionCommentId, token) {
   const pr = await requestJson(new URL(`/repos/markd3ng/KIRARI/pulls/${prNumber}`, apiUrl), token);
   const candidate = {
     number: pr.number,
@@ -179,8 +221,8 @@ async function getGitHubState(apiUrl, prNumber, expectedHeadSha, expectedBaseSha
     bodySha256: sha256(issue122Raw.body ?? ''),
   };
   const issue135 = { number: issue135Raw.number, state: issue135Raw.state };
-  const comments = await getDecisionComments(apiUrl, 135, token);
-  return { candidate, issue122, issue135, comments };
+  const decision = await getDecisionComment(apiUrl, 135, decisionCommentId, token);
+  return { candidate, issue122, issue135, comments: decision.comments, decisionLookup: decision.lookup };
 }
 
 function writeJson(directory, name, value) {
@@ -260,7 +302,7 @@ async function main() {
       verifierDigest: digestNamedFiles(trustedSources),
       policyDigest: sha256(policyRaw),
     };
-    const preflight = await getGitHubState(event.apiUrl, input.prNumber, input.expectedHeadSha, input.expectedBaseSha, token);
+    const preflight = await getGitHubState(event.apiUrl, input.prNumber, input.expectedHeadSha, input.expectedBaseSha, input.decisionCommentId, token);
     await writeJson(evidenceDirectory, 'preflight-pr-metadata.json', preflight.candidate);
     const candidateFiles = {};
     for (const file of policy.candidateFiles) {
@@ -268,7 +310,7 @@ async function main() {
     }
     parseAndValidateLockfile(candidateFiles['pnpm-lock.yaml'], candidateFiles, policy);
     const audits = await runIndependentAudits(candidateFiles, policy, evidenceDirectory);
-    const github = await getGitHubState(event.apiUrl, input.prNumber, input.expectedHeadSha, input.expectedBaseSha, token);
+    const github = await getGitHubState(event.apiUrl, input.prNumber, input.expectedHeadSha, input.expectedBaseSha, input.decisionCommentId, token);
     if (JSON.stringify(github.candidate) !== JSON.stringify(preflight.candidate)) {
       throw new Error('pull request metadata changed while verification was running');
     }
@@ -276,7 +318,7 @@ async function main() {
     await writeJson(evidenceDirectory, 'control-plane-metadata.json', {
       issue122: github.issue122,
       issue135: github.issue135,
-      approvalCommentCount: github.comments.length,
+      decisionLookup: github.decisionLookup,
     });
     const result = evaluateVerification({
       policy,
@@ -284,6 +326,8 @@ async function main() {
       expectedHeadSha: input.expectedHeadSha,
       expectedBaseSha: input.expectedBaseSha,
       expectedSecurityReviewDigest: input.expectedSecurityReviewDigest,
+      expectedDecisionCommentId: input.decisionCommentId,
+      decisionLookup: github.decisionLookup,
       candidate: github.candidate,
       candidateFiles,
       audits,
@@ -295,6 +339,8 @@ async function main() {
     result.trustedRun.evaluatorDigest = trusted.evaluatorDigest;
     result.trustedRun.actionPins = policy.actions;
     result.trustedRun.policyDigest = trusted.policyDigest;
+    result.trustedRun.workflowPath = '.github/workflows/r3-trusted-verifier.yml';
+    result.trustedRun.repositoryId = Number(process.env.GITHUB_REPOSITORY_ID);
     await writeJson(evidenceDirectory, 'result.json', result);
     await writeJson(evidenceDirectory, 'candidate-file-digests.json', result.candidate.files);
     await writeJson(evidenceDirectory, 'dependency-topology.json', result.topology);
@@ -312,11 +358,20 @@ async function main() {
       `- #122: **separate; ${github.issue122.state}; supplemental audit only**`,
       `- R3 consumption decision: **${result.authorization.decision}**`,
       `- R3 exception consumable: **${result.authorization.r3ExceptionConsumable ? 'YES' : 'NO'}**`,
+      '- This technical verification result is not R3 consumption or merge authorization.',
       '',
       'Raw audit output and stderr are retained in this run artifact.',
       '',
     ].join('\n');
     await writeFile(path.join(evidenceDirectory, 'summary.md'), summary, { mode: 0o600 });
+    const evidence = await digestEvidenceDirectory(evidenceDirectory);
+    const publisherResult = buildPublisherResult({
+      result,
+      repository: event.repository,
+      repositoryId: Number(process.env.GITHUB_REPOSITORY_ID),
+      evidenceDigest: evidence.digest,
+    });
+    await writeJson(evidenceDirectory, 'publisher-result.json', publisherResult);
     const stepSummary = process.env.GITHUB_STEP_SUMMARY;
     if (stepSummary) await writeFile(stepSummary, summary, { flag: 'a' });
   } catch (error) {
@@ -326,5 +381,7 @@ async function main() {
     process.exitCode = 1;
   }
 }
+
+export { getDecisionComment };
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();

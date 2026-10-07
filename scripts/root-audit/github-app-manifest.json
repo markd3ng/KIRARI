@@ -1,0 +1,31 @@
+{
+  "schema": "kirari.r3-publisher-app-setup/v1",
+  "status": "PENDING_OWNER_SETUP",
+  "applyReady": false,
+  "liveAppCreated": false,
+  "liveInstallationCreated": false,
+  "application": {
+    "name": "KIRARI R3 Trusted Check Publisher",
+    "appId": "PENDING_OWNER_SETUP",
+    "slug": "PENDING_OWNER_SETUP",
+    "installationRepositories": ["markd3ng/KIRARI"],
+    "webhooks": "NONE_REQUIRED"
+  },
+  "permissions": {
+    "checks": "write",
+    "metadata": "read",
+    "additional": {}
+  },
+  "credential": {
+    "privateKey": "NOT_CREATED",
+    "storage": "Environment secret r3-trusted-publisher / KIRARI_R3_PUBLISHER_PRIVATE_KEY",
+    "tokenRepositoryScope": ["KIRARI"],
+    "tokenPermissions": { "checks": "write" }
+  },
+  "ownerSetupEvidenceRequired": [
+    "record the actual numeric App ID without substituting a guessed value",
+    "install only on markd3ng/KIRARI",
+    "create the dedicated Environment with the documented main-only branch policy",
+    "create no broader repository or organization secret"
+  ]
+}

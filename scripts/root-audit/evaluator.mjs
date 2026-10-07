@@ -145,6 +145,9 @@ function parseApproval(comments, context, now) {
   const marked = [];
   for (const comment of comments) {
     if (typeof comment.body !== 'string' || !comment.body.startsWith(`${APPROVAL_MARKER}\n`)) continue;
+    if (comment.id !== context.expectedDecisionCommentId || context.expectedDecisionCommentId === null) {
+      fail('decision comment was not selected by its immutable comment ID');
+    }
     if (comment.issueNumber !== context.policy.decisionIssue || comment.author_association !== 'OWNER' ||
         comment.user?.login !== context.policy.requiredOwnerLogin || !Number.isSafeInteger(comment.id) || comment.id <= 0) {
       fail('decision comment is not an authenticated repository Owner comment on the decision issue');
@@ -157,7 +160,7 @@ function parseApproval(comments, context, now) {
     }
     marked.push({ comment, record });
   }
-  if (marked.length === 0) return { state: 'PENDING', commentId: null, decision: null };
+  if (marked.length === 0) return { state: 'PENDING', commentId: null, decision: null, decisionDigest: null };
   if (marked.length !== 1) fail('multiple Owner decision records are ambiguous');
   const { comment, record } = marked[0];
   const requiredKeys = [
@@ -184,6 +187,7 @@ function parseApproval(comments, context, now) {
     state: 'APPROVED',
     commentId: comment.id,
     decision: record.decision,
+    decisionDigest: sha256(comment.body),
     securityReviewDigest: record.securityReviewDigest,
     expiresAt: record.expiresAt,
   };
@@ -270,7 +274,7 @@ export function evaluateVerification(input) {
   if (audits.normal.exitCode !== 1 || audits.supplemental.exitCode !== 1) fail('audit command exit status did not reflect reported vulnerabilities');
 
   const expectedSecurityReviewDigest = input.expectedSecurityReviewDigest ?? null;
-  if (expectedSecurityReviewDigest !== null && !SHA256.test(expectedSecurityReviewDigest)) fail('security review digest input is invalid');
+  if (!SHA256.test(expectedSecurityReviewDigest ?? '')) fail('independent security review digest is required');
   const approval = parseApproval(comments ?? [], {
     policy,
     expectedHeadSha,
@@ -279,8 +283,9 @@ export function evaluateVerification(input) {
     policyDigest: trusted.policyDigest,
     trusted,
     expectedSecurityReviewDigest,
+    expectedDecisionCommentId: input.expectedDecisionCommentId ?? null,
   }, now);
-  if (approval.state === 'APPROVED' && (!expectedSecurityReviewDigest || !approval.securityReviewDigest)) {
+  if (!expectedSecurityReviewDigest || (approval.state === 'APPROVED' && !approval.securityReviewDigest)) {
     fail('independent security review evidence is missing');
   }
   return {
@@ -321,7 +326,10 @@ export function evaluateVerification(input) {
     authorization: {
       decision: approval.state,
       issue: policy.decisionIssue,
+      requestedCommentId: input.expectedDecisionCommentId ?? null,
       commentId: approval.commentId,
+      decisionDigest: approval.decisionDigest,
+      decisionLookup: input.decisionLookup?.state ?? (input.expectedDecisionCommentId === null || input.expectedDecisionCommentId === undefined ? 'NOT_REQUESTED' : 'FOUND'),
       owner: policy.requiredOwnerLogin,
       securityReviewDigest: approval.securityReviewDigest ?? expectedSecurityReviewDigest,
       expiresAt: approval.expiresAt ?? null,

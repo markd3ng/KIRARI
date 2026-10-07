@@ -1,14 +1,26 @@
 {
-  "schema": "kirari.r3-main-ruleset-proposal/v1",
-  "target": "main",
+  "schema": "kirari.r3-main-ruleset-planning-wrapper/v2",
+  "kind": "planning-wrapper-not-github-api-payload",
+  "target": "refs/heads/main",
+  "enforcement": "active",
   "requirePullRequest": true,
-  "requiredApprovals": 1,
+  "requiredApprovals": 0,
   "dismissStaleApprovals": true,
   "requireCodeOwnerReview": false,
-  "requiredStatusChecks": [],
-  "requireUpToDateBranch": false,
+  "requireUpToDateBranch": true,
+  "requiredStatusChecks": [
+    {
+      "context": "KIRARI / R3 trusted verifier",
+      "expectedIntegrationId": "PENDING_OWNER_SETUP",
+      "source": "DEDICATED_GITHUB_APP"
+    }
+  ],
   "blockForcePush": true,
   "protectDeletion": true,
   "bypassActors": [],
-  "applied": false
+  "apiPayload": null,
+  "apiPayloadReady": false,
+  "appProvenanceObserved": false,
+  "applied": false,
+  "mainProtected": false
 }

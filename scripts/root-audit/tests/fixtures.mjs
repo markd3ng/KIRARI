@@ -126,6 +126,7 @@ export function createFixture({ siteDependencies = { ...defaultSiteDependencies 
     'workers/kirari-edge/package.json': '{"name":"@kirari/edge"}\n',
     'packages/site-profile/package.json': '{"name":"@kirari/site-profile"}\n',
     '.github/workflows/ci.yml': 'name: malicious candidate workflow\n',
+    '.github/workflows/r3-trusted-verifier.yml': 'run: echo candidate workflow is data only\n',
     'scripts/root-audit/cli.mjs': 'throw new Error("candidate cli executed")\n',
     'scripts/root-audit/evaluator.mjs': 'throw new Error("candidate evaluator executed")\n',
     'scripts/root-audit/policy.json': '{"candidatePolicy":true}\n',
@@ -243,6 +244,7 @@ export function createContext(overrides = {}) {
     issue135: { number: 135, state: 'open' },
     comments: [],
     trusted,
+    expectedSecurityReviewDigest: 'e'.repeat(64),
     now: Date.parse('2026-10-06T00:00:00.000Z'),
     ...overrides,
   };
