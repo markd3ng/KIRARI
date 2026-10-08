@@ -204,7 +204,8 @@ export function evaluateVerification(input) {
     fail('pull request state or immutable SHA binding mismatch');
   }
   if (!candidate.headRepo || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(candidate.headRepo)) fail('pull request head repository is missing');
-  if (!Array.isArray(changedFiles) || changedFiles.length > 3000 || changedFiles.some((file) => typeof file !== 'string' || file.length === 0 || file.includes('\0')) ||
+  // Each of GitHub's at most 3,000 file rows can affect both sides of a rename.
+  if (!Array.isArray(changedFiles) || changedFiles.length > 6000 || changedFiles.some((file) => typeof file !== 'string' || file.length === 0 || file.includes('\0')) ||
       new Set(changedFiles).size !== changedFiles.length) fail('pull request changed-file evidence is malformed');
   if (!Array.isArray(policy.trustedRootPaths) || policy.trustedRootPaths.length === 0 ||
       policy.trustedRootPaths.some((path) => typeof path !== 'string' || path.length === 0)) fail('trusted-root path policy is missing or malformed');

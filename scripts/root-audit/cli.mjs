@@ -180,6 +180,7 @@ export async function listPullRequestChangedFiles(apiUrl, prNumber, expectedCoun
   }
   const files = [];
   const names = new Set();
+  const affectedPaths = new Set();
   const maximumPages = Math.max(1, Math.ceil(MAX_PULL_REQUEST_CHANGED_FILES / PULL_REQUEST_FILES_PER_PAGE));
   for (let page = 1; page <= maximumPages; page += 1) {
     if (page > 1 && files.length >= expectedCount) break;
@@ -197,6 +198,14 @@ export async function listPullRequestChangedFiles(apiUrl, prNumber, expectedCoun
       }
       names.add(file.filename);
       files.push(file.filename);
+      affectedPaths.add(file.filename);
+      if (file.status === 'renamed' || file.previous_filename !== undefined) {
+        if (typeof file.previous_filename !== 'string' || file.previous_filename.length === 0 ||
+            file.previous_filename.includes('\0') || file.previous_filename === file.filename) {
+          throw new Error('pull request renamed-file original path is missing or malformed');
+        }
+        affectedPaths.add(file.previous_filename);
+      }
     }
     if (files.length === expectedCount) break;
     if (result.length < PULL_REQUEST_FILES_PER_PAGE && files.length < expectedCount) {
@@ -205,7 +214,7 @@ export async function listPullRequestChangedFiles(apiUrl, prNumber, expectedCoun
     if (result.length === 0 && files.length < expectedCount) throw new Error('pull request changed-file page is unexpectedly empty');
   }
   if (files.length !== expectedCount) throw new Error('pull request changed-file count does not match metadata');
-  return files.sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
+  return [...affectedPaths].sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
 }
 
 async function getDecisionComment(apiUrl, issueNumber, commentId, token) {

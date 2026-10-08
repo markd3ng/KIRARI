@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getDecisionComment, listPullRequestChangedFiles, readBoundedResponseText } from '../cli.mjs';
+import { evaluateVerification } from '../evaluator.mjs';
+import { createContext } from './fixtures.mjs';
 
 test('GitHub response streaming rejects a body as soon as it exceeds the per-response limit', async () => {
   const response = new Response(new ReadableStream({
@@ -88,4 +90,53 @@ test('PR changed-file lookup fails closed on inconsistent counts and the API cei
     headers: { 'content-type': 'application/json' },
   });
   await assert.rejects(listPullRequestChangedFiles('https://api.github.com', 136, 2, 'token'), /duplicated/);
+});
+
+test('PR rename lookup reconciles file rows while protecting both original and destination paths', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const cases = [
+    { from: '.github/workflows/r3-trusted-publisher.yml', to: 'docs/archived-publisher.yml', blocked: true },
+    { from: 'scripts/root-audit/publisher-cli.mjs', to: 'scripts/archived-publisher.mjs', blocked: true },
+    { from: 'docs/new-workflow.yml', to: '.github/workflows/new-workflow.yml', blocked: true },
+    { from: 'docs/before.md', to: 'docs/after.md', blocked: false },
+  ];
+  for (const { from, to, blocked } of cases) {
+    globalThis.fetch = async () => new Response(JSON.stringify([
+      { status: 'renamed', filename: to, previous_filename: from },
+    ]), { headers: { 'content-type': 'application/json' } });
+    const changedFiles = await listPullRequestChangedFiles('https://api.github.com', 136, 1, 'token');
+    assert.deepEqual(changedFiles, [from, to].sort());
+    const verify = () => evaluateVerification(createContext({ changedFiles }));
+    if (blocked) assert.throws(verify, /protected trusted-root paths/);
+    else assert.equal(verify().trustedVerification, 'PASS');
+  }
+});
+
+test('PR rename lookup fails closed when the original path is missing or malformed', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  for (const previous_filename of [undefined, null, '', 'bad\0path', 'docs/after.md']) {
+    globalThis.fetch = async () => new Response(JSON.stringify([
+      { status: 'renamed', filename: 'docs/after.md', previous_filename },
+    ]), { headers: { 'content-type': 'application/json' } });
+    await assert.rejects(listPullRequestChangedFiles('https://api.github.com', 136, 1, 'token'), /original path/);
+  }
+});
+
+test('PR rename lookup bounds affected paths independently of GitHub file-row count', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  globalThis.fetch = async (url) => {
+    const page = Number(new URL(String(url)).searchParams.get('page'));
+    const rows = Array.from({ length: 100 }, (_, index) => {
+      const id = (page - 1) * 100 + index;
+      return { status: 'renamed', filename: `docs/after-${id}.md`, previous_filename: `docs/before-${id}.md` };
+    });
+    return new Response(JSON.stringify(rows), { headers: { 'content-type': 'application/json' } });
+  };
+  const changedFiles = await listPullRequestChangedFiles('https://api.github.com', 136, 3000, 'token');
+  assert.equal(changedFiles.length, 6000);
+  assert.equal(evaluateVerification(createContext({ changedFiles })).trustedVerification, 'PASS');
+  assert.throws(() => evaluateVerification(createContext({ changedFiles: [...changedFiles, 'docs/extra.md'] })), /changed-file evidence/);
 });
