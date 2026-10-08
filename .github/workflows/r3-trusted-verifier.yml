@@ -56,6 +56,7 @@ jobs:
         with:
           version: 9.14.4
           run_install: false
+          dest: /tmp/kirari-pnpm-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Verify immutable candidate and independently reproduce audit
         env:

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { chmod, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,6 +28,10 @@ try {
   await writeFile(hook, `require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'executed');\n`);
   candidate['.pnpmfile.cjs'] = await readFile(hook, 'utf8');
   const pnpm = execFileSync('which', ['pnpm'], { encoding: 'utf8' }).trim();
+  for (const protectedPath of [await realpath(pnpm), path.dirname(await realpath(pnpm)), process.execPath]) {
+    assert.throws(() => execFileSync('/usr/bin/sudo', ['-n', '-u', 'nobody', '--', '/usr/bin/test', '-w', protectedPath]),
+      'the audit user must not be able to modify trusted toolchain files');
+  }
   const probe = path.join(temp, 'probe.mjs');
   await writeFile(probe, `import { writeFileSync } from 'node:fs';
     const result = { uid: process.getuid(), sensitiveKeys: Object.keys(process.env).filter(k => /TOKEN|AUTH|PASSWORD|SECRET|CERT|PRIVATE_KEY|GITHUB/i.test(k)), candidateHookPresent: 'npm_config_pnpmfile' in process.env };
