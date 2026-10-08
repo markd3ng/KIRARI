@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { evaluateVerification } from '../evaluator.mjs';
-import { assertPullRequest } from '../publisher-cli.mjs';
+import { assertPullRequest, getOpenDecisionComment } from '../publisher-cli.mjs';
 import {
   assertAllowedConclusion,
   assertVerifierRunIsLatest,
@@ -34,7 +34,7 @@ const REVIEW_DIGEST = 'e'.repeat(64);
 const EVIDENCE_DIGEST = 'f'.repeat(64);
 const API_URL = 'https://api.github.com';
 
-function makeCase({ decision = false, securityReviewDigest = REVIEW_DIGEST } = {}) {
+function makeCase({ decision = true, securityReviewDigest = REVIEW_DIGEST } = {}) {
   const commentId = 6019999999;
   const context = createContext({
     expectedSecurityReviewDigest: decision ? 'd'.repeat(64) : securityReviewDigest,
@@ -66,7 +66,13 @@ function makeCase({ decision = false, securityReviewDigest = REVIEW_DIGEST } = {
   return { context, result, bundle, source };
 }
 
-function makeAdapter({ bundle, appId = 7654321, headSha = bundle.candidate.headSha, baseSha = bundle.candidate.baseSha, mainSha = bundle.candidate.baseSha, checks = [], decisionComment = null, now = Date.parse('2026-10-06T12:00:00.000Z'), listChecks = null, createCheck = null, updateCheck = null } = {}) {
+function defaultDecisionComment(bundle) {
+  if (bundle.decisionIdentity.requestedCommentId === null) return null;
+  const context = createContext({ expectedSecurityReviewDigest: bundle.securityReviewDigest, expectedDecisionCommentId: bundle.decisionIdentity.requestedCommentId });
+  return { ...ownerApproval(context), issue_url: `${API_URL}/repos/${REPOSITORY}/issues/135` };
+}
+
+function makeAdapter({ bundle, appId = 7654321, headSha = bundle.candidate.headSha, baseSha = bundle.candidate.baseSha, mainSha = bundle.candidate.baseSha, checks = [], decisionComment = defaultDecisionComment(bundle), now = Date.parse('2026-10-06T12:00:00.000Z'), listChecks = null, createCheck = null, updateCheck = null } = {}) {
   const created = [];
   const updates = [];
   const adapter = {
@@ -142,10 +148,10 @@ test('A: complete bound evidence publishes only a dedicated App success on the e
   assert.match(created[0].output.summary, /Verifier workflow path: \.github\/workflows\/r3-trusted-verifier\.yml/);
   assert.match(created[0].output.summary, /Candidate source repository: markd3ng\/KIRARI/);
   assert.match(created[0].output.summary, /Owner-supplied security review reference \(not fetched or authenticated by this check\):/);
-  assert.match(created[0].output.summary, /Decision comment requested ID: not requested/);
-  assert.match(created[0].output.summary, /lookup: NOT_REQUESTED/);
-  assert.match(created[0].output.summary, /Decision expires: not applicable/);
-  assert.match(created[0].output.summary, /Decision revalidation: NOT_REQUESTED/);
+  assert.match(created[0].output.summary, /Decision comment requested ID: 6019999999/);
+  assert.match(created[0].output.summary, /lookup: FOUND/);
+  assert.match(created[0].output.summary, /Decision expires: 2026-10-07/);
+  assert.match(created[0].output.summary, /Decision revalidation: REVALIDATED_BEFORE_SUCCESS/);
   assert.match(created[0].output.summary, /technical check is not R3 consumption or merge authorization/);
   assert.equal(updates.at(-1).patch.conclusion, 'success');
 });
@@ -557,14 +563,17 @@ test('N: requested decision deletion, body edits, revocation, and expiry prevent
   }
 });
 
-test('unrequested decision remains explicitly pending while technical verification is independent', async () => {
-  const { bundle, source } = makeCase();
+test('unrequested decision keeps technical PASS but fails the required App merge gate', async () => {
+  const { bundle, source } = makeCase({ decision: false });
   assert.equal(bundle.decisionIdentity.requestedCommentId, null);
   assert.equal(bundle.decisionIdentity.state, 'PENDING');
   assert.equal(bundle.decisionIdentity.consumable, false);
-  const { adapter, created } = makeAdapter({ bundle });
-  await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
+  const { adapter, created, updates } = makeAdapter({ bundle });
+  const outcome = await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
+  assert.equal(outcome.outcome, 'published-failure');
   assert.equal(created.length, 1);
+  assert.equal(updates.at(-1).patch.conclusion, 'failure');
+  assert.match(updates.at(-1).patch.output.summary, /eligibility is PENDING/);
 });
 
 test('replay is idempotent only for the same dedicated App result and exact bindings', async () => {
@@ -604,4 +613,43 @@ test('Check lookup visits every page and rejects unstable or incomplete paginati
   assert.deepEqual(pages, [1, 2]);
   assert.equal(checks.length, 101);
   await assert.rejects(listChecksAcrossPages(async () => ({ total_count: 2, check_runs: [{ id: 1 }] })), /pagination is incomplete/);
+});
+
+
+test('pending eligibility invalidates previous App success on the same exact head', async () => {
+  const { bundle, source } = makeCase({ decision: false });
+  const old = { id: 48, name: 'KIRARI / R3 trusted verifier', head_sha: bundle.candidate.headSha, status: 'completed', conclusion: 'success', app: { id: 7654321 }, output: { summary: 'old approved verifier result' } };
+  const { adapter, updates } = makeAdapter({ bundle, checks: [old] });
+  await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
+  assert.ok(updates.some(({id,patch}) => id === old.id && patch.conclusion === 'failure'));
+  assert.ok(updates.every(({patch}) => patch.conclusion !== 'success'));
+});
+
+test('selected decision API lookup requires the decision issue to remain open', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  let state = 'open'; const calls = [];
+  globalThis.fetch = async (url) => {
+    calls.push(String(url));
+    return new Response(JSON.stringify(String(url).endsWith('/issues/135') ? { number: 135, state } : { id: 6019999999 }), { headers: { 'content-type': 'application/json' } });
+  };
+  assert.equal((await getOpenDecisionComment(API_URL, REPOSITORY, 6019999999, 'test-token')).id, 6019999999);
+  assert.ok(calls[0].endsWith('/issues/135'));
+  state = 'closed'; calls.length = 0;
+  await assert.rejects(getOpenDecisionComment(API_URL, REPOSITORY, 6019999999, 'test-token'), /issue #135 is closed/);
+  assert.equal(calls.length, 1, 'closed issue cannot authorize even an unchanged comment');
+});
+
+
+test('decision issue closure before check completion records failure', async () => {
+  const { bundle, source } = makeCase({ decision: true });
+  const { adapter, updates } = makeAdapter({ bundle });
+  let reads = 0;
+  adapter.getDecisionComment = async () => {
+    if (++reads > 1) throw new Error('Owner decision issue #135 is closed or unavailable');
+    return defaultDecisionComment(bundle);
+  };
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /issue #135 is closed/);
+  assert.equal(updates.at(-1).patch.conclusion, 'failure');
+  assert.ok(updates.every(({patch}) => patch.conclusion !== 'success'));
 });

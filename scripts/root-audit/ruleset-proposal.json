@@ -28,6 +28,8 @@
   "apiPayload": null,
   "apiPayloadReady": false,
   "appProvenanceObserved": false,
+  "continuingDecisionFreshnessEnforcementReady": false,
+  "liveConsumptionGate": "Do not apply this ruleset or enable R3-bearing merge/auto-merge until expiry, revocation, and issue closure can invalidate stale App success and that continuing enforcement is independently reviewed.",
   "applied": false,
   "mainProtected": false
 }

@@ -167,6 +167,8 @@ jobs:
         run: node scripts/root-audit/publisher-cli.mjs publish-pending
 
       - name: Publish the successful exact-head trusted App check
+        id: app-check
+        continue-on-error: true
         if: github.event.workflow_run.status == 'completed' && github.event.workflow_run.conclusion == 'success' && steps.verify-evidence.outcome == 'success' && steps.preflight.outputs.publisher_eligible == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -176,7 +178,7 @@ jobs:
         run: node scripts/root-audit/publisher-cli.mjs publish
 
       - name: Publish failure to invalidate prior same-head trusted success
-        if: github.event.workflow_run.status == 'completed' && (github.event.workflow_run.conclusion != 'success' || steps.verify-evidence.outcome != 'success') && steps.preflight.outputs.publisher_eligible == 'true'
+        if: always() && github.event.workflow_run.status == 'completed' && (github.event.workflow_run.conclusion != 'success' || steps.verify-evidence.outcome != 'success' || steps.app-check.outcome == 'failure') && steps.preflight.outputs.publisher_eligible == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           R3_APP_TOKEN: ${{ steps.app-token.outputs.token }}

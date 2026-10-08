@@ -67,6 +67,8 @@ test('publisher preflights source before the main-only Environment and never exe
   assert.match(publisherWorkflow, /publisher-cli\.mjs publish-pending/);
   assert.match(publisherWorkflow, /continue-on-error: true/);
   assert.match(publisherWorkflow, /steps\.verify-evidence\.outcome != 'success'/);
+  assert.match(publisherWorkflow, /steps\.app-check\.outcome == 'failure'/);
+  assert.equal(rulesetProposal.continuingDecisionFreshnessEnforcementReady, false);
   assert.match(workflow, /^run-name: R3 verifier\|pr=\$\{\{ inputs\.pr_number \}\}\|head=\$\{\{ inputs\.expected_head_sha \}\}\|base=\$\{\{ inputs\.expected_base_sha \}\}$/m);
   assert.match(publisherCli, /publishFailure/);
   assert.match(publisherWorkflow, /github\.event\.workflow_run\.event == 'workflow_dispatch'/);

@@ -580,8 +580,14 @@ export async function publishCheck({ bundle, source, evidenceDigest, publisher, 
   validatePublisherResult(bundle, source, evidenceDigest);
   require(SHA.test(publisher?.sha) && SHA256.test(publisher?.policyDigest), 'publisher workflow provenance is malformed');
   require(bundle.trustedVerification === 'PASS', 'trusted verification is not PASS');
-  require(bundle.decisionIdentity.requestedCommentId === null || bundle.decisionIdentity.state === 'APPROVED',
-    'requested Owner decision is missing, revoked, or expired');
+  if (bundle.decisionIdentity.state === 'PENDING') {
+    return publishFailure({
+      target: bundle.candidate, source, publisher, appId, adapter,
+      failureReason: 'Technical verification passed, but exact R3 Owner eligibility is PENDING; no consumption is authorized.',
+    });
+  }
+  require(bundle.decisionIdentity.state === 'APPROVED' && bundle.decisionIdentity.consumable === true &&
+    bundle.decisionIdentity.requestedCommentId !== null, 'exact R3 Owner eligibility is not approved');
   const externalId = buildExternalId(bundle, publisher);
   const payload = checkPayload(bundle, externalId, publisher);
   await adapter.assertPullRequest(bundle.candidate.prNumber, bundle.candidate.headSha, bundle.candidate.baseSha);

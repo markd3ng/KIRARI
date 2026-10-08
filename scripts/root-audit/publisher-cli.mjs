@@ -115,6 +115,13 @@ async function readEvent(eventPath) {
   }
 }
 
+export async function getOpenDecisionComment(apiUrl, repository, commentId, token) {
+  if (repository !== REPOSITORY || !Number.isSafeInteger(commentId) || commentId <= 0) throw new Error('Owner decision lookup identity is invalid');
+  const issue = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/issues/135`), token);
+  if (issue.number !== 135 || issue.state !== 'open') throw new Error('Owner decision issue #135 is closed or unavailable');
+  return requestOptionalJson(apiEndpoint(apiUrl, `/repos/${repository}/issues/comments/${commentId}`), token);
+}
+
 async function validateInputs({ mode }) {
   const event = await readEvent(process.env.GITHUB_EVENT_PATH);
   const apiUrl = process.env.GITHUB_API_URL;
@@ -233,7 +240,7 @@ async function validateInputs({ mode }) {
   assertPullRequest(pr, bundle, bundle.candidate.headRepository);
 
   if (bundle.decisionIdentity.requestedCommentId !== null) {
-    const comment = await requestOptionalJson(apiEndpoint(apiUrl, `/repos/${repository}/issues/comments/${bundle.decisionIdentity.requestedCommentId}`), readToken);
+    const comment = await getOpenDecisionComment(apiUrl, repository, bundle.decisionIdentity.requestedCommentId, readToken);
     if (!decisionIsCurrent(comment, bundle, apiUrl)) throw new Error('selected Owner decision was revoked, edited, or expired');
   }
 
@@ -289,7 +296,7 @@ function createCheckAdapter({ apiUrl, repository, readToken, checksToken, source
       }
     },
     async getDecisionComment(commentId) {
-      return requestOptionalJson(apiEndpoint(apiUrl, `/repos/${repository}/issues/comments/${commentId}`), readToken);
+      return getOpenDecisionComment(apiUrl, repository, commentId, readToken);
     },
     async listChecks(headSha) {
       return listChecksAcrossPages(async (page) => {

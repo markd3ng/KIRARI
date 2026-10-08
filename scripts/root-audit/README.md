@@ -28,6 +28,8 @@ This path rule is the second gate after the separately required App source bindi
 
 The lock parser accepts the pnpm v9 importer/snapshot structures used by the candidate, validates the candidate workspace manifests against all four lockfile importers, checks package resolutions against snapshot identities, and walks the full dependency graph. It compares the exact eight R3 paths and versions. It separately pins #122's GHSA, CVE, package, version, canonical route, and observed lockfile routes to the same package/version. It does not treat #122 as an R3 exception or use candidate policy data to decide what is ignored.
 
+The #122 record uses the SHA-256 of its exact API body, with no trimming or normalization. The bootstrap's before/after readback found that the issue itself was unchanged while the prior policy body hash was stale; only that hash is corrected to the recorded actual body. The issue, exception scope, independent validation, dependency routes, and existing package-manager ignore remain unchanged. A recorded API-body fixture verifies the binding and rejection of a changed body.
+
 ## Decision record lookup
 
 The verifier does not scan or paginate all Issue #135 comments. `decision_comment_id` is optional. If omitted, the decision remains `PENDING` and non-consumable; unrelated comments cannot affect the result. If supplied, the verifier fetches only that exact comment ID and validates the issue URL, API comment ID, marker, `markd3ng` login, `OWNER` association, record schema, bound candidate/base/policy/verifier/security-review digests, and expiry. A deleted or unmarked selected comment remains pending and non-consumable; a malformed or unauthorized selected marker fails closed. The publisher re-fetches a selected decision and rejects publication if its exact body digest, author, issue, or expiry changed.
@@ -65,7 +67,7 @@ The separate `r3-trusted-publisher.yml` workflow listens for `requested`, `in_pr
 
 Only after this read-only job succeeds can the dependent publisher job start with the `r3-trusted-publisher` Environment. It repeats the evidence and live-state validation, then mints a repository-scoped App installation token for `KIRARI` with `Checks: write` only. The private key is referenced only in the token-mint step. The workflow does not check out or execute candidate content; it checks out publisher source from `github.workflow_sha`, a trusted default-branch workflow definition commit. A candidate workflow with the same name or a same-named check/status cannot pass the run-ID/workflow-ID/API source binding, and the future ruleset binds the required context to the App integration ID.
 
-The canonical publisher bundle records repository ID/name, PR number, exact candidate head/base, candidate digest, verifier main SHA/path/workflow SHA, run ID/attempt, verifier/policy/evidence digests, optional Owner-supplied review-reference digest, and optional decision identity/expiry. The publisher recomputes the evidence digest and compares the bundle to `result.json`. Its deterministic external ID hashes those bindings plus publisher SHA/path and publisher-policy digest. A repeated exact run/result is idempotent; reusing an external ID with changed evidence is rejected. The trusted verifier run title binds the exact PR number/head/base so even a failed, cancelled, timed-out, neutral, or skipped verifier run can be authenticated without its success artifact. The publisher writes an App failure for that exact candidate and changes any earlier success from the same App/check/head to failure; the subsequent verifier start also invalidates older success by leaving an exact-head App check in progress. A successful run publishes only after canonical evidence passes and after checking that no later run for the same target superseded it. Every check is created for the exact current PR HEAD, and the publisher re-reads PR, `main`, and verifier-run order immediately before completing the check. A head update yields a check on an old SHA; a base update requires a new verifier run and the future strict/up-to-date rule. If the publisher itself is unavailable, it cannot revoke an older check; the live setup must test this operational dependency, and the App check remains a point-in-time technical result rather than continuing R3 authorization.
+The canonical publisher bundle records repository ID/name, PR number, exact candidate head/base, candidate digest, verifier main SHA/path/workflow SHA, run ID/attempt, verifier/policy/evidence digests, optional Owner-supplied review-reference digest, and optional decision identity/expiry. The publisher recomputes the evidence digest and compares the bundle to `result.json`. Its deterministic external ID hashes those bindings plus publisher SHA/path and publisher-policy digest. A repeated exact run/result is idempotent; reusing an external ID with changed evidence is rejected. The trusted verifier run title binds the exact PR number/head/base so even a failed, cancelled, timed-out, neutral, or skipped verifier run can be authenticated without its success artifact. The publisher writes an App failure for that exact candidate and changes any earlier success from the same App/check/head to failure; the subsequent verifier start also invalidates older success by leaving an exact-head App check in progress. A successful App check publishes only after canonical evidence passes, an exact APPROVED eligibility record is revalidated with open Issue #135, and no later run for the same target superseded it. A PENDING technical PASS publishes failure, never merge-eligible success. Every check is created for the exact current PR HEAD, and the publisher re-reads PR, `main`, and verifier-run order immediately before completing the check. A head update yields a check on an old SHA; a base update requires a new verifier run and the future strict/up-to-date rule. If the publisher itself is unavailable, it cannot revoke an older check; the live setup must test this operational dependency, and the App check remains a point-in-time technical result rather than continuing R3 authorization.
 
 Only `success` and `failure` are valid completed App conclusions. The publisher may create an `in_progress` check when a verifier run is requested or starts, then completes the same attempt check as `success` only after all bindings pass. A non-success verifier run or missing/invalid result artifact completes as `failure`; `neutral` and `skipped` are never emitted. If the publisher itself is unavailable, it cannot revoke an earlier check, so live setup must test the publisher's availability dependency and the separate Owner gates remain authoritative. `workflow_dispatch` execution and the publisher workflow's Actions job are evidence/orchestration; only the dedicated App check is the future required status.
 
@@ -119,3 +121,28 @@ Bootstrap merge, App creation/installation, benign App-check observation, rulese
 - [GitHub Checks API](https://docs.github.com/en/rest/checks/runs)
 - [GitHub required status-check semantics](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks)
 - [GitHub rules REST API](https://docs.github.com/en/rest/repos/rules)
+
+## Pending eligibility and later live enforcement
+
+Technical verifier PASS can remain PENDING and non-consumable. The required App
+check completes as **failure** for that result and invalidates previous same-head
+App success. App success requires a separately authenticated APPROVED eligibility
+record for the exact candidate/evidence, re-fetched together with the open #135
+issue before publication and completion. This neither applies nor consumes R3,
+and the local bootstrap-merge proposal is never parsed by this mechanism.
+Publication errors route to the existing failure publisher; no neutral/skipped
+conclusion can satisfy the proposed required context.
+
+An App result is point-in-time and cannot expire itself. Issue closure, expiry,
+and revocation after publication must not be treated as continuing authorization.
+The ruleset remains not apply-ready: before any live ruleset application or
+R3-bearing merge/auto-merge/queue use, separately implement and independently
+review continuing expiry/revocation enforcement that invalidates stale success.
+A fresh trusted run and Owner revalidation are also required immediately before
+later consumption. Those later engineering/setup decisions are outside this
+bootstrap execution; trustRootReadyNow remains NO.
+
+The sanitized root audit covers the fixed four workspace importers. Any added or
+renamed immediate workspace `package.json` outside that trusted manifest set fails
+closed before audit, including a candidate that leaves the lockfile unchanged.
+Expanding the workspace inventory requires a separately reviewed trust-root change.

@@ -217,6 +217,10 @@ export function evaluateVerification(input) {
   const protectedChanges = changedFiles.filter((file) => policy.trustedRootPaths.some((path) =>
     path.endsWith('/') ? file.startsWith(path) : file === path));
   if (protectedChanges.length > 0) fail(`candidate changes protected trusted-root paths: ${protectedChanges.sort().join(', ')}`);
+  // Trusted workspace globs match immediate children of these three roots.
+  // Do not sanitize away a newly added importer outside the fixed manifest set.
+  const unknownWorkspaceManifests = changedFiles.filter((file) => /^(apps|workers|packages)\/[^/]+\/package\.json$/.test(file) && !policy.candidateFiles.includes(file));
+  if (unknownWorkspaceManifests.length > 0) fail(`candidate changes unapproved workspace manifests: ${unknownWorkspaceManifests.sort().join(', ')}`);
   const allowedFiles = [...policy.candidateFiles].sort();
   if (JSON.stringify(Object.keys(candidateFiles).sort()) !== JSON.stringify(allowedFiles)) fail('candidate input allowlist mismatch');
   for (const [file, content] of Object.entries(candidateFiles)) {

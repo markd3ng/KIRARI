@@ -35,6 +35,8 @@ version, source bindings, lock topology, and authorization independently.
   is permitted only as evidence for the separately authorized one-time PR #136
   Owner bootstrap decision described in `scripts/root-audit/README.md`.
 
+- Any changed immediate workspace manifest matched by the trusted apps/workers/packages globs but absent from the fixed candidate allowlist fails closed, even if the candidate leaves its lockfile unchanged.
+
 ## 4. Validation & Error Matrix
 
 | Input | Result |

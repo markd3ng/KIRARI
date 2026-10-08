@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -57,6 +58,16 @@ test('normal view removes only #122 while preserving pnpm raw severity totals', 
   assert.deepEqual(normal.metadata.vulnerabilities, raw.metadata.vulnerabilities);
   assert.equal(normal.metadata.vulnerabilities.high, 1);
   assert.equal(evaluateVerification(context).trustedVerification, 'PASS');
+});
+
+test('separate #122 binds its recorded actual API body and rejects any body change', async () => {
+  const issue = JSON.parse(await readFile(new URL('./issue122-fixture.json', import.meta.url), 'utf8'));
+  const bodySha256 = createHash('sha256').update(issue.body).digest('hex');
+  assert.equal(bodySha256, policy.issue122.bodySha256);
+  const context = createContext({ issue122: { ...issue, bodySha256 } });
+  assert.equal(evaluateVerification(context).trustedVerification, 'PASS');
+  context.issue122.bodySha256 = createHash('sha256').update(`${issue.body}\nchanged`).digest('hex');
+  evalError(context, /issue #122 state, title, or body digest drift/);
 });
 
 test('simulated exact future Owner approval is eligible only for its bound candidate and evidence', () => {
@@ -266,6 +277,13 @@ test('candidate workflow is hashed as data and never executed', () => {
   context.candidateFiles['.github/workflows/ci.yml'] = 'run: exit 99\n';
   const result = evaluateVerification(context);
   assert.equal(result.trustedVerification, 'PASS');
+});
+
+test('added or renamed workspace manifests cannot escape the fixed audit inventory', () => {
+  for (const file of ['apps/new/package.json', 'workers/new/package.json', 'packages/new/package.json']) {
+    evalError(createContext({ changedFiles: [file] }), /unapproved workspace manifests/);
+  }
+  assert.equal(evaluateVerification(createContext({ changedFiles: ['apps/site/package.json', 'apps/site/scripts/example/package.json'] })).trustedVerification, 'PASS');
 });
 
 test('candidate R3 verifier workflow is fetched only as data and never executed', () => {
