@@ -18,7 +18,15 @@
   ],
   "trustedRootPaths": [
     ".github/workflows/",
-    "scripts/root-audit/"
+    "scripts/root-audit/",
+    ".npmrc",
+    ".pnpmfile.cjs",
+    "apps/site/.npmrc",
+    "apps/site/.pnpmfile.cjs",
+    "workers/kirari-edge/.npmrc",
+    "workers/kirari-edge/.pnpmfile.cjs",
+    "packages/site-profile/.npmrc",
+    "packages/site-profile/.pnpmfile.cjs"
   ],
   "workspaceManifests": {
     ".": "kirari",

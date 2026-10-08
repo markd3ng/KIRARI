@@ -261,6 +261,11 @@ test('candidate evaluator is hashed as data and never executed', () => {
 
 test('ordinary App checks reject PR changes to workflows or trusted verifier/publisher sources', () => {
   for (const file of [
+    'apps/site/.npmrc',
+    'workers/kirari-edge/.pnpmfile.cjs',
+    'packages/site-profile/.npmrc',
+    '.npmrc',
+    '.pnpmfile.cjs',
     '.github/workflows/r3-trusted-publisher.yml',
     '.github/workflows/new-secret-consumer.yml',
     'scripts/root-audit/publisher-cli.mjs',

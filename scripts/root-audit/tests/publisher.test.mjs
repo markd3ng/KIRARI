@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { evaluateVerification } from '../evaluator.mjs';
-import { assertPullRequest, getOpenDecisionComment } from '../publisher-cli.mjs';
+import { assertIssue122Current, assertPullRequest, getOpenDecisionComment } from '../publisher-cli.mjs';
 import {
   assertAllowedConclusion,
   assertVerifierRunIsLatest,
@@ -81,6 +82,9 @@ function makeAdapter({ bundle, appId = 7654321, headSha = bundle.candidate.headS
     async assertPullRequest(prNumber, expectedHead, expectedBase) {
       assert.equal(prNumber, bundle.candidate.prNumber);
       if (headSha !== expectedHead || baseSha !== expectedBase || mainSha !== expectedBase) throw new Error('live PR HEAD, base, or current main changed');
+    },
+    async assertIssue122(expected) {
+      assert.deepEqual(expected, bundle.issue122);
     },
     async getDecisionComment(id) {
       assert.equal(id, bundle.decisionIdentity.requestedCommentId);
@@ -650,6 +654,30 @@ test('decision issue closure before check completion records failure', async () 
     return defaultDecisionComment(bundle);
   };
   await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /issue #135 is closed/);
+  assert.equal(updates.at(-1).patch.conclusion, 'failure');
+  assert.ok(updates.every(({patch}) => patch.conclusion !== 'success'));
+});
+
+
+test('independent #122 API revalidation rejects closure, title, and body drift', async (t) => {
+  const issue = JSON.parse(await readFile(new URL('./issue122-fixture.json', import.meta.url), 'utf8'));
+  const { bundle } = makeCase();
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  globalThis.fetch = async () => new Response(JSON.stringify(issue));
+  await assertIssue122Current(API_URL, REPOSITORY, 'test-token', bundle.issue122);
+  for (const drift of [{ state: 'closed' }, { title: 'changed' }, { body: issue.body+'changed' }]) {
+    globalThis.fetch = async () => new Response(JSON.stringify({ ...issue, ...drift }));
+    await assert.rejects(assertIssue122Current(API_URL, REPOSITORY, 'test-token', bundle.issue122), /#122 issue state, title, or body changed/);
+  }
+});
+
+test('independent #122 drift before App completion records failure', async () => {
+  const { bundle, source } = makeCase();
+  const { adapter, updates } = makeAdapter({ bundle });
+  let reads = 0;
+  adapter.assertIssue122 = async () => { if (++reads > 1) throw new Error('independent #122 issue changed before publication'); };
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /#122 issue changed/);
   assert.equal(updates.at(-1).patch.conclusion, 'failure');
   assert.ok(updates.every(({patch}) => patch.conclusion !== 'success'));
 });

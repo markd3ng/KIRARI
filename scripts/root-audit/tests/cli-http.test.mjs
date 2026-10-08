@@ -96,6 +96,8 @@ test('PR rename lookup reconciles file rows while protecting both original and d
   const originalFetch = globalThis.fetch;
   t.after(() => { globalThis.fetch = originalFetch; });
   const cases = [
+    { from: '.npmrc', to: 'docs/old-config', blocked: true },
+    { from: '.pnpmfile.cjs', to: 'scripts/old-hook.cjs', blocked: true },
     { from: '.github/workflows/r3-trusted-publisher.yml', to: 'docs/archived-publisher.yml', blocked: true },
     { from: 'scripts/root-audit/publisher-cli.mjs', to: 'scripts/archived-publisher.mjs', blocked: true },
     { from: 'docs/new-workflow.yml', to: '.github/workflows/new-workflow.yml', blocked: true },

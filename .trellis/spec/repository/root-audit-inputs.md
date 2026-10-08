@@ -27,7 +27,7 @@ PR's integer `changed_files` value; the maximum is 3,000 rows.
 - Each row contributes its current path and any original path to a set.
   At most 6,000 affected paths can result from 3,000 file rows.
 - The evaluator rejects any affected path matching the trusted base's
-  `trustedRootPaths`: currently `.github/workflows/` and `scripts/root-audit/`.
+  `trustedRootPaths`: `.github/workflows/`, `scripts/root-audit/`, and exact `.npmrc`/`.pnpmfile.cjs` files at the repository root and every fixed workspace root. Candidate registry/config/hook changes require separate trust-root review, and rename origins are protected too.
 - The API reader runs with read-only credentials. Candidate paths are data;
   the path list never authorizes executing candidate bytes or changing policy.
 

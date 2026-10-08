@@ -122,6 +122,14 @@ export async function getOpenDecisionComment(apiUrl, repository, commentId, toke
   return requestOptionalJson(apiEndpoint(apiUrl, `/repos/${repository}/issues/comments/${commentId}`), token);
 }
 
+export async function assertIssue122Current(apiUrl, repository, token, expected) {
+  if (repository !== REPOSITORY || expected?.number !== 122 || expected.state !== 'open') throw new Error('independent #122 evidence identity is invalid');
+  const issue = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/issues/122`), token);
+  if (issue.number !== expected.number || issue.state !== expected.state || issue.title !== expected.title || sha256(issue.body ?? '') !== expected.bodySha256) {
+    throw new Error('independent #122 issue state, title, or body changed before publication');
+  }
+}
+
 async function validateInputs({ mode }) {
   const event = await readEvent(process.env.GITHUB_EVENT_PATH);
   const apiUrl = process.env.GITHUB_API_URL;
@@ -238,6 +246,7 @@ async function validateInputs({ mode }) {
     throw new Error('successful verifier result does not match the authenticated run-title target');
   }
   assertPullRequest(pr, bundle, bundle.candidate.headRepository);
+  await assertIssue122Current(apiUrl, repository, readToken, bundle.issue122);
 
   if (bundle.decisionIdentity.requestedCommentId !== null) {
     const comment = await getOpenDecisionComment(apiUrl, repository, bundle.decisionIdentity.requestedCommentId, readToken);
@@ -297,6 +306,9 @@ function createCheckAdapter({ apiUrl, repository, readToken, checksToken, source
     },
     async getDecisionComment(commentId) {
       return getOpenDecisionComment(apiUrl, repository, commentId, readToken);
+    },
+    async assertIssue122(expected) {
+      return assertIssue122Current(apiUrl, repository, readToken, expected);
     },
     async listChecks(headSha) {
       return listChecksAcrossPages(async (page) => {

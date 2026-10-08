@@ -20,7 +20,7 @@ A future explicit approval may authorize merging only that exact head to establi
 
 ## Protecting the publisher trust root
 
-After this bootstrap lands on `main`, the verifier reads the complete changed-file list for the exact PR and compares it against the protected path policy from its trusted base. Ordinary App checks fail if a PR changes any file under `.github/workflows/` or `scripts/root-audit/`. That covers the publisher workflow, verifier workflow, publisher/verifier implementation, action and policy manifests, and any new workflow that could request the publisher Environment. The list is fetched through the read-only Pull requests API, paginated to GitHub's documented 3,000-file ceiling, reconciled against the PR's `changed_files` count, and re-read with PR metadata after the audit; incomplete, unstable, duplicate, or oversized results fail closed. Candidate copies of the policy and scripts remain data and cannot weaken the trusted base's path rule.
+After this bootstrap lands on `main`, the verifier reads the complete changed-file list for the exact PR and compares it against the protected path policy from its trusted base. Ordinary App checks fail if a PR changes any file under `.github/workflows/` or `scripts/root-audit/`, or an exact `.npmrc`/`.pnpmfile.cjs` package-manager config/hook file at the repository root or any fixed workspace root. The official-registry isolated audit ignores candidate config/hooks; protecting these files also prevents an ordinary candidate from altering generic root CI registry/config behavior outside the audit binding. That covers the publisher workflow, verifier workflow, publisher/verifier implementation, action and policy manifests, and any new workflow that could request the publisher Environment. The list is fetched through the read-only Pull requests API, paginated to GitHub's documented 3,000-file ceiling, reconciled against the PR's `changed_files` count, and re-read with PR metadata after the audit; incomplete, unstable, duplicate, or oversized results fail closed. Candidate copies of the policy and scripts remain data and cannot weaken the trusted base's path rule.
 
 For renamed API entries, both `filename` and `previous_filename` enter the affected-path set. Moving a workflow or verifier source out of a protected directory therefore fails the same gate as editing or deleting it. The API row count remains separate from that deduplicated path set: at most 3,000 file rows can yield 6,000 paths. A renamed row without a valid, distinct original path fails closed. See the [verified changed-path contract](../../.trellis/spec/repository/root-audit-inputs.md).
 
@@ -146,3 +146,11 @@ The sanitized root audit covers the fixed four workspace importers. Any added or
 renamed immediate workspace `package.json` outside that trusted manifest set fails
 closed before audit, including a candidate that leaves the lockfile unchanged.
 Expanding the workspace inventory requires a separately reviewed trust-root change.
+
+Package-manager config/hook protection also covers each of the fixed workspace
+roots. Pinned pnpm9 reads importer-local .npmrc; alternative pnpmfile paths are
+configured through CLI/environment or .npmrc. Trusted workflows do not accept
+candidate CLI/environment overrides, and changed root/importer config files
+fail the path gate. Selected #122 state/title/exact body digest is included in
+publisher evidence and re-read before credential eligibility, publication, and
+completion; future continuing revocation enforcement must cover #122 too.

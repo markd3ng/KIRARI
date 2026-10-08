@@ -115,7 +115,7 @@ test('publisher and ruleset manifests remain inert until a real App identity is 
     expectedIntegrationId: 'PENDING_OWNER_SETUP',
     source: 'DEDICATED_GITHUB_APP',
   }]);
-  assert.deepEqual(rulesetProposal.requiredStatusCheckAdditionalGate.protectedPaths, ['.github/workflows/', 'scripts/root-audit/']);
+  assert.deepEqual(rulesetProposal.requiredStatusCheckAdditionalGate.protectedPaths, policy.trustedRootPaths);
   assert.equal(rulesetProposal.requiredStatusCheckAdditionalGate.ordinaryCheckMayAuthorizeTrustedRootChanges, false);
   assert.equal(rulesetProposal.blockForcePush, true);
   assert.equal(rulesetProposal.protectDeletion, true);
@@ -138,7 +138,7 @@ test('publisher and ruleset manifests remain inert until a real App identity is 
   assert.equal(publisherPolicy.workflowRunFilter.concurrencyKey, 'trusted verifier display title binding PR/head/base');
   assert.equal(publisherPolicy.appCredentialsPresent, false);
   assert.equal(publisherPolicy.applyReady, false);
-  assert.deepEqual(publisherPolicy.trustedRootChangePolicy.protectedPathsFromTrustedBase, ['.github/workflows/', 'scripts/root-audit/']);
+  assert.deepEqual(publisherPolicy.trustedRootChangePolicy.protectedPathsFromTrustedBase, policy.trustedRootPaths);
   assert.equal(publisherPolicy.trustedRootChangePolicy.ordinaryAppCheckMayAuthorizeChanges, false);
 
   assert.equal(appManifest.status, 'PENDING_OWNER_SETUP');

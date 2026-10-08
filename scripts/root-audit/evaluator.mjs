@@ -326,7 +326,7 @@ export function evaluateVerification(input) {
       normal: { derived: true, derivedFrom: audits.normal.source, exitCode: audits.normal.exitCode, rawSha256: sha256(audits.normal.raw), stderrSha256: sha256(audits.normal.stderr), advisoryIds: Object.values(normal.advisories).map((item) => item.github_advisory_id).sort() },
       supplemental: { executed: true, exitCode: audits.supplemental.exitCode, rawSha256: sha256(audits.supplemental.raw), stderrSha256: sha256(audits.supplemental.stderr), advisoryIds: Object.values(supplemental.advisories).map((item) => item.github_advisory_id).sort() },
     },
-    issue122: { number: issue122.number, state: issue122.state, bodySha256: issue122.bodySha256, separateFromR3: true },
+    issue122: { number: issue122.number, state: issue122.state, title: issue122.title, bodySha256: issue122.bodySha256, separateFromR3: true },
     trustedRun: {
       eventName: trusted.eventName,
       repository: trusted.repository,

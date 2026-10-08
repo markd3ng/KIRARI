@@ -216,6 +216,7 @@ export function buildPublisherResult({ result, repository, repositoryId, evidenc
       policyDigest: run.policyDigest,
     },
     evidenceDigest,
+    issue122: { ...result.issue122 },
     securityReviewDigest: authorization.securityReviewDigest ?? null,
     decisionIdentity: {
       issue: authorization.issue,
@@ -238,6 +239,8 @@ export function validatePublisherResult(bundle, source, evidenceDigest) {
   'authenticated verifier source binding is malformed');
   require(bundle?.schema === RESULT_SCHEMA && bundle.trustedVerification === 'PASS', 'publisher result schema or verification conclusion is invalid');
   require(bundle.repository?.id === source.repositoryId && bundle.repository?.fullName === source.repository, 'publisher result repository mismatch');
+  require(bundle.issue122?.number === 122 && bundle.issue122.state === 'open' && typeof bundle.issue122.title === 'string' &&
+    SHA256.test(bundle.issue122.bodySha256) && bundle.issue122.separateFromR3 === true, 'independent #122 evidence binding is invalid');
   require(bundle.verifier?.mainSha === source.mainSha && bundle.verifier?.mainSha === bundle.candidate.baseSha && bundle.verifier?.workflowSha === source.mainSha &&
     bundle.verifier?.workflowPath === VERIFIER_WORKFLOW_PATH && bundle.verifier?.runId === source.runId &&
     bundle.verifier?.runAttempt === source.runAttempt,
@@ -306,6 +309,7 @@ export function buildExternalId(bundle, publisher) {
     evidenceDigest: bundle.evidenceDigest,
     securityReviewDigest: bundle.securityReviewDigest,
     decisionIdentity: bundle.decisionIdentity,
+    issue122: bundle.issue122,
     publisherSha: publisher.sha,
     publisherWorkflowPath: PUBLISHER_WORKFLOW_PATH,
     publisherPolicyDigest: publisher.policyDigest,
@@ -591,6 +595,7 @@ export async function publishCheck({ bundle, source, evidenceDigest, publisher, 
   const externalId = buildExternalId(bundle, publisher);
   const payload = checkPayload(bundle, externalId, publisher);
   await adapter.assertPullRequest(bundle.candidate.prNumber, bundle.candidate.headSha, bundle.candidate.baseSha);
+  await adapter.assertIssue122(bundle.issue122);
   if (bundle.decisionIdentity.requestedCommentId !== null) {
     const currentDecision = await adapter.getDecisionComment(bundle.decisionIdentity.requestedCommentId);
     require(decisionIsCurrent(currentDecision, bundle, adapter.apiUrl, adapter.now?.() ?? Date.now()), 'Owner decision was edited, revoked, or expired before publication');
@@ -605,6 +610,7 @@ export async function publishCheck({ bundle, source, evidenceDigest, publisher, 
 
   try {
     await adapter.assertPullRequest(bundle.candidate.prNumber, bundle.candidate.headSha, bundle.candidate.baseSha);
+    await adapter.assertIssue122(bundle.issue122);
     if (bundle.decisionIdentity.requestedCommentId !== null) {
       const currentDecision = await adapter.getDecisionComment(bundle.decisionIdentity.requestedCommentId);
       require(decisionIsCurrent(currentDecision, bundle, adapter.apiUrl, adapter.now?.() ?? Date.now()), 'Owner decision was edited, revoked, or expired before check completion');

@@ -17,7 +17,18 @@
   ],
   "requiredStatusCheckAdditionalGate": {
     "type": "trusted-base-verifier-path-policy",
-    "protectedPaths": [".github/workflows/", "scripts/root-audit/"],
+    "protectedPaths": [
+      ".github/workflows/",
+      "scripts/root-audit/",
+      ".npmrc",
+      ".pnpmfile.cjs",
+      "apps/site/.npmrc",
+      "apps/site/.pnpmfile.cjs",
+      "workers/kirari-edge/.npmrc",
+      "workers/kirari-edge/.pnpmfile.cjs",
+      "packages/site-profile/.npmrc",
+      "packages/site-profile/.pnpmfile.cjs"
+    ],
     "changedFileEvidence": "complete pull-request files API listing reconciled with pull_request.changed_files",
     "ordinaryCheckMayAuthorizeTrustedRootChanges": false,
     "trustRootMaintenance": "separate Owner-controlled procedure; no bypass actor is proposed"
