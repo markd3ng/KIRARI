@@ -16,6 +16,11 @@
       "consumers": ["publisher App-token mint step only"]
     }
   ],
+  "secretSetupPrerequisites": [
+    "the dedicated App installation and benign App check provenance have been read back",
+    "the exact ruleset has been separately authorized, applied, and authenticated-read back",
+    "main is protected by the App-bound required check and trusted-root path gate"
+  ],
   "variables": [
     { "name": "KIRARI_R3_PUBLISHER_APP_ID", "value": "PENDING_OWNER_SETUP" }
   ],

@@ -171,6 +171,19 @@ test('candidate evaluator is hashed as data and never executed', () => {
   assert.equal(result.trustedVerification, 'PASS');
 });
 
+test('ordinary App checks reject PR changes to workflows or trusted verifier/publisher sources', () => {
+  for (const file of [
+    '.github/workflows/r3-trusted-publisher.yml',
+    '.github/workflows/new-secret-consumer.yml',
+    'scripts/root-audit/publisher-cli.mjs',
+    'scripts/root-audit/evaluator.mjs',
+  ]) {
+    const context = createContext({ changedFiles: [file] });
+    context.candidateFiles['scripts/root-audit/evaluator.mjs'] = 'process.exit(99);';
+    evalError(context, /candidate changes protected trusted-root paths/);
+  }
+});
+
 test('candidate workflow is hashed as data and never executed', () => {
   const context = createContext();
   context.candidateFiles['.github/workflows/ci.yml'] = 'run: exit 99\n';

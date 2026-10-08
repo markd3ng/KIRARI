@@ -1,7 +1,7 @@
 import { appendFile, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assertVerifierRunIsLatest, buildPublisherResult, canonicalJson, decisionIsCurrent, listChecksAcrossPages, listWorkflowRunsAcrossPages, publishCheck, publishFailure, publishPending, sha256, validateArtifactMetadata, validatePublisherResult, validateWorkflowMetadata, validateWorkflowRunApi, validateWorkflowRunEvent } from './publisher-contract.mjs';
+import { assertVerifierRunIsLatest, buildPublisherResult, canonicalJson, decisionIsCurrent, listChecksAcrossPages, listWorkflowRunsAcrossPages, publishCheck, publishFailure, publishPending, sha256, validateArtifactMetadata, validatePublisherResult, validateWorkflowMetadata, validateWorkflowRunApi, validateWorkflowRunEvent, workflowRunCreatedFilter } from './publisher-contract.mjs';
 import { digestEvidenceDirectory } from './publisher-evidence.mjs';
 
 const MAX_RESPONSE_BYTES = 20 * 1024 * 1024;
@@ -266,6 +266,7 @@ async function isLatestVerifierRun({ apiUrl, repository, readToken, source, targ
     const url = apiEndpoint(apiUrl, `/repos/${repository}/actions/workflows/${source.workflowId}/runs`);
     url.searchParams.set('branch', 'main');
     url.searchParams.set('event', 'workflow_dispatch');
+    url.searchParams.set('created', workflowRunCreatedFilter(source.createdAt));
     url.searchParams.set('per_page', '100');
     url.searchParams.set('page', String(page));
     return requestJson(url, readToken);

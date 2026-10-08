@@ -50,6 +50,7 @@ export function validateWorkflowRunEvent({ eventName, ref, payload, repositoryId
   require(run.head_branch === 'main' && run.head_sha && SHA.test(run.head_sha), 'upstream verifier run is not bound to main');
   const workflowId = run.workflow_id ?? payload.workflow?.id;
   require(validPositiveInteger(run.id) && validPositiveInteger(run.run_number) && validPositiveInteger(run.run_attempt) && validPositiveInteger(workflowId), 'upstream workflow run identity is invalid');
+  require(typeof run.created_at === 'string' && Number.isFinite(Date.parse(run.created_at)), 'upstream workflow creation time is invalid');
   if (payload.workflow?.id !== undefined) require(payload.workflow.id === workflowId, 'workflow event identity mismatch');
   require(run.head_repository?.full_name === repository && run.head_repository.id === repositoryId, 'upstream verifier head repository mismatch');
   return {
@@ -60,6 +61,7 @@ export function validateWorkflowRunEvent({ eventName, ref, payload, repositoryId
     runId: run.id,
     runNumber: run.run_number,
     runAttempt: run.run_attempt,
+    createdAt: run.created_at,
     workflowId,
     conclusion: run.conclusion,
     displayTitle: run.display_title,
@@ -75,6 +77,7 @@ export function validateWorkflowRunApi(run, source) {
       ? PENDING_RUN_STATUSES.has(run?.status) && run.conclusion == null
       : run?.status === 'in_progress' && run.conclusion == null;
   require(run && run.id === source.runId && run.run_number === source.runNumber && run.run_attempt === source.runAttempt &&
+    run.created_at === source.createdAt &&
     run.workflow_id === source.workflowId && run.event === 'workflow_dispatch' && correctState &&
     [
       `${source.workflowPath}@main`,
@@ -97,14 +100,17 @@ export function parseVerifierRunName(displayTitle) {
 export function assertVerifierRunIsLatest(runs, source, target) {
   require(Array.isArray(runs) && validPositiveInteger(source?.runNumber) && validPositiveInteger(source?.runAttempt) &&
     validPositiveInteger(source?.runId) && validPositiveInteger(source?.workflowId) && target &&
-    Number.isSafeInteger(target.prNumber) && SHA.test(target.headSha) && SHA.test(target.baseSha),
+    Number.isSafeInteger(target.prNumber) && SHA.test(target.headSha) && SHA.test(target.baseSha) &&
+    typeof source.createdAt === 'string' && Number.isFinite(Date.parse(source.createdAt)),
   'verifier run-order binding is malformed');
+  const lowerBound = Date.parse(source.createdAt);
   let currentRunFound = false;
   const runIds = new Set();
   const runNumbers = new Map();
   for (const run of runs) {
     require(run && validPositiveInteger(run.id) && validPositiveInteger(run.run_number) && validPositiveInteger(run.run_attempt) &&
-      run.workflow_id === source.workflowId && run.event === 'workflow_dispatch' && run.head_branch === 'main' && SHA.test(run.head_sha ?? ''),
+      run.workflow_id === source.workflowId && run.event === 'workflow_dispatch' && run.head_branch === 'main' && SHA.test(run.head_sha ?? '') &&
+      typeof run.created_at === 'string' && Number.isFinite(Date.parse(run.created_at)) && Date.parse(run.created_at) >= lowerBound,
     'workflow run listing contains malformed verifier metadata');
     require(!runIds.has(run.id) && (!runNumbers.has(run.run_number) || runNumbers.get(run.run_number) === run.id), 'workflow run listing contains duplicate run identities');
     runIds.add(run.id);
@@ -123,6 +129,11 @@ export function assertVerifierRunIsLatest(runs, source, target) {
   }
   require(currentRunFound, 'current verifier run is absent from the authenticated workflow run listing');
   return true;
+}
+
+export function workflowRunCreatedFilter(createdAt) {
+  require(typeof createdAt === 'string' && Number.isFinite(Date.parse(createdAt)), 'workflow run creation-time filter is invalid');
+  return `>=${createdAt}`;
 }
 
 function sameRunTarget(left, right) {

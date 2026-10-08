@@ -16,6 +16,10 @@
     "scripts/root-audit/evaluator.mjs",
     "scripts/root-audit/trusted-policy.json"
   ],
+  "trustedRootPaths": [
+    ".github/workflows/",
+    "scripts/root-audit/"
+  ],
   "workspaceManifests": {
     ".": "kirari",
     "apps/site": "@kirari/site",

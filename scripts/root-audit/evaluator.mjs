@@ -194,7 +194,7 @@ function parseApproval(comments, context, now) {
 }
 
 export function evaluateVerification(input) {
-  const { policy, expectedHeadSha, expectedBaseSha, candidate, candidateFiles, audits, issue122, issue135, comments, trusted } = input;
+  const { policy, expectedHeadSha, expectedBaseSha, candidate, candidateFiles, changedFiles, audits, issue122, issue135, comments, trusted } = input;
   const now = input.now ?? Date.now();
   if (!policy || policy.repository !== 'markd3ng/KIRARI') fail('trusted policy missing or unexpected');
   if (!SHA.test(expectedHeadSha) || !SHA.test(expectedBaseSha)) fail('expected SHA input is invalid');
@@ -204,6 +204,13 @@ export function evaluateVerification(input) {
     fail('pull request state or immutable SHA binding mismatch');
   }
   if (!candidate.headRepo || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(candidate.headRepo)) fail('pull request head repository is missing');
+  if (!Array.isArray(changedFiles) || changedFiles.length > 3000 || changedFiles.some((file) => typeof file !== 'string' || file.length === 0 || file.includes('\0')) ||
+      new Set(changedFiles).size !== changedFiles.length) fail('pull request changed-file evidence is malformed');
+  if (!Array.isArray(policy.trustedRootPaths) || policy.trustedRootPaths.length === 0 ||
+      policy.trustedRootPaths.some((path) => typeof path !== 'string' || path.length === 0)) fail('trusted-root path policy is missing or malformed');
+  const protectedChanges = changedFiles.filter((file) => policy.trustedRootPaths.some((path) =>
+    path.endsWith('/') ? file.startsWith(path) : file === path));
+  if (protectedChanges.length > 0) fail(`candidate changes protected trusted-root paths: ${protectedChanges.sort().join(', ')}`);
   const allowedFiles = [...policy.candidateFiles].sort();
   if (JSON.stringify(Object.keys(candidateFiles).sort()) !== JSON.stringify(allowedFiles)) fail('candidate input allowlist mismatch');
   for (const [file, content] of Object.entries(candidateFiles)) {

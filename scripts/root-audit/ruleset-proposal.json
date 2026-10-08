@@ -15,6 +15,13 @@
       "source": "DEDICATED_GITHUB_APP"
     }
   ],
+  "requiredStatusCheckAdditionalGate": {
+    "type": "trusted-base-verifier-path-policy",
+    "protectedPaths": [".github/workflows/", "scripts/root-audit/"],
+    "changedFileEvidence": "complete pull-request files API listing reconciled with pull_request.changed_files",
+    "ordinaryCheckMayAuthorizeTrustedRootChanges": false,
+    "trustRootMaintenance": "separate Owner-controlled procedure; no bypass actor is proposed"
+  },
   "blockForcePush": true,
   "protectDeletion": true,
   "bypassActors": [],

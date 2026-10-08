@@ -239,6 +239,7 @@ export function createContext(overrides = {}) {
     expectedBaseSha: baseSha,
     candidate: { number: 133, state: 'open', merged: false, headSha, baseSha, baseRef: 'main', headRepo: policy.repository },
     candidateFiles,
+    changedFiles: overrides.changedFiles ?? [],
     audits: createAudits(),
     issue122: { number: 122, state: 'open', title: policy.issue122.title, bodySha256: policy.issue122.bodySha256 },
     issue135: { number: 135, state: 'open' },

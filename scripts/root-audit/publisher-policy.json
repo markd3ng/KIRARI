@@ -19,10 +19,18 @@
     "conclusion": "any recognized completed conclusion; non-success invalidates prior App success",
     "runTitleBinding": "R3 verifier|pr=<number>|head=<sha>|base=<sha>",
     "latestRunRequiredForPublication": true,
+    "createdAtLowerBound": "authenticated upstream run created_at; excludes irrelevant retained history before the current event",
     "startedRunInvalidatesPriorSuccess": true,
     "concurrencyKey": "trusted verifier display title binding PR/head/base",
     "repositoryIdMustMatch": true,
     "jobConditionMustRunBeforeEnvironment": true
+  },
+  "trustedRootChangePolicy": {
+    "protectedPathsFromTrustedBase": [".github/workflows/", "scripts/root-audit/"],
+    "changedPathSource": "complete authenticated pull-request files API listing, reconciled against pull_request.changed_files",
+    "ordinaryAppCheckMayAuthorizeChanges": false,
+    "purpose": "prevent ordinary zero-approval PR checks from modifying publisher/verifier code or any workflow that could request the Environment secret",
+    "maintenance": "separate Owner-controlled trust-root change gate; no ruleset bypass actor is proposed"
   },
   "independentSecurityReview": {
     "requiredForAutomatedCheck": false,

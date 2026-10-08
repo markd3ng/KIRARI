@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getDecisionComment, readBoundedResponseText } from '../cli.mjs';
+import { getDecisionComment, listPullRequestChangedFiles, readBoundedResponseText } from '../cli.mjs';
 
 test('GitHub response streaming rejects a body as soon as it exceeds the per-response limit', async () => {
   const response = new Response(new ReadableStream({
@@ -53,4 +53,39 @@ test('GitHub response streaming accepts valid UTF-8 and tracks its exact byte si
   const response = new Response('安全');
   assert.equal(await readBoundedResponseText(response, 10, budget), '安全');
   assert.equal(budget.used, Buffer.byteLength('安全', 'utf8'));
+});
+
+test('PR changed-file lookup paginates to the authenticated metadata count', async (t) => {
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  const allFiles = Array.from({ length: 101 }, (_, index) => ({ filename: `src/file-${String(index).padStart(3, '0')}.mjs` }));
+  t.after(() => { globalThis.fetch = originalFetch; });
+  globalThis.fetch = async (url) => {
+    const parsed = new URL(String(url));
+    calls.push(parsed);
+    const page = Number(parsed.searchParams.get('page'));
+    return new Response(JSON.stringify(page === 1 ? allFiles.slice(0, 100) : allFiles.slice(100)), {
+      headers: { 'content-type': 'application/json' },
+    });
+  };
+
+  const files = await listPullRequestChangedFiles('https://api.github.com', 136, 101, 'token');
+  assert.equal(files.length, 101);
+  assert.deepEqual(calls.map((url) => url.searchParams.get('page')), ['1', '2']);
+  assert.ok(calls.every((url) => url.searchParams.get('per_page') === '100'));
+});
+
+test('PR changed-file lookup fails closed on inconsistent counts and the API ceiling', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  globalThis.fetch = async () => new Response(JSON.stringify([{ filename: 'same.mjs' }, { filename: 'same.mjs' }]), {
+    headers: { 'content-type': 'application/json' },
+  });
+  await assert.rejects(listPullRequestChangedFiles('https://api.github.com', 136, 1, 'token'), /inconsistent/);
+  await assert.rejects(listPullRequestChangedFiles('https://api.github.com', 136, 3001, 'token'), /API limit/);
+
+  globalThis.fetch = async () => new Response(JSON.stringify([{ filename: 'same.mjs' }, { filename: 'same.mjs' }]), {
+    headers: { 'content-type': 'application/json' },
+  });
+  await assert.rejects(listPullRequestChangedFiles('https://api.github.com', 136, 2, 'token'), /duplicated/);
 });

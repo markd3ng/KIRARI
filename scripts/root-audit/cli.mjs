@@ -10,6 +10,8 @@ import { digestEvidenceDirectory } from './publisher-evidence.mjs';
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const MAX_GITHUB_RESPONSE_BYTES = 20 * 1024 * 1024;
+const MAX_PULL_REQUEST_CHANGED_FILES = 3000;
+const PULL_REQUEST_FILES_PER_PAGE = 100;
 const SHA = /^[a-f0-9]{40}$/;
 const SHA256 = /^[a-f0-9]{64}$/;
 
@@ -171,6 +173,41 @@ async function requestOptionalJson(url, token) {
   }
 }
 
+export async function listPullRequestChangedFiles(apiUrl, prNumber, expectedCount, token) {
+  if (!Number.isSafeInteger(prNumber) || prNumber <= 0 || !Number.isSafeInteger(expectedCount) ||
+      expectedCount < 0 || expectedCount > MAX_PULL_REQUEST_CHANGED_FILES) {
+    throw new Error('pull request changed-file count is invalid or exceeds the API limit');
+  }
+  const files = [];
+  const names = new Set();
+  const maximumPages = Math.max(1, Math.ceil(MAX_PULL_REQUEST_CHANGED_FILES / PULL_REQUEST_FILES_PER_PAGE));
+  for (let page = 1; page <= maximumPages; page += 1) {
+    if (page > 1 && files.length >= expectedCount) break;
+    const url = new URL(`/repos/markd3ng/KIRARI/pulls/${prNumber}/files`, apiUrl);
+    url.searchParams.set('per_page', String(PULL_REQUEST_FILES_PER_PAGE));
+    url.searchParams.set('page', String(page));
+    const result = await requestJson(url, token);
+    if (!Array.isArray(result) || result.length > PULL_REQUEST_FILES_PER_PAGE ||
+        (files.length + result.length > expectedCount)) {
+      throw new Error('pull request changed-file response is malformed or inconsistent');
+    }
+    for (const file of result) {
+      if (typeof file?.filename !== 'string' || file.filename.length === 0 || file.filename.includes('\0') || names.has(file.filename)) {
+        throw new Error('pull request changed-file path is malformed or duplicated');
+      }
+      names.add(file.filename);
+      files.push(file.filename);
+    }
+    if (files.length === expectedCount) break;
+    if (result.length < PULL_REQUEST_FILES_PER_PAGE && files.length < expectedCount) {
+      throw new Error('pull request changed-file pagination is incomplete');
+    }
+    if (result.length === 0 && files.length < expectedCount) throw new Error('pull request changed-file page is unexpectedly empty');
+  }
+  if (files.length !== expectedCount) throw new Error('pull request changed-file count does not match metadata');
+  return files.sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
+}
+
 async function getDecisionComment(apiUrl, issueNumber, commentId, token) {
   if (commentId === null) return { comments: [], lookup: { requestedCommentId: null, state: 'NOT_REQUESTED' } };
   const comment = await requestOptionalJson(
@@ -214,6 +251,7 @@ async function getGitHubState(apiUrl, prNumber, expectedHeadSha, expectedBaseSha
       typeof candidate.headRepo !== 'string' || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(candidate.headRepo)) {
     throw new Error('GitHub pull request metadata does not match the immutable inputs');
   }
+  const changedFiles = await listPullRequestChangedFiles(apiUrl, prNumber, pr.changed_files, token);
   const issue122Raw = await requestJson(new URL('/repos/markd3ng/KIRARI/issues/122', apiUrl), token);
   const issue135Raw = await requestJson(new URL('/repos/markd3ng/KIRARI/issues/135', apiUrl), token);
   const issue122 = {
@@ -224,7 +262,7 @@ async function getGitHubState(apiUrl, prNumber, expectedHeadSha, expectedBaseSha
   };
   const issue135 = { number: issue135Raw.number, state: issue135Raw.state };
   const decision = await getDecisionComment(apiUrl, 135, decisionCommentId, token);
-  return { candidate, issue122, issue135, comments: decision.comments, decisionLookup: decision.lookup };
+  return { candidate, changedFiles, issue122, issue135, comments: decision.comments, decisionLookup: decision.lookup };
 }
 
 function writeJson(directory, name, value) {
@@ -306,6 +344,7 @@ async function main() {
     };
     const preflight = await getGitHubState(event.apiUrl, input.prNumber, input.expectedHeadSha, input.expectedBaseSha, input.decisionCommentId, token);
     await writeJson(evidenceDirectory, 'preflight-pr-metadata.json', preflight.candidate);
+    await writeJson(evidenceDirectory, 'preflight-changed-files.json', preflight.changedFiles);
     const candidateFiles = {};
     for (const file of policy.candidateFiles) {
       candidateFiles[file] = await fetchCandidateFile(event.apiUrl, preflight.candidate.headRepo, file, input.expectedHeadSha, token);
@@ -313,10 +352,12 @@ async function main() {
     parseAndValidateLockfile(candidateFiles['pnpm-lock.yaml'], candidateFiles, policy);
     const audits = await runIndependentAudits(candidateFiles, policy, evidenceDirectory);
     const github = await getGitHubState(event.apiUrl, input.prNumber, input.expectedHeadSha, input.expectedBaseSha, input.decisionCommentId, token);
-    if (JSON.stringify(github.candidate) !== JSON.stringify(preflight.candidate)) {
+    if (JSON.stringify(github.candidate) !== JSON.stringify(preflight.candidate) ||
+        JSON.stringify(github.changedFiles) !== JSON.stringify(preflight.changedFiles)) {
       throw new Error('pull request metadata changed while verification was running');
     }
     await writeJson(evidenceDirectory, 'candidate-metadata.json', github.candidate);
+    await writeJson(evidenceDirectory, 'changed-files.json', github.changedFiles);
     await writeJson(evidenceDirectory, 'control-plane-metadata.json', {
       issue122: github.issue122,
       issue135: github.issue135,
@@ -332,6 +373,7 @@ async function main() {
       decisionLookup: github.decisionLookup,
       candidate: github.candidate,
       candidateFiles,
+      changedFiles: github.changedFiles,
       audits,
       issue122: github.issue122,
       issue135: github.issue135,

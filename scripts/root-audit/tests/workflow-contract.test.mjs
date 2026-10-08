@@ -95,6 +95,7 @@ test('publisher preflights source before the main-only Environment and never exe
   assert.match(publisherCli, /actions\/workflows\/\$\{source\.workflowId\}/);
   assert.match(publisherCli, /validateWorkflowMetadata\(workflow, source\)/);
   assert.match(publisherCli, /assertVerifierRunIsLatest/);
+  assert.match(publisherCli, /searchParams\.set\('created', workflowRunCreatedFilter\(source\.createdAt\)\)/);
   assert.match(publisherCli, /trusted verifier run is not based on the current main SHA/);
   assert.match(publisherCli, /live PR base is not the current main SHA/);
   assert.match(publisherCli, /\/check-runs/);
@@ -112,6 +113,8 @@ test('publisher and ruleset manifests remain inert until a real App identity is 
     expectedIntegrationId: 'PENDING_OWNER_SETUP',
     source: 'DEDICATED_GITHUB_APP',
   }]);
+  assert.deepEqual(rulesetProposal.requiredStatusCheckAdditionalGate.protectedPaths, ['.github/workflows/', 'scripts/root-audit/']);
+  assert.equal(rulesetProposal.requiredStatusCheckAdditionalGate.ordinaryCheckMayAuthorizeTrustedRootChanges, false);
   assert.equal(rulesetProposal.blockForcePush, true);
   assert.equal(rulesetProposal.protectDeletion, true);
   assert.deepEqual(rulesetProposal.bypassActors, []);
@@ -128,10 +131,13 @@ test('publisher and ruleset manifests remain inert until a real App identity is 
   assert.equal(publisherPolicy.independentSecurityReview.reportFetchedOrInspectedByVerifier, false);
   assert.equal(publisherPolicy.independentSecurityReview.reviewerIdentityAuthenticatedByVerifier, false);
   assert.equal(publisherPolicy.workflowRunFilter.latestRunRequiredForPublication, true);
+  assert.match(publisherPolicy.workflowRunFilter.createdAtLowerBound, /created_at/);
   assert.equal(publisherPolicy.workflowRunFilter.startedRunInvalidatesPriorSuccess, true);
   assert.equal(publisherPolicy.workflowRunFilter.concurrencyKey, 'trusted verifier display title binding PR/head/base');
   assert.equal(publisherPolicy.appCredentialsPresent, false);
   assert.equal(publisherPolicy.applyReady, false);
+  assert.deepEqual(publisherPolicy.trustedRootChangePolicy.protectedPathsFromTrustedBase, ['.github/workflows/', 'scripts/root-audit/']);
+  assert.equal(publisherPolicy.trustedRootChangePolicy.ordinaryAppCheckMayAuthorizeChanges, false);
 
   assert.equal(appManifest.status, 'PENDING_OWNER_SETUP');
   assert.equal(appManifest.applyReady, false);
@@ -150,10 +156,14 @@ test('publisher and ruleset manifests remain inert until a real App identity is 
   assert.equal(environmentManifest.variables[0].value, 'PENDING_OWNER_SETUP');
   assert.equal(environmentManifest.liveEnvironmentCreated, false);
   assert.equal(environmentManifest.liveSecretCreated, false);
+  assert.ok(environmentManifest.secretSetupPrerequisites.includes('the exact ruleset has been separately authorized, applied, and authenticated-read back'));
 });
 
 test('candidate acquisition is bounded to trusted allowlist and exact SHA API requests', () => {
   assert.match(cli, /for \(const file of policy\.candidateFiles\)/);
+  assert.match(cli, /pulls\/\$\{prNumber\}\/files/);
+  assert.match(cli, /github\.changedFiles\) !== JSON\.stringify\(preflight\.changedFiles/);
+  assert.match(cli, /changedFiles: github\.changedFiles/);
   assert.match(cli, /searchParams\.set\('ref', headSha\)/);
   assert.match(cli, /fetchCandidateFile\(event\.apiUrl, preflight\.candidate\.headRepo, file, input\.expectedHeadSha/);
   assert.match(cli, /const github = await getGitHubState\(event\.apiUrl, input\.prNumber/);

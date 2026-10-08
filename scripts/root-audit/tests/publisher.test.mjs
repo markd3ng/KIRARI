@@ -22,6 +22,7 @@ import {
   validateWorkflowMetadata,
   validateWorkflowRunApi,
   validateWorkflowRunEvent,
+  workflowRunCreatedFilter,
   VERIFIER_WORKFLOW_PATH,
 } from '../publisher-contract.mjs';
 import { createContext, ownerApproval } from './fixtures.mjs';
@@ -114,6 +115,7 @@ function workflowEvent(overrides = {}) {
         id: 123456789,
         run_number: 124,
         run_attempt: 1,
+        created_at: '2026-10-07T10:00:00Z',
         workflow_id: WORKFLOW_ID,
         event: 'workflow_dispatch',
         status: 'completed',
@@ -150,10 +152,12 @@ test('A: complete bound evidence publishes only a dedicated App success on the e
 
 test('workflow_run webhook shape and REST path suffix bind through workflow ID to the bare trusted path', () => {
   const source = validateWorkflowRunEvent(workflowEvent());
+  assert.equal(source.createdAt, '2026-10-07T10:00:00Z');
   const apiRun = {
     id: source.runId,
     run_number: source.runNumber,
     run_attempt: source.runAttempt,
+    created_at: source.createdAt,
     workflow_id: source.workflowId,
     event: 'workflow_dispatch',
     status: 'completed',
@@ -189,6 +193,7 @@ test('failed verifier run title retains a strict authenticated PR/head/base targ
     id: source.runId,
     run_number: source.runNumber,
     run_attempt: source.runAttempt,
+    created_at: source.createdAt,
     workflow_id: source.workflowId,
     event: 'workflow_dispatch',
     status: 'completed',
@@ -219,6 +224,7 @@ test('requested and in-progress events require a live pending run and bind the e
     id: source.runId,
     run_number: source.runNumber,
     run_attempt: source.runAttempt,
+    created_at: source.createdAt,
     workflow_id: source.workflowId,
     event: 'workflow_dispatch',
     status: 'in_progress',
@@ -245,6 +251,7 @@ test('a later same-target verifier run supersedes earlier publisher events', () 
     id: source.runId,
     run_number: source.runNumber,
     run_attempt: source.runAttempt,
+    created_at: source.createdAt,
     workflow_id: source.workflowId,
     event: 'workflow_dispatch',
     head_branch: 'main',
@@ -256,7 +263,13 @@ test('a later same-target verifier run supersedes earlier publisher events', () 
   assert.equal(assertVerifierRunIsLatest([run(), run({ id: source.runId + 1, run_number: source.runNumber + 1 })], source, target), false);
   assert.equal(assertVerifierRunIsLatest([run(), run({ id: source.runId + 1, run_number: source.runNumber + 1, display_title: 'R3 verifier|pr=136|head=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa|base=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' })], source, target), true);
   assert.equal(assertVerifierRunIsLatest([run({ run_attempt: source.runAttempt + 1 })], source, target), false);
+  assert.throws(() => assertVerifierRunIsLatest([run({ created_at: '2026-10-07T09:59:59Z' })], source, target), /malformed verifier metadata/);
   assert.throws(() => assertVerifierRunIsLatest([run(), run({ id: source.runId + 1, run_number: source.runNumber + 1, display_title: 'unexpected newer run' })], source, target), /valid PR\/head\/base binding/);
+});
+
+test('workflow run order queries begin at the authenticated run creation timestamp', () => {
+  assert.equal(workflowRunCreatedFilter('2026-10-07T10:00:00Z'), '>=2026-10-07T10:00:00Z');
+  assert.throws(() => workflowRunCreatedFilter('invalid'), /creation-time filter is invalid/);
 });
 
 test('workflow run listing paginates consistently and fails closed on changing totals', async () => {
