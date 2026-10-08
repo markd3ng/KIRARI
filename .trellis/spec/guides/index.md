@@ -14,3 +14,9 @@ JSON, workflow, and deployment files.
 
 Treat `tmp/`, historical plans, audits, and materialized copies as evidence to
 classify, not implementation authority.
+
+For repository-level verifier changes, read the
+[Root Audit Input Contract](../repository/root-audit-inputs.md).
+
+For pinned-pnpm audit parsing, read the
+[Root Audit Format Contract](../repository/root-audit-format.md).

@@ -1,0 +1,46 @@
+{
+  "schema": "kirari.r3-main-ruleset-planning-wrapper/v2",
+  "kind": "planning-wrapper-not-github-api-payload",
+  "target": "refs/heads/main",
+  "enforcement": "active",
+  "requirePullRequest": true,
+  "requiredApprovals": 0,
+  "dismissStaleApprovals": true,
+  "requireCodeOwnerReview": false,
+  "requireUpToDateBranch": true,
+  "requiredStatusChecks": [
+    {
+      "context": "KIRARI / R3 trusted verifier",
+      "expectedIntegrationId": "PENDING_OWNER_SETUP",
+      "source": "DEDICATED_GITHUB_APP"
+    }
+  ],
+  "requiredStatusCheckAdditionalGate": {
+    "type": "trusted-base-verifier-path-policy",
+    "protectedPaths": [
+      ".github/workflows/",
+      "scripts/root-audit/",
+      ".npmrc",
+      ".pnpmfile.cjs",
+      "apps/site/.npmrc",
+      "apps/site/.pnpmfile.cjs",
+      "workers/kirari-edge/.npmrc",
+      "workers/kirari-edge/.pnpmfile.cjs",
+      "packages/site-profile/.npmrc",
+      "packages/site-profile/.pnpmfile.cjs"
+    ],
+    "changedFileEvidence": "complete pull-request files API listing reconciled with pull_request.changed_files",
+    "ordinaryCheckMayAuthorizeTrustedRootChanges": false,
+    "trustRootMaintenance": "separate Owner-controlled procedure; no bypass actor is proposed"
+  },
+  "blockForcePush": true,
+  "protectDeletion": true,
+  "bypassActors": [],
+  "apiPayload": null,
+  "apiPayloadReady": false,
+  "appProvenanceObserved": false,
+  "continuingDecisionFreshnessEnforcementReady": false,
+  "liveConsumptionGate": "Do not apply this ruleset or enable R3-bearing merge/auto-merge until expiry, revocation, and issue closure can invalidate stale App success and that continuing enforcement is independently reviewed.",
+  "applied": false,
+  "mainProtected": false
+}

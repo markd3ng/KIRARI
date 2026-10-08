@@ -1,0 +1,46 @@
+{
+  "schema": "kirari.r3-publisher-environment-setup/v1",
+  "name": "r3-trusted-publisher",
+  "applyReady": false,
+  "branchPolicy": {
+    "type": "selected_branches",
+    "allowedBranches": ["main"],
+    "protectedBranchesOnly": false,
+    "pullRequestRefsAllowed": false,
+    "administratorBypass": false
+  },
+  "secrets": [
+    {
+      "name": "KIRARI_R3_PUBLISHER_PRIVATE_KEY",
+      "value": "NOT_CREATED",
+      "consumers": ["publisher App-token mint step only"]
+    }
+  ],
+  "secretSetupPrerequisites": [
+    "the dedicated App installation and benign App check provenance have been read back",
+    "the exact ruleset has been separately authorized, applied, and authenticated-read back",
+    "main is protected by the App-bound required check and trusted-root path gate"
+  ],
+  "variables": [
+    { "name": "KIRARI_R3_PUBLISHER_APP_ID", "value": "PENDING_OWNER_SETUP" }
+  ],
+  "workflowJob": {
+    "path": ".github/workflows/r3-trusted-publisher.yml",
+    "environmentReference": "job.environment",
+    "sourcePredicateLocation": "job.if before the Environment-bearing job starts",
+    "requiredSourcePredicate": [
+      "action is requested, in_progress, or completed",
+      "event is workflow_run",
+      "upstream event is workflow_dispatch",
+      "completed upstream conclusion is success or a supported failure that must invalidate prior success; pending events have no conclusion",
+      "authenticated workflow run title binds exact PR number, candidate head, and base",
+      "only the latest run and attempt for the exact PR/head/base may publish",
+      "requested/in_progress events invalidate prior success with an App check left in_progress",
+      "upstream head branch is main",
+      "upstream head repository ID equals this repository ID",
+      "upstream workflow path is .github/workflows/r3-trusted-verifier.yml"
+    ]
+  },
+  "liveEnvironmentCreated": false,
+  "liveSecretCreated": false
+}

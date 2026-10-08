@@ -1,0 +1,78 @@
+name: R3 trusted verifier
+run-name: R3 verifier|pr=${{ inputs.pr_number }}|head=${{ inputs.expected_head_sha }}|base=${{ inputs.expected_base_sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to inspect as untrusted data
+        required: true
+        type: string
+      expected_head_sha:
+        description: Exact expected pull request head commit SHA
+        required: true
+        type: string
+      expected_base_sha:
+        description: Exact expected pull request base commit SHA
+        required: true
+        type: string
+      security_review_sha256:
+        description: Optional Owner-supplied review reference; not authenticated by this automated check
+        required: false
+        type: string
+      decision_comment_id:
+        description: Optional exact Issue #135 decision comment ID to bind and revalidate
+        required: false
+        type: string
+
+permissions: {}
+
+jobs:
+  verify:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+    timeout-minutes: 15
+    steps:
+      - name: Check out the selected trusted main commit only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          submodules: false
+          lfs: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.16.0
+          check-latest: false
+
+      - name: Set up pinned pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda
+        with:
+          version: 9.14.4
+          run_install: false
+
+      - name: Verify immutable candidate and independently reproduce audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          R3_PR_NUMBER: ${{ inputs.pr_number }}
+          R3_EXPECTED_HEAD_SHA: ${{ inputs.expected_head_sha }}
+          R3_EXPECTED_BASE_SHA: ${{ inputs.expected_base_sha }}
+          R3_SECURITY_REVIEW_SHA256: ${{ inputs.security_review_sha256 }}
+          R3_DECISION_COMMENT_ID: ${{ inputs.decision_comment_id }}
+          R3_EVIDENCE_DIR: ${{ runner.temp }}/r3-evidence
+        run: node scripts/root-audit/cli.mjs
+
+      - name: Upload trusted verifier evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: r3-trusted-verifier-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/r3-evidence/
+          if-no-files-found: error
+          retention-days: 30
