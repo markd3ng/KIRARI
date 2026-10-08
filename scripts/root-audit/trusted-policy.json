@@ -2,6 +2,12 @@
   "schema": "kirari.r3-trusted-policy/v1",
   "repository": "markd3ng/KIRARI",
   "decisionIssue": 135,
+  "issue135": {
+    "number": 135,
+    "expectedState": "open",
+    "title": "[P4-E] Temporary root dependency exception for upstream-blocked selector parser",
+    "bodySha256": "0a8bca4ba3df6caa2095fe82d7ecac0a99f63d3186d6221ced264ab96b07015a"
+  },
   "requiredOwnerLogin": "markd3ng",
   "candidateFiles": [
     "package.json",
@@ -21,6 +27,7 @@
     "scripts/root-audit/",
     ".npmrc",
     ".pnpmfile.cjs",
+    "pnpm-workspace.yaml",
     "apps/site/.npmrc",
     "apps/site/.pnpmfile.cjs",
     "workers/kirari-edge/.npmrc",

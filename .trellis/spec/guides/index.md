@@ -20,3 +20,5 @@ For repository-level verifier changes, read the
 
 For pinned-pnpm audit parsing, read the
 [Root Audit Format Contract](../repository/root-audit-format.md).
+
+[Root Audit Continuing Eligibility Contract](../repository/root-audit-authorization.md) covers fail-closed publisher conclusions, revocation limits, and activation prerequisites.

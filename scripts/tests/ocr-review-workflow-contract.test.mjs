@@ -43,5 +43,7 @@ test("OCR pins the accepted action and passes its credentials without logging th
 	assert.match(workflow, /^          route_categories: style,documentation$/m);
 	assert.match(workflow, /^          resolve_outdated: report$/m);
 	assert.match(workflow, /^          checkpoint_range: 'false'$/m);
-	assert.doesNotMatch(workflow, /^\s+run:|\becho\b/i);
+	assert.doesNotMatch(workflow, /\becho\b/i);
+	assert.match(workflow, /^      NPM_CONFIG_PREFIX: \$\{\{ runner\.temp \}\}\/kirari-ocr$/m);
+	assert.match(workflow, /run: printf '%s\\n' "\$NPM_CONFIG_PREFIX\/bin" >> "\$GITHUB_PATH"/);
 });

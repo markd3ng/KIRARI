@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import trustedPolicy from './trusted-policy.json' with { type: 'json' };
 
 export const REQUIRED_CHECK_NAME = 'KIRARI / R3 trusted verifier';
 export const VERIFIER_WORKFLOW_PATH = '.github/workflows/r3-trusted-verifier.yml';
@@ -7,6 +8,11 @@ export const PUBLISHER_ENVIRONMENT = 'r3-trusted-publisher';
 export const RESULT_SCHEMA = 'kirari.r3-publisher-result/v1';
 export const SHA = /^[a-f0-9]{40}$/;
 export const SHA256 = /^[a-f0-9]{64}$/;
+export const MAX_EVIDENCE_AGE_MS = 15 * 60 * 1000;
+// A native check has no TTL and GitHub cannot atomically couple it to live
+// authorization. No policy field or environment variable may enable success.
+export const NATIVE_REQUIRED_CHECK_SUCCESS_ENABLED = false;
+export const MERGE_ADMISSION_BLOCKED = 'Native required checks cannot enforce continuing authorization atomically; separately authorized live final merge admission is required.';
 const FINAL_CONCLUSIONS = new Set(['action_required', 'cancelled', 'failure', 'neutral', 'skipped', 'stale', 'success', 'timed_out']);
 const PENDING_RUN_STATUSES = new Set(['in_progress', 'queued', 'requested', 'waiting']);
 
@@ -196,6 +202,7 @@ export function buildPublisherResult({ result, repository, repositoryId, evidenc
   return {
     schema: RESULT_SCHEMA,
     trustedVerification: result.trustedVerification,
+    checkedAt: result.checkedAt,
     repository: { id: repositoryId, fullName: repository },
     candidate: {
       prNumber: candidate.number,
@@ -217,6 +224,7 @@ export function buildPublisherResult({ result, repository, repositoryId, evidenc
     },
     evidenceDigest,
     issue122: { ...result.issue122 },
+    issue135: { ...result.issue135 },
     securityReviewDigest: authorization.securityReviewDigest ?? null,
     decisionIdentity: {
       issue: authorization.issue,
@@ -240,7 +248,13 @@ export function validatePublisherResult(bundle, source, evidenceDigest) {
   require(bundle?.schema === RESULT_SCHEMA && bundle.trustedVerification === 'PASS', 'publisher result schema or verification conclusion is invalid');
   require(bundle.repository?.id === source.repositoryId && bundle.repository?.fullName === source.repository, 'publisher result repository mismatch');
   require(bundle.issue122?.number === 122 && bundle.issue122.state === 'open' && typeof bundle.issue122.title === 'string' &&
-    SHA256.test(bundle.issue122.bodySha256) && bundle.issue122.separateFromR3 === true, 'independent #122 evidence binding is invalid');
+    bundle.issue122.title === trustedPolicy.issue122.title && bundle.issue122.bodySha256 === trustedPolicy.issue122.bodySha256 &&
+    bundle.issue122.separateFromR3 === true, 'independent #122 evidence binding is invalid');
+  require(bundle.issue135?.number === 135 && bundle.issue135.state === 'open' && typeof bundle.issue135.title === 'string' &&
+    bundle.issue135.title === trustedPolicy.issue135.title && bundle.issue135.bodySha256 === trustedPolicy.issue135.bodySha256,
+  'decision issue #135 contract binding is invalid');
+  require(typeof bundle.checkedAt === 'string' && Number.isFinite(Date.parse(bundle.checkedAt)) &&
+    new Date(Date.parse(bundle.checkedAt)).toISOString() === bundle.checkedAt, 'verification freshness timestamp is invalid');
   require(bundle.verifier?.mainSha === source.mainSha && bundle.verifier?.mainSha === bundle.candidate.baseSha && bundle.verifier?.workflowSha === source.mainSha &&
     bundle.verifier?.workflowPath === VERIFIER_WORKFLOW_PATH && bundle.verifier?.runId === source.runId &&
     bundle.verifier?.runAttempt === source.runAttempt,
@@ -285,10 +299,44 @@ export function decisionIsCurrent(comment, bundle, apiUrl, now = Date.now()) {
     return false;
   }
   if (record.commentId !== comment.id || record.issue !== 135 || record.repository !== 'markd3ng/KIRARI' ||
+      record.schema !== 'kirari.r3-consumption-decision/v1' ||
+      record.candidateHeadSha !== bundle.candidate.headSha || record.baseSha !== bundle.candidate.baseSha ||
+      record.candidateDigest !== bundle.candidate.digest || record.policyDigest !== bundle.verifier.policyDigest ||
+      record.verifierDigest !== bundle.verifier.verifierDigest ||
       record.decision !== 'APPROVE_R3_CONSUMPTION' || record.securityReviewDigest !== expected.securityReviewDigest ||
       record.expiresAt !== expected.expiresAt) return false;
+  const requiredKeys = ['schema', 'decision', 'repository', 'issue', 'commentId', 'candidateHeadSha', 'baseSha', 'candidateDigest',
+    'policyDigest', 'verifierDigest', 'securityReviewDigest', 'expiresAt'].sort();
+  if (canonicalJson(Object.keys(record).sort()) !== canonicalJson(requiredKeys)) return false;
   const expiry = Date.parse(record.expiresAt);
-  return Number.isFinite(expiry) && new Date(expiry).toISOString() === record.expiresAt && expiry > now;
+  return Number.isFinite(now) && Number.isFinite(expiry) && new Date(expiry).toISOString() === record.expiresAt &&
+    expiry > now && expiry - now <= 7 * 24 * 60 * 60 * 1000;
+}
+
+export function assertEvidenceFresh(bundle, now = Date.now()) {
+  const checkedAt = Date.parse(bundle?.checkedAt);
+  require(Number.isFinite(now) && Number.isFinite(checkedAt) && checkedAt <= now && now - checkedAt < MAX_EVIDENCE_AGE_MS,
+    'trusted evidence is stale, future-dated, or has no valid freshness timestamp');
+}
+
+// Reusable live eligibility evaluation. It does not issue a reusable merge grant.
+export async function evaluateContinuingEligibility({ bundle, source, evidenceDigest, publisher, adapter }) {
+  validatePublisherResult(bundle, source, evidenceDigest);
+  require(source?.action === 'completed' && source.status === 'completed' && source.conclusion === 'success',
+    'only a completed successful verifier run can evaluate eligibility');
+  require(SHA.test(publisher?.sha) && SHA256.test(publisher?.policyDigest) && publisher.sha === source.mainSha,
+    'publisher workflow is not bound to the current trusted main SHA');
+  assertEvidenceFresh(bundle, adapter.now?.() ?? Date.now());
+  await adapter.assertPullRequest(bundle.candidate.prNumber, bundle.candidate.headSha, bundle.candidate.baseSha, bundle.candidate.headRepository);
+  await adapter.assertIssue122(bundle.issue122);
+  await adapter.assertIssue135(bundle.issue135);
+  require(bundle.decisionIdentity.state === 'APPROVED' && bundle.decisionIdentity.consumable === true &&
+    bundle.decisionIdentity.requestedCommentId !== null, 'exact R3 Owner eligibility is not approved');
+  const comment = await adapter.getDecisionComment(bundle.decisionIdentity.requestedCommentId);
+  const now = adapter.now?.() ?? Date.now();
+  assertEvidenceFresh(bundle, now);
+  require(decisionIsCurrent(comment, bundle, adapter.apiUrl, now), 'Owner decision was edited, revoked, rebound, or expired');
+  return { technicalVerification: 'PASS', authorization: 'VALIDATED', mergeAdmission: 'BLOCKED', requiredCheckSuccessAllowed: false };
 }
 
 export function buildExternalId(bundle, publisher) {
@@ -310,6 +358,8 @@ export function buildExternalId(bundle, publisher) {
     securityReviewDigest: bundle.securityReviewDigest,
     decisionIdentity: bundle.decisionIdentity,
     issue122: bundle.issue122,
+    issue135: bundle.issue135,
+    checkedAt: bundle.checkedAt,
     publisherSha: publisher.sha,
     publisherWorkflowPath: PUBLISHER_WORKFLOW_PATH,
     publisherPolicyDigest: publisher.policyDigest,
@@ -338,8 +388,36 @@ function runAttemptLine(runId, runAttempt) {
   return `Verifier run: ${runId} attempt ${runAttempt}`;
 }
 
+function summaryHasRunAttempt(summary, runId, runAttempt) {
+  if (typeof summary !== 'string') return false;
+  const binding = summary.match(/(?:^|\n|\. )Verifier run: ([1-9][0-9]*) attempt ([1-9][0-9]*)(?=\.|\n|$)/);
+  return binding?.[1] === String(runId) && binding?.[2] === String(runAttempt);
+}
+
 function isAppCheckForHead(check, headSha, appId) {
   return check?.name === REQUIRED_CHECK_NAME && check?.head_sha === headSha && check?.app?.id === appId;
+}
+
+export async function invalidateSuccessfulChecks({ checks, headSha, appId, adapter, reason = MERGE_ADMISSION_BLOCKED }) {
+  require(Number.isSafeInteger(appId) && appId > 0 && SHA.test(headSha) && Array.isArray(checks), 'revocation target identity is invalid');
+  const updated = [];
+  const ids = new Set();
+  for (const check of checks) {
+    require(validPositiveInteger(check?.id) && !ids.has(check.id), 'check listing contains invalid or duplicate check identities');
+    ids.add(check.id);
+    if (!isAppCheckForHead(check, headSha, appId) || check.status !== 'completed' || check.conclusion !== 'success') {
+      updated.push(check);
+      continue;
+    }
+    const failed = await adapter.updateCheck(check.id, {
+      status: 'completed', conclusion: 'failure',
+      output: { title: 'Trusted authorization invalidated', summary: reason },
+    });
+    require(failed?.id === check.id && isAppCheckForHead(failed, headSha, appId) && failed.status === 'completed' && failed.conclusion === 'failure',
+      'Checks API did not invalidate the exact dedicated-App success');
+    updated.push(failed);
+  }
+  return updated;
 }
 
 export async function publishPending({ target, source, publisher, appId, adapter }) {
@@ -354,9 +432,10 @@ export async function publishPending({ target, source, publisher, appId, adapter
   require(SHA.test(publisher?.sha) && SHA256.test(publisher?.policyDigest), 'publisher workflow provenance is malformed');
   await adapter.assertPullRequest(target.prNumber, target.headSha, target.baseSha);
 
-  const checks = (await adapter.listChecks(target.headSha)).filter((check) => isAppCheckForHead(check, target.headSha, appId));
+  const checks = (await invalidateSuccessfulChecks({ checks: await adapter.listChecks(target.headSha), headSha: target.headSha, appId, adapter }))
+    .filter((check) => isAppCheckForHead(check, target.headSha, appId));
   const attemptSummary = runAttemptLine(source.runId, source.runAttempt);
-  const currentAttempt = checks.filter((check) => check.output?.summary?.includes(attemptSummary));
+  const currentAttempt = checks.filter((check) => summaryHasRunAttempt(check.output?.summary, source.runId, source.runAttempt));
   require(currentAttempt.length <= 1, 'duplicate App checks exist for the pending verifier run attempt');
   const externalId = buildAttemptExternalId(target, source, publisher);
   if (currentAttempt[0]?.status === 'completed') {
@@ -367,21 +446,6 @@ export async function publishPending({ target, source, publisher, appId, adapter
     require(currentAttempt[0].external_id === externalId && currentAttempt[0].status === 'in_progress',
       'in-progress check conflicts with this pending verifier attempt');
     return { outcome: 'idempotent-pending', checkRunId: currentAttempt[0].id, externalId };
-  }
-
-  for (const check of checks) {
-    if (check.status !== 'completed' || check.conclusion !== 'success') continue;
-    await adapter.assertPullRequest(target.prNumber, target.headSha, target.baseSha);
-    const invalidated = await adapter.updateCheck(check.id, {
-      status: 'completed',
-      conclusion: 'failure',
-      output: {
-        title: 'Trusted verification superseded',
-        summary: `Verifier run ${source.runId} attempt ${source.runAttempt} has started for this candidate; the previous success is invalidated while it is rechecked.`,
-      },
-    });
-    require(isAppCheckForHead(invalidated, target.headSha, appId) && invalidated.status === 'completed' && invalidated.conclusion === 'failure',
-      'Checks API did not invalidate the superseded success');
   }
 
   await adapter.assertPullRequest(target.prNumber, target.headSha, target.baseSha);
@@ -416,7 +480,7 @@ export async function publishFailure({ target, source, publisher, appId, adapter
 
   const checks = (await adapter.listChecks(target.headSha)).filter((check) => isAppCheckForHead(check, target.headSha, appId));
   const attemptSummary = runAttemptLine(source.runId, source.runAttempt);
-  const currentAttempt = checks.filter((check) => check.output?.summary?.includes(attemptSummary));
+  const currentAttempt = checks.filter((check) => summaryHasRunAttempt(check.output?.summary, source.runId, source.runAttempt));
   require(currentAttempt.length <= 1, 'duplicate App checks exist for the failed verifier run attempt');
   const externalId = buildAttemptExternalId(target, source, publisher);
   let completedCurrentAttempt = null;
@@ -509,7 +573,10 @@ export function checkPayload(bundle, externalId, publisher) {
     `R3 decision state: ${bundle.decisionIdentity.state}`,
     `Decision comment requested ID: ${bundle.decisionIdentity.requestedCommentId ?? 'not requested'}; accepted ID: ${bundle.decisionIdentity.commentId ?? 'none'} (lookup: ${bundle.decisionIdentity.lookup})`,
     `Decision expires: ${bundle.decisionIdentity.expiresAt ?? 'not applicable'}`,
-    `Decision revalidation: ${bundle.decisionIdentity.requestedCommentId === null ? 'NOT_REQUESTED' : 'REVALIDATED_BEFORE_SUCCESS'}`,
+    `Decision revalidation: ${bundle.decisionIdentity.requestedCommentId === null ? 'NOT_REQUESTED' : 'REVALIDATED_BEFORE_COMPLETION'}`,
+    `Evidence checked at: ${bundle.checkedAt}; maximum age: ${MAX_EVIDENCE_AGE_MS}ms`,
+    'Merge admission: BLOCKED; native required-check success disabled.',
+    MERGE_ADMISSION_BLOCKED,
     `R3 consumable: ${bundle.decisionIdentity.consumable ? 'YES' : 'NO'}; exception applied/consumed: NO/NO.`,
     'This technical check is not R3 consumption or merge authorization.',
     `Publisher SHA: ${publisher.sha}`,
@@ -520,7 +587,7 @@ export function checkPayload(bundle, externalId, publisher) {
     external_id: externalId,
     details_url: runUrl,
     status: 'in_progress',
-    output: { title: 'Trusted technical verification', summary },
+    output: { title: 'Trusted eligibility validated; merge admission blocked', summary },
   };
 }
 
@@ -528,7 +595,7 @@ export function findIdempotentCheck(checkRuns, payload, appId) {
   const runBinding = payload.output.summary.match(/^Verifier run: ([1-9][0-9]*) attempt ([1-9][0-9]*)$/m);
   require(runBinding, 'publisher check summary lacks verifier replay identity');
   const sameRun = (checkRuns ?? []).filter((check) => check.name === payload.name && check.head_sha === payload.head_sha &&
-    check.app?.id === appId && check.output?.summary?.includes(`Verifier run: ${runBinding[1]} attempt ${runBinding[2]}`));
+    check.app?.id === appId && summaryHasRunAttempt(check.output?.summary, runBinding[1], runBinding[2]));
   require(sameRun.length <= 1, 'duplicate App checks exist for the same verifier run attempt');
   const pending = sameRun[0] && sameRun[0].status === 'in_progress' &&
     sameRun[0].output?.title === 'Trusted verification pending' &&
@@ -544,7 +611,10 @@ export function findIdempotentCheck(checkRuns, payload, appId) {
   require(check.app?.id === appId, 'existing check replay binding belongs to a different status source');
   require(check.output?.summary === payload.output.summary && check.details_url === payload.details_url,
     'existing App check replay binding has different evidence');
-  if (check.status === 'completed' && check.conclusion === 'success') return { id: check.id, completed: true };
+  require(check.status !== 'completed' || check.conclusion !== 'success', 'reusable native success is forbidden');
+  if (check.status === 'completed' && check.conclusion === 'failure' && check.output?.title === 'Trusted eligibility validated; merge admission blocked') {
+    return { id: check.id, completed: true, mergeAdmissionBlocked: true };
+  }
   require(check.status === 'in_progress' && validPositiveInteger(check.id), 'existing App check is already concluded non-successfully');
   return { id: check.id, completed: false };
 }
@@ -580,10 +650,13 @@ function validateAppCheck(check, payload, appId, { completed = false, conclusion
 export async function publishCheck({ bundle, source, evidenceDigest, publisher, appId, adapter }) {
   require(Number.isSafeInteger(appId) && appId > 0, 'dedicated App ID is not configured');
   require(source?.action === 'completed' && source.status === 'completed' && source.conclusion === 'success',
-    'only a completed successful verifier run can publish a successful App check');
+    'only a completed successful verifier run can publish a bound eligibility check');
   validatePublisherResult(bundle, source, evidenceDigest);
   require(SHA.test(publisher?.sha) && SHA256.test(publisher?.policyDigest), 'publisher workflow provenance is malformed');
   require(bundle.trustedVerification === 'PASS', 'trusted verification is not PASS');
+  // Retire reusable successes before any decision/freshness/API check can fail.
+  const checks = await invalidateSuccessfulChecks({ checks: await adapter.listChecks(bundle.candidate.headSha),
+    headSha: bundle.candidate.headSha, appId, adapter });
   if (bundle.decisionIdentity.state === 'PENDING') {
     return publishFailure({
       target: bundle.candidate, source, publisher, appId, adapter,
@@ -594,14 +667,12 @@ export async function publishCheck({ bundle, source, evidenceDigest, publisher, 
     bundle.decisionIdentity.requestedCommentId !== null, 'exact R3 Owner eligibility is not approved');
   const externalId = buildExternalId(bundle, publisher);
   const payload = checkPayload(bundle, externalId, publisher);
-  await adapter.assertPullRequest(bundle.candidate.prNumber, bundle.candidate.headSha, bundle.candidate.baseSha);
-  await adapter.assertIssue122(bundle.issue122);
-  if (bundle.decisionIdentity.requestedCommentId !== null) {
-    const currentDecision = await adapter.getDecisionComment(bundle.decisionIdentity.requestedCommentId);
-    require(decisionIsCurrent(currentDecision, bundle, adapter.apiUrl, adapter.now?.() ?? Date.now()), 'Owner decision was edited, revoked, or expired before publication');
+  await evaluateContinuingEligibility({ bundle, source, evidenceDigest, publisher, adapter });
+  const existing = findIdempotentCheck(checks, payload, appId);
+  if (existing?.completed) {
+    require(existing.mergeAdmissionBlocked === true, 'reusable native success is forbidden');
+    return { outcome: 'idempotent-blocked', eligibility: 'VALIDATED', externalId, checkRunId: existing.id };
   }
-  const existing = findIdempotentCheck(await adapter.listChecks(bundle.candidate.headSha), payload, appId);
-  if (existing?.completed) return { outcome: 'idempotent-success', externalId, checkRunId: existing.id };
   const updatePayload = Object.fromEntries(Object.entries(payload).filter(([key]) => key !== 'head_sha'));
   const pending = existing
     ? validateAppCheck(await adapter.updateCheck(existing.id, updatePayload), payload, appId)
@@ -609,12 +680,7 @@ export async function publishCheck({ bundle, source, evidenceDigest, publisher, 
   require(validPositiveInteger(pending.id), 'Checks API returned an invalid check run ID');
 
   try {
-    await adapter.assertPullRequest(bundle.candidate.prNumber, bundle.candidate.headSha, bundle.candidate.baseSha);
-    await adapter.assertIssue122(bundle.issue122);
-    if (bundle.decisionIdentity.requestedCommentId !== null) {
-      const currentDecision = await adapter.getDecisionComment(bundle.decisionIdentity.requestedCommentId);
-      require(decisionIsCurrent(currentDecision, bundle, adapter.apiUrl, adapter.now?.() ?? Date.now()), 'Owner decision was edited, revoked, or expired before check completion');
-    }
+    await evaluateContinuingEligibility({ bundle, source, evidenceDigest, publisher, adapter });
   } catch (error) {
     const failure = { status: 'completed', conclusion: 'failure', output: { title: 'Trusted verification invalidated', summary: String(error.message ?? 'binding changed') } };
     const failed = await adapter.updateCheck(pending.id, failure);
@@ -622,12 +688,13 @@ export async function publishCheck({ bundle, source, evidenceDigest, publisher, 
     throw error;
   }
 
-  const completed = await adapter.updateCheck(pending.id, { status: 'completed', conclusion: 'success' });
-  validateAppCheck(completed, payload, appId, { completed: true, conclusion: 'success' });
-  return { outcome: 'published-success', externalId, checkRunId: completed.id };
+  require(NATIVE_REQUIRED_CHECK_SUCCESS_ENABLED === false, 'native required-check success must remain disabled');
+  const completed = await adapter.updateCheck(pending.id, { status: 'completed', conclusion: 'failure' });
+  validateAppCheck(completed, payload, appId, { completed: true, conclusion: 'failure' });
+  return { outcome: 'validated-but-blocked', eligibility: 'VALIDATED', externalId, checkRunId: completed.id };
 }
 
 export function assertAllowedConclusion(conclusion) {
-  require(conclusion === 'success' || conclusion === 'failure', 'neutral and skipped conclusions are forbidden');
+  require(conclusion === 'failure', 'native success, neutral, and skipped conclusions are forbidden');
   return conclusion;
 }

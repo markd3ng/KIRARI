@@ -18,7 +18,12 @@ jobs:
     if: ${{ !github.event.pull_request.draft && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      NPM_CONFIG_PREFIX: ${{ runner.temp }}/kirari-ocr
     steps:
+      - name: Preserve the OCR executable path across composite action steps
+        shell: bash
+        run: printf '%s\n' "$NPM_CONFIG_PREFIX/bin" >> "$GITHUB_PATH"
       - uses: alibaba/open-code-review@a758d9cbfb689937c7857ad64b2dd66adb58c0c2
         with:
           llm_url: ${{ secrets.OCR_LLM_URL }}

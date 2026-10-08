@@ -12,6 +12,7 @@ import rulesetProposal from '../ruleset-proposal.json' with { type: 'json' };
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const workflow = await readFile(path.join(root, '.github/workflows/r3-trusted-verifier.yml'), 'utf8');
 const publisherWorkflow = await readFile(path.join(root, '.github/workflows/r3-trusted-publisher.yml'), 'utf8');
+const revocationWorkflow = await readFile(path.join(root, '.github/workflows/r3-authorization-revalidation.yml'), 'utf8');
 const cli = await readFile(path.join(root, 'scripts/root-audit/cli.mjs'), 'utf8');
 const publisherCli = await readFile(path.join(root, 'scripts/root-audit/publisher-cli.mjs'), 'utf8');
 const audit = await readFile(path.join(root, 'scripts/root-audit/audit.mjs'), 'utf8');
@@ -62,7 +63,7 @@ test('publisher preflights source before the main-only Environment and never exe
   assert.match(publisherWorkflow, /publisher_eligible: \$\{\{ steps\.preflight\.outputs\.publisher_eligible \}\}/);
   assert.doesNotMatch(publisherWorkflow.slice(sourceJob, publisherWorkflow.indexOf('    runs-on:', sourceJob)), /conclusion == 'success'/);
   assert.match(publisherWorkflow, /types: \[requested, in_progress, completed\]/);
-  assert.match(publisherWorkflow, /concurrency:\n  group: r3-trusted-publisher-\$\{\{ github\.event\.workflow_run\.display_title \}\}\n  cancel-in-progress: false/);
+  assert.match(publisherWorkflow, /concurrency:\n  group: r3-trusted-authorization\n  cancel-in-progress: false/);
   assert.match(publisherWorkflow, /if: github\.event\.workflow_run\.status == 'completed' && github\.event\.workflow_run\.conclusion == 'success'/);
   assert.match(publisherWorkflow, /publisher-cli\.mjs publish-pending/);
   assert.match(publisherWorkflow, /continue-on-error: true/);
@@ -135,7 +136,7 @@ test('publisher and ruleset manifests remain inert until a real App identity is 
   assert.equal(publisherPolicy.workflowRunFilter.latestRunRequiredForPublication, true);
   assert.match(publisherPolicy.workflowRunFilter.createdAtLowerBound, /created_at/);
   assert.equal(publisherPolicy.workflowRunFilter.startedRunInvalidatesPriorSuccess, true);
-  assert.equal(publisherPolicy.workflowRunFilter.concurrencyKey, 'trusted verifier display title binding PR/head/base');
+  assert.equal(publisherPolicy.workflowRunFilter.concurrencyKey, 'shared trusted authorization publisher/revocation group');
   assert.equal(publisherPolicy.appCredentialsPresent, false);
   assert.equal(publisherPolicy.applyReady, false);
   assert.deepEqual(publisherPolicy.trustedRootChangePolicy.protectedPathsFromTrustedBase, policy.trustedRootPaths);
@@ -159,6 +160,37 @@ test('publisher and ruleset manifests remain inert until a real App identity is 
   assert.equal(environmentManifest.liveEnvironmentCreated, false);
   assert.equal(environmentManifest.liveSecretCreated, false);
   assert.ok(environmentManifest.secretSetupPrerequisites.includes('the exact ruleset has been separately authorized, applied, and authenticated-read back'));
+});
+
+test('revocation mitigation uses the same main-only credential boundary and never executes candidate material', () => {
+  assert.match(revocationWorkflow, /if: vars\.KIRARI_R3_PUBLISHER_ENABLED == 'true' && github\.ref == 'refs\/heads\/main'/);
+  assert.match(revocationWorkflow, /if: vars\.KIRARI_R3_PUBLISHER_ENABLED == 'true' && needs\.validate-source\.outputs\.revocation_eligible == 'true'/);
+  assert.match(publisherWorkflow, /always\(\) &&\n      vars\.KIRARI_R3_PUBLISHER_ENABLED == 'true'/);
+  assert.match(revocationWorkflow, /R3_PUBLISHER_ENABLED: \$\{\{ vars\.KIRARI_R3_PUBLISHER_ENABLED \}\}/);
+  assert.match(revocationWorkflow, /workflow_dispatch:/);
+  assert.match(revocationWorkflow, /cron: '\*\/5 \* \* \* \*'/);
+  assert.match(revocationWorkflow, /issues:\n    types: \[edited, closed, reopened, deleted\]/);
+  assert.match(revocationWorkflow, /issue_comment:\n    types: \[created, edited, deleted\]/);
+  assert.match(revocationWorkflow, /group: r3-trusted-authorization/);
+  assert.match(publisherWorkflow, /group: r3-trusted-authorization/);
+  assert.match(revocationWorkflow, /needs: validate-source/);
+  assert.match(revocationWorkflow, /needs\.validate-source\.outputs\.revocation_eligible == 'true'/);
+  assert.match(revocationWorkflow, /github\.ref == 'refs\/heads\/main'/);
+  assert.match(revocationWorkflow, /ref: \$\{\{ github\.workflow_sha \}\}/);
+  assert.match(revocationWorkflow, /environment:\n      name: r3-trusted-publisher/);
+  const preflight = revocationWorkflow.indexOf('revalidation-cli.mjs preflight');
+  const environment = revocationWorkflow.indexOf('environment:\n      name: r3-trusted-publisher');
+  assert.ok(preflight > 0 && preflight < environment);
+  assert.match(revocationWorkflow, /permission-checks: write/);
+  assert.match(revocationWorkflow, /skip-token-revoke: false/);
+  assert.match(revocationWorkflow, /revalidation-cli\.mjs revoke/);
+  assert.doesNotMatch(revocationWorkflow, /pull_request_target|pull-requests: write|contents: write|statuses: write|issues: write|download-artifact|pnpm install|npm install/);
+  for (const [, name, sha] of revocationWorkflow.matchAll(/^\s+uses:\s+([^@\s]+)@([^\s]+)$/gm)) assert.equal(publisherPolicy.actionPins[name], sha);
+  assert.equal(publisherPolicy.continuingAuthorization.nativeCheckExpirySupported, false);
+  assert.equal(publisherPolicy.continuingAuthorization.requiredCheckSuccessEnabled, false);
+  assert.equal(publisherPolicy.continuingAuthorization.finalMergeAdmissionReady, false);
+  assert.equal(publisherPolicy.continuingAuthorization.activationReady, false);
+  assert.deepEqual(publisherPolicy.checkConclusions, ['failure']);
 });
 
 test('candidate acquisition is bounded to trusted allowlist and exact SHA API requests', () => {

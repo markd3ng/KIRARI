@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { runIndependentAudits } from './audit.mjs';
 import { evaluateVerification } from './evaluator.mjs';
 import { parseAndValidateLockfile } from './lockfile.mjs';
-import { buildPublisherResult } from './publisher-contract.mjs';
+import { listImmutableChangedPaths } from './immutable-trees.mjs';
+import { buildPublisherResult, canonicalJson } from './publisher-contract.mjs';
 import { digestEvidenceDirectory } from './publisher-evidence.mjs';
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
@@ -244,7 +245,7 @@ async function getDecisionComment(apiUrl, issueNumber, commentId, token) {
   };
 }
 
-async function getGitHubState(apiUrl, prNumber, expectedHeadSha, expectedBaseSha, decisionCommentId, token) {
+export async function getGitHubState(apiUrl, prNumber, expectedHeadSha, expectedBaseSha, decisionCommentId, token, policy) {
   const pr = await requestJson(new URL(`/repos/markd3ng/KIRARI/pulls/${prNumber}`, apiUrl), token);
   const candidate = {
     number: pr.number,
@@ -260,7 +261,22 @@ async function getGitHubState(apiUrl, prNumber, expectedHeadSha, expectedBaseSha
       typeof candidate.headRepo !== 'string' || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(candidate.headRepo)) {
     throw new Error('GitHub pull request metadata does not match the immutable inputs');
   }
-  const changedFiles = await listPullRequestChangedFiles(apiUrl, prNumber, pr.changed_files, token);
+  // PR file rows are mutable even when PR metadata appears unchanged (ABA).
+  // They remain corroborating evidence; authorization uses exact commit trees.
+  const pullRequestFiles = await listPullRequestChangedFiles(apiUrl, prNumber, pr.changed_files, token);
+  const immutableTrees = [];
+  const changedFiles = await listImmutableChangedPaths({
+    apiRoot: new URL('/repos/markd3ng/KIRARI', apiUrl).href,
+    headApiRoot: new URL(`/repos/${candidate.headRepo}`, apiUrl).href,
+    baseSha: expectedBaseSha,
+    headSha: expectedHeadSha,
+    candidateFiles: policy.candidateFiles,
+    request: async (url) => {
+      const value = await requestJson(new URL(url), token);
+      immutableTrees.push({ url, sha: value.sha, treeSha: value.tree?.sha ?? null, responseSha256: sha256(canonicalJson(value)) });
+      return value;
+    },
+  });
   const issue122Raw = await requestJson(new URL('/repos/markd3ng/KIRARI/issues/122', apiUrl), token);
   const issue135Raw = await requestJson(new URL('/repos/markd3ng/KIRARI/issues/135', apiUrl), token);
   const issue122 = {
@@ -269,9 +285,9 @@ async function getGitHubState(apiUrl, prNumber, expectedHeadSha, expectedBaseSha
     title: issue122Raw.title,
     bodySha256: sha256(issue122Raw.body ?? ''),
   };
-  const issue135 = { number: issue135Raw.number, state: issue135Raw.state };
+  const issue135 = { number: issue135Raw.number, state: issue135Raw.state, title: issue135Raw.title, bodySha256: sha256(issue135Raw.body ?? '') };
   const decision = await getDecisionComment(apiUrl, 135, decisionCommentId, token);
-  return { candidate, changedFiles, issue122, issue135, comments: decision.comments, decisionLookup: decision.lookup };
+  return { candidate, changedFiles, pullRequestFiles, immutableTrees, issue122, issue135, comments: decision.comments, decisionLookup: decision.lookup };
 }
 
 function writeJson(directory, name, value) {
@@ -333,6 +349,9 @@ async function main() {
       'scripts/root-audit/evaluator.mjs',
       'scripts/root-audit/lockfile.mjs',
       'scripts/root-audit/audit.mjs',
+      'scripts/root-audit/immutable-trees.mjs',
+      'scripts/root-audit/publisher-contract.mjs',
+      'scripts/root-audit/publisher-evidence.mjs',
       'scripts/root-audit/trusted-policy.json',
     ]) {
       trustedSources[file] = await readFile(path.resolve(file));
@@ -351,22 +370,26 @@ async function main() {
       verifierDigest: digestNamedFiles(trustedSources),
       policyDigest: sha256(policyRaw),
     };
-    const preflight = await getGitHubState(event.apiUrl, input.prNumber, input.expectedHeadSha, input.expectedBaseSha, input.decisionCommentId, token);
+    const preflight = await getGitHubState(event.apiUrl, input.prNumber, input.expectedHeadSha, input.expectedBaseSha, input.decisionCommentId, token, policy);
     await writeJson(evidenceDirectory, 'preflight-pr-metadata.json', preflight.candidate);
     await writeJson(evidenceDirectory, 'preflight-changed-files.json', preflight.changedFiles);
+    await writeJson(evidenceDirectory, 'preflight-immutable-trees.json', preflight.immutableTrees);
+    await writeJson(evidenceDirectory, 'preflight-pull-request-files-corroboration.json', preflight.pullRequestFiles);
     const candidateFiles = {};
     for (const file of policy.candidateFiles) {
       candidateFiles[file] = await fetchCandidateFile(event.apiUrl, preflight.candidate.headRepo, file, input.expectedHeadSha, token);
     }
     parseAndValidateLockfile(candidateFiles['pnpm-lock.yaml'], candidateFiles, policy);
     const audits = await runIndependentAudits(candidateFiles, policy, evidenceDirectory);
-    const github = await getGitHubState(event.apiUrl, input.prNumber, input.expectedHeadSha, input.expectedBaseSha, input.decisionCommentId, token);
+    const github = await getGitHubState(event.apiUrl, input.prNumber, input.expectedHeadSha, input.expectedBaseSha, input.decisionCommentId, token, policy);
     if (JSON.stringify(github.candidate) !== JSON.stringify(preflight.candidate) ||
         JSON.stringify(github.changedFiles) !== JSON.stringify(preflight.changedFiles)) {
       throw new Error('pull request metadata changed while verification was running');
     }
     await writeJson(evidenceDirectory, 'candidate-metadata.json', github.candidate);
     await writeJson(evidenceDirectory, 'changed-files.json', github.changedFiles);
+    await writeJson(evidenceDirectory, 'immutable-trees.json', github.immutableTrees);
+    await writeJson(evidenceDirectory, 'pull-request-files-corroboration.json', github.pullRequestFiles);
     await writeJson(evidenceDirectory, 'control-plane-metadata.json', {
       issue122: github.issue122,
       issue135: github.issue135,

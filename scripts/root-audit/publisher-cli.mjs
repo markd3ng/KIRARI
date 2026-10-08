@@ -1,13 +1,14 @@
 import { appendFile, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assertVerifierRunIsLatest, buildPublisherResult, canonicalJson, decisionIsCurrent, listChecksAcrossPages, listWorkflowRunsAcrossPages, publishCheck, publishFailure, publishPending, sha256, validateArtifactMetadata, validatePublisherResult, validateWorkflowMetadata, validateWorkflowRunApi, validateWorkflowRunEvent, workflowRunCreatedFilter } from './publisher-contract.mjs';
+import { assertVerifierRunIsLatest, buildPublisherResult, canonicalJson, decisionIsCurrent, evaluateContinuingEligibility, listChecksAcrossPages, listWorkflowRunsAcrossPages, publishCheck, publishFailure, publishPending, sha256, validateArtifactMetadata, validatePublisherResult, validateWorkflowMetadata, validateWorkflowRunApi, validateWorkflowRunEvent, workflowRunCreatedFilter } from './publisher-contract.mjs';
 import { digestEvidenceDirectory } from './publisher-evidence.mjs';
+import trustedPolicy from './trusted-policy.json' with { type: 'json' };
 
 const MAX_RESPONSE_BYTES = 20 * 1024 * 1024;
 const REPOSITORY = 'markd3ng/KIRARI';
 
-async function requestJson(url, token, { method = 'GET', body = undefined } = {}) {
+export async function requestJson(url, token, { method = 'GET', body = undefined } = {}) {
   const response = await fetch(url, {
     method,
     headers: {
@@ -15,10 +16,12 @@ async function requestJson(url, token, { method = 'GET', body = undefined } = {}
       Authorization: `Bearer ${token}`,
       'X-GitHub-Api-Version': '2022-11-28',
       'User-Agent': 'kirari-r3-trusted-publisher',
+      'Cache-Control': 'no-cache',
       ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     redirect: 'error',
+    cache: 'no-store',
     signal: AbortSignal.timeout(20_000),
   });
   if (!response.ok) {
@@ -57,8 +60,10 @@ async function requestOptionalJson(url, token) {
       Authorization: `Bearer ${token}`,
       'X-GitHub-Api-Version': '2022-11-28',
       'User-Agent': 'kirari-r3-trusted-publisher',
+      'Cache-Control': 'no-cache',
     },
     redirect: 'error',
+    cache: 'no-store',
     signal: AbortSignal.timeout(20_000),
   });
   if (response.status === 404) {
@@ -100,7 +105,7 @@ function positiveInteger(value, label) {
   return number;
 }
 
-function apiEndpoint(apiUrl, pathname) {
+export function apiEndpoint(apiUrl, pathname) {
   const url = new URL(pathname, apiUrl);
   if (url.origin !== 'https://api.github.com') throw new Error('GitHub API origin is invalid');
   return url;
@@ -130,7 +135,19 @@ export async function assertIssue122Current(apiUrl, repository, token, expected)
   }
 }
 
+export async function assertIssue135Current(apiUrl, repository, token, expected) {
+  if (repository !== REPOSITORY || expected?.number !== 135 || expected.state !== 'open' ||
+      expected.title !== trustedPolicy.issue135.title || expected.bodySha256 !== trustedPolicy.issue135.bodySha256) {
+    throw new Error('decision issue #135 evidence identity is invalid');
+  }
+  const issue = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/issues/135`), token);
+  if (issue.number !== 135 || issue.state !== 'open' || issue.title !== expected.title || sha256(issue.body ?? '') !== expected.bodySha256) {
+    throw new Error('decision issue #135 state, title, or body changed before publication');
+  }
+}
+
 async function validateInputs({ mode }) {
+  if (process.env.R3_PUBLISHER_ENABLED !== 'true') throw new Error('trusted App operations are disabled pending Owner-controlled setup');
   const event = await readEvent(process.env.GITHUB_EVENT_PATH);
   const apiUrl = process.env.GITHUB_API_URL;
   const repository = process.env.GITHUB_REPOSITORY;
@@ -158,6 +175,7 @@ async function validateInputs({ mode }) {
   const target = validateWorkflowRunApi(run, source);
   const mainBranch = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/branches/main`), readToken);
   if (mainBranch?.commit?.sha !== source.mainSha) throw new Error('trusted verifier run is not based on the current main SHA');
+  if (publisherSha !== source.mainSha) throw new Error('publisher workflow SHA is not the current trusted main SHA');
   const workflow = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/actions/workflows/${source.workflowId}`), readToken);
   validateWorkflowMetadata(workflow, source);
   if (target.baseSha !== source.mainSha) throw new Error('verifier run title base does not equal the trusted main SHA');
@@ -247,6 +265,7 @@ async function validateInputs({ mode }) {
   }
   assertPullRequest(pr, bundle, bundle.candidate.headRepository);
   await assertIssue122Current(apiUrl, repository, readToken, bundle.issue122);
+  await assertIssue135Current(apiUrl, repository, readToken, bundle.issue135);
 
   if (bundle.decisionIdentity.requestedCommentId !== null) {
     const comment = await getOpenDecisionComment(apiUrl, repository, bundle.decisionIdentity.requestedCommentId, readToken);
@@ -254,6 +273,9 @@ async function validateInputs({ mode }) {
   }
 
   if (mode === 'validate') {
+    if (bundle.decisionIdentity.state === 'APPROVED') {
+      await evaluateContinuingEligibility({ bundle, source, evidenceDigest: evidenceStats.digest, publisher, adapter });
+    }
     if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, 'result_valid=true\n', { mode: 0o600 });
     process.stdout.write(`Validated trusted evidence for PR #${bundle.candidate.prNumber} at ${bundle.candidate.headSha}; no App check was written.\n`);
     return;
@@ -261,7 +283,7 @@ async function validateInputs({ mode }) {
 
   if (typeof appToken !== 'string' || appToken.length < 20) throw new Error('dedicated GitHub App installation token is unavailable');
   const outcome = await publishCheck({ bundle, source, evidenceDigest: evidenceStats.digest, publisher, appId, adapter });
-  process.stdout.write(`Published trusted technical verifier check run ${outcome.checkRunId} (${outcome.outcome}); R3 consumption and merge authorization remain separate.\n`);
+  process.stdout.write(`Published trusted technical verifier check run ${outcome.checkRunId} (${outcome.outcome}); native required-check success is disabled pending separately authorized live final merge admission.\n`);
 }
 
 async function main() {
@@ -293,9 +315,10 @@ async function isLatestVerifierRun({ apiUrl, repository, readToken, source, targ
 function createCheckAdapter({ apiUrl, repository, readToken, checksToken, source, target }) {
   return {
     apiUrl,
-    async assertPullRequest(prNumber, headSha, baseSha) {
+    async assertPullRequest(prNumber, headSha, baseSha, headRepository = undefined) {
       const current = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/pulls/${prNumber}`), readToken);
-      if (current.state !== 'open' || current.merged !== false || current.head?.sha !== headSha || current.base?.sha !== baseSha || current.base?.ref !== 'main') {
+      if (current.number !== prNumber || current.state !== 'open' || current.merged !== false || current.head?.sha !== headSha || current.base?.sha !== baseSha || current.base?.ref !== 'main' ||
+          (headRepository !== undefined && current.head?.repo?.full_name !== headRepository)) {
         throw new Error('live PR HEAD or base changed before publication');
       }
       const main = await requestJson(apiEndpoint(apiUrl, `/repos/${repository}/branches/main`), readToken);
@@ -310,10 +333,14 @@ function createCheckAdapter({ apiUrl, repository, readToken, checksToken, source
     async assertIssue122(expected) {
       return assertIssue122Current(apiUrl, repository, readToken, expected);
     },
+    async assertIssue135(expected) {
+      return assertIssue135Current(apiUrl, repository, readToken, expected);
+    },
     async listChecks(headSha) {
       return listChecksAcrossPages(async (page) => {
         const url = apiEndpoint(apiUrl, `/repos/${repository}/commits/${headSha}/check-runs`);
         url.searchParams.set('check_name', 'KIRARI / R3 trusted verifier');
+        url.searchParams.set('filter', 'all');
         url.searchParams.set('per_page', '100');
         url.searchParams.set('page', String(page));
         return requestJson(url, checksToken);

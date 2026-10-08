@@ -242,7 +242,7 @@ export function createContext(overrides = {}) {
     changedFiles: overrides.changedFiles ?? [],
     audits: createAudits(),
     issue122: { number: 122, state: 'open', title: policy.issue122.title, bodySha256: policy.issue122.bodySha256 },
-    issue135: { number: 135, state: 'open' },
+    issue135: { number: 135, state: 'open', title: policy.issue135.title, bodySha256: policy.issue135.bodySha256 },
     comments: [],
     trusted,
     expectedSecurityReviewDigest: 'e'.repeat(64),

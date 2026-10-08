@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getDecisionComment, listPullRequestChangedFiles, readBoundedResponseText } from '../cli.mjs';
+import { getDecisionComment, getGitHubState, listPullRequestChangedFiles, readBoundedResponseText } from '../cli.mjs';
 import { evaluateVerification } from '../evaluator.mjs';
 import { createContext } from './fixtures.mjs';
 
@@ -141,4 +141,50 @@ test('PR rename lookup bounds affected paths independently of GitHub file-row co
   assert.equal(changedFiles.length, 6000);
   assert.equal(evaluateVerification(createContext({ changedFiles })).trustedVerification, 'PASS');
   assert.throws(() => evaluateVerification(createContext({ changedFiles: [...changedFiles, 'docs/extra.md'] })), /changed-file evidence/);
+});
+
+test('PR metadata ABA cannot substitute safe mutable rows for immutable protected-path edits', async (t) => {
+  const context = createContext();
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const sha = (digit) => digit.repeat(40);
+  const baseTreeSha = sha('8'); const headTreeSha = sha('9');
+  const inputEntries = new Map();
+  for (const file of context.policy.candidateFiles) {
+    const parts = file.split('/');
+    for (let index = 1; index < parts.length; index++) inputEntries.set(parts.slice(0, index).join('/'), { path: parts.slice(0, index).join('/'), type: 'tree', mode: '040000', sha: sha('1') });
+    inputEntries.set(file, { path: file, type: 'blob', mode: '100644', sha: sha('2') });
+  }
+  let metadataReads = 0;
+  globalThis.fetch = async (url) => {
+    const endpoint = new URL(url);
+    let response;
+    if (endpoint.pathname.endsWith('/pulls/133')) {
+      metadataReads++;
+      response = { number: 133, state: 'open', merged: false, changed_files: 1,
+        head: { sha: context.expectedHeadSha, repo: { full_name: context.candidate.headRepo } }, base: { sha: context.expectedBaseSha, ref: 'main' } };
+    } else if (endpoint.pathname.endsWith('/pulls/133/files')) {
+      response = [{ filename: 'docs/safe-file.md', raw_url: `https://github.com/markd3ng/KIRARI/raw/${sha('0')}/docs/safe-file.md` }];
+    } else if (endpoint.pathname.includes('/git/commits/')) {
+      const commitSha = endpoint.pathname.split('/').at(-1);
+      response = { sha: commitSha, tree: { sha: commitSha === context.expectedBaseSha ? baseTreeSha : headTreeSha } };
+    } else if (endpoint.pathname.includes('/git/trees/')) {
+      assert.equal(endpoint.searchParams.get('recursive'), '1');
+      const treeSha = endpoint.pathname.split('/').at(-1);
+      const entries = [...inputEntries.values()].map((entry) => entry.path === 'scripts/root-audit/cli.mjs' && treeSha === headTreeSha ? { ...entry, sha: sha('3') } : entry);
+      response = { sha: treeSha, truncated: false, tree: entries };
+    } else {
+      response = { number: endpoint.pathname.endsWith('/issues/122') ? 122 : 135, state: 'open', title: 'issue snapshot', body: 'issue snapshot' };
+    }
+    return new Response(JSON.stringify(response));
+  };
+  const args = ['https://api.github.com', 133, context.expectedHeadSha, context.expectedBaseSha, null, 'test-read-token', context.policy];
+  const first = await getGitHubState(...args);
+  const second = await getGitHubState(...args);
+  assert.equal(metadataReads, 2);
+  assert.deepEqual(first.candidate, second.candidate, 'both mutable PR snapshots show A');
+  assert.deepEqual(first.pullRequestFiles, ['docs/safe-file.md'], 'mutable file rows show B');
+  assert.deepEqual(first.changedFiles, ['scripts/root-audit/cli.mjs'], 'authorization gate derives immutable A');
+  assert.equal(first.immutableTrees.length, 4);
+  assert.throws(() => evaluateVerification({ ...context, changedFiles: first.changedFiles }), /protected trusted-root paths/);
 });
