@@ -147,7 +147,7 @@ export async function runIndependentAudits(candidateFiles, policy, evidenceDirec
     if (!version.executed || version.exitCode !== 0 || evidence.pnpmVersion !== policy.pnpmVersion) {
       throw new Error(`trusted pnpm version mismatch: expected ${policy.pnpmVersion}, received ${evidence.pnpmVersion || 'unavailable'}`);
     }
-    const result = await runAsAuditUser('pnpm', ['--filter', '@kirari/site', 'audit', '--json', '--audit-level=moderate'], { cwd: workspace, env });
+    const result = await runAsAuditUser('pnpm', ['audit', '--json', '--audit-level=moderate'], { cwd: workspace, env });
     evidence.supplemental = {
       executed: result.executed,
       exitCode: result.exitCode,

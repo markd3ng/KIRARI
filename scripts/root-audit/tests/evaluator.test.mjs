@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { evaluateVerification } from '../evaluator.mjs';
+import { deriveNormalAudit, evaluateVerification } from '../evaluator.mjs';
 import { prepareAuditWorkspace, restrictedEnvironment } from '../audit.mjs';
 import { createAudits, createContext, createFixture, ownerApproval, approvalSecurityDigest, policy } from './fixtures.mjs';
 
@@ -26,7 +26,7 @@ function addAdvisory(context, severity) {
       severity,
     };
     report.advisories['1003'] = extra[label];
-    report.metadata.vulnerabilities[severity] += 1;
+    report.metadata.vulnerabilities[severity] += extra[label].findings.length;
     context.audits[label].raw = JSON.stringify(report);
   }
 }
@@ -107,6 +107,83 @@ test('unignored audit severity totals must reconcile with advisory rows', () => 
     context.audits[label].raw = JSON.stringify(report);
   }
   evalError(context, /vulnerability counts do not match its advisory set/);
+});
+
+test('pnpm 9 findings may omit optional flags and count each affected version', () => {
+  const context = createContext();
+  const raw = JSON.parse(context.audits.supplemental.raw);
+  for (const advisory of Object.values(raw.advisories)) {
+    for (const finding of advisory.findings) {
+      delete finding.dev;
+      delete finding.optional;
+      delete finding.bundled;
+    }
+  }
+  assert.equal(raw.metadata.vulnerabilities.moderate, 2);
+  context.audits.supplemental.raw = JSON.stringify(raw);
+  context.audits.normal.raw = deriveNormalAudit(context.audits.supplemental.raw, policy);
+  assert.equal(evaluateVerification(context).trustedVerification, 'PASS');
+  raw.metadata.vulnerabilities.moderate = 1;
+  context.audits.supplemental.raw = JSON.stringify(raw);
+  context.audits.normal.raw = deriveNormalAudit(context.audits.supplemental.raw, policy);
+  evalError(context, /vulnerability counts do not match its advisory set/);
+});
+
+test('pnpm 9 optional finding flags remain typed when present', () => {
+  for (const key of ['dev', 'optional', 'bundled']) {
+    const context = createContext();
+    const raw = JSON.parse(context.audits.supplemental.raw);
+    Object.values(raw.advisories)[0].findings[0][key] = 'false';
+    context.audits.supplemental.raw = JSON.stringify(raw);
+    context.audits.normal.raw = deriveNormalAudit(context.audits.supplemental.raw, policy);
+    evalError(context, /schema drift in finding/);
+  }
+});
+
+test('uninstalled pnpm audit paths rely on the independently exact lock topology', () => {
+  const context = createContext();
+  const raw = JSON.parse(context.audits.supplemental.raw);
+  for (const advisory of Object.values(raw.advisories)) {
+    for (const finding of advisory.findings) finding.paths = [];
+  }
+  context.audits.supplemental.raw = JSON.stringify(raw);
+  context.audits.normal.raw = deriveNormalAudit(context.audits.supplemental.raw, policy);
+  assert.equal(evaluateVerification(context).trustedVerification, 'PASS');
+  context.candidateFiles['pnpm-lock.yaml'] = context.candidateFiles['pnpm-lock.yaml'].replaceAll('6.0.10', '6.0.11');
+  evalError(context, /R3 dependency topology differs/);
+});
+
+test('empty audit paths still reject missing, duplicate, extra, or changed R3 versions', () => {
+  for (const mutate of [
+    (rows) => rows.pop(),
+    (rows) => rows.push(structuredClone(rows[0])),
+    (rows) => rows.push({ version: '6.0.11', paths: [] }),
+    (rows) => { rows[0].version = '6.0.11'; },
+  ]) {
+    const context = createContext();
+    const raw = JSON.parse(context.audits.supplemental.raw);
+    for (const advisory of Object.values(raw.advisories)) for (const finding of advisory.findings) finding.paths = [];
+    mutate(raw.advisories['1001'].findings);
+    raw.metadata.vulnerabilities.moderate = raw.advisories['1001'].findings.length;
+    context.audits.supplemental.raw = JSON.stringify(raw);
+    context.audits.normal.raw = deriveNormalAudit(context.audits.supplemental.raw, policy);
+    evalError(context, /R3 advisory paths or versions mismatch/);
+  }
+});
+
+test('partially enriched R3 paths and empty-path #122 version drift fail closed', () => {
+  const partial = createContext();
+  const raw = JSON.parse(partial.audits.supplemental.raw);
+  raw.advisories['1001'].findings[0].paths = [];
+  partial.audits.supplemental.raw = JSON.stringify(raw);
+  partial.audits.normal.raw = deriveNormalAudit(partial.audits.supplemental.raw, policy);
+  evalError(partial, /R3 advisory paths or versions mismatch/);
+  const changed = createContext();
+  const changedRaw = JSON.parse(changed.audits.supplemental.raw);
+  changedRaw.advisories['1002'].findings[0] = { version: '4.2.1', paths: [] };
+  changed.audits.supplemental.raw = JSON.stringify(changedRaw);
+  changed.audits.normal.raw = deriveNormalAudit(changed.audits.supplemental.raw, policy);
+  evalError(changed, /#122 advisory paths or versions mismatch/);
 });
 
 test('audit subprocess environment excludes GitHub and package registry credentials', () => {

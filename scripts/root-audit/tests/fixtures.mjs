@@ -199,7 +199,7 @@ export function createAudits() {
     actions: [],
     muted: [],
     metadata: {
-      vulnerabilities: { info: 0, low: 0, moderate: 1, high: 1, critical: 0 },
+      vulnerabilities: { info: 0, low: 0, moderate: r3.findings.length, high: issue122.findings.length, critical: 0 },
       dependencies: 100,
       devDependencies: 100,
       optionalDependencies: 0,

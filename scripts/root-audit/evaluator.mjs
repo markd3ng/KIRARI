@@ -74,7 +74,7 @@ function parseAudit(raw, label, execution) {
     }
     for (const finding of advisory.findings) {
       if (!finding || typeof finding.version !== 'string' || !Array.isArray(finding.paths) ||
-          typeof finding.dev !== 'boolean' || typeof finding.optional !== 'boolean' || typeof finding.bundled !== 'boolean') {
+          ['dev', 'optional', 'bundled'].some((key) => Object.hasOwn(finding, key) && typeof finding[key] !== 'boolean')) {
         fail(`${label} audit schema drift in finding ${id}`);
       }
       for (const findingPath of finding.paths) normalizeAuditPath(findingPath);
@@ -85,7 +85,9 @@ function parseAudit(raw, label, execution) {
 
 function assertRawVulnerabilityCountsMatchAdvisories(report) {
   const actual = Object.fromEntries(['info', 'low', 'moderate', 'high', 'critical'].map((severity) => [severity, 0]));
-  for (const advisory of Object.values(report.advisories)) actual[advisory.severity] += 1;
+  // pnpm 9 preserves the registry's count of affected package versions,
+  // represented by finding rows, rather than counting advisory IDs.
+  for (const advisory of Object.values(report.advisories)) actual[advisory.severity] += advisory.findings.length;
   const reported = report.metadata.vulnerabilities;
   if (Object.keys(actual).some((severity) => actual[severity] !== reported[severity])) {
     fail('unignored audit vulnerability counts do not match its advisory set');
@@ -124,13 +126,16 @@ function collectFindings(report, advisoryId) {
 function assertExactFindings(advisory, expected, policy, label) {
   if (!advisory || advisory.module_name !== policy.package || advisory.github_advisory_id !== policy.ghsa ||
       advisory.severity !== policy.severity) fail(`${label} advisory identity mismatch`);
+  // pnpm's path enrichment reads installed modules. The deliberately uninstalled
+  // audit workspace has empty paths; its exact routes are independently checked
+  // by parseAndValidateLockfile before this gate. Never accept version drift.
+  const versions = advisory.findings.map((finding) => finding.version).sort();
+  const expectedVersions = [...new Set(expected.map((finding) => finding.version))].sort();
+  if (JSON.stringify(versions) !== JSON.stringify(expectedVersions)) fail(`${label} advisory paths or versions mismatch`);
+  if (advisory.findings.every((finding) => finding.paths.length === 0)) return;
   const actual = advisory.findings.flatMap((finding) => finding.paths.map((path) => `${normalizeAuditPath(path)}\0${finding.version}`)).sort();
   const wanted = expected.map((finding) => `${finding.pathNames}\0${finding.version}`).sort();
   if (JSON.stringify(actual) !== JSON.stringify(wanted)) fail(`${label} advisory paths or versions mismatch`);
-}
-
-function auditFindingList(report, advisory) {
-  return advisory.findings.flatMap((finding) => finding.paths.map((path) => ({ path: normalizeAuditPath(path), version: finding.version })));
 }
 
 function checkUnexpectedAdvisories(report, allowed, label) {
@@ -264,19 +269,17 @@ export function evaluateVerification(input) {
   assertExactFindings(supplementalR3, expectedR3, r3Policy, 'supplemental R3');
   if (collectFindings(normal, policy.issue122.ghsa)) fail('#122 is present in the normal audit despite its independent exception');
   const issue122Advisory = collectFindings(supplemental, policy.issue122.ghsa);
-  const issue122Finding = issue122Advisory && auditFindingList(supplemental, issue122Advisory);
   const expectedIssue122Findings = topology.issue122Paths.map((findingPath) => ({
-    path: packageNames(findingPath),
+    pathNames: packageNames(findingPath),
     version: findingPath.split(' > ').at(-1).slice(policy.issue122.package.length + 1),
-  })).sort((a, b) => `${a.path}\0${a.version}`.localeCompare(`${b.path}\0${b.version}`));
-  const normalizedIssue122Findings = [...(issue122Finding ?? [])].sort((a, b) => `${a.path}\0${a.version}`.localeCompare(`${b.path}\0${b.version}`));
+  }));
   if (!issue122Advisory || issue122Advisory.module_name !== policy.issue122.package ||
       issue122Advisory.severity !== policy.issue122.severity ||
       issue122Advisory.cves.length !== 1 || issue122Advisory.cves[0] !== policy.issue122.cve ||
-      JSON.stringify(normalizedIssue122Findings) !== JSON.stringify(expectedIssue122Findings) ||
       expectedIssue122Findings.some((finding) => finding.version !== policy.issue122.version)) {
     fail('supplemental #122 advisory identity, severity, version, or path mismatch');
   }
+  assertExactFindings(issue122Advisory, expectedIssue122Findings, policy.issue122, 'supplemental #122');
   checkUnexpectedAdvisories(normal, new Set([policy.r3.ghsa]), 'normal audit');
   checkUnexpectedAdvisories(supplemental, new Set([policy.r3.ghsa, policy.issue122.ghsa]), 'supplemental audit');
   if (audits.normal.exitCode !== 1 || audits.supplemental.exitCode !== 1) fail('audit command exit status did not reflect reported vulnerabilities');
