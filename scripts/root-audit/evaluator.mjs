@@ -233,7 +233,9 @@ export function evaluateVerification(input) {
       issue122.title !== policy.issue122.title || issue122.bodySha256 !== policy.issue122.bodySha256) {
     fail('issue #122 state, title, or body digest drift');
   }
-  if (!issue135 || issue135.number !== policy.decisionIssue || issue135.state !== 'open') fail('decision issue metadata is unavailable or closed');
+  if (!issue135 || issue135.number !== policy.decisionIssue || issue135.state !== 'open' ||
+      issue135.number !== policy.issue135.number || issue135.state !== policy.issue135.expectedState ||
+      issue135.title !== policy.issue135.title || issue135.bodySha256 !== policy.issue135.bodySha256) fail('decision issue metadata is unavailable, closed, or differs from the pinned #135 contract');
   if (!trusted || trusted.eventName !== 'workflow_dispatch' || trusted.repository !== policy.repository ||
       trusted.ref !== 'refs/heads/main' || trusted.workflowRef !== `${policy.repository}/.github/workflows/r3-trusted-verifier.yml@refs/heads/main` ||
       trusted.workflowSha !== trusted.sha || trusted.sha !== expectedBaseSha || !SHA.test(trusted.sha) || !/^\d+$/.test(trusted.runId ?? '') ||
@@ -308,6 +310,7 @@ export function evaluateVerification(input) {
   return {
     schema: 'kirari.r3-trusted-verification/v1',
     trustedVerification: 'PASS',
+    checkedAt: new Date(now).toISOString(),
     candidate: {
       number: candidate.number,
       state: candidate.state,
@@ -327,6 +330,7 @@ export function evaluateVerification(input) {
       supplemental: { executed: true, exitCode: audits.supplemental.exitCode, rawSha256: sha256(audits.supplemental.raw), stderrSha256: sha256(audits.supplemental.stderr), advisoryIds: Object.values(supplemental.advisories).map((item) => item.github_advisory_id).sort() },
     },
     issue122: { number: issue122.number, state: issue122.state, title: issue122.title, bodySha256: issue122.bodySha256, separateFromR3: true },
+    issue135: { number: issue135.number, state: issue135.state, title: issue135.title, bodySha256: issue135.bodySha256 },
     trustedRun: {
       eventName: trusted.eventName,
       repository: trusted.repository,

@@ -2,24 +2,45 @@
   "schema": "kirari.r3-publisher-environment-setup/v1",
   "name": "r3-trusted-publisher",
   "applyReady": false,
+  "isolatedSetupReady": false,
+  "setupAuthorization": "PENDING_SEPARATE_OWNER_SETUP",
+  "repositoryOptIn": {
+    "name": "KIRARI_R3_PUBLISHER_ENABLED",
+    "scope": "repository-variable-not-secret",
+    "defaultValue": "false",
+    "enableReady": false,
+    "purpose": "Both uncredentialed source and credentialed jobs require explicit true before any Environment job can start; post-merge schedules must not auto-create an Environment.",
+    "enablePrerequisites": "separately approved trusted-base establishment and App/credential/test setup; activation remains separately blocked"
+  },
   "branchPolicy": {
     "type": "selected_branches",
     "allowedBranches": ["main"],
+    "allowedTags": [],
     "protectedBranchesOnly": false,
     "pullRequestRefsAllowed": false,
+    "administratorBypass": false
+  },
+  "protectionRules": {
+    "requiredReviewers": [],
+    "requiredApprovals": 0,
+    "waitTimerMinutes": 0,
+    "customProtectionRules": [],
     "administratorBypass": false
   },
   "secrets": [
     {
       "name": "KIRARI_R3_PUBLISHER_PRIVATE_KEY",
       "value": "NOT_CREATED",
-      "consumers": ["publisher App-token mint step only"]
+      "consumers": ["reviewed publisher and revocation App-token mint steps only"]
     }
   ],
   "secretSetupPrerequisites": [
+    "the exact implementation is separately authorized and established on a trusted base; PR136 authorization cannot authorize a new implementation merge",
+    "the Owner has separately approved App/installation/key/Environment setup and the exact isolated test target",
     "the dedicated App installation and benign App check provenance have been read back",
     "the exact ruleset has been separately authorized, applied, and authenticated-read back",
-    "main is protected by the App-bound required check and trusted-root path gate"
+    "main is protected by the App-bound required check and trusted-root path gate",
+    "final merge admission and required-check success are independently reviewed and live verified; revocation schedules alone are insufficient"
   ],
   "variables": [
     { "name": "KIRARI_R3_PUBLISHER_APP_ID", "value": "PENDING_OWNER_SETUP" }
@@ -39,7 +60,27 @@
       "upstream head branch is main",
       "upstream head repository ID equals this repository ID",
       "upstream workflow path is .github/workflows/r3-trusted-verifier.yml"
-    ]
+    ],
+    "branchPolicyAloneIsCredentialIsolation": false,
+    "reason": "workflow_run uses the default-branch GITHUB_REF even when triggered by an untrusted upstream run; authenticated source preflight must reject that run before the Environment job"
+  },
+  "custody": {
+    "privateKeyMayEnterCandidateJob": false,
+    "privateKeyMayEnterRepositoryOrOrganizationSecret": false,
+    "preActivationKeyPlacement": "Owner-controlled secure local custody only; no persistent key in repository Actions",
+    "candidateDenialLiveVerified": false,
+    "warning": "A workflow referencing an absent Environment can create an unprotected empty Environment; never dispatch credentialed setup implicitly"
+  },
+  "revocationJob": {
+    "path": ".github/workflows/r3-authorization-revalidation.yml",
+    "job": "revoke",
+    "preflightBeforeEnvironment": true,
+    "source": "authenticated current main workflow definition SHA and repository identity",
+    "triggers": ["workflow_dispatch", "schedule", "issues", "issue_comment"],
+    "githubTokenPermissions": { "contents": "read", "pull-requests": "read" },
+    "appTokenPermissions": { "checks": "write" },
+    "mayRenewSuccess": false,
+    "continuingAuthorizationGuarantee": false
   },
   "liveEnvironmentCreated": false,
   "liveSecretCreated": false

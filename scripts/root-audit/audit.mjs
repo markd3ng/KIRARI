@@ -127,7 +127,9 @@ export async function prepareAuditWorkspace(workspace, candidateFiles, policy) {
 }
 
 export async function runIndependentAudits(candidateFiles, policy, evidenceDirectory) {
-  const tempRoot = await mkdtemp(path.join(process.env.RUNNER_TEMP ?? os.tmpdir(), 'kirari-r3-audit-'));
+  // RUNNER_TEMP may live below a runner-owned, non-traversable directory.
+  // The nobody boundary needs the shared OS temporary directory instead.
+  const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'kirari-r3-audit-'));
   const env = restrictedEnvironment();
   env.HOME = path.join(tempRoot, 'home');
   env.TMPDIR = path.join(tempRoot, 'tmp');
@@ -145,7 +147,7 @@ export async function runIndependentAudits(candidateFiles, policy, evidenceDirec
     const version = await runAsAuditUser('pnpm', ['--version'], { cwd: tempRoot, env });
     evidence.pnpmVersion = version.stdout.trim();
     if (!version.executed || version.exitCode !== 0 || evidence.pnpmVersion !== policy.pnpmVersion) {
-      throw new Error(`trusted pnpm version mismatch: expected ${policy.pnpmVersion}, received ${evidence.pnpmVersion || 'unavailable'}`);
+      throw new Error(`trusted pnpm version mismatch: expected ${policy.pnpmVersion}, received ${evidence.pnpmVersion || 'unavailable'}; isolated stderr: ${version.stderr.slice(0, 2048)}`);
     }
     const result = await runAsAuditUser('pnpm', ['audit', '--json', '--audit-level=moderate'], { cwd: workspace, env });
     evidence.supplemental = {

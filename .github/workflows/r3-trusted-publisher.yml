@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 concurrency:
-  group: r3-trusted-publisher-${{ github.event.workflow_run.display_title }}
+  group: r3-trusted-authorization
   cancel-in-progress: false
 
 permissions: {}
@@ -17,6 +17,7 @@ jobs:
     # This unprivileged job verifies the authenticated run ID/attempt and its
     # workflow ID -> exact path mapping before the credential-bearing job exists.
     if: >
+      vars.KIRARI_R3_PUBLISHER_ENABLED == 'true' &&
       github.event_name == 'workflow_run' &&
       github.ref == 'refs/heads/main' &&
       github.event.workflow_run.event == 'workflow_dispatch' &&
@@ -35,6 +36,7 @@ jobs:
     outputs:
       publisher_eligible: ${{ steps.preflight.outputs.publisher_eligible }}
     env:
+      R3_PUBLISHER_ENABLED: ${{ vars.KIRARI_R3_PUBLISHER_ENABLED }}
       R3_UPSTREAM_RUN_ID: ${{ github.event.workflow_run.id }}
       R3_UPSTREAM_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
 
@@ -84,6 +86,7 @@ jobs:
     # The source API validation above must pass before this Environment-bearing job can start.
     if: >
       always() &&
+      vars.KIRARI_R3_PUBLISHER_ENABLED == 'true' &&
       needs.validate-source.outputs.publisher_eligible == 'true' &&
       github.event_name == 'workflow_run' &&
       github.ref == 'refs/heads/main' &&
@@ -101,6 +104,7 @@ jobs:
       issues: read
       pull-requests: read
     env:
+      R3_PUBLISHER_ENABLED: ${{ vars.KIRARI_R3_PUBLISHER_ENABLED }}
       R3_UPSTREAM_RUN_ID: ${{ github.event.workflow_run.id }}
       R3_UPSTREAM_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
 
@@ -166,7 +170,7 @@ jobs:
           R3_EVIDENCE_DIR: ${{ runner.temp }}/r3-trusted-evidence
         run: node scripts/root-audit/publisher-cli.mjs publish-pending
 
-      - name: Publish the successful exact-head trusted App check
+      - name: Publish validated eligibility with required merge admission blocked
         id: app-check
         continue-on-error: true
         if: github.event.workflow_run.status == 'completed' && github.event.workflow_run.conclusion == 'success' && steps.verify-evidence.outcome == 'success' && steps.preflight.outputs.publisher_eligible == 'true'

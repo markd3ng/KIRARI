@@ -1,66 +1,30 @@
 # Root Audit Changed-Path Contract
 
-## 1. Scope / Trigger
+## Scope
 
-Apply when changing the trusted verifier's PR file acquisition or protected-path
-gate in `scripts/root-audit/`. The implementation remains a bootstrap prototype;
-this contract does not establish live App provenance or branch protection.
+Apply to trusted candidate acquisition and protected-path verification. This contract establishes source validation, not live App provenance or continuing merge authorization.
 
-## 2. Signatures
+## Signatures
 
 ```js
+listImmutableChangedPaths({ request, apiRoot, headApiRoot, baseSha, headSha, candidateFiles })
+changedPathsFromImmutableTrees(baseTree, headTree, { baseTreeSha, headTreeSha, candidateFiles })
 listPullRequestChangedFiles(apiUrl, prNumber, expectedCount, token)
-// Promise<string[]>: sorted, unique affected paths, including rename origins
 evaluateVerification({ changedFiles, policy, ...context })
 ```
 
-The reader uses `GET /repos/markd3ng/KIRARI/pulls/{prNumber}/files` with
-`per_page=100` and explicit `page`. It reconciles API **rows** against the live
-PR's integer `changed_files` value; the maximum is 3,000 rows.
+## Authoritative immutable acquisition
 
-## 3. Contracts
+Exact Git commit responses must match base/head SHA and bind exact recursive tree SHA. Fork head acquisition uses the authenticated head repository and the same API origin. Trees require `truncated: false`, at most 100,000 entries, unique clean relative paths, valid SHA/mode/type, and ordinary ancestor directories. Malformed data or API failure rejects acquisition.
 
-- `filename`: nonempty string without NUL; unique among API rows.
-- `status: "renamed"`: requires a nonempty, NUL-free `previous_filename`
-  different from `filename`. Any supplied `previous_filename` is validated
-  and retained, even when `status` is absent.
-- Each row contributes its current path and any original path to a set.
-  At most 6,000 affected paths can result from 3,000 file rows.
-- The evaluator rejects any affected path matching the trusted base's
-  `trustedRootPaths`: `.github/workflows/`, `scripts/root-audit/`, and exact `.npmrc`/`.pnpmfile.cjs` files at the repository root and every fixed workspace root. Candidate registry/config/hook changes require separate trust-root review, and rename origins are protected too.
-- The API reader runs with read-only credentials. Candidate paths are data;
-  the path list never authorizes executing candidate bytes or changing policy.
+Compare every base/head entry identity, type, and mode. Deleted paths remain; directory replacements retain trailing slash for protected-prefix matching. More than 6,000 affected paths rejects acquisition. Candidate workspace roots/immediate children cannot be symlinks/gitlinks, fixed inputs must be ordinary blobs, and the complete immediate apps/workers/packages package.json inventory must equal the trusted fixed manifest set. An unchanged extra importer also rejects acquisition.
 
-## 4. Validation & Error Matrix
+The evaluator uses this immutable set for the protected gate. It rejects workflows, root-audit source, pnpm-workspace.yaml, and root/fixed-importer .npmrc/.pnpmfile.cjs changes. Candidate scripts and policy are data and cannot change these protections.
 
-| Input/state | Result |
-|---|---|
-| Invalid count, more than 3,000 rows, duplicate filename, inconsistent/incomplete pages | Reject acquisition |
-| Renamed row missing a valid distinct original path | Reject acquisition |
-| A protected current **or original** path | Reject technical verification |
-| Duplicate/malformed affected paths or more than 6,000 paths | Reject evaluation |
-| Complete rows affecting only unprotected paths | Continue other verification gates |
+## Corroborating mutable PR rows
 
-## 5. Good / Base / Bad Cases
+The Pull requests reader still reconciles rows against live integer `changed_files`, paginates to 3,000 rows, checks unique filenames, and retains valid distinct `previous_filename` origins. At most 6,000 affected paths result. Incomplete/unstable/duplicate/malformed rows reject acquisition. Rows never replace immutable evidence: metadata A, mutable file rows B, metadata A cannot hide an exact-head protected change.
 
-- Good: `docs/a.md` → `docs/b.md` contributes two paths and continues validation.
-- Base: an ordinary modification contributes its one current path.
-- Bad: `.github/workflows/r3-trusted-publisher.yml` → `docs/old.yml`
-  still touches the protected original path and must fail.
+## Required tests
 
-## 6. Tests Required
-
-`scripts/root-audit/tests/cli-http.test.mjs` exercises acquisition through the
-evaluator. Assert rename-out rejection for both protected roots, rename-in
-rejection, allowed unprotected renames, missing/malformed origins, 3,000 rows
-producing 6,000 paths, and rejection above the affected-path bound. Preserve
-pagination/count/duplicate tests. Run `node --test scripts/root-audit/tests/*.test.mjs`.
-
-## 7. Wrong vs Correct
-
-Wrong: gate only `rows.map(row => row.filename)`; a renamed workflow's
-protected original path disappears from the gate.
-
-Correct: count API rows independently, collect both `filename` and valid
-`previous_filename`, deduplicate the affected paths, and check every path
-against policy from the trusted base.
+Run `node --test scripts/root-audit/tests/*.test.mjs`. Tests cover rename in/out, deleted/mode/directory changes, separate fork origin, commit/tree binding, truncation/traversal/duplicate/ancestor corruption, oversized sets, immediate workspace symlink/gitlink, symbolic fixed input, unchanged extra manifest, API failure, mutable pagination/count/rename origins, and CLI A/B/A integration rejection.

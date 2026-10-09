@@ -2,14 +2,16 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { evaluateVerification } from '../evaluator.mjs';
-import { assertIssue122Current, assertPullRequest, getOpenDecisionComment } from '../publisher-cli.mjs';
+import { assertIssue122Current, assertIssue135Current, assertPullRequest, getOpenDecisionComment } from '../publisher-cli.mjs';
 import {
   assertAllowedConclusion,
+  assertEvidenceFresh,
   assertVerifierRunIsLatest,
   buildExternalId,
   buildPublisherResult,
   checkPayload,
   decisionIsCurrent,
+  evaluateContinuingEligibility,
   findIdempotentCheck,
   listChecksAcrossPages,
   listWorkflowRunsAcrossPages,
@@ -24,6 +26,8 @@ import {
   validateWorkflowRunApi,
   validateWorkflowRunEvent,
   workflowRunCreatedFilter,
+  MAX_EVIDENCE_AGE_MS,
+  NATIVE_REQUIRED_CHECK_SUCCESS_ENABLED,
   VERIFIER_WORKFLOW_PATH,
 } from '../publisher-contract.mjs';
 import { createContext, ownerApproval } from './fixtures.mjs';
@@ -39,6 +43,7 @@ function makeCase({ decision = true, securityReviewDigest = REVIEW_DIGEST } = {}
   const commentId = 6019999999;
   const context = createContext({
     expectedSecurityReviewDigest: decision ? 'd'.repeat(64) : securityReviewDigest,
+    now: Date.parse('2026-10-06T12:00:00.000Z'),
     ...(decision ? { expectedDecisionCommentId: commentId } : {}),
   });
   if (decision) context.comments = [ownerApproval(context)];
@@ -85,6 +90,9 @@ function makeAdapter({ bundle, appId = 7654321, headSha = bundle.candidate.headS
     },
     async assertIssue122(expected) {
       assert.deepEqual(expected, bundle.issue122);
+    },
+    async assertIssue135(expected) {
+      assert.deepEqual(expected, bundle.issue135);
     },
     async getDecisionComment(id) {
       assert.equal(id, bundle.decisionIdentity.requestedCommentId);
@@ -140,11 +148,11 @@ function workflowEvent(overrides = {}) {
   };
 }
 
-test('A: complete bound evidence publishes only a dedicated App success on the exact current head', async () => {
+test('A: complete bound evidence validates eligibility but cannot publish reusable required-check success', async () => {
   const { bundle, source } = makeCase();
   const { adapter, created, updates } = makeAdapter({ bundle });
-  const outcome = await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
-  assert.equal(outcome.outcome, 'published-success');
+  const outcome = await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
+  assert.equal(outcome.outcome, 'validated-but-blocked');
   assert.equal(created.length, 1);
   assert.equal(created[0].head_sha, bundle.candidate.headSha);
   assert.equal(created[0].name, 'KIRARI / R3 trusted verifier');
@@ -155,9 +163,9 @@ test('A: complete bound evidence publishes only a dedicated App success on the e
   assert.match(created[0].output.summary, /Decision comment requested ID: 6019999999/);
   assert.match(created[0].output.summary, /lookup: FOUND/);
   assert.match(created[0].output.summary, /Decision expires: 2026-10-07/);
-  assert.match(created[0].output.summary, /Decision revalidation: REVALIDATED_BEFORE_SUCCESS/);
+  assert.match(created[0].output.summary, /Decision revalidation: REVALIDATED_BEFORE_COMPLETION/);
   assert.match(created[0].output.summary, /technical check is not R3 consumption or merge authorization/);
-  assert.equal(updates.at(-1).patch.conclusion, 'success');
+  assert.equal(updates.at(-1).patch.conclusion, 'failure');
 });
 
 test('workflow_run webhook shape and REST path suffix bind through workflow ID to the bare trusted path', () => {
@@ -311,7 +319,7 @@ test('verifier start invalidates same-head success and publishes an in-progress 
   const outcome = await publishPending({
     target: { prNumber: bundle.candidate.prNumber, headSha: bundle.candidate.headSha, baseSha: bundle.candidate.baseSha },
     source: pendingSource,
-    publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) },
+    publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) },
     appId: 7654321,
     adapter,
   });
@@ -321,7 +329,7 @@ test('verifier start invalidates same-head success and publishes an in-progress 
   assert.match(created[0].output.summary, /Verification has started/);
 });
 
-test('successful completion promotes the exact pending check for its run attempt', async () => {
+test('approved completion records blocked eligibility on its exact pending check', async () => {
   const { bundle, source } = makeCase();
   const pending = {
     id: 779,
@@ -342,11 +350,11 @@ test('successful completion promotes the exact pending check for its run attempt
       return current;
     },
   });
-  const outcome = await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
-  assert.equal(outcome.outcome, 'published-success');
+  const outcome = await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
+  assert.equal(outcome.outcome, 'validated-but-blocked');
   assert.equal(created.length, 0);
   assert.equal(updates[0].patch.external_id, outcome.externalId);
-  assert.equal(updates.at(-1).patch.conclusion, 'success');
+  assert.equal(updates.at(-1).patch.conclusion, 'failure');
 });
 
 test('failed authenticated verifier run invalidates earlier same-head App success', async () => {
@@ -377,7 +385,7 @@ test('failed authenticated verifier run invalidates earlier same-head App succes
   const outcome = await publishFailure({
     target: { prNumber: bundle.candidate.prNumber, headSha: bundle.candidate.headSha, baseSha: bundle.candidate.baseSha },
     source,
-    publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) },
+    publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) },
     appId: 7654321,
     adapter,
   });
@@ -404,7 +412,7 @@ test('authenticated failed attempt downgrades an inconsistent same-attempt App s
   const outcome = await publishFailure({
     target: { prNumber: bundle.candidate.prNumber, headSha: bundle.candidate.headSha, baseSha: bundle.candidate.baseSha },
     source: { repository: REPOSITORY, repositoryId: REPOSITORY_ID, action: 'completed', status: 'completed', runId: 123456789, runAttempt: 1, mainSha: bundle.candidate.baseSha, workflowPath: VERIFIER_WORKFLOW_PATH, conclusion: 'failure' },
-    publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) },
+    publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) },
     appId: 7654321,
     adapter,
   });
@@ -429,7 +437,7 @@ test('missing, expired, duplicate, or wrong-run artifact cannot enter publicatio
 test('B: stale candidate HEAD and M: prior-head success cannot satisfy the live candidate', async () => {
   const { bundle, source } = makeCase();
   const { adapter, created } = makeAdapter({ bundle, headSha: '1'.repeat(40) });
-  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /HEAD, base, or current main changed/);
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /HEAD, base, or current main changed/);
   assert.equal(created.length, 0);
 });
 
@@ -450,14 +458,14 @@ test('publisher revalidates current PR identity, state, source, HEAD, and base',
 test('C: stale candidate base cannot produce a successful check', async () => {
   const { bundle, source } = makeCase();
   const { adapter, created } = makeAdapter({ bundle, baseSha: '1'.repeat(40) });
-  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /HEAD, base, or current main changed/);
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /HEAD, base, or current main changed/);
   assert.equal(created.length, 0);
 });
 
 test('publisher rejects a verifier/base binding that is stale relative to current main', async () => {
   const { bundle, source } = makeCase();
   const staleMain = makeAdapter({ bundle, mainSha: '1'.repeat(40) });
-  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter: staleMain.adapter }), /current main changed/);
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter: staleMain.adapter }), /current main changed/);
   const altered = structuredClone(bundle);
   altered.verifier.mainSha = '1'.repeat(40);
   assert.throws(() => validatePublisherResult(altered, source, EVIDENCE_DIGEST), /exact PR base/);
@@ -492,14 +500,14 @@ test('D/E: candidate workflow and evaluator edits remain data-only in the truste
 
 test('F/G: same-name Actions and user status spoofing are not trusted App check evidence', async () => {
   const { bundle, source } = makeCase();
-  const payload = checkPayload(bundle, 'fixed-external-id', { sha: 'a'.repeat(40) });
+  const payload = checkPayload(bundle, 'fixed-external-id', { sha: bundle.candidate.baseSha });
   const actionCheck = { id: 44, name: payload.name, head_sha: payload.head_sha, external_id: payload.external_id, status: 'completed', conclusion: 'success', app: { id: 15368 }, output: payload.output, details_url: payload.details_url };
   assert.throws(() => findIdempotentCheck([actionCheck], payload, 7654321), /different status source/);
   assert.equal(findIdempotentCheck([{ ...actionCheck, external_id: 'actions-spoof' }], payload, 7654321), null);
   const userStatuses = [{ context: payload.name, state: 'success', creator: { login: 'attacker' } }];
   const { adapter, created } = makeAdapter({ bundle, listChecks: () => [] });
   assert.equal(userStatuses[0].state, 'success');
-  await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
+  await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
   assert.equal(created.length, 1, 'status-context spoof is not treated as an App check run');
 });
 
@@ -507,12 +515,12 @@ test('H: missing evidence cannot produce success and an authenticated source can
   const { bundle, source } = makeCase();
   assert.throws(() => validateArtifactMetadata([], source), /missing, duplicated, or expired/);
   const { adapter, created, updates } = makeAdapter({ bundle });
-  await assert.rejects(publishCheck({ bundle, source: {}, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /completed successful verifier run/);
+  await assert.rejects(publishCheck({ bundle, source: {}, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /completed successful verifier run/);
   assert.equal(created.length, 0);
   const failed = await publishFailure({
     target: { prNumber: bundle.candidate.prNumber, headSha: bundle.candidate.headSha, baseSha: bundle.candidate.baseSha },
     source: { ...source, conclusion: 'success' },
-    publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) },
+    publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) },
     appId: 7654321,
     adapter,
     failureReason: 'successful verifier result artifact was missing',
@@ -526,15 +534,15 @@ test('H: missing evidence cannot produce success and an authenticated source can
 test('K: publisher API timeout or GitHub API failure leaves no success conclusion', async () => {
   const { bundle, source } = makeCase();
   const timed = makeAdapter({ bundle, listChecks: () => { throw new Error('request timed out'); } });
-  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter: timed.adapter }), /timed out/);
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter: timed.adapter }), /timed out/);
   assert.equal(timed.created.length, 0);
   const failed = makeAdapter({ bundle, createCheck: () => { throw new Error('Checks API rejected request'); } });
-  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter: failed.adapter }), /API rejected/);
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter: failed.adapter }), /API rejected/);
   assert.equal(failed.updates.some(({ patch }) => patch.conclusion === 'success'), false);
 });
 
 test('L: neutral and skipped conclusions are rejected', () => {
-  assert.equal(assertAllowedConclusion('success'), 'success');
+  assert.throws(() => assertAllowedConclusion('success'), /forbidden/);
   assert.equal(assertAllowedConclusion('failure'), 'failure');
   assert.throws(() => assertAllowedConclusion('neutral'), /forbidden/);
   assert.throws(() => assertAllowedConclusion('skipped'), /forbidden/);
@@ -560,8 +568,9 @@ test('N: requested decision deletion, body edits, revocation, and expiry prevent
   ]) {
     await t.test(label, async () => {
       assert.equal(decisionIsCurrent(comment, valid.bundle, API_URL, now), false);
-      const { adapter, created } = makeAdapter({ bundle: valid.bundle, decisionComment: comment, now });
-      await assert.rejects(publishCheck({ bundle: valid.bundle, source: valid.source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /Owner decision|requested Owner decision/);
+      const bundle = { ...valid.bundle, checkedAt: new Date(now - 1000).toISOString() };
+      const { adapter, created } = makeAdapter({ bundle, decisionComment: comment, now });
+      await assert.rejects(publishCheck({ bundle, source: valid.source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /Owner decision|requested Owner decision/);
       assert.equal(created.length, 0);
     });
   }
@@ -573,7 +582,7 @@ test('unrequested decision keeps technical PASS but fails the required App merge
   assert.equal(bundle.decisionIdentity.state, 'PENDING');
   assert.equal(bundle.decisionIdentity.consumable, false);
   const { adapter, created, updates } = makeAdapter({ bundle });
-  const outcome = await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
+  const outcome = await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
   assert.equal(outcome.outcome, 'published-failure');
   assert.equal(created.length, 1);
   assert.equal(updates.at(-1).patch.conclusion, 'failure');
@@ -582,12 +591,13 @@ test('unrequested decision keeps technical PASS but fails the required App merge
 
 test('replay is idempotent only for the same dedicated App result and exact bindings', async () => {
   const { bundle, source } = makeCase();
-  const publisher = { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) };
+  const publisher = { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) };
   const externalId = `kirari-r3-v1:${sha256('binding')}`;
   const payload = checkPayload(bundle, externalId, publisher);
-  const completed = { id: 12, ...payload, status: 'completed', conclusion: 'success', app: { id: 7654321 } };
+  const completed = { id: 12, ...payload, status: 'completed', conclusion: 'failure', app: { id: 7654321 } };
   const found = findIdempotentCheck([completed], payload, 7654321);
-  assert.deepEqual(found, { id: 12, completed: true });
+  assert.deepEqual(found, { id: 12, completed: true, mergeAdmissionBlocked: true });
+  assert.throws(() => findIdempotentCheck([{ ...completed, conclusion: 'success' }], payload, 7654321), /native success is forbidden/);
   assert.throws(() => findIdempotentCheck([{ ...completed, output: { summary: 'changed evidence' } }], payload, 7654321), /different evidence/);
   const changedEvidencePayload = checkPayload(bundle, `${externalId}-changed`, publisher);
   assert.throws(() => findIdempotentCheck([completed], changedEvidencePayload, 7654321), /different evidence binding/);
@@ -597,7 +607,7 @@ test('replay is idempotent only for the same dedicated App result and exact bind
 
 test('resuming an in-progress check omits immutable head_sha from Checks API updates', async () => {
   const { bundle, source } = makeCase();
-  const publisher = { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) };
+  const publisher = { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) };
   const payload = checkPayload(bundle, buildExternalId(bundle, publisher), publisher);
   const existing = { ...payload, id: 91, status: 'in_progress', app: { id: 7654321 } };
   const { adapter, updates } = makeAdapter({ bundle, checks: [existing] });
@@ -624,7 +634,7 @@ test('pending eligibility invalidates previous App success on the same exact hea
   const { bundle, source } = makeCase({ decision: false });
   const old = { id: 48, name: 'KIRARI / R3 trusted verifier', head_sha: bundle.candidate.headSha, status: 'completed', conclusion: 'success', app: { id: 7654321 }, output: { summary: 'old approved verifier result' } };
   const { adapter, updates } = makeAdapter({ bundle, checks: [old] });
-  await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
+  await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter });
   assert.ok(updates.some(({id,patch}) => id === old.id && patch.conclusion === 'failure'));
   assert.ok(updates.every(({patch}) => patch.conclusion !== 'success'));
 });
@@ -653,7 +663,7 @@ test('decision issue closure before check completion records failure', async () 
     if (++reads > 1) throw new Error('Owner decision issue #135 is closed or unavailable');
     return defaultDecisionComment(bundle);
   };
-  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /issue #135 is closed/);
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /issue #135 is closed/);
   assert.equal(updates.at(-1).patch.conclusion, 'failure');
   assert.ok(updates.every(({patch}) => patch.conclusion !== 'success'));
 });
@@ -677,7 +687,128 @@ test('independent #122 drift before App completion records failure', async () =>
   const { adapter, updates } = makeAdapter({ bundle });
   let reads = 0;
   adapter.assertIssue122 = async () => { if (++reads > 1) throw new Error('independent #122 issue changed before publication'); };
-  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: 'a'.repeat(40), policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /#122 issue changed/);
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST, publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /#122 issue changed/);
   assert.equal(updates.at(-1).patch.conclusion, 'failure');
   assert.ok(updates.every(({patch}) => patch.conclusion !== 'success'));
+});
+
+test('continuing eligibility evaluates live exact evidence without granting native required-check success', async () => {
+  const { bundle, source } = makeCase();
+  const { adapter } = makeAdapter({ bundle });
+  const result = await evaluateContinuingEligibility({ bundle, source, evidenceDigest: EVIDENCE_DIGEST,
+    publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, adapter });
+  assert.deepEqual(result, { technicalVerification: 'PASS', authorization: 'VALIDATED', mergeAdmission: 'BLOCKED', requiredCheckSuccessAllowed: false });
+  assert.equal(NATIVE_REQUIRED_CHECK_SUCCESS_ENABLED, false);
+});
+
+test('freshness rejects old, future, exact-boundary, or malformed evidence', () => {
+  const { bundle } = makeCase();
+  const now = Date.parse(bundle.checkedAt);
+  assert.doesNotThrow(() => assertEvidenceFresh(bundle, now));
+  for (const time of [now - 1, now + MAX_EVIDENCE_AGE_MS, Number.NaN]) assert.throws(() => assertEvidenceFresh(bundle, time), /stale, future-dated/);
+  assert.throws(() => assertEvidenceFresh({ ...bundle, checkedAt: 'bad' }, now), /freshness timestamp/);
+});
+
+test('even a matching digest cannot replay a decision bound to a changed candidate or verifier', () => {
+  const { bundle } = makeCase();
+  const comment = defaultDecisionComment(bundle);
+  for (const binding of ['candidateHeadSha', 'baseSha', 'candidateDigest', 'policyDigest', 'verifierDigest', 'schema']) {
+    const record = JSON.parse(comment.body.split('\n').slice(1).join('\n'));
+    record[binding] = binding === 'schema' ? 'forged-schema' : '0'.repeat(record[binding].length);
+    const changed = { ...comment, body: `KIRARI_R3_CONSUMPTION_DECISION_V1\n${JSON.stringify(record)}` };
+    const forged = { ...bundle, decisionIdentity: { ...bundle.decisionIdentity, digest: sha256(changed.body) } };
+    assert.equal(decisionIsCurrent(changed, forged, API_URL, Date.parse(bundle.checkedAt)), false, binding);
+  }
+});
+
+test('expired decision invalidates previously green same-head checks before refusing publication', async () => {
+  const { bundle, source } = makeCase();
+  const now = Date.parse(bundle.decisionIdentity.expiresAt);
+  bundle.checkedAt = new Date(now - 1000).toISOString();
+  const old = { id: 888, name: 'KIRARI / R3 trusted verifier', head_sha: bundle.candidate.headSha,
+    status: 'completed', conclusion: 'success', app: { id: 7654321 }, output: { summary: 'legacy approved result' } };
+  const { adapter, updates, created } = makeAdapter({ bundle, checks: [old], now });
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST,
+    publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /Owner decision.*expired/);
+  assert.equal(updates[0].id, old.id);
+  assert.equal(updates[0].patch.conclusion, 'failure');
+  assert.equal(created.length, 0);
+});
+
+test('altered #135 contract cannot be accepted as a new snapshot by the evaluator or publisher', () => {
+  for (const drift of [{ title: 'changed' }, { bodySha256: '1'.repeat(64) }, { state: 'closed' }]) {
+    const context = createContext();
+    context.issue135 = { ...context.issue135, ...drift };
+    assert.throws(() => evaluateVerification(context), /decision issue metadata/);
+    const { bundle, source } = makeCase();
+    bundle.issue135 = { ...bundle.issue135, ...drift };
+    assert.throws(() => validatePublisherResult(bundle, source, EVIDENCE_DIGEST), /#135 contract binding/);
+  }
+});
+
+test('#135 drift after first eligibility read invalidates the pending check', async () => {
+  const { bundle, source } = makeCase();
+  const { adapter, updates } = makeAdapter({ bundle });
+  let reads = 0;
+  adapter.assertIssue135 = async () => { if (++reads > 1) throw new Error('decision issue #135 body changed'); };
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST,
+    publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /#135 body changed/);
+  assert.equal(updates.at(-1).patch.conclusion, 'failure');
+});
+
+test('#135 live API read rejects closure, title edits, and body edits against the frozen snapshot', async (t) => {
+  const issue = JSON.parse(await readFile(new URL('./issue135-fixture.json', import.meta.url), 'utf8'));
+  const { bundle } = makeCase();
+  assert.equal(sha256(issue.body), bundle.issue135.bodySha256);
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  globalThis.fetch = async () => new Response(JSON.stringify(issue));
+  await assertIssue135Current(API_URL, REPOSITORY, 'test-token', bundle.issue135);
+  for (const drift of [{ state: 'closed' }, { title: 'changed' }, { body: issue.body + 'changed' }]) {
+    globalThis.fetch = async () => new Response(JSON.stringify({ ...issue, ...drift }));
+    await assert.rejects(assertIssue135Current(API_URL, REPOSITORY, 'test-token', bundle.issue135), /#135 state, title, or body changed/);
+  }
+});
+
+test('run replay lookup does not confuse attempt 1 with attempt 10', () => {
+  const { bundle } = makeCase();
+  const payload = checkPayload(bundle, 'exact-binding', { sha: bundle.candidate.baseSha });
+  const tenth = { ...payload, id: 1, external_id: 'different-binding', app: { id: 7654321 }, status: 'completed', conclusion: 'failure',
+    output: { summary: payload.output.summary.replace('attempt 1', 'attempt 10') } };
+  assert.equal(findIdempotentCheck([tenth], payload, 7654321), null);
+});
+
+test('config/result spoofing and expiry during final PATCH cannot obtain a successful native check', async () => {
+  const { bundle, source } = makeCase();
+  bundle.requiredCheckSuccessEnabled = true;
+  const { adapter, updates } = makeAdapter({ bundle });
+  let clock = Date.parse(bundle.checkedAt);
+  adapter.now = () => clock;
+  const update = adapter.updateCheck;
+  adapter.updateCheck = async (id, patch) => {
+    if (patch.status === 'completed') clock = Date.parse(bundle.decisionIdentity.expiresAt);
+    return update(id, patch);
+  };
+  const outcome = await publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST,
+    publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64), requiredCheckSuccessEnabled: true }, appId: 7654321, adapter });
+  assert.equal(outcome.outcome, 'validated-but-blocked');
+  assert.ok(updates.every(({ patch }) => patch.conclusion !== 'success'));
+  assert.equal(updates.at(-1).patch.conclusion, 'failure');
+});
+
+test('publisher source mismatch and final candidate source drift refuse eligibility', async () => {
+  const { bundle, source } = makeCase();
+  const { adapter, updates } = makeAdapter({ bundle });
+  await assert.rejects(evaluateContinuingEligibility({ bundle, source, evidenceDigest: EVIDENCE_DIGEST,
+    publisher: { sha: '0'.repeat(40), policyDigest: 'b'.repeat(64) }, adapter }), /current trusted main SHA/);
+  let reads = 0;
+  const assertPr = adapter.assertPullRequest;
+  adapter.assertPullRequest = async (...args) => {
+    assert.equal(args[3], bundle.candidate.headRepository);
+    if (++reads > 1) throw new Error('candidate source repository changed');
+    return assertPr(...args);
+  };
+  await assert.rejects(publishCheck({ bundle, source, evidenceDigest: EVIDENCE_DIGEST,
+    publisher: { sha: bundle.candidate.baseSha, policyDigest: 'b'.repeat(64) }, appId: 7654321, adapter }), /source repository changed/);
+  assert.equal(updates.at(-1).patch.conclusion, 'failure');
 });

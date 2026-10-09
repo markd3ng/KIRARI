@@ -8,26 +8,47 @@
   "requiredCheckSource": {
     "type": "GitHub App",
     "appId": "PENDING_OWNER_SETUP",
-    "installationRepositories": ["KIRARI"],
-    "permissions": { "checks": "write", "metadata": "read" }
+    "installationRepositories": [
+      "KIRARI"
+    ],
+    "permissions": {
+      "checks": "write",
+      "metadata": "read"
+    }
   },
   "workflowRunFilter": {
     "event": "workflow_dispatch",
     "headBranch": "main",
     "workflowPath": ".github/workflows/r3-trusted-verifier.yml",
-    "activityTypes": ["requested", "in_progress", "completed"],
+    "activityTypes": [
+      "requested",
+      "in_progress",
+      "completed"
+    ],
     "conclusion": "any recognized completed conclusion; non-success invalidates prior App success",
     "runTitleBinding": "R3 verifier|pr=<number>|head=<sha>|base=<sha>",
     "latestRunRequiredForPublication": true,
     "createdAtLowerBound": "authenticated upstream run created_at; excludes irrelevant retained history before the current event",
     "startedRunInvalidatesPriorSuccess": true,
-    "concurrencyKey": "trusted verifier display title binding PR/head/base",
+    "concurrencyKey": "shared trusted authorization publisher/revocation group",
     "repositoryIdMustMatch": true,
     "jobConditionMustRunBeforeEnvironment": true
   },
   "trustedRootChangePolicy": {
-    "protectedPathsFromTrustedBase": [".github/workflows/", "scripts/root-audit/", ".npmrc", ".pnpmfile.cjs", "apps/site/.npmrc", "apps/site/.pnpmfile.cjs", "workers/kirari-edge/.npmrc", "workers/kirari-edge/.pnpmfile.cjs", "packages/site-profile/.npmrc", "packages/site-profile/.pnpmfile.cjs"],
-    "changedPathSource": "complete authenticated pull-request files API listing, reconciled against pull_request.changed_files",
+    "protectedPathsFromTrustedBase": [
+      ".github/workflows/",
+      "scripts/root-audit/",
+      ".npmrc",
+      ".pnpmfile.cjs",
+      "pnpm-workspace.yaml",
+      "apps/site/.npmrc",
+      "apps/site/.pnpmfile.cjs",
+      "workers/kirari-edge/.npmrc",
+      "workers/kirari-edge/.pnpmfile.cjs",
+      "packages/site-profile/.npmrc",
+      "packages/site-profile/.pnpmfile.cjs"
+    ],
+    "changedPathSource": "validated nontruncated recursive Git Trees at exact immutable base/head commit SHAs; mutable PR file rows are corroboration only",
     "ordinaryAppCheckMayAuthorizeChanges": false,
     "purpose": "prevent ordinary zero-approval PR checks from modifying publisher/verifier code or any workflow that could request the Environment secret",
     "maintenance": "separate Owner-controlled trust-root change gate; no ruleset bypass actor is proposed"
@@ -37,13 +58,22 @@
     "inputMode": "optional_owner_supplied_reference",
     "reportFetchedOrInspectedByVerifier": false,
     "reviewerIdentityAuthenticatedByVerifier": false,
-    "boundTo": ["repository", "candidateHead", "candidateBase", "candidateDigest", "policyDigest", "verifierDigest"],
+    "boundTo": [
+      "repository",
+      "candidateHead",
+      "candidateBase",
+      "candidateDigest",
+      "policyDigest",
+      "verifierDigest"
+    ],
     "enforcementClaim": "outside this technical status check; Owner must independently inspect review report and verify digest before any separate Owner decision",
     "missingBlocksTechnicalSuccess": false,
     "missingBlocksApprovedOwnerDecision": true
   },
   "environmentPolicy": {
-    "allowBranches": ["main"],
+    "allowBranches": [
+      "main"
+    ],
     "protectedBranchesOnly": false,
     "administratorBypass": false,
     "pullRequestRefsAllowed": false,
@@ -68,9 +98,30 @@
     "maximumBytes": 83886080,
     "candidateMaterialExecuted": false
   },
-  "checkConclusions": ["success", "failure"],
+  "checkConclusions": [
+    "failure"
+  ],
   "neutralAllowed": false,
   "skippedAllowed": false,
   "appCredentialsPresent": false,
-  "applyReady": false
+  "applyReady": false,
+  "continuingAuthorization": {
+    "requiredCheckSuccessEnabled": false,
+    "nativeCheckExpirySupported": false,
+    "maximumEvidenceAgeMs": 900000,
+    "revocationWorkflowPath": ".github/workflows/r3-authorization-revalidation.yml",
+    "revocationMode": "best-effort-revocation-only; never renew success",
+    "finalMergeAdmissionReady": false,
+    "activationReady": false,
+    "outageBehavior": "new success is forbidden; cached legacy success cannot be guaranteed invalidated during API, credential, App, or Actions outage",
+    "finalBoundary": "separately authorized live final merge admission required"
+  },
+  "operationOptIn": {
+    "repositoryVariable": "KIRARI_R3_PUBLISHER_ENABLED",
+    "enabledValue": "true",
+    "default": "false",
+    "checkedBeforeEnvironmentAndCredentials": true,
+    "liveEnabled": false,
+    "separateOwnerSetupRequired": true
+  }
 }
