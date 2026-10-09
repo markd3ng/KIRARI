@@ -48,3 +48,10 @@ test("OCR pins the accepted action and passes its credentials without logging th
 	assert.match(workflow, /printf '%s\\n' "\$RUNNER_TEMP\/kirari-ocr\/bin" >> "\$GITHUB_PATH"/);
 	assert.doesNotMatch(workflow.split('    steps:')[0], /runner\./, 'runner context is unavailable in job-level env');
 });
+
+// The pinned npm CLI starts a detached updater unless OCR_NO_UPDATE is set.
+// A background global reinstall can replace the launcher between composite steps.
+test("OCR preserves the CLI pin across all composite steps", () => {
+	const actionStep = workflow.match(/      - uses: alibaba\/open-code-review@a758d9cbfb689937c7857ad64b2dd66adb58c0c2\n([\s\S]*)/)?.[1] ?? "";
+	assert.match(actionStep, /^        env:\n          OCR_NO_UPDATE: '1'$/m);
+});

@@ -90,7 +90,10 @@ test('App, Environment and exact-source required check retain unknown live ident
   }]);
   assert.equal(environment.variables[0].name, 'KIRARI_R3_PUBLISHER_APP_ID');
   assert.equal(environment.variables[0].value, app.application.appId);
-  assert.equal(app.isolatedTestPrerequisites.trustedImplementationEstablished, false);
+  assert.equal(app.isolatedTestPrerequisites.trustedImplementationEstablished, true);
+  assert.equal(app.isolatedTestPrerequisites.reviewedEngineeringBaseMain, 'c46fa39e0028c03fc134952c985c10494a4daf63');
+  assert.equal(app.executableVerification.serverAtomicAdmissionAvailable, false);
+  assert.equal(app.executableVerification.appSetupAloneEstablishesReadiness, false);
   assert.equal(app.isolatedTestPrerequisites.ownerSetupApproved, false);
   assert.equal(app.isolatedTestPrerequisites.realAppIdentityObserved, false);
   assert.equal(app.isolatedTestPrerequisites.enforcingMainRulesetAllowed, false);
@@ -203,7 +206,7 @@ test('case 17 does not treat the static recovery contract as a live restore demo
   assert.equal(proposal.recovery.ownerManagementAccessVerified, false);
   assert.equal(proposal.recovery.restoreReadbackVerified, false);
   assert.equal(proposal.recovery.isolatedDemonstrationVerified, false);
-  assert.equal(proposal.recovery.liveDemonstration, 'NOT_RUN_NO_APP_OR_APPROVED_TEST_TARGET');
+  assert.equal(proposal.recovery.liveDemonstration, 'PENDING_OWNER_APP_LAB_CREDENTIALS_EXECUTABLE_HARNESS_PREPARED');
   // A hypothetical future passing check and real App identity still cannot
   // justify activation without independent recovery and restoration evidence.
   const unverifiedRecovery = structuredClone(proposal);
