@@ -5,6 +5,10 @@ const requireAuthorization = (value, expected) => {
   requireLab(value.authorization === expected && value.mergeAdmission === 'BLOCKED' && value.requiredCheckSuccessAllowed === false, 'LAB_ELIGIBILITY_ASSERTION_FAILED');
 };
 const requireNative = (value, accepted) => requireLab(value.accepted === accepted, 'LAB_NATIVE_EXPECTATION_NOT_OBSERVED');
+const requireDenialReason = (value, reason) => {
+  requireAuthorization(value, 'DENIED');
+  requireLab(value.reason === reason, 'LAB_DENIAL_REASON_UNEXPECTED');
+};
 async function oldGreen(session, fixture, app) {
   const checks = await session.listChecks(fixture, app);
   requireLab(checks.some((check) => check.appId === app.appId && check.conclusion === 'success'), 'LAB_OLD_GREEN_NOT_OBSERVED');
@@ -30,14 +34,14 @@ export async function executeLabCases(session, { primary, wrong, primaryPem, sle
   });
   await run(1, { labEligibility: 'DENIED', nativeLabMerge: 'REJECTED' }, async (fixture) => {
     await session.selectDecision(fixture, { expiresAt: session.now() - 1 });
-    const eligibility = await session.inspect(fixture); requireAuthorization(eligibility, 'DENIED');
+    const eligibility = await session.inspect(fixture); requireDenialReason(eligibility, 'LAB_DECISION_EXPIRED');
     const native = await session.nativeMerge(fixture); requireNative(native, false);
     return { eligibility, native, successPublished: false };
   });
   await run(2, { labEligibilityAfterRevocation: 'DENIED', nativeOldGreen: 'MAY_REMAIN_ADMISSIBLE', gate: 'NOT_READY' }, async (fixture) => {
     await session.selectDecision(fixture); await session.publishEligibleFixture(fixture, primary);
     await session.editDecision(fixture, { action: 'REVOKE_LAB_FIXTURE' });
-    const eligibility = await session.inspect(fixture); requireAuthorization(eligibility, 'DENIED');
+    const eligibility = await session.inspect(fixture); requireDenialReason(eligibility, 'LAB_DECISION_CHANGED_OR_REVOKED');
     const checks = await oldGreen(session, fixture, primary);
     const native = await session.nativeMerge(fixture); requireNative(native, true);
     return { eligibility, checks, native, limitationProved: 'NATIVE_CHECK_DOES_NOT_REEVALUATE_REVOCATION', gate: 'NOT_READY' };
@@ -82,7 +86,7 @@ export async function executeLabCases(session, { primary, wrong, primaryPem, sle
     await session.selectDecision(fixture, { expiresAt }); await session.publishEligibleFixture(fixture, primary);
     for (let attempt = 0; session.now() <= expiresAt && attempt < 50; attempt += 1) await sleep(Math.min(1000, expiresAt - session.now() + 1));
     requireLab(session.now() > expiresAt, 'LAB_REAL_EXPIRY_NOT_REACHED');
-    const eligibility = await session.inspect(fixture); requireAuthorization(eligibility, 'DENIED');
+    const eligibility = await session.inspect(fixture); requireDenialReason(eligibility, 'LAB_DECISION_EXPIRED');
     const checks = await oldGreen(session, fixture, primary);
     const native = await session.nativeMerge(fixture); requireNative(native, true);
     return { expiresAt: new Date(expiresAt).toISOString(), observedAt: new Date(session.now()).toISOString(), eligibility, checks, native,
@@ -93,7 +97,8 @@ export async function executeLabCases(session, { primary, wrong, primaryPem, sle
     const clear = session.transport.injectFault('owner', 'GET', `${session.root}/pulls/${fixture.number}`);
     let eligibility;
     try { eligibility = await session.inspect(fixture); } finally { clear(); }
-    requireAuthorization(eligibility, 'DENIED');
+    requireDenialReason(eligibility, 'LAB_API_UNAVAILABLE_OR_MALFORMED');
+    requireLab(eligibility.failureCode === 'LAB_INJECTED_GITHUB_API_OUTAGE', 'LAB_OUTAGE_CAUSE_UNEXPECTED');
     const checks = await oldGreen(session, fixture, primary);
     const native = await session.nativeMerge(fixture); requireNative(native, true);
     return { injection: 'LOCAL_CLIENT_TRANSPORT_503_NOT_ACTUAL_GITHUB_SERVICE_OUTAGE', eligibility, checks, native,

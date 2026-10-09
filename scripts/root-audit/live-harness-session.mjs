@@ -92,8 +92,18 @@ export class LabSession {
       const pr = (await this.owner('GET', `/pulls/${fixture.number}`)).data;
       const base = (await this.owner('GET', `/git/ref/heads/${fixture.baseRef}`)).data;
       const comment = (await this.owner('GET', `/issues/comments/${fixture.selected.id}`)).data;
+      requireLab(Number.isSafeInteger(pr?.number) && pr.number > 0 && ['open', 'closed'].includes(pr.state) &&
+        [pr.head, pr.base].every((ref) => isSha(ref?.sha) && typeof ref.ref === 'string' && ref.ref.length > 0 &&
+          Number.isSafeInteger(ref.repo?.id) && ref.repo.id > 0) && isSha(base?.object?.sha) &&
+        Number.isSafeInteger(comment?.id) && comment.id > 0 && typeof comment.body === 'string' &&
+        Number.isSafeInteger(comment.user?.id) && comment.user.id > 0 && typeof comment.user.login === 'string' && comment.user.login.length > 0,
+      'LAB_INSPECTION_RESPONSE_MALFORMED');
       return inspectLabDecision(this.config, fixture, fixture.selected, pr, base, comment, this.now());
-    } catch { return { technicalVerification: 'NOT_VERIFIED', authorization: 'DENIED', mergeAdmission: 'BLOCKED', requiredCheckSuccessAllowed: false, reason: 'LAB_API_UNAVAILABLE_OR_MALFORMED' }; }
+    } catch (error) {
+      if (!(error instanceof LabError)) throw new LabError('LAB_UNEXPECTED_INSPECTION_FAILURE');
+      return { technicalVerification: 'NOT_VERIFIED', authorization: 'DENIED', mergeAdmission: 'BLOCKED', requiredCheckSuccessAllowed: false,
+        reason: 'LAB_API_UNAVAILABLE_OR_MALFORMED', failureCode: error.code };
+    }
   }
   async writeCheck(fixture, credential, conclusion) {
     requireLab(this.tokens.includes(credential) && ['success', 'failure'].includes(conclusion), 'LAB_CHECK_CREDENTIAL_OR_CONCLUSION_INVALID');

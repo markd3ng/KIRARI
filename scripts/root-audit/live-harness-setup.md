@@ -64,6 +64,8 @@ The harness creates twelve pairs of nonce-owned non-default branches, harmless c
 
 A PASS assertion for stale-green/outage cases proves the native weakness. It never means continuing expiry/revocation enforcement is ready. Unexpected native behavior, identity/configuration drift, unsupported rulesets, incomplete cleanup, unverified token revocation or any failed assertion makes the run incomplete. In the full harness report, `liveGitHubVerified` becomes true only after a complete successful run using the built-in real GitHub transport. HTTP tests/custom transports always remain synthetic.
 
+Expiry and revocation cases require their exact semantic denial reason. An unrelated API failure or malformed PR/base/comment readback cannot substitute for those observations. The intentional client-outage case also requires the harness's own injected outage code. Unexpected inspection programming errors fail the case with a sanitized error instead of becoming outage evidence.
+
 ## Independent lab recovery
 
 If a run stops with a lab rule still present, use the **same exact nonsecret configuration and run ID**, a fresh lab-only Owner administration credential, and these standalone commands. They require no App key/token, green check, review, merge or publisher service. They adopt only the one authenticated ruleset whose exact name, branch list, App/check identity, bypass policy and full parameters match this lab configuration. Unrelated or changed rulesets are refused.
@@ -83,7 +85,7 @@ Normal cleanup independently verifies unchanged default-branch SHA, disables/del
 ## Engineering verification
 
 ```bash
-node --test scripts/root-audit/tests/live-harness.test.mjs scripts/root-audit/tests/live-harness-token-custody.test.mjs scripts/root-audit/tests/live-harness-recovery.test.mjs scripts/root-audit/tests/live-harness-ruleset.test.mjs
+node --test scripts/root-audit/tests/live-harness.test.mjs scripts/root-audit/tests/live-harness-semantic-denial.test.mjs scripts/root-audit/tests/live-harness-token-custody.test.mjs scripts/root-audit/tests/live-harness-recovery.test.mjs scripts/root-audit/tests/live-harness-ruleset.test.mjs
 ```
 
 These execute the real HTTP transport/orchestrator against an isolated fake GitHub server, including RSA JWT verification, App scope discovery, real request bodies, native-result simulation, token revocation, unsafe target refusals and independent recovery. They are engineering evidence, not live App/protection evidence. The disabled production payload builder also preserves `appIdentityVerified: false`, separate proposed IDs and mandatory real receipts; a numeric ID and an inert payload never unlock activation.
