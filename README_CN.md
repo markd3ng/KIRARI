@@ -184,6 +184,9 @@ pnpm build
 pnpm audit --audit-level moderate
 ```
 
+依赖审计仅用于信息报告：CI 保留原始输出，不阻断构建、测试、类型检查、QA 或部署策略检查。
+上游提供兼容修复后再升级；未解决的上游公告不需要自定义例外机制。
+
 ## 配置
 
 用户可编辑入口：`packages/site-profile/kirari.config.toml`。优先级：**环境变量 > TOML > config-loader.ts 默认值**。
@@ -656,6 +659,9 @@ pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```
+
+依赖审计仅用于信息报告：CI 保留原始输出，不阻断构建、测试、类型检查、QA 或部署策略检查。
+上游提供兼容修复后再升级；未解决的上游公告不需要自定义例外机制。
 
 CI 必须使用 `--frozen-lockfile`。`@astrojs/check` 仅 devDependency。
 

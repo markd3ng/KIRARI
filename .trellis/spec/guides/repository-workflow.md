@@ -14,13 +14,19 @@ pnpm site:astro-check
 pnpm edge:type-check
 pnpm edge:test
 pnpm build
-pnpm audit --audit-level moderate
 git diff --check
 ```
 
 Run focused checks while iterating, then the affected full-scope checks before
 completion. CI also runs site QA, edge dry deploy, generated Vercel config
-verification, and release regression/version checks.
+verification, and release regression/version checks. These engineering and
+deployment-policy checks remain blocking.
+
+Run `pnpm audit --audit-level moderate` for dependency information. CI runs it
+in a separate non-blocking job and retains the moderate-level human report,
+full `pnpm audit --json` inventory (all severities), exit statuses and service errors. Do not suppress advisories or require custom exceptions, App
+checks, consumption decisions or final-admission gates. Use compatible upstream
+patches when available; leave unsupported upgrades out of scope.
 
 ## Commits And Changelog
 

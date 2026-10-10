@@ -138,8 +138,9 @@ pnpm release:check
 node apps/site/scripts/generate-vercel-config.mjs --check
 ```
 
-CI additionally runs edge checks, release version checks, audit, and
-`git diff --check`. Use pnpm and Node `>=22.12.0`.
+CI additionally requires edge checks, release version checks, and
+`git diff --check`. Dependency audit runs separately as an informational report.
+Use pnpm and Node `>=22.12.0`.
 
 Repository-wide commit, release, and documentation rules live in
 `.trellis/spec/guides/repository-workflow.md`.

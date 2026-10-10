@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
@@ -8,9 +10,10 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const workflow = readFileSync(join(repoRoot, ".github/workflows/ci.yml"), "utf8");
 const triggers = workflow.match(/^on:\n([\s\S]*?)^permissions:/m)?.[1] ?? "";
 const dispatchInputs = workflow.match(/^  workflow_dispatch:\n([\s\S]*?)^permissions:/m)?.[1] ?? "";
-const verifyJob = workflow.match(/^  verify:\n([\s\S]*?)(?=^  composition:)/m)?.[1] ?? "";
+const verifyJob = workflow.match(/^  verify:\n([\s\S]*?)(?=^  [\w-]+:)/m)?.[1] ?? "";
 const verifyCheckout = verifyJob.match(/^      - uses: actions\/checkout@v4\n([\s\S]*?)(?=^      - |$(?![\s\S]))/m)?.[1] ?? "";
 const compositionJob = workflow.match(/^  composition:\n([\s\S]*)$/m)?.[1] ?? "";
+const auditJob = workflow.match(/^  dependency-audit:\n([\s\S]*?)(?=^  [\w-]+:)/m)?.[1] ?? "";
 
 function step(name) {
 	const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -28,7 +31,8 @@ test("normal deterministic CI remains intact and composition is limited to manua
 	assert.ok(verifyJob, "regular deterministic verify job must remain");
 	assert.match(verifyCheckout, /fetch-depth: 0[\s\S]*?persist-credentials: false/, "verify checkout must retain full history without persisting credentials");
 	assert.doesNotMatch(verifyJob, /^\s+if:/m, "verify must not be event-gated");
-	for (const command of ["pnpm install --frozen-lockfile", "pnpm site:test", "pnpm edge:test", "pnpm build", "pnpm release:check", "pnpm audit --audit-level moderate"]) {
+	assert.doesNotMatch(verifyJob, /continue-on-error|pnpm audit|scripts\/root-audit\//, "engineering CI must stay strict and independent of retired admission and dependency audit");
+	for (const command of ["pnpm install --frozen-lockfile", "pnpm site:test", "pnpm site:contract:test", "pnpm site:type-check", "pnpm site:astro-check", "pnpm edge:type-check", "pnpm edge:test", "pnpm edge:deploy:dry", "pnpm build", "pnpm release:check", "pnpm release:version-check", "node apps/site/scripts/qa-regression-check.mjs", "node apps/site/scripts/generate-vercel-config.mjs --check", "git diff --check"]) {
 		assert.ok(verifyJob.includes(command), `verify job must retain ${command}`);
 	}
 	const nodeTests = verifyJob.match(/^      - run: node --test (.+)$/m)?.[1]?.split(/\s+/) ?? [];
@@ -45,6 +49,42 @@ test("normal deterministic CI remains intact and composition is limited to manua
 	assert.match(compositionJob, /^    if: >-\n([\s\S]*?)^    runs-on:/m);
 	const condition = compositionJob.match(/^    if: >-\n([\s\S]*?)^    runs-on:/m)?.[1]?.replaceAll(/\s+/g, " ").trim();
 	assert.equal(condition, "github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/config') || (github.event_name == 'pull_request' && github.base_ref == 'config')");
+});
+
+test("dependency audit is an independent informational job with raw report retention", () => {
+	assert.match(auditJob, /^    continue-on-error: true$/m);
+	assert.doesNotMatch(auditJob, /^    (?:needs|if):/m);
+	assert.match(auditJob, /persist-credentials: false/);
+	assert.doesNotMatch(auditJob, /secrets\.|contents: write|checks: write/);
+	assert.match(auditJob, /- name: Preserve raw dependency audit report\n        if: always\(\)/);
+	assert.match(auditJob, /pnpm audit --audit-level moderate/);
+	assert.match(auditJob, /pnpm audit --json/);
+	for (const file of ["dependency-audit.txt", "dependency-audit.json", "dependency-audit.stderr.txt"]) assert.ok(auditJob.includes("${{ runner.temp }}/" + file));
+	assert.doesNotMatch(workflow, /scripts\/root-audit\/|KIRARI_R3_/);
+	assert.equal(JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")).pnpm.auditConfig, undefined, "audit findings must not be suppressed");
+});
+
+test("audit reporting preserves raw findings and errors without misreporting a successful audit", () => {
+	const run = auditJob.match(/- name: Report dependency audit\n        run: \|\n([\s\S]*?)(?=\n      - name:)/)?.[1];
+	assert.ok(run, "audit report step must exist");
+	const script = run.replace(/^          /gm, "");
+	for (const status of [0, 1, 42]) {
+		const root = mkdtempSync(join(tmpdir(), "kirari-audit-report-"));
+		try {
+			const summary = join(root, "summary.md");
+			const result = spawnSync("bash", ["-e", "-o", "pipefail", "-c", `pnpm() { if [[ "$2" == --json ]]; then printf '{"advisories":{"low-fixture":{"severity":"low"}}}\\n'; else printf 'raw audit output\\n'; fi; printf 'raw audit error\\n' >&2; return ${status}; }\n${script}`], {
+				env: { ...process.env, RUNNER_TEMP: root, GITHUB_STEP_SUMMARY: summary }, encoding: "utf8",
+			});
+			assert.equal(result.status, status, result.stderr);
+			assert.equal(readFileSync(join(root, "dependency-audit.txt"), "utf8"), "raw audit output\nraw audit error\n");
+			assert.equal(readFileSync(join(root, "dependency-audit.json"), "utf8"), '{"advisories":{"low-fixture":{"severity":"low"}}}\n');
+			assert.equal(readFileSync(join(root, "dependency-audit.stderr.txt"), "utf8"), "raw audit error\n");
+			assert.ok(readFileSync(summary, "utf8").includes("Moderate-level report exit status: `" + status + "`; full JSON inventory exit status: `" + status + "`."));
+			assert.match(readFileSync(summary, "utf8"), /informational/);
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
+	}
 });
 
 test("manual selectors and config events resolve exact Site and immutable Core revisions", () => {

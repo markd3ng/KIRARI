@@ -15,14 +15,5 @@ JSON, workflow, and deployment files.
 Treat `tmp/`, historical plans, audits, and materialized copies as evidence to
 classify, not implementation authority.
 
-For repository-level verifier changes, read the
-[Root Audit Input Contract](../repository/root-audit-inputs.md).
 
-For pinned-pnpm audit parsing, read the
-[Root Audit Format Contract](../repository/root-audit-format.md).
-
-[Root Audit Continuing Eligibility Contract](../repository/root-audit-authorization.md) covers fail-closed publisher conclusions, revocation limits, and activation prerequisites.
-
-[Final Admission Inspection Contract](../repository/root-audit-final-admission.md) documents the fixed NOT_READY capability, exact evidence reconstruction, and limits of authenticated observations.
-
-The [isolated live harness](../../../scripts/root-audit/live-harness-setup.md) covers non-production GitHub fixture safety, App scope, native check-source experiments and independent settings recovery.
+Dependency audit is informational; see [Repository Workflow](./repository-workflow.md).
