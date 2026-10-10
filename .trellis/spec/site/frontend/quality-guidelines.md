@@ -208,6 +208,9 @@ Update `createVercelConfig`, regenerate `vercel.json`, and verify that only `mai
   evidence archive, exact record digest and approved deployment identity.
   Restore that existing deployment, validate aliases and health, and never
   label a simulation or incomplete restoration as live PASS.
+- A runtime factory that fails while loading rollback evidence removes its
+  temporary workspace before propagating failure; test this with unavailable
+  metadata and an isolated temporary directory.
 - Run focused production authorization/artifact/evidence/rollback negatives,
   existing P1–P3 contracts and the full repository CI. Preserve
   `git.deploymentEnabled.main=false` and test generated config parity.

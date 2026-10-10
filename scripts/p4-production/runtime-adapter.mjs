@@ -48,9 +48,14 @@ export async function createProductionRuntime({ binding, packageVerification, en
 	let rollbackCandidate = null;
 	let staged = null;
 	if (binding.rollback_record) {
-		const loaded = await loadApprovedRollback({ binding, token: env.GH_TOKEN, outputDirectory: join(workspace, "rollback"), fetchImpl });
-		rollbackCandidate = loaded.candidate;
-		if (target.operation === "rollback") packageVerification = loaded.packageVerification;
+		try {
+			const loaded = await loadApprovedRollback({ binding, token: env.GH_TOKEN, outputDirectory: join(workspace, "rollback"), fetchImpl });
+			rollbackCandidate = loaded.candidate;
+			if (target.operation === "rollback") packageVerification = loaded.packageVerification;
+		} catch (error) {
+			rmSync(workspace, { recursive: true, force: true });
+			throw error;
+		}
 	}
 	const guard = async () => {
 		await assertConcreteProductionContracts({ env, fetchImpl });
