@@ -148,8 +148,8 @@ Git checkout 不能有暂存、未暂存或未跟踪的改动。
 验证生产健康状态，并支持基于已批准发布记录的回滚。合并 `main` 不会启用 Vercel Git
 自动部署。发布前置条件与一次性授权边界见 [Site Production](./docs/SITE_PRODUCTION.md)。
 
-T1/C1 策略框架仍要求分别批准精确、有限有效期的工具链清单与脱敏凭据清单；
-具体决策尚未批准时，生产发布继续阻断。
+依赖审计仅作信息报告；锁定 CLI/源代码完整性与脱敏凭据审批仍是必要检查。
+生产发布需要独立、精确的所有者授权。
 
 这两种模式都只生成静态产物：不拉取或切换 Git ref、不提交、不推送、不部署、不打包
 Cloudflare Pages Functions，也不发送 IndexNow/Google 收录通知。
@@ -190,6 +190,9 @@ pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```
+
+依赖审计仅用于信息报告：CI 保留原始输出，不阻断构建、测试、类型检查、QA 或部署策略检查。
+上游提供兼容修复后再升级；未解决的上游公告不需要自定义例外机制。
 
 ## 配置
 
@@ -663,6 +666,9 @@ pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```
+
+依赖审计仅用于信息报告：CI 保留原始输出，不阻断构建、测试、类型检查、QA 或部署策略检查。
+上游提供兼容修复后再升级；未解决的上游公告不需要自定义例外机制。
 
 CI 必须使用 `--frozen-lockfile`。`@astrojs/check` 仅 devDependency。
 

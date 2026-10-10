@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from
 import { arch, platform, release } from "node:os";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { createAdvisoryInventory, evaluateToolingAcceptance, fingerprintInstalledTree, toolingManifestDigest, TOOLING_MATERIAL_SOURCE_PATHS, TOOLING_TREE_FINGERPRINT_ALGORITHM } from "./tooling-acceptance.mjs";
+import { fingerprintInstalledTree, TOOLING_MATERIAL_SOURCE_PATHS, TOOLING_TREE_FINGERPRINT_ALGORITHM } from "./tooling-identity.mjs";
 import { credentialManifestDigest, validateCredentialContract } from "./credential-contract.mjs";
 import { readConcreteOwnerDecision } from "./owner-decision.mjs";
 
@@ -15,7 +15,7 @@ const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const TOOLING = "scripts/p4-production/tooling";
 const EVIDENCE = ".trellis/tasks/10-04-p4-authorized-production/evidence/t1-c1";
 const PLAIN_ARGS = ["audit", "--prefix", TOOLING, "--audit-level", "moderate"];
-const JSON_ARGS = [...PLAIN_ARGS, "--json"];
+const JSON_ARGS = ["audit", "--prefix", TOOLING, "--json"];
 const TARGET = { team_id: "team_NsBZHGUVnyygP7veiROKLuUx", project_id: "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk", project: "kirari-main" };
 const sha256 = (bytes) => `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
 function json(path) { return JSON.parse(readFileSync(path, "utf8")); }
@@ -28,7 +28,7 @@ function npmEnvironment(env) {
 	return Object.fromEntries(["PATH", "LANG", "LC_ALL", "CI", "NO_COLOR", "FORCE_COLOR", "HOME", "TMPDIR"].flatMap(key => typeof env[key] === "string" ? [[key, env[key]]] : []));
 }
 
-/** Both complete audits run, even if the first one fails or Owner approval is absent. */
+/** Retain unfiltered standard reports; findings/service failures are informational. */
 export function collectFullToolingAudit({ env = process.env, spawn = spawnSync, outputDirectory }) {
 	mkdirSync(outputDirectory, { recursive: true });
 	const options = { cwd: ROOT, env: npmEnvironment(env), encoding: "utf8", timeout: 120_000, maxBuffer: 16 * 1024 * 1024 };
@@ -65,14 +65,18 @@ export async function collectToolingObservation({ env = process.env, audit, outp
 	const receipt = json(join(outputDirectory, "install-receipt.json"));
 	const captured = Date.parse(receipt.captured_at);
 	if (receipt.completed !== true || receipt.exit_code !== 0 || receipt.node_version !== process.version || receipt.npm_cli_sha256 !== npmRuntime().sha256 || receipt.npm_tree_sha256 !== fingerprintInstalledTree(npmRuntime().packageRoot) || receipt.npm_version !== String(npm.stdout).trim() || !Number.isFinite(captured) || captured > Date.now() || Date.now() - captured > 60 * 60_000) throw new Error("TOOLING_INSTALL_RECEIPT_INVALID_OR_STALE");
+	const materialSourceHashes = Object.fromEntries(TOOLING_MATERIAL_SOURCE_PATHS.map(path => [path, sha256(readFileSync(join(ROOT, path)))]));
+	if (JSON.stringify(receipt.material_source_hashes) !== JSON.stringify(materialSourceHashes)) throw new Error("TOOLING_SOURCE_CHANGED_DURING_INSTALL");
 	const entrypoint = `${TOOLING}/node_modules/.bin/vercel`;
+	if (relative(ROOT, realpathSync(join(ROOT, entrypoint))) !== `${TOOLING}/node_modules/vercel/dist/vc.js`) throw new Error("TOOLING_ENTRYPOINT_MISMATCH");
 	const source = readFileSync(join(ROOT, "scripts/deploy-vercel-production.mjs"), "utf8");
 	const controls = source.includes('runtimeEnv.VERCEL_CLI_USE_NATIVE_BINARY = "0";') && source.includes('runtimeEnv.NO_UPDATE_NOTIFIER = "1";') && source.includes("runtimeEnv.HOME = isolatedHome;");
+	if (!controls) throw new Error("TOOLING_EXECUTION_ISOLATION_MISSING");
 	return {
 		candidate: { cli_package: pkg.name, cli_version: pkg.version, package_lock_sha256: sha256(lockBytes), tarball_integrity: artifact.integrity, tarball_sha256: artifact.sha256 },
 		runtime: { node_version: process.version, npm_cli_sha256: npmRuntime().sha256, npm_tree_sha256: fingerprintInstalledTree(npmRuntime().packageRoot), npm_version: String(npm.stdout).trim(), runner: { os: platform() === "linux" ? "Linux" : platform() === "darwin" ? "Darwin" : platform(), arch: arch(), image: env.ImageOS === "ubuntu24" ? "ubuntu-24.04" : env.ImageOS ?? "UNKNOWN", image_version: env.ImageVersion ?? "UNKNOWN", os_release: distro() } },
 		install: receipt.install,
-		execution: { entrypoint, resolved_entrypoint: relative(ROOT, realpathSync(join(ROOT, entrypoint))), args: ["deploy", "--prebuilt", "--prod", "--skip-domain", "--yes"], metadata_fields: ["githubCommitOrg", "githubCommitRef", "githubCommitRepo", "githubCommitSha", "githubDeployment", "githubOrg", "githubRepo"], temporary_home: controls, auto_update_disabled: controls, native_fallback_disabled: controls, env_flags: { VERCEL_CLI_USE_NATIVE_BINARY: controls ? "0" : "UNKNOWN", NO_UPDATE_NOTIFIER: controls ? "1" : "UNKNOWN" }, material_source_sha256: sha256(source), material_source_hashes: Object.fromEntries(TOOLING_MATERIAL_SOURCE_PATHS.map(path => [path, sha256(readFileSync(join(ROOT, path)))])) },
+		execution: { entrypoint, resolved_entrypoint: relative(ROOT, realpathSync(join(ROOT, entrypoint))), args: ["deploy", "--prebuilt", "--prod", "--skip-domain", "--yes"], metadata_fields: ["githubCommitOrg", "githubCommitRef", "githubCommitRepo", "githubCommitSha", "githubDeployment", "githubOrg", "githubRepo"], temporary_home: controls, auto_update_disabled: controls, native_fallback_disabled: controls, env_flags: { VERCEL_CLI_USE_NATIVE_BINARY: controls ? "0" : "UNKNOWN", NO_UPDATE_NOTIFIER: controls ? "1" : "UNKNOWN" }, material_source_sha256: sha256(source), material_source_hashes: materialSourceHashes },
 		target: TARGET,
 		installed_tree: { sha256: fingerprintInstalledTree(join(ROOT, TOOLING, "node_modules")), fingerprint_algorithm: TOOLING_TREE_FINGERPRINT_ALGORITHM, platform_scope: `${platform() === "linux" ? "Linux" : platform() === "darwin" ? "Darwin" : platform()}/${arch()}` },
 		audit,
@@ -82,16 +86,6 @@ export async function collectToolingObservation({ env = process.env, audit, outp
 async function decision(kind, digest, prefix, env, fetchImpl) {
 	try { return await readConcreteOwnerDecision({ kind, manifestDigest: digest, reference: json(join(ROOT, EVIDENCE, `${prefix}-owner-decision-reference.json`)), token: env.GH_TOKEN, fetchImpl }); }
 	catch { return null; }
-}
-
-export async function evaluateCurrentTooling({ outputDirectory, observed, auditJson, auditExitCode, env = process.env, fetchImpl = fetch }) {
-	const manifest = optionalJson(join(ROOT, EVIDENCE, "t1-concrete-tooling-manifest.json"));
-	const reviewPath = join(ROOT, EVIDENCE, "independent-security-review.json");
-	const independentReview = existsSync(reviewPath) ? readFileSync(reviewPath, "utf8") : null;
-	const ownerApproval = manifest ? await decision("T1_CONCRETE_TOOLING_MANIFEST", toolingManifestDigest(manifest), "t1", env, fetchImpl) : null;
-	const result = evaluateToolingAcceptance({ auditExitCode, auditJson, manifest, ownerApproval, independentReview, observed });
-	if (outputDirectory) writeFileSync(join(outputDirectory, "tooling-acceptance.json"), `${JSON.stringify(result, null, 2)}\n`);
-	return result;
 }
 
 export async function evaluateCurrentCredential({ env = process.env, fetchImpl = fetch, readProviderObservation } = {}) {
@@ -111,24 +105,18 @@ export async function assertConcreteProductionContracts({ env = process.env, fet
 	const prior = json(join(outputDirectory, "observed.json"));
 	const audit = json(join(outputDirectory, "audit-execution.json"));
 	const observed = await collectToolingObservation({ env, audit, outputDirectory, verifiedTarball: { integrity: prior.candidate.tarball_integrity, sha256: prior.candidate.tarball_sha256 } });
-	const result = await evaluateCurrentTooling({ observed, auditJson: readFileSync(join(outputDirectory, "npm-audit.json"), "utf8"), auditExitCode: audit.plain_exit_code, env, fetchImpl });
-	if (result.p4AcceptanceResult !== "PASS" || (await evaluateCurrentCredential({ env, fetchImpl })).result !== "PASS") throw new Error("CONCRETE_T1_C1_ADMISSION_FAILED");
+	if (JSON.stringify(observed) !== JSON.stringify(prior)) throw new Error("TOOLING_INSTALLED_IDENTITY_CHANGED");
+	if ((await evaluateCurrentCredential({ env, fetchImpl })).result !== "PASS") throw new Error("CONCRETE_C1_ADMISSION_FAILED");
 }
 
 async function main() {
 	const outputDirectory = resolve(process.argv[2] ?? join(process.env.RUNNER_TEMP ?? ROOT, "kirari-tooling-evidence"));
 	const audit = collectFullToolingAudit({ outputDirectory });
-	let observed = null;
-	try { observed = await collectToolingObservation({ audit: audit.execution, outputDirectory }); }
-	catch { /* Missing identity evidence stays fail-closed; raw audit remains retained. */ }
+	const observed = await collectToolingObservation({ audit: audit.execution, outputDirectory });
 	writeFileSync(join(outputDirectory, "observed.json"), `${JSON.stringify(observed, null, 2)}\n`);
-	try { writeFileSync(join(outputDirectory, "advisory-inventory.md"), createAdvisoryInventory(audit.auditJson).text); }
-	catch { /* Invalid audit JSON cannot produce accepted inventory. */ }
-	const result = await evaluateCurrentTooling({ outputDirectory, observed, auditJson: audit.auditJson, auditExitCode: audit.auditExitCode });
-	process.stdout.write(`${JSON.stringify({ TOOLING_RAW_AUDIT_RESULT: result.rawAuditResult, TOOLING_P4_ACCEPTANCE_RESULT: result.p4AcceptanceResult, failureCodes: result.failureCodes })}\n`);
-	if (result.p4AcceptanceResult !== "PASS") process.exitCode = 1;
+	process.stdout.write(`${JSON.stringify({ TOOLING_IDENTITY_RESULT: "PASS", TOOLING_DEPENDENCY_AUDIT: "INFORMATIONAL", audit: audit.execution })}\n`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-	try { await main(); } catch { process.stderr.write("CONCRETE_MANIFEST_GATE_FAILED\n"); process.exitCode = 1; }
+	try { await main(); } catch { process.stderr.write("TOOLING_IDENTITY_VERIFICATION_FAILED\n"); process.exitCode = 1; }
 }

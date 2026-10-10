@@ -156,8 +156,8 @@ rollback. Merging main keeps Vercel Git auto-deployment disabled. See
 [Site Production](./docs/SITE_PRODUCTION.md) for release prerequisites and the
 exact one-time authorization boundary.
 
-T1/C1 policy frameworks require separate exact, expiring tooling and sanitized credential
-manifest approvals; pending concrete decisions block Production.
+Dependency audits are informational. Locked CLI/source integrity and sanitized
+credential approval remain required; Production needs separate exact authorization.
 
 Both modes build static output only. They do not fetch or switch refs, commit,
 push, deploy, package Cloudflare Pages Functions, or submit IndexNow/Google
@@ -201,6 +201,10 @@ pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```
+
+Dependency audit is informational: CI preserves its raw report without blocking
+build, test, typecheck, QA or deployment-policy results. Apply compatible upstream
+fixes when available; unresolved upstream advisories do not require custom exceptions.
 
 ## Configuration
 
@@ -678,6 +682,10 @@ pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```
+
+Dependency audit is informational: CI preserves its raw report without blocking
+build, test, typecheck, QA or deployment-policy results. Apply compatible upstream
+fixes when available; unresolved upstream advisories do not require custom exceptions.
 
 CI must use `--frozen-lockfile`. `@astrojs/check` is devDependency only.
 

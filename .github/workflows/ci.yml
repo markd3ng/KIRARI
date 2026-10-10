@@ -44,6 +44,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with:
           version: 9.14.4
+          dest: /tmp/kirari-pnpm-${{ github.run_id }}-${{ github.run_attempt }}
 
       - uses: actions/setup-node@v4
         with:
@@ -51,7 +52,7 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/root-audit-source-integrity.test.mjs scripts/tests/root-audit-evaluator.test.mjs scripts/tests/root-audit-prepare.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/p3-browser-oidc.test.mjs scripts/tests/p3-staging-workflow-contract.test.mjs scripts/tests/vercel-preview-deployment.test.mjs
+      - run: node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/p3-browser-oidc.test.mjs scripts/tests/p3-staging-workflow-contract.test.mjs scripts/tests/vercel-preview-deployment.test.mjs
       - name: Verify production authorization, immutable promotion, validation, and rollback contracts
         run: node --test scripts/tests/production-authorization.test.mjs scripts/tests/p4-*.test.mjs scripts/tests/site-artifact.test.mjs scripts/tests/vercel-production-artifact.test.mjs
       - run: node apps/site/scripts/materialize-profile.mjs
@@ -71,291 +72,58 @@ jobs:
       - run: pnpm release:version-check
       - run: git diff --check
 
-  root-audit:
+  dependency-audit:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    permissions:
-      contents: read
+    # Dependency advisories and audit-service failures are informational.
+    continue-on-error: true
     steps:
-      - name: Check out the exact pull request head
-        id: checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 1
           persist-credentials: false
 
-      - name: Prepare raw audit evidence directory
-        run: |
-          set -eu
-          evidence_dir="$RUNNER_TEMP/kirari-root-audit"
-          mkdir -p "$evidence_dir"
-          : > "$evidence_dir/audit.raw.json"
-          printf '125\n' > "$evidence_dir/audit.exit-code"
-          printf 'Audit did not start.\n' > "$evidence_dir/audit.stderr"
-          printf 'NO\n' > "$evidence_dir/audit.executed"
-          : > "$evidence_dir/unignored.audit.raw.json"
-          printf '125\n' > "$evidence_dir/unignored.audit.exit-code"
-          printf 'Supplemental audit did not start.\n' > "$evidence_dir/unignored.audit.stderr"
-          printf 'NO\n' > "$evidence_dir/unignored.audit.executed"
-          : > "$evidence_dir/dependency-install.stdout"
-          printf 'Dependency install did not start.\n' > "$evidence_dir/dependency-install.stderr"
-          printf '125\n' > "$evidence_dir/dependency-install.exit-code"
-          printf 'NO\n' > "$evidence_dir/dependency-install.executed"
-          : > "$evidence_dir/dependency-tree.raw.json"
-          printf 'Dependency tree did not start.\n' > "$evidence_dir/dependency-tree.stderr"
-          printf '125\n' > "$evidence_dir/dependency-tree.exit-code"
-          printf 'NO\n' > "$evidence_dir/dependency-tree.executed"
-          printf 'NOT_CHECKED\n' > "$evidence_dir/source-tree-integrity"
-          printf '{"policyEvaluation":"FAIL","reason":"The evaluator did not run."}\n' > "$evidence_dir/policy-result.json"
-
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
         with:
           version: 9.14.4
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version-file: .nvmrc
+          cache: pnpm
 
-      - name: Prepare a temporary audit workspace without the existing #122 ignore
-        if: always() && steps.checkout.outcome == 'success'
-        env:
-          AUDIT_WORKSPACE: ${{ runner.temp }}/kirari-root-audit-unignored-project
+      - run: pnpm install --frozen-lockfile
+      - name: Report dependency audit
+        continue-on-error: true
         run: |
-          set -eu
-          node --input-type=module <<'NODE'
-          import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-          import { dirname, isAbsolute, join, relative, resolve } from "node:path";
+          audit_status=0
+          json_status=0
+          pnpm audit --audit-level moderate > "$RUNNER_TEMP/dependency-audit.txt" 2>&1 || audit_status=$?
+          pnpm audit --json > "$RUNNER_TEMP/dependency-audit.json" 2> "$RUNNER_TEMP/dependency-audit.stderr.txt" || json_status=$?
+          cat "$RUNNER_TEMP/dependency-audit.txt"
+          {
+            printf '## Dependency audit (informational)\n\n'
+            printf 'Moderate-level report exit status: `%s`; full JSON inventory exit status: `%s`.\n\n' "$audit_status" "$json_status"
+            printf 'See the raw report artifact and job log for findings or service errors. JSON includes all severities.\n\n'
+            printf 'This report does not determine engineering CI success. Compatible upstream fixes are tracked separately.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$audit_status" == 0 ]]; then audit_status="$json_status"; fi
+          exit "$audit_status"
 
-          const root = resolve(process.cwd());
-          const target = process.env.AUDIT_WORKSPACE;
-          if (!target) throw new Error("AUDIT_WORKSPACE is required");
-          const targetRoot = resolve(target);
-          const rel = relative(root, targetRoot);
-          if (!isAbsolute(targetRoot) || rel === "" || (!rel.startsWith("..") && rel !== "..")) {
-            throw new Error("The unignored audit workspace must be outside the repository checkout");
-          }
-
-          const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
-          if (JSON.stringify(manifest.pnpm?.auditConfig?.ignoreCves) !== JSON.stringify(["CVE-2026-93748"])) {
-            throw new Error("The source #122 ignore scope changed; refusing to prepare a different audit workspace");
-          }
-          const lockfile = readFileSync(join(root, "pnpm-lock.yaml"), "utf8");
-          const importerLines = lockfile.split(/\r?\n/);
-          const importerStart = importerLines.findIndex((line) => line === "importers:");
-          if (importerStart < 0) throw new Error("pnpm lockfile importer section is missing");
-          const importers = [];
-          for (let index = importerStart + 1; index < importerLines.length; index += 1) {
-            const line = importerLines[index];
-            if (/^[^\s#][^:]*:\s*(?:#.*)?$/.test(line)) break;
-            const match = /^  ([^\s].*):\s*(?:\{\}|#.*)?$/.exec(line);
-            if (match) importers.push(match[1]);
-          }
-          const expectedImporters = [".", "apps/site", "workers/kirari-edge", "packages/site-profile"];
-          if (JSON.stringify([...importers].sort()) !== JSON.stringify([...expectedImporters].sort())) {
-            throw new Error(`Unsupported lockfile importer set: ${JSON.stringify(importers)}`);
-          }
-          const unignoredManifest = structuredClone(manifest);
-          delete unignoredManifest.pnpm.auditConfig.ignoreCves;
-          if (Object.keys(unignoredManifest.pnpm.auditConfig).length === 0) delete unignoredManifest.pnpm.auditConfig;
-
-          rmSync(targetRoot, { recursive: true, force: true });
-          mkdirSync(targetRoot, { recursive: true });
-          writeFileSync(join(targetRoot, "package.json"), `${JSON.stringify(unignoredManifest, null, 2)}\n`);
-          for (const file of ["pnpm-lock.yaml", "pnpm-workspace.yaml", ".npmrc"]) {
-            try {
-              copyFileSync(join(root, file), join(targetRoot, file));
-            } catch (error) {
-              if (file !== ".npmrc" || error?.code !== "ENOENT") throw error;
-            }
-          }
-          for (const importer of expectedImporters.filter((path) => path !== ".")) {
-            const source = join(root, importer, "package.json");
-            const destination = join(targetRoot, importer, "package.json");
-            mkdirSync(dirname(destination), { recursive: true });
-            copyFileSync(source, destination);
-          }
-          NODE
-
-      - name: Run the complete raw root audit and retain its actual exit status
-        id: raw_audit
-        if: always() && steps.checkout.outcome == 'success'
-        run: |
-          set +e
-          if command -v pnpm >/dev/null 2>&1; then
-            pnpm --config.ignore-pnpmfile=true audit --json --audit-level moderate > "$RUNNER_TEMP/kirari-root-audit/audit.raw.json" 2> "$RUNNER_TEMP/kirari-root-audit/audit.stderr"
-            audit_exit_code=$?
-            printf 'YES\n' > "$RUNNER_TEMP/kirari-root-audit/audit.executed"
-          else
-            audit_exit_code=127
-            printf 'pnpm was unavailable; audit was not executed.\n' > "$RUNNER_TEMP/kirari-root-audit/audit.stderr"
-          fi
-          printf '%s\n' "$audit_exit_code" > "$RUNNER_TEMP/kirari-root-audit/audit.exit-code"
-          exit 0
-
-      - name: Run the supplemental audit with no ignored CVEs
-        if: always() && steps.checkout.outcome == 'success'
-        working-directory: ${{ runner.temp }}/kirari-root-audit-unignored-project
-        run: |
-          set +e
-          if [[ -f package.json ]] && command -v pnpm >/dev/null 2>&1; then
-            pnpm --config.ignore-pnpmfile=true audit --json --audit-level moderate > "$RUNNER_TEMP/kirari-root-audit/unignored.audit.raw.json" 2> "$RUNNER_TEMP/kirari-root-audit/unignored.audit.stderr"
-            audit_exit_code=$?
-            printf 'YES\n' > "$RUNNER_TEMP/kirari-root-audit/unignored.audit.executed"
-          else
-            audit_exit_code=127
-            printf 'The supplemental workspace or pnpm was unavailable; audit was not executed.\n' > "$RUNNER_TEMP/kirari-root-audit/unignored.audit.stderr"
-          fi
-          printf '%s\n' "$audit_exit_code" > "$RUNNER_TEMP/kirari-root-audit/unignored.audit.exit-code"
-          exit 0
-
-      - name: Install the exact frozen lockfile for dependency path resolution
-        if: always() && steps.checkout.outcome == 'success'
-        run: |
-          set +e
-          if command -v pnpm >/dev/null 2>&1; then
-            pnpm --config.ignore-pnpmfile=true install --frozen-lockfile --ignore-scripts --ignore-pnpmfile > "$RUNNER_TEMP/kirari-root-audit/dependency-install.stdout" 2> "$RUNNER_TEMP/kirari-root-audit/dependency-install.stderr"
-            install_exit_code=$?
-            printf 'YES\n' > "$RUNNER_TEMP/kirari-root-audit/dependency-install.executed"
-          else
-            install_exit_code=127
-            printf 'pnpm was unavailable; dependency install was not executed.\n' > "$RUNNER_TEMP/kirari-root-audit/dependency-install.stderr"
-          fi
-          printf '%s\n' "$install_exit_code" > "$RUNNER_TEMP/kirari-root-audit/dependency-install.exit-code"
-          exit 0
-
-      - name: Capture all lock-resolved workspace dependency trees
-        if: always() && steps.checkout.outcome == 'success'
-        run: |
-          set +e
-          install_exit_code=$(cat "$RUNNER_TEMP/kirari-root-audit/dependency-install.exit-code")
-          if [[ "$install_exit_code" == 0 ]] && command -v pnpm >/dev/null 2>&1; then
-            pnpm --config.ignore-pnpmfile=true ls --recursive --depth Infinity --json > "$RUNNER_TEMP/kirari-root-audit/dependency-tree.raw.json" 2> "$RUNNER_TEMP/kirari-root-audit/dependency-tree.stderr"
-            tree_exit_code=$?
-            printf 'YES\n' > "$RUNNER_TEMP/kirari-root-audit/dependency-tree.executed"
-          else
-            tree_exit_code=125
-            printf 'Dependency install did not succeed; tree command was not executed.\n' > "$RUNNER_TEMP/kirari-root-audit/dependency-tree.stderr"
-          fi
-          printf '%s\n' "$tree_exit_code" > "$RUNNER_TEMP/kirari-root-audit/dependency-tree.exit-code"
-          exit 0
-
-      - name: Verify the checkout stayed at the exact Git tree before evaluation
-        id: source_integrity
-        if: always() && steps.checkout.outcome == 'success'
-        env:
-          EXPECTED_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          set -u
-          observed_head=$(git rev-parse HEAD)
-          tracked_changes=$(git diff --name-only HEAD --)
-          untracked_files=$(git ls-files --others --exclude-standard)
-          git ls-tree -r -z "$EXPECTED_PR_HEAD_SHA" > "$RUNNER_TEMP/kirari-root-audit/source-tree-entries"
-          tree_mismatch=0
-          while IFS= read -r -d '' tree_entry; do
-            entry_header=${tree_entry%%$'\t'*}
-            source_path=${tree_entry#*$'\t'}
-            read -r expected_mode entry_type expected_object <<< "$entry_header"
-            if [[ "$entry_type" != blob || ( "$expected_mode" != 100644 && "$expected_mode" != 100755 ) ]]; then
-              printf 'Unsupported tracked Git entry type or mode: %s %s %s\n' "$expected_mode" "$entry_type" "$source_path"
-              tree_mismatch=1
-              continue
-            fi
-            parent="$PWD"
-            remaining="$source_path"
-            parent_mismatch=0
-            while [[ "$remaining" == */* ]]; do
-              component=${remaining%%/*}
-              remaining=${remaining#*/}
-              parent="$parent/$component"
-              if [[ -L "$parent" || ! -d "$parent" ]]; then
-                parent_mismatch=1
-                break
-              fi
-            done
-            if [[ "$parent_mismatch" == 1 || -L "./$source_path" || ! -f "./$source_path" ]]; then
-              printf 'Tracked source path is missing, non-regular, or traverses a symlink: %s\n' "$source_path"
-              tree_mismatch=1
-              continue
-            fi
-            if [[ ( "$expected_mode" == 100755 && ! -x "./$source_path" ) || ( "$expected_mode" == 100644 && -x "./$source_path" ) ]]; then
-              printf 'Tracked source executable mode differs from the candidate Git tree: %s\n' "$source_path"
-              tree_mismatch=1
-              continue
-            fi
-            if ! git cat-file blob "$EXPECTED_PR_HEAD_SHA:$source_path" | cmp -s - "./$source_path"; then
-              printf 'Tracked source bytes differ from the candidate Git blob: %s\n' "$source_path"
-              tree_mismatch=1
-            fi
-          done < "$RUNNER_TEMP/kirari-root-audit/source-tree-entries"
-          if [[ "$observed_head" == "$EXPECTED_PR_HEAD_SHA" && "$tree_mismatch" == 0 && -z "$tracked_changes" && -z "$untracked_files" ]]; then
-            printf 'PASS\n' > "$RUNNER_TEMP/kirari-root-audit/source-tree-integrity"
-            exit 0
-          fi
-          printf 'FAIL\n' > "$RUNNER_TEMP/kirari-root-audit/source-tree-integrity"
-          printf 'Expected HEAD: %s\nObserved HEAD: %s\nTracked changes: %s\nUntracked files: %s\n' \
-            "$EXPECTED_PR_HEAD_SHA" "$observed_head" "$tracked_changes" "$untracked_files"
-          exit 1
-
-      - name: Evaluate the exact raw audit against the fail-closed R3 policy
-        if: always() && steps.checkout.outcome == 'success' && steps.source_integrity.outcome == 'success'
-        env:
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number || '' }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-          RAW_AUDIT_PATH: ${{ runner.temp }}/kirari-root-audit/audit.raw.json
-          RAW_AUDIT_EXIT_CODE_PATH: ${{ runner.temp }}/kirari-root-audit/audit.exit-code
-          RAW_AUDIT_STDERR_PATH: ${{ runner.temp }}/kirari-root-audit/audit.stderr
-          RAW_AUDIT_EXECUTED_PATH: ${{ runner.temp }}/kirari-root-audit/audit.executed
-          UNIGNORED_AUDIT_PATH: ${{ runner.temp }}/kirari-root-audit/unignored.audit.raw.json
-          UNIGNORED_AUDIT_EXIT_CODE_PATH: ${{ runner.temp }}/kirari-root-audit/unignored.audit.exit-code
-          UNIGNORED_AUDIT_STDERR_PATH: ${{ runner.temp }}/kirari-root-audit/unignored.audit.stderr
-          UNIGNORED_AUDIT_EXECUTED_PATH: ${{ runner.temp }}/kirari-root-audit/unignored.audit.executed
-          UNIGNORED_ROOT_MANIFEST_PATH: ${{ runner.temp }}/kirari-root-audit-unignored-project/package.json
-          DEPENDENCY_TREE_PATH: ${{ runner.temp }}/kirari-root-audit/dependency-tree.raw.json
-          DEPENDENCY_TREE_EXIT_CODE_PATH: ${{ runner.temp }}/kirari-root-audit/dependency-tree.exit-code
-          DEPENDENCY_TREE_STDERR_PATH: ${{ runner.temp }}/kirari-root-audit/dependency-tree.stderr
-          DEPENDENCY_TREE_EXECUTED_PATH: ${{ runner.temp }}/kirari-root-audit/dependency-tree.executed
-          DEPENDENCY_INSTALL_STDOUT_PATH: ${{ runner.temp }}/kirari-root-audit/dependency-install.stdout
-          DEPENDENCY_INSTALL_STDERR_PATH: ${{ runner.temp }}/kirari-root-audit/dependency-install.stderr
-          DEPENDENCY_INSTALL_EXIT_CODE_PATH: ${{ runner.temp }}/kirari-root-audit/dependency-install.exit-code
-          DEPENDENCY_INSTALL_EXECUTED_PATH: ${{ runner.temp }}/kirari-root-audit/dependency-install.executed
-          POLICY_RESULT_PATH: ${{ runner.temp }}/kirari-root-audit/policy-result.json
-        run: node scripts/root-audit/cli.mjs
-
-      - name: Upload raw audit and policy evaluation evidence
+      - name: Preserve raw dependency audit report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: kirari-root-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          name: kirari-dependency-audit-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            ${{ runner.temp }}/kirari-root-audit/audit.raw.json
-            ${{ runner.temp }}/kirari-root-audit/audit.stderr
-            ${{ runner.temp }}/kirari-root-audit/audit.exit-code
-            ${{ runner.temp }}/kirari-root-audit/audit.executed
-            ${{ runner.temp }}/kirari-root-audit/unignored.audit.raw.json
-            ${{ runner.temp }}/kirari-root-audit/unignored.audit.stderr
-            ${{ runner.temp }}/kirari-root-audit/unignored.audit.exit-code
-            ${{ runner.temp }}/kirari-root-audit/unignored.audit.executed
-            ${{ runner.temp }}/kirari-root-audit/dependency-install.stdout
-            ${{ runner.temp }}/kirari-root-audit/dependency-install.stderr
-            ${{ runner.temp }}/kirari-root-audit/dependency-install.exit-code
-            ${{ runner.temp }}/kirari-root-audit/dependency-install.executed
-            ${{ runner.temp }}/kirari-root-audit/dependency-tree.raw.json
-            ${{ runner.temp }}/kirari-root-audit/dependency-tree.stderr
-            ${{ runner.temp }}/kirari-root-audit/dependency-tree.exit-code
-            ${{ runner.temp }}/kirari-root-audit/dependency-tree.executed
-            ${{ runner.temp }}/kirari-root-audit/source-tree-integrity
-            ${{ runner.temp }}/kirari-root-audit/policy-result.json
-          if-no-files-found: error
+            ${{ runner.temp }}/dependency-audit.txt
+            ${{ runner.temp }}/dependency-audit.json
+            ${{ runner.temp }}/dependency-audit.stderr.txt
+          if-no-files-found: warn
           retention-days: 30
 
   production-fixtures:
     permissions:
       contents: read
-      issues: read
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -420,7 +188,7 @@ jobs:
           NODE_PATH: ''
           LD_PRELOAD: ''
           LD_LIBRARY_PATH: ''
-      - name: Retain raw full audit and evaluate the separate concrete T1 gate
+      - name: Report dependency audit and verify locked CLI identity
         if: always()
         env:
           BASH_ENV: /dev/null
@@ -429,14 +197,13 @@ jobs:
           NODE_PATH: ''
           LD_PRELOAD: ''
           LD_LIBRARY_PATH: ''
-          GH_TOKEN: ${{ github.token }}
         run: >-
           "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-gate.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
       - name: Retain complete tooling audit and actual runner identity
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: kirari-t1-tooling-${{ github.run_id }}-${{ github.run_attempt }}
+          name: kirari-production-tooling-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/kirari-tooling-evidence
           if-no-files-found: error
           retention-days: 14

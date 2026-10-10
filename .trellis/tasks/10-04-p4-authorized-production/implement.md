@@ -1,3 +1,5 @@
+> **Owner continuation — 2026-10-10:** PR #139 retired the R3 dependency admission platform. T1 dependency approval/exception requirements below are historical and superseded. Current work refreshes existing PR #133 on main `0945eb82e76cab1878e7324ef3447f37855dfe79`, removes obsolete root-audit/T1 consumers, and retains strict artifact, credential, browser and rollback checks. Production remains separately authorized.
+
 # Execution
 
 - [x] Reconcile main, #99/#98 and Project; preserve older local P2 checkout.
@@ -32,3 +34,7 @@ Reconcile exact main/PR/control plane and store verbatim Owner approval; paralle
 ## T1/C1 application verification — 2026-10-06
 
 New admission checks PASS 96/96; full P4 PASS 180/180; P3 regressions PASS 29/29. All root checks passed at the initial local capture, and actual Production Chromium PASS. The refreshed existing-rule root dependency audit now FAILS on new published advisories; no exception was added or dependency behavior changed. Linux CI run 37406038134 verified actual runner/npm/CLI identities and executed Production Chromium. Its tooling gate correctly refused the stale inventory and pending concrete approval; final evidence replaces that inventory and adds independent review. Root audit remains a separate blocker. Exact final-head CI and fresh independent code review are recorded in the GitHub #99/#129/#130/PR #133 control plane after evidence freeze. Production remains unauthorized and untouched.
+
+## P4 engineering resume — 2026-10-10
+
+Merge current main into the existing PR branch without rewriting history. Resolve CI/test conflicts by retaining main informational audit and strict verification, adding original P4 contracts and Production Chromium/locked CLI checks. Remove the unused root-audit branch implementation and T1 dependency acceptance engine; retain historical evidence and the separate C1 credential boundary. Run standard engineering CI, P3/P4 regressions and independent source review. No Production workflow dispatch, credential setup, settings mutation or PR #133 merge is authorized by this engineering continuation.

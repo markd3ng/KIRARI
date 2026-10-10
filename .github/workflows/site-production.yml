@@ -155,7 +155,7 @@ jobs:
         run: >-
           "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-install.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
 
-      - name: Audit full pinned CLI and evaluate separate concrete T1 acceptance
+      - name: Report dependency audit and verify locked CLI identity
         if: always()
         env:
           BASH_ENV: /dev/null
@@ -164,7 +164,6 @@ jobs:
           NODE_PATH: ''
           LD_PRELOAD: ''
           LD_LIBRARY_PATH: ''
-          GH_TOKEN: ${{ github.token }}
         run: >-
           "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/tooling-gate.mjs "$RUNNER_TEMP/kirari-tooling-evidence"
 

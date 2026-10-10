@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { fingerprintInstalledTree } from "./tooling-acceptance.mjs";
+import { createHash } from "node:crypto";
+import { fingerprintInstalledTree, TOOLING_MATERIAL_SOURCE_PATHS } from "./tooling-identity.mjs";
 import { npmRuntime, spawnNpm } from "./npm-runtime.mjs";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
@@ -14,6 +15,7 @@ export const TOOLING_INSTALL_ARGS = ["ci", "--prefix", "scripts/p4-production/to
 export function installProductionTooling({ outputDirectory, env = process.env, spawn = spawnSync }) {
 	if (env.VERCEL_TOKEN || env.VERCEL_PRODUCTION_TOKEN) throw new Error("TOOLING_INSTALL_CREDENTIAL_PRESENT");
 	mkdirSync(outputDirectory, { recursive: true });
+	const sourceHashes = Object.fromEntries(TOOLING_MATERIAL_SOURCE_PATHS.map(path => [path, `sha256:${createHash("sha256").update(readFileSync(join(ROOT, path))).digest("hex")}`]));
 	const home = mkdtempSync(join(tmpdir(), "kirari-tooling-install-home-"));
 	try {
 		// No Actions environment/path files, GitHub token, Vercel token, npm config,
@@ -25,7 +27,7 @@ export function installProductionTooling({ outputDirectory, env = process.env, s
 		const npm = spawnNpm(spawn, ["--version"], options);
 		const result = spawnNpm(spawn, TOOLING_INSTALL_ARGS, options);
 		writeFileSync(join(outputDirectory, "npm-ci.txt"), `${result.stdout ?? ""}${result.stderr ?? ""}`);
-		const receipt = { install: { command: `npm ${TOOLING_INSTALL_ARGS.join(" ")}`, mode: "npm ci", lifecycle_scripts: "enabled", credential_absent: true, minimal_environment: true, temporary_home: true }, captured_at: new Date().toISOString(), node_version: process.version, npm_cli_sha256: npmRuntime().sha256, npm_tree_sha256: fingerprintInstalledTree(npmRuntime().packageRoot), npm_version: String(npm.stdout ?? "").trim(), exit_code: result.status, completed: result.status === 0 && !result.error && !result.signal && npm.status === 0 };
+		const receipt = { material_source_hashes: sourceHashes, install: { command: `npm ${TOOLING_INSTALL_ARGS.join(" ")}`, mode: "npm ci", lifecycle_scripts: "enabled", credential_absent: true, minimal_environment: true, temporary_home: true }, captured_at: new Date().toISOString(), node_version: process.version, npm_cli_sha256: npmRuntime().sha256, npm_tree_sha256: fingerprintInstalledTree(npmRuntime().packageRoot), npm_version: String(npm.stdout ?? "").trim(), exit_code: result.status, completed: result.status === 0 && !result.error && !result.signal && npm.status === 0 };
 		writeFileSync(join(outputDirectory, "install-receipt.json"), `${JSON.stringify(receipt, null, 2)}\n`);
 		if (!receipt.completed) throw new Error("TOOLING_LOCKED_INSTALL_FAILED");
 		return receipt;

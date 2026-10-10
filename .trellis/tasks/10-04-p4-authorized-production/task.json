@@ -25,5 +25,15 @@
   "meta": {
     "engineering_merge_gate": "BLOCKED_CONCRETE_T1_OWNER_DECISION_AND_FRESH_ROOT_DEPENDENCY_AUDIT",
     "production_readiness": "C1_OWNER_SETUP_AUTHENTICATED_READBACK_AND_SEPARATE_DECISION_REQUIRED"
+  },
+  "evidence": {
+    "ownerResume20261010": {
+      "baseMain": "0945eb82e76cab1878e7324ef3447f37855dfe79",
+      "existingPr": 133,
+      "r3AndT1DependencyAdmission": "RETIRED",
+      "audit": "INFORMATIONAL_UNSUPPRESSED",
+      "productionDeploymentPerformed": false,
+      "nextGate": "EXACT_HEAD_CI_AND_INDEPENDENT_REVIEW_THEN_SEPARATE_PRODUCTION_DECISION"
+    }
   }
 }

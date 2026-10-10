@@ -138,8 +138,9 @@ pnpm release:check
 node apps/site/scripts/generate-vercel-config.mjs --check
 ```
 
-CI additionally runs edge checks, release version checks, audit, and
-`git diff --check`. Use pnpm and Node `>=22.12.0`.
+CI additionally requires edge checks, release version checks, and
+`git diff --check`. Dependency audit runs separately as an informational report.
+Use pnpm and Node `>=22.12.0`.
 
 Repository-wide commit, release, and documentation rules live in
 `.trellis/spec/guides/repository-workflow.md`.
@@ -214,16 +215,13 @@ Update `createVercelConfig`, regenerate `vercel.json`, and verify that only `mai
   in `docs/SITE_PRODUCTION.md`; engineering readiness is separate from live
   phase completion.
 
-## P4 approved T1/C1 contract
+## P4 tooling and credential boundary
 
-Deployment tooling always runs the unchanged full npm moderate audit, retains
-its raw exit result and full inventory, and evaluates P4 acceptance separately.
-A raw FAIL requires an exact concrete Owner manifest decision, independent
-security review, content/runtime/runner/install/command binding, exposed
-UNKNOWN paths, finite expiry and invalidation on changed evidence. Framework
-approval cannot pass this gate. Do not add deployment-tool ignored advisories.
-C1 accepts exactly the target-project PAT for a complete Developer plus only
-Full Production Deployment role manifest; separate sanitized concrete approval
-and fresh complete readback are required. Extra same-project powers and
-endpoint uncertainty remain disclosed. See docs/SITE_PRODUCTION.md.
-Neither framework authorizes secrets/settings/token creation or Production.
+Deployment-tool dependency audit is informational and retains the standard human
+report, full JSON inventory, service errors and actual statuses without suppression.
+No T1 exception/manifest approval or retired R3 infrastructure is required.
+Locked installation, installed CLI/source integrity, isolation, browser verification,
+explicit Production artifact/target authorization and rollback checks remain strict.
+C1 requires separate sanitized concrete credential approval and fresh authenticated
+scope/role readback before credentials are mapped. See docs/SITE_PRODUCTION.md.
+Dependency reporting does not authorize secrets/settings/token creation or Production.

@@ -1,5 +1,5 @@
 const API = "https://api.github.com/repos/markd3ng/KIRARI/issues/comments/";
-const KINDS = { T1_CONCRETE_TOOLING_MANIFEST: 130, C1_CONCRETE_CREDENTIAL_MANIFEST: 129 };
+const KINDS = { C1_CONCRETE_CREDENTIAL_MANIFEST: 129 };
 
 /** Read the current Owner decision, rather than trusting a local approval flag. */
 export async function readConcreteOwnerDecision({ kind, manifestDigest, reference, token, fetchImpl = fetch, now = Date.now() }) {

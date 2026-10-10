@@ -1,10 +1,11 @@
 import { spawnSync } from "node:child_process";
 import assert from "node:assert/strict";
-import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { collectFullToolingAudit } from "../p4-production/tooling-gate.mjs";
+import { fingerprintInstalledTree } from "../p4-production/tooling-identity.mjs";
 import { npmRuntime, spawnNpm } from "../p4-production/npm-runtime.mjs";
 import { installProductionTooling } from "../p4-production/tooling-install.mjs";
 
@@ -18,7 +19,7 @@ test("unchanged full plain and JSON audits both execute after raw failure withou
 		} });
 		assert.deepEqual(calls.map(x => [x.command, ...x.args]), [
 			[process.execPath, npmRuntime().cli, "audit", "--prefix", "scripts/p4-production/tooling", "--audit-level", "moderate"],
-			[process.execPath, npmRuntime().cli, "audit", "--prefix", "scripts/p4-production/tooling", "--audit-level", "moderate", "--json"],
+			[process.execPath, npmRuntime().cli, "audit", "--prefix", "scripts/p4-production/tooling", "--json"],
 		]);
 		for (const { command, args, options } of calls) { assert.equal(command, process.execPath); assert.equal(args[0], npmRuntime().cli); assert.equal(options.env.VERCEL_TOKEN, undefined); assert.equal(options.env.GH_TOKEN, undefined); }
 		assert.equal(result.auditExitCode, 1);
@@ -78,4 +79,21 @@ test("a PATH-shadowed npm cannot replace the Node-distribution npm audit executa
 		assert.equal(result.stdout.trim(), "10.9.0");
 		assert.equal(existsSync(marker), false);
 	} finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test("installed-tree fingerprint binds sorted paths and content without following symlinks", () => {
+	const directory = mkdtempSync(join(tmpdir(), "kirari-tooling-tree-"));
+	try {
+		mkdirSync(join(directory, "node_modules"));
+		writeFileSync(join(directory, "node_modules", "entry.js"), "module.exports = 1;\n");
+		symlinkSync("entry.js", join(directory, "node_modules", "entry-link.js"));
+		const root = join(directory, "node_modules");
+		const first = fingerprintInstalledTree(root);
+		assert.match(first, /^sha256:[0-9a-f]{64}$/);
+		assert.equal(fingerprintInstalledTree(root), first);
+		writeFileSync(join(root, "entry.js"), "module.exports = 2;\n");
+		assert.notEqual(fingerprintInstalledTree(root), first);
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
+	}
 });

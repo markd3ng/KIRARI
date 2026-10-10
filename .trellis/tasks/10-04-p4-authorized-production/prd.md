@@ -1,3 +1,5 @@
+> **Owner continuation — 2026-10-10:** PR #139 retired the R3 dependency admission platform. T1 dependency approval/exception requirements below are historical and superseded. Current work refreshes existing PR #133 on main `0945eb82e76cab1878e7324ef3447f37855dfe79`, removes obsolete root-audit/T1 consumers, and retains strict artifact, credential, browser and rollback checks. Production remains separately authorized.
+
 # P4 / RM-05 — Owner-authorized immutable Site production
 
 GitHub Issue #99 and Project 1 are the execution control plane. Baseline main is c79659046cf6ea73ba69e03c3937d904c07ba93b; P3/#98 completed with source run 37189363285 and package 11297428920, digest sha256:47dcbda5ed9e6ed72a6856af9700fd40b1afeeaa24623871005a515881b0c33c.

@@ -99,35 +99,26 @@ network policy before promotion. Production indexing checks require the
 approved canonical/robots policy; Preview's required `noindex` is not reused
 as a Production success condition.
 
-Both CI and the production workflow always run the full unchanged
-`npm audit --prefix scripts/p4-production/tooling --audit-level moderate`
-and retain its actual exit status plus full JSON and human advisory inventory.
-`TOOLING_RAW_AUDIT_RESULT` remains FAIL when npm reports qualifying findings.
-The approved T1 framework introduces a separate `TOOLING_P4_ACCEPTANCE_RESULT`.
-For a raw FAIL, acceptance requires a distinct current Owner decision on the
-exact concrete version/lock/artifact/runtime/runner/install/command/target and
-complete advisory manifest, with independent review, declared UNKNOWN paths
-treated as exposed, explicit provenance/SBOM/signature gaps, finite expiry and
-immediate invalidation on material changes or new/changed advisories. A policy
-approval alone is insufficient. No advisory is suppressed or ignored. Root,
-Site and Worker audit rules and the existing #122 exception are unchanged.
+CI and the production workflow retain standard deployment-tool audits as
+informational reports: `npm audit --prefix scripts/p4-production/tooling
+--audit-level moderate` and full `npm audit --prefix scripts/p4-production/tooling
+--json`, including raw output, service errors and actual exit statuses. An upstream
+advisory does not require a T1 exception or determine engineering CI success.
+The Owner retired the T1 dependency approval engine and R3 Trust Root/App/final
+admission requirements on 2026-10-10. No advisories are suppressed.
 
-The concrete T1 and C1 decision references are separate from the manifests.
-The current Owner comment is read from GitHub on every admission and checked
-against the entire canonical manifest digest and finite expiry; edited, revoked,
-substituted, missing or expired decisions fail closed. Both current concrete
-decisions are PENDING, so the amended gate deliberately remains FAIL.
-See the [decision packages](../.trellis/tasks/10-04-p4-authorized-production/evidence/t1-c1/)
-and [secure Owner evidence procedure](../.trellis/tasks/10-04-p4-authorized-production/evidence/t1-c1/owner-setup.md).
-These policy amendments authorize no token creation, Environment/settings/secret
-change, or Production operation. Live readiness also requires authenticated
-project readback of exact Trusted Sources and authoritative semantics; unknown
-configuration or interpretation remains blocked.
+Locked CLI installation, the actual Node/npm/CLI identity, unchanged installed
+bytes and reviewed source, isolated temporary HOME, disabled native fallback
+and credential-free installation remain strict. CI runs local Production Chromium
+before the CLI install and identity check. Findings cannot skip the browser proof.
 
-CI runs the audited local Production Chromium fixture before the independent
-deployment-tool install and audit. This retains browser evidence even when the
-tooling gate fails; pending concrete T1 acceptance still fails the job and blocks merge.
-The protected Production workflow audits tooling before mapping credentials.
+The separate C1 credential boundary remains: sanitized concrete credential
+approval and authenticated current scope/role readback are required before
+mapping Production credentials. Its current reader is unavailable, so live
+credential readiness remains blocked; this is separate from dependency reporting.
+See the historical [credential decision evidence](../.trellis/tasks/10-04-p4-authorized-production/evidence/t1-c1/).
+Explicit artifact/target/operation authorization, protected Environment and exact
+Trusted Sources readback remain required before any Production operation.
 
 The documented existing-deployment promotion API assigns production traffic
 without rebuilding. Re-read the expected current production state immediately

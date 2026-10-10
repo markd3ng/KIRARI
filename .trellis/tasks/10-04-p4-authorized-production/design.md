@@ -1,3 +1,5 @@
+> **Owner continuation — 2026-10-10:** PR #139 retired the R3 dependency admission platform. T1 dependency approval/exception requirements below are historical and superseded. Current work refreshes existing PR #133 on main `0945eb82e76cab1878e7324ef3447f37855dfe79`, removes obsolete root-audit/T1 consumers, and retains strict artifact, credential, browser and rollback checks. Production remains separately authorized.
+
 # Production engineering design
 
 Boundary: production workflow_dispatch from reviewed main invokes small shared Node/Python boundaries. Separate authorization/preflight before the protected production credential job. Bind exact workflow SHA, source run/attempt/SHA, package ID/archive digest, Core/Site SHAs, team/project, complete production domain set, current deployment, operation and prior approved release record into a one-time approval. Deny reruns and reused dispatch authorization.

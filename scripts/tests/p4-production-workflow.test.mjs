@@ -64,7 +64,7 @@ test("production credentials exist only on the final runtime step after browser 
 	assert.match(runtimeStep, /PRODUCTION_PACKAGE_VERIFICATION: \$\{\{ steps\.consume\.outputs\.package_verification_path \}\}/);
 	assert.match(runtimeStep, /PRODUCTION_EVIDENCE_DIR: \$\{\{ steps\.consume\.outputs\.evidence_dir \}\}/);
 	assert.match(runtimeStep, /VERCEL_CLI_PATH:/);
-	for (const step of ["Install and audit production browser validator", "Install browser runtime", "Install pinned Vercel CLI before credentials are mapped", "Audit full pinned CLI and evaluate separate concrete T1 acceptance", "Verify separate concrete C1 approval and sanitized credential evidence", "Recheck authorization and consume the exact immutable package"]) {
+	for (const step of ["Install and audit production browser validator", "Install browser runtime", "Install pinned Vercel CLI before credentials are mapped", "Report dependency audit and verify locked CLI identity", "Verify separate concrete C1 approval and sanitized credential evidence", "Recheck authorization and consume the exact immutable package"]) {
 		const block = stepBlock(productionBlock, step);
 		assert.ok(block, `missing step ${step}`);
 		assert.doesNotMatch(block, /VERCEL_TOKEN|secrets\.VERCEL/);
@@ -98,7 +98,7 @@ test("main Git deployment stays disabled and Production never edits settings or 
 	assert.doesNotMatch(workflow, /generate-vercel-config|vercel\s+(?:project|settings)\s+(?:update|add|remove)|api\.indexnow\.org|indexing\.googleapis\.com|\bIndexNow\b|Google Indexing API/i);
 });
 
-test("CI runs audited local Production Chromium before the independent deployment-tool audit", () => {
+test("CI keeps browser and CLI integrity checks strict while deployment-tool findings are informational", () => {
 	const fixtures = ciWorkflow.match(/^  production-fixtures:[\s\S]*?(?=^  \w)/m)?.[0] ?? "";
 	assert.ok(fixtures, "Production fixture job must exist");
 	const browserAudit = fixtures.indexOf("npm audit --prefix scripts/p3-browser --audit-level moderate");
@@ -130,10 +130,12 @@ function stepBlock(block, name) {
 }
 
 
-test("concrete manifest admission is separate from raw audit and rechecked before Production writes", () => {
+test("tooling findings do not require an exception; actual CLI integrity and credentials are rechecked before writes", () => {
 	const gate = readFileSync(join(repoRoot, "scripts/p4-production/tooling-gate.mjs"), "utf8");
-	assert.match(gate, /TOOLING_RAW_AUDIT_RESULT: result.rawAuditResult/);
-	assert.match(gate, /TOOLING_P4_ACCEPTANCE_RESULT: result.p4AcceptanceResult/);
+	assert.match(gate, /TOOLING_DEPENDENCY_AUDIT: "INFORMATIONAL"/);
+	assert.doesNotMatch(gate, /evaluateToolingAcceptance|T1_CONCRETE_TOOLING_MANIFEST|t1-owner-decision|p4AcceptanceResult/);
+	assert.match(gate, /TOOLING_INSTALLED_IDENTITY_CHANGED/);
+	assert.match(gate, /TOOLING_SOURCE_CHANGED_DURING_INSTALL/);
 	assert.match(gate, /collectFullToolingAudit/);
 	assert.match(workflow, /node scripts\/p4-production\/credential-gate.mjs/);
 	assert.match(runtime, /await assertConcreteProductionContracts\(\)/);
@@ -152,7 +154,7 @@ test("later Production commands use the setup-node absolute executable despite a
 		assert.ok(production.includes(`run: >-\n          ${trustedNode} scripts/p4-production/${file}.mjs`));
 	}
 	assert.match(production, /issues: read/);
-	assert.match(fixtures, /issues: read/);
+	assert.doesNotMatch(fixtures, /issues: read|GH_TOKEN/);
 });
 
 
@@ -185,7 +187,7 @@ test("both amended workflows parse as YAML with executable absolute Node command
 	const production = YAML.parse(workflowSource).jobs.production;
 	const fixtures = YAML.parse(ciWorkflowSource).jobs["production-fixtures"];
 	for (const job of [production, fixtures]) {
-		assert.equal(job.permissions.issues, "read");
+		assert.equal(job.permissions.issues, job === production ? "read" : undefined);
 		for (const step of job.steps.filter(x => x.run?.includes("scripts/p4-production/"))) {
 			assert.ok(step.run.startsWith(trustedNode + " scripts/p4-production/"));
 			assert.equal(step.env.BASH_ENV, "/dev/null");

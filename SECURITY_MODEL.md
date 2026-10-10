@@ -139,9 +139,15 @@ pnpm install --frozen-lockfile
 pnpm audit --audit-level moderate
 ```
 
-Security overrides in `package.json` are allowed when the affected transitive
-dependency is compatible and the upstream package has not released a patched
-dependency tree yet.
+Dependency audit is a non-blocking informational CI report with no advisory
+suppression. The moderate-level human report, full JSON inventory (all severities),
+exit statuses and audit-service errors remain visible in the raw artifact and logs. Upgrade
+through compatible upstream fixes; do not force unsupported versions to silence
+advisories. KIRARI does not require a custom dependency exception consumer, GitHub
+App trust root or atomic merge admission system.
+
+Build, tests, typechecks, QA, credential isolation and deployment-policy checks
+remain strict. Production deployment still requires separate Owner authorization.
 
 ## Edge Proxy Trust Boundary
 
@@ -169,14 +175,11 @@ not relax the rendering model.
 
 ## P4 tooling and credential risk decisions
 
-T1 and C1 framework approval does not approve a CLI version, advisory inventory,
-credential or Production operation. Full unsuppressed deployment-tool audits
-retain their raw FAIL result. The separate P4 acceptance gate requires an exact
-independently reviewed, digest-bound Owner risk manifest with a finite expiry;
-changed inventory/runtime/runner/install/integrity/command paths invalidate it.
-All UNKNOWN vulnerability paths remain exposed, including bundled code and
-unproven publisher provenance or whole-tree signature coverage. Root dependency
-audits retain their existing rules.
+Deployment-tool audits retain unsuppressed raw findings, service errors and exit
+statuses as informational reports. No T1 advisory exception, Trust Root/App or
+atomic dependency admission is required. Compatible upstream patches are used
+when available. Locked installation, source/CLI integrity and credential isolation
+remain strict; root dependency audit follows the same informational policy.
 
 C1 requires one-project resource scope and complete Developer plus only Full
 Production Deployment grants, with concrete sanitized Owner approval and fresh
@@ -184,5 +187,5 @@ readback. A compromised CLI can exercise the disclosed extra same-project
 capabilities; Trusted Sources and the reviewed workflow do not impose a bearer
 token verb sandbox. Unverified principal/plan/group/scope/expiry or extra
 elevation blocks credential admission. See docs/SITE_PRODUCTION.md and the
-T1/C1 decision packages for exact contracts. Production authorization remains
+historical credential decision evidence for exact contracts. Production authorization remains
 a separate immutable-artifact/target/operation gate.
