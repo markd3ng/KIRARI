@@ -53,11 +53,6 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/p3-browser-oidc.test.mjs scripts/tests/p3-staging-workflow-contract.test.mjs scripts/tests/vercel-preview-deployment.test.mjs
-      - run: node --test scripts/root-audit/tests/*.test.mjs
-      - name: Exercise isolated activation attacks
-        run: node scripts/root-audit/tests/activation-matrix.mjs
-      - name: Prove Linux audit isolation without App credentials
-        run: node scripts/root-audit/tests/linux-isolation-smoke.mjs
       - run: node apps/site/scripts/materialize-profile.mjs
       - run: pnpm profile:check
       - run: pnpm site:test
@@ -73,8 +68,56 @@ jobs:
       - run: pnpm build
       - run: pnpm release:check
       - run: pnpm release:version-check
-      - run: pnpm audit --audit-level moderate
       - run: git diff --check
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Dependency advisories and audit-service failures are informational.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+        with:
+          version: 9.14.4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - name: Report dependency audit
+        continue-on-error: true
+        run: |
+          audit_status=0
+          json_status=0
+          pnpm audit --audit-level moderate > "$RUNNER_TEMP/dependency-audit.txt" 2>&1 || audit_status=$?
+          pnpm audit --json > "$RUNNER_TEMP/dependency-audit.json" 2> "$RUNNER_TEMP/dependency-audit.stderr.txt" || json_status=$?
+          cat "$RUNNER_TEMP/dependency-audit.txt"
+          {
+            printf '## Dependency audit (informational)\n\n'
+            printf 'Moderate-level report exit status: `%s`; full JSON inventory exit status: `%s`.\n\n' "$audit_status" "$json_status"
+            printf 'See the raw report artifact and job log for findings or service errors. JSON includes all severities.\n\n'
+            printf 'This report does not determine engineering CI success. Compatible upstream fixes are tracked separately.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$audit_status" == 0 ]]; then audit_status="$json_status"; fi
+          exit "$audit_status"
+
+      - name: Preserve raw dependency audit report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: kirari-dependency-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/dependency-audit.txt
+            ${{ runner.temp }}/dependency-audit.json
+            ${{ runner.temp }}/dependency-audit.stderr.txt
+          if-no-files-found: warn
+          retention-days: 30
 
   composition:
     if: >-

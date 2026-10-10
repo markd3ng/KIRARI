@@ -58,11 +58,6 @@
       "vite": "8.0.16",
       "ws": "8.21.0",
       "yaml": "2.9.0"
-    },
-    "auditConfig": {
-      "ignoreCves": [
-        "CVE-2026-93748"
-      ]
     }
   },
   "devDependencies": {

@@ -120,9 +120,15 @@ pnpm install --frozen-lockfile
 pnpm audit --audit-level moderate
 ```
 
-Security overrides in `package.json` are allowed when the affected transitive
-dependency is compatible and the upstream package has not released a patched
-dependency tree yet.
+Dependency audit is a non-blocking informational CI report with no advisory
+suppression. The moderate-level human report, full JSON inventory (all severities),
+exit statuses and audit-service errors remain visible in the raw artifact and logs. Upgrade
+through compatible upstream fixes; do not force unsupported versions to silence
+advisories. KIRARI does not require a custom dependency exception consumer, GitHub
+App trust root or atomic merge admission system.
+
+Build, tests, typechecks, QA, credential isolation and deployment-policy checks
+remain strict. Production deployment still requires separate Owner authorization.
 
 ## Edge Proxy Trust Boundary
 

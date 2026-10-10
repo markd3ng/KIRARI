@@ -193,6 +193,10 @@ pnpm build
 pnpm audit --audit-level moderate
 ```
 
+Dependency audit is informational: CI preserves its raw report without blocking
+build, test, typecheck, QA or deployment-policy results. Apply compatible upstream
+fixes when available; unresolved upstream advisories do not require custom exceptions.
+
 ## Configuration
 
 Single user-editable source: `packages/site-profile/kirari.config.toml`.
@@ -669,6 +673,10 @@ pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```
+
+Dependency audit is informational: CI preserves its raw report without blocking
+build, test, typecheck, QA or deployment-policy results. Apply compatible upstream
+fixes when available; unresolved upstream advisories do not require custom exceptions.
 
 CI must use `--frozen-lockfile`. `@astrojs/check` is devDependency only.
 
