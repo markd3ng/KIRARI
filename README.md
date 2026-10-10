@@ -150,6 +150,15 @@ Composed builds also isolate content caches and index search pages in a stable o
 See the build guide for ref selection, schema/toolchain identity, diagnostics,
 and input-pair rebuild instructions.
 
+External Site Production uses a separate owner-approved immutable CI package
+path, with protected credentials, production validation and approved-record
+rollback. Merging main keeps Vercel Git auto-deployment disabled. See
+[Site Production](./docs/SITE_PRODUCTION.md) for release prerequisites and the
+exact one-time authorization boundary.
+
+Dependency audits are informational. Locked CLI/source integrity and sanitized
+credential approval remain required; Production needs separate exact authorization.
+
 Both modes build static output only. They do not fetch or switch refs, commit,
 push, deploy, package Cloudflare Pages Functions, or submit IndexNow/Google
 indexing notifications. Site MDX and other build-time code are trusted inputs

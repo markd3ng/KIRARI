@@ -1,0 +1,10 @@
+{
+  "name": "@kirari/p4-production-vercel-cli",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Pinned Vercel CLI for reviewed Build Output API production deployments",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "vercel": "62.2.0"
+  }
+}

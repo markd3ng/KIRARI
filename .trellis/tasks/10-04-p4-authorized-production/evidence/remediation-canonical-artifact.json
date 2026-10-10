@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "stream": "B",
+  "result": "VERIFIED",
+  "source_run": {
+    "id": 37258535783,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "branch": "main",
+    "head_sha": "c79659046cf6ea73ba69e03c3937d904c07ba93b",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/markd3ng/KIRARI/actions/runs/37258535783",
+    "jobs": {
+      "browser-fixtures": "success",
+      "composition": "success",
+      "verify": "success"
+    }
+  },
+  "selected_inputs": {
+    "core_ref": "c79659046cf6ea73ba69e03c3937d904c07ba93b",
+    "site_repository": "markd3ng/KIRARI",
+    "site_ref": "b1b488ce9491c75718a32cbcf06351d908204358",
+    "site_subdirectory": "site"
+  },
+  "source_review": {
+    "pull_request": "https://github.com/markd3ng/KIRARI/pull/134",
+    "state": "OPEN",
+    "merged": false,
+    "reviewed_head_sha": "b1b488ce9491c75718a32cbcf06351d908204358",
+    "review": "main integration source review approved the exact input for build-only CI; this is not a human approval"
+  },
+  "composition_artifact": {
+    "id": "11324140696",
+    "name": "kirari-composition-37258535783-1",
+    "archive_digest": "sha256:29d0f4da56ab01fdf5e6ec3dc6e598df591a9ef201eef7cbb00aad2c9658efab",
+    "re_read_from_github": true,
+    "normalized_output_digest": "sha256:83edfa958459bb1c450d983e1a0fe7c1ff53082841d3df39180c40e48e49ecad",
+    "file_count": 317
+  },
+  "site_package_artifact": {
+    "id": "11323926470",
+    "name": "kirari-site-package-37258535783-1",
+    "archive_digest": "sha256:21c27932ae527b81afe5cc19ec6b163da6dfd11e455b210f594a211e04ced7cd",
+    "re_read_from_github": true,
+    "build_output_digest": "sha256:c162ec64f0793402dfa7c1d1aa96b84ba5c28bfdd8c35d9e6eb5a4567d456901",
+    "manifest_target_preserved": {
+      "platform": "vercel",
+      "project": "kirari-test",
+      "environment": "preview",
+      "deploy_mode": "prebuilt"
+    },
+    "functions_classification": "STATIC_ONLY_NO_FUNCTIONS_REQUIRED",
+    "static_output_inventory": {
+      "file_count": 315,
+      "total_bytes": 8919408
+    }
+  },
+  "package_provenance": {
+    "core_sha": "c79659046cf6ea73ba69e03c3937d904c07ba93b",
+    "site_sha": "b1b488ce9491c75718a32cbcf06351d908204358",
+    "site_subdirectory": "site",
+    "composition_artifact_id": "11324140696",
+    "composition_archive_digest": "sha256:29d0f4da56ab01fdf5e6ec3dc6e598df591a9ef201eef7cbb00aad2c9658efab",
+    "composition_provenance_sha256": "sha256:de95f5575468eaf055cec1745b4141d128a4954d774341d825c46e6b5ae85d69",
+    "package_archive_sha256_reverified": true
+  },
+  "production_canonical_policy": {
+    "expected_origin": "https://kirari-main.vercel.app",
+    "actual_origin": "https://kirari-main.vercel.app",
+    "canonical_documents": 29,
+    "robots_sitemap_count": 1,
+    "indexable": true,
+    "match": true
+  },
+  "local_chromium": {
+    "result": "PASS",
+    "fixture": "local-real-chromium-production",
+    "phase": "staged",
+    "mock_base_url": "https://kirari-main-production-fixture.vercel.app",
+    "byte_equality": "PASS",
+    "byte_output_digest": "sha256:9fd649ca2dc020e75870defdc7714cca712bbc31a5e69269a6b7c32ea6c6d891",
+    "inventory_digest": "sha256:3456e169aa7e3db694589899702492e189a7007adfe017b81be16818cf1cf596",
+    "routes": 2,
+    "assets_required": 18,
+    "assets_loaded": 35,
+    "browser_console_errors": 0,
+    "page_errors": 0,
+    "failed_browser_requests": 0,
+    "bad_responses": 0,
+    "unexpected_external_calls": 0
+  },
+  "retained_local_archives": {
+    "package_zip": "/tmp/kirari-p4-archives-record-37258535783/site-package.zip",
+    "package_zip_sha256": "sha256:21c27932ae527b81afe5cc19ec6b163da6dfd11e455b210f594a211e04ced7cd",
+    "composition_zip": "/tmp/kirari-p4-archives-record-37258535783/composition.zip",
+    "composition_zip_sha256": "sha256:29d0f4da56ab01fdf5e6ec3dc6e598df591a9ef201eef7cbb00aad2c9658efab"
+  },
+  "production_mutation_performed": false,
+  "production_deployment_performed": false,
+  "references": {
+    "source_commit": "https://github.com/markd3ng/KIRARI/commit/b1b488ce9491c75718a32cbcf06351d908204358",
+    "source_review_pr": "https://github.com/markd3ng/KIRARI/pull/134",
+    "source_run": "https://github.com/markd3ng/KIRARI/actions/runs/37258535783",
+    "prior_invalid_package_evidence": ".trellis/tasks/10-04-p4-authorized-production/evidence/canonical-route-verification.json",
+    "source_review": "https://github.com/markd3ng/KIRARI/pull/134#pullrequestreview-5409651983"
+  }
+}

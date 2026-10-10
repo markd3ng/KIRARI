@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-05",
+  "task": "10-04-p4-authorized-production",
+  "issue": 130,
+  "status": "BLOCKED_UPSTREAM",
+  "decision": "No supported, documented official Vercel deployment path satisfies both the unchanged moderate npm audit gate and the required prebuilt/no-build staged Production behavior.",
+  "scope": "Read-only registry, clean-lock installation/audit, official documentation/source inspection, and local CLI version/help inspection. No runtime, package manifest, tracked lock, workflow, adapter, or production operation was changed by this stream.",
+  "toolchain": {
+    "node": "v22.12.0",
+    "npm": "10.9.0",
+    "registry": "https://registry.npmjs.org",
+    "lockfileVersion": 3,
+    "installCommand": "npm ci --registry=https://registry.npmjs.org",
+    "auditCommand": "npm audit --audit-level=moderate --json --registry=https://registry.npmjs.org",
+    "policyChanges": [],
+    "latestDistTagsObserved": {
+      "vercel": "62.2.0",
+      "@vercel/client": "18.6.2",
+      "@vercel/sdk": "1.28.38",
+      "@vercel/vc-native": "62.2.0"
+    }
+  },
+  "activeTool": {
+    "package": "vercel",
+    "version": "59.16.0",
+    "tarball": "https://registry.npmjs.org/vercel/-/vercel-59.16.0.tgz",
+    "integrity": "sha512-D+9Tl8/qjV+wPtrMn0vrHoR+uZOeC6ZbftnniphZNUkPsshkC8LqCm+e3tcla69gQkuEUstVRg2BFJ4/nEVsiQ==",
+    "lockPath": "evidence/remediation-tooling-candidates/vercel-59.16.0.package-lock.json",
+    "lockSha256": "ee2ad6a88171f42fabe9235e81b1cd966f98148e8066832bbd40968a24cb02d9",
+    "lockEntriesIncludingRoot": 388,
+    "auditReportPath": "evidence/remediation-tooling-candidates/vercel-59.16.0.audit.json",
+    "auditExitCode": 1,
+    "auditDependencyCounts": {
+      "production": 286,
+      "development": 0,
+      "optional": 102,
+      "peer": 3,
+      "total": 387
+    },
+    "vulnerabilities": {
+      "info": 0,
+      "low": 1,
+      "moderate": 7,
+      "high": 25,
+      "critical": 1,
+      "total": 34
+    }
+  },
+  "candidates": [
+    {
+      "package": "vercel",
+      "version": "62.2.0",
+      "stability": "latest stable dist-tag",
+      "tarball": "https://registry.npmjs.org/vercel/-/vercel-62.2.0.tgz",
+      "integrity": "sha512-hwet6qXoOfZEc6waIx1VgI2nLl83wwuZZnFqKSsKJ47UFi9waEezPmAV7uNOx8Fq+6JTJIi+lRnxFXr9YFW3Eg==",
+      "lockPath": "evidence/remediation-tooling-candidates/vercel-62.2.0.package-lock.json",
+      "lockSha256": "227f5067665298dddb3c875fabd2b5a5a091972e44680aade25888a583a6f9ab",
+      "lockEntriesIncludingRoot": 384,
+      "auditReportPath": "evidence/remediation-tooling-candidates/vercel-62.2.0.audit.json",
+      "auditExitCode": 1,
+      "auditDependencyCounts": {
+        "production": 280,
+        "development": 0,
+        "optional": 104,
+        "peer": 3,
+        "total": 383
+      },
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 8,
+        "high": 24,
+        "critical": 1,
+        "total": 33
+      },
+      "functionalContract": {
+        "prebuiltBuildOutput": "documented and present in local deploy help",
+        "noPlatformBuildFromPrebuilt": "documented",
+        "productionTargetWithoutAutomaticDomainAssignment": "documented with --prod --skip-domain",
+        "laterExplicitPromotion": "documented with vercel promote",
+        "authentication": "Vercel CLI token authentication; local help/version was run with VERCEL_TOKEN unset",
+        "complete": true
+      },
+      "decision": "Rejected because audit-level moderate exits 1 with 33 vulnerabilities."
+    },
+    {
+      "package": "@vercel/client",
+      "version": "18.6.2",
+      "stability": "latest stable dist-tag",
+      "tarball": "https://registry.npmjs.org/@vercel/client/-/client-18.6.2.tgz",
+      "integrity": "sha512-DnrjxtH9RvcIT7ssSMt9ogOO8tSdrt5lTNF7OIiv+Uf8yL5oltXYq2yrxlY6Exkcu1V0Y+4Ni5YAeeCbCeCRIg==",
+      "lockPath": "evidence/remediation-tooling-candidates/client-18.6.2.package-lock.json",
+      "lockSha256": "faf41f7d48c1bea34e02f524b76bf5f58ff3e9162a8370f68a769fb01945a61c",
+      "lockEntriesIncludingRoot": 120,
+      "auditReportPath": "evidence/remediation-tooling-candidates/client-18.6.2.audit.json",
+      "auditExitCode": 1,
+      "auditDependencyCounts": {
+        "production": 115,
+        "development": 0,
+        "optional": 5,
+        "peer": 0,
+        "total": 119
+      },
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 9,
+        "critical": 0,
+        "total": 9
+      },
+      "functionalSurface": {
+        "officialReadme": "Identifies package as Vercel's official Node.js deployment client.",
+        "publishedDeclarations": [
+          "prebuilt",
+          "target",
+          "autoAssignCustomDomains"
+        ],
+        "sourceInspection": "Collects local paths, passes prebuilt=1, and submits file references to the deployment endpoint.",
+        "completeDocumentedStagedContract": "Not established by the public README; audit fails in any case."
+      },
+      "decision": "Rejected because the locked tree has nine high findings."
+    },
+    {
+      "package": "@vercel/sdk",
+      "version": "1.28.38",
+      "stability": "latest stable dist-tag",
+      "tarball": "https://registry.npmjs.org/@vercel/sdk/-/sdk-1.28.38.tgz",
+      "integrity": "sha512-DofYDwD2EGbwN6gvmxqnhrTQsahHbCw+ylTCZYpyekzHz70GNCcjIUWg98z6ucBV97aimlpiVlHg4K53nxxRfw==",
+      "lockPath": "evidence/remediation-tooling-candidates/sdk-1.28.38.package-lock.json",
+      "lockSha256": "e9ee073c45c31f0f8453c09609359b54c24f3aea8f9b128a6f79268aad7a30e8",
+      "lockEntriesIncludingRoot": 3,
+      "auditReportPath": "evidence/remediation-tooling-candidates/sdk-1.28.38.audit.json",
+      "auditExitCode": 0,
+      "auditDependencyCounts": {
+        "production": 3,
+        "development": 0,
+        "optional": 0,
+        "peer": 0,
+        "total": 2
+      },
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "documentedBehavior": {
+        "authenticatedCreateDeployment": "Bearer token documented.",
+        "uploadedFileReferences": "Documented.",
+        "productionTarget": "Documented.",
+        "deploymentBuildLifecycle": "Creation begins building immediately.",
+        "prebuiltBuildOutputOrNoBuild": "Not documented.",
+        "productionStageWithoutDomainAssignment": "No per-deployment request control documented; response alias fields do not define a staging request contract.",
+        "laterExplicitPromotion": "Not sufficient to close missing prebuilt/no-build and stage contract."
+      },
+      "decision": "Audit passes, but required supported behavior is not documented; no SDK adapter was implemented."
+    },
+    {
+      "package": "@vercel/vc-native",
+      "version": "62.2.0",
+      "stability": "latest dist-tag; Vercel announcement describes native package as experimental",
+      "tarball": "https://registry.npmjs.org/@vercel/vc-native/-/vc-native-62.2.0.tgz",
+      "integrity": "sha512-HaW3rCc/7QS9n2/bRz1FunVnQKbUotClOn0+CKPiCLcKcfgQS7qw4WifzP9gYiHAzNvaqqC8XVCbMGnBtYMJ5A==",
+      "lockPath": "evidence/remediation-tooling-candidates/vc-native-62.2.0.package-lock.json",
+      "lockSha256": "d57cc5f020bd79480e147699a8814e89360b01fccee2cbe0684a91adce595332",
+      "lockEntriesIncludingRoot": 8,
+      "auditReportPath": "evidence/remediation-tooling-candidates/vc-native-62.2.0.audit.json",
+      "auditExitCode": 0,
+      "auditDependencyCounts": {
+        "production": 2,
+        "development": 0,
+        "optional": 6,
+        "peer": 0,
+        "total": 7
+      },
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "limitations": [
+        "Official Vercel announcement explicitly calls the native CLI package experimental.",
+        "The payload includes compiled native executable binaries that npm audit cannot inspect."
+      ],
+      "decision": "Rejected as an experimental, unaudited binary payload."
+    }
+  ],
+  "documentedRequirements": {
+    "prebuiltOutput": "The Vercel CLI is documented to deploy an existing .vercel/output Build Output API directory with deploy --prebuilt.",
+    "noBuild": "CLI documentation says the prebuilt path uploads the local Build Output API result and bypasses the Vercel build system.",
+    "productionWithoutDomains": "CLI documents --prod --skip-domain to disable automatic aliasing.",
+    "laterPromotion": "CLI docs document vercel promote for the staged deployment; Vercel docs state promotion does not rebuild.",
+    "authentication": "CLI token auth is provided after protected job admission; REST API and SDK document bearer-token authentication.",
+    "implementationResult": "All four deployment semantics are documented for the CLI, but no stable candidate passing the security gate was found."
+  },
+  "officialSources": [
+    "https://vercel.com/docs/cli/deploy",
+    "https://vercel.com/docs/cli/deploying-from-cli",
+    "https://vercel.com/docs/build-output-api",
+    "https://vercel.com/docs/deployments/promoting-a-deployment",
+    "https://www.npmjs.com/package/@vercel/client",
+    "https://vercel.com/docs/rest-api/sdk",
+    "https://vercel.com/docs/rest-api/sdk/deployments/create-a-new-deployment",
+    "https://vercel.com/docs/rest-api/deployments/create-a-new-deployment",
+    "https://vercel.com/changelog/experimental-native-binaries-for-vercel-cli",
+    "https://github.com/vercel/vercel/blob/main/packages/cli/src/commands/deploy/index.ts",
+    "https://github.com/vercel/vercel/blob/main/packages/client/src/types.ts",
+    "https://github.com/vercel/vercel/blob/main/packages/client/src/create-deployment.ts"
+  ],
+  "sideEffects": {
+    "vercelTokenPresentDuringInspection": false,
+    "vercelAccountOperation": false,
+    "productionDeployment": false,
+    "productionPromotion": false,
+    "aliasOrDomainChange": false,
+    "settingsOrSecretChange": false
+  },
+  "result": {
+    "P4_DEPLOYMENT_TOOL_REMEDIATION": "BLOCKED_UPSTREAM",
+    "DEPLOYMENT_TOOLING_AUDIT": "FAIL",
+    "trackedLockChanged": false,
+    "runtimeAdapterChanged": false,
+    "mergeRecommendation": "Keep the existing moderate audit gate and active lock unchanged. Do not merge PR #133 while the supported production toolchain fails this gate."
+  }
+}

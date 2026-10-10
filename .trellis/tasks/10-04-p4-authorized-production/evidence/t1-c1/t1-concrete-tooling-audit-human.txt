@@ -1,0 +1,202 @@
+# npm audit report
+
+@fastify/busboy  <=3.2.1
+Severity: high
+@fastify/busboy vulnerable to Denial of Service via prototype-named multipart part header - https://github.com/advisories/GHSA-x8mw-p69m-v3mx
+@fastify/busboy vulnerable to CRLF injection via multipart Content-Disposition filename and name - https://github.com/advisories/GHSA-gxm5-99cw-xjw9
+fix available via `npm audit fix --force`
+Will install vercel@54.17.3, which is a breaking change
+node_modules/@fastify/busboy
+  undici  <=6.28.0
+  Depends on vulnerable versions of @fastify/busboy
+  node_modules/@vercel/node/node_modules/undici
+  node_modules/undici
+    @vercel/node  >=2.1.1-canary.0
+    Depends on vulnerable versions of @vercel/static-config
+    Depends on vulnerable versions of path-to-regexp
+    Depends on vulnerable versions of ts-morph
+    Depends on vulnerable versions of undici
+    node_modules/@vercel/node
+      @vercel/elysia  *
+      Depends on vulnerable versions of @vercel/node
+      Depends on vulnerable versions of @vercel/static-config
+      node_modules/@vercel/elysia
+        vercel  28.12.3 || >=28.17.0
+        Depends on vulnerable versions of @vercel/backends
+        Depends on vulnerable versions of @vercel/container
+        Depends on vulnerable versions of @vercel/elysia
+        Depends on vulnerable versions of @vercel/express
+        Depends on vulnerable versions of @vercel/fastify
+        Depends on vulnerable versions of @vercel/h3
+        Depends on vulnerable versions of @vercel/hono
+        Depends on vulnerable versions of @vercel/hydrogen
+        Depends on vulnerable versions of @vercel/koa
+        Depends on vulnerable versions of @vercel/nestjs
+        Depends on vulnerable versions of @vercel/node
+        Depends on vulnerable versions of @vercel/python
+        Depends on vulnerable versions of @vercel/python-analysis
+        Depends on vulnerable versions of @vercel/redwood
+        Depends on vulnerable versions of @vercel/remix-builder
+        Depends on vulnerable versions of @vercel/rust
+        Depends on vulnerable versions of @vercel/static-build
+        Depends on vulnerable versions of smol-toml
+        Depends on vulnerable versions of undici
+        node_modules/vercel
+      @vercel/express  *
+      Depends on vulnerable versions of @vercel/cervel
+      Depends on vulnerable versions of @vercel/node
+      Depends on vulnerable versions of @vercel/static-config
+      Depends on vulnerable versions of path-to-regexp
+      Depends on vulnerable versions of ts-morph
+      node_modules/@vercel/express
+      @vercel/fastify  *
+      Depends on vulnerable versions of @vercel/node
+      Depends on vulnerable versions of @vercel/static-config
+      node_modules/@vercel/fastify
+      @vercel/h3  *
+      Depends on vulnerable versions of @vercel/node
+      Depends on vulnerable versions of @vercel/static-config
+      node_modules/@vercel/h3
+      @vercel/hono  *
+      Depends on vulnerable versions of @vercel/node
+      Depends on vulnerable versions of @vercel/static-config
+      Depends on vulnerable versions of path-to-regexp
+      Depends on vulnerable versions of ts-morph
+      node_modules/@vercel/hono
+      @vercel/koa  *
+      Depends on vulnerable versions of @vercel/node
+      Depends on vulnerable versions of @vercel/static-config
+      node_modules/@vercel/koa
+      @vercel/nestjs  *
+      Depends on vulnerable versions of @vercel/node
+      Depends on vulnerable versions of @vercel/static-config
+      node_modules/@vercel/nestjs
+
+ajv  7.0.0-alpha.0 - 8.17.1
+Severity: moderate
+ajv has ReDoS when using `$data` option - https://github.com/advisories/GHSA-2g4f-4pwh-qvx6
+fix available via `npm audit fix --force`
+Will install vercel@54.17.3, which is a breaking change
+node_modules/ajv
+  @vercel/static-config  *
+  Depends on vulnerable versions of ajv
+  Depends on vulnerable versions of ts-morph
+  node_modules/@vercel/static-config
+    @vercel/backends  *
+    Depends on vulnerable versions of @vercel/static-config
+    Depends on vulnerable versions of path-to-regexp
+    Depends on vulnerable versions of ts-morph
+    node_modules/@vercel/backends
+      @vercel/cervel  >=0.0.12
+      Depends on vulnerable versions of @vercel/backends
+      node_modules/@vercel/cervel
+    @vercel/hydrogen  >=1.0.1
+    Depends on vulnerable versions of @vercel/static-config
+    Depends on vulnerable versions of ts-morph
+    node_modules/@vercel/hydrogen
+    @vercel/redwood  >=2.1.0
+    Depends on vulnerable versions of @vercel/static-config
+    Depends on vulnerable versions of ts-morph
+    node_modules/@vercel/redwood
+    @vercel/remix-builder  *
+    Depends on vulnerable versions of @vercel/static-config
+    Depends on vulnerable versions of path-to-regexp
+    Depends on vulnerable versions of ts-morph
+    node_modules/@vercel/remix-builder
+    @vercel/static-build  >=2.0.7
+    Depends on vulnerable versions of @vercel/static-config
+    Depends on vulnerable versions of ts-morph
+    node_modules/@vercel/static-build
+
+braces  *
+Severity: high
+braces vulnerable to stack-exhaustion denial of service through deeply nested patterns - https://github.com/advisories/GHSA-vfj7-8cjw-p6xm
+fix available via `npm audit fix --force`
+Will install vercel@54.17.3, which is a breaking change
+node_modules/braces
+  micromatch  >=0.2.0
+  Depends on vulnerable versions of braces
+  node_modules/micromatch
+    fast-glob  *
+    Depends on vulnerable versions of micromatch
+    node_modules/fast-glob
+      @ts-morph/common  0.2.0 - 0.24.0 || 0.26.0 - 0.27.0
+      Depends on vulnerable versions of fast-glob
+      node_modules/@ts-morph/common
+        ts-morph  6.0.1 - 23.0.0 || 25.0.0 - 26.0.0
+        Depends on vulnerable versions of @ts-morph/common
+        node_modules/ts-morph
+
+js-yaml  4.0.0 - 4.3.1
+Severity: high
+JS-YAML: Quadratic-complexity DoS in merge key handling via repeated aliases - https://github.com/advisories/GHSA-h67p-54hq-rp68
+js-yaml: YAML merge-key chains can force quadratic CPU consumption - https://github.com/advisories/GHSA-52cp-r559-cp3m
+JS-YAML: Quadratic CPU consumption in !!omap resolution (3.x and 4.x) — CVE-2026-59870 fix not backported - https://github.com/advisories/GHSA-5p4m-2wfm-xmqj
+js-yaml: maxTotalMergeKeys does not limit CPU use for empty merge sources - https://github.com/advisories/GHSA-2883-xcg3-v3hh
+fix available via `npm audit fix`
+node_modules/js-yaml
+
+minimatch  10.0.0 - 10.2.2
+Severity: high
+minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern - https://github.com/advisories/GHSA-3ppc-4f35-3m26
+minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments - https://github.com/advisories/GHSA-7r86-cg39-jmmj
+minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions - https://github.com/advisories/GHSA-23c5-xmqv-rm74
+fix available via `npm audit fix --force`
+Will install vercel@54.17.3, which is a breaking change
+node_modules/minimatch
+  @vercel/python-analysis  *
+  Depends on vulnerable versions of js-yaml
+  Depends on vulnerable versions of minimatch
+  Depends on vulnerable versions of smol-toml
+  node_modules/@vercel/python-analysis
+    @vercel/python  6.11.0 - 6.12.0 || >=6.14.1
+    Depends on vulnerable versions of @vercel/python-analysis
+    node_modules/@vercel/python
+
+path-to-regexp  4.0.0 - 6.2.2 || 8.0.0 - 8.3.0
+Severity: high
+path-to-regexp outputs backtracking regular expressions - https://github.com/advisories/GHSA-9wv6-86v2-598j
+path-to-regexp vulnerable to Denial of Service via sequential optional groups - https://github.com/advisories/GHSA-j3q9-mxjg-w52f
+path-to-regexp vulnerable to Regular Expression Denial of Service via multiple wildcards - https://github.com/advisories/GHSA-27v5-c462-wpq7
+fix available via `npm audit fix --force`
+Will install vercel@54.17.3, which is a breaking change
+node_modules/@vercel/node/node_modules/path-to-regexp
+node_modules/@vercel/remix-builder/node_modules/path-to-regexp
+node_modules/path-to-regexp
+
+smol-toml  <=1.8.0
+Severity: high
+smol-toml: Denial of Service via TOML documents containing thousands of consecutive commented lines - https://github.com/advisories/GHSA-v3rj-xjv7-4jmq
+smol-toml: Denial of Service via malformed TOML documents - https://github.com/advisories/GHSA-7w5x-hrqm-74c2
+smol-toml: Quadratic-time parse() from parseKey rescanning to end of document on each key line - https://github.com/advisories/GHSA-r4xh-jqrq-34v2
+fix available via `npm audit fix --force`
+Will install vercel@54.17.3, which is a breaking change
+node_modules/smol-toml
+  @vercel/rust  >=1.0.6
+  Depends on vulnerable versions of smol-toml
+  node_modules/@vercel/rust
+
+tar  <=7.5.20
+Severity: critical
+node-tar applies PAX size override to intermediary GNU long-name/long-link headers, causing tar parser interpretation differential (file smuggling) - https://github.com/advisories/GHSA-vmf3-w455-68vh
+node-tar: Process crash via PAX numeric path type confusion - https://github.com/advisories/GHSA-w8wr-v893-vjvp
+node-tar: Decompression/parse DoS via unlimited input - https://github.com/advisories/GHSA-23hp-3jrh-7fpw
+node-tar: Negative tar entry size causes infinite loop in archive replace - https://github.com/advisories/GHSA-8x88-c5mf-7j5w
+node-tar: Uncaught Exception DoS via NUL byte in PAX path/linkpath records - https://github.com/advisories/GHSA-gvwx-54wh-qm9j
+node-tar: Uncontrolled recursion in mapHas/filesFilter allows uncatchable stack-overflow DoS via crafted long-path tar with member selection - https://github.com/advisories/GHSA-r292-9mhp-454m
+fix available via `npm audit fix --force`
+Will install vercel@54.17.3, which is a breaking change
+node_modules/tar
+  @vercel/container  >=8.1.0
+  Depends on vulnerable versions of smol-toml
+  Depends on vulnerable versions of tar
+  node_modules/@vercel/container
+
+
+33 vulnerabilities (8 moderate, 24 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force

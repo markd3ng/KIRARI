@@ -94,78 +94,34 @@ jobs:
       - name: Verify and download exact immutable Site package
         env:
           GH_TOKEN: ${{ github.token }}
-          SOURCE_RUN_SHA: ${{ steps.source_run.outputs.source_run_sha }}
         run: |
           set -euo pipefail
           attempt="$(jq -r .run_attempt "$RUNNER_TEMP/source-run.json")"
           expected_name="kirari-site-package-${SOURCE_RUN_ID}-${attempt}"
-          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$PACKAGE_ARTIFACT_ID" > "$RUNNER_TEMP/package-artifact.json"
-          jq -e --arg id "$PACKAGE_ARTIFACT_ID" --arg digest "$PACKAGE_ARCHIVE_DIGEST" --arg name "$expected_name" --arg run "$SOURCE_RUN_ID" '
-            .id == ($id | tonumber) and
-            .name == $name and
-            .digest == $digest and
-            .expired == false and
-            .workflow_run.id == ($run | tonumber)
-          ' "$RUNNER_TEMP/package-artifact.json" > /dev/null
-
-          curl --fail --location --silent --show-error \
-            --header "Authorization: Bearer $GH_TOKEN" \
-            --header 'Accept: application/vnd.github+json' \
-            --header 'X-GitHub-Api-Version: 2022-11-28' \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$PACKAGE_ARTIFACT_ID/zip" \
-            --output "$RUNNER_TEMP/site-package.zip"
-          actual_digest="sha256:$(sha256sum "$RUNNER_TEMP/site-package.zip" | cut -d ' ' -f 1)"
-          [[ "$actual_digest" == "$PACKAGE_ARCHIVE_DIGEST" ]] || { echo 'Downloaded package archive digest mismatch' >&2; exit 1; }
-
-          mkdir -p "$RUNNER_TEMP/site-package"
-          python3 - "$RUNNER_TEMP/site-package.zip" "$RUNNER_TEMP/site-package" <<'PY'
-          import os, shutil, stat, sys, zipfile
-          archive, root = sys.argv[1:]
-          root = os.path.realpath(root)
-          seen = set()
-          with zipfile.ZipFile(archive) as package:
-              for info in package.infolist():
-                  name = info.filename
-                  is_directory = info.is_dir()
-                  path_name = name[:-1] if is_directory and name.endswith("/") else name
-                  parts = path_name.split("/")
-                  if not name or name.startswith("/") or "\\" in name or any(part in ("", ".", "..") for part in parts):
-                      raise SystemExit(f"unsafe artifact path: {name!r}")
-                  mode = stat.S_IFMT(info.external_attr >> 16)
-                  expected_mode = stat.S_IFDIR if is_directory else stat.S_IFREG
-                  if mode not in (0, expected_mode):
-                      raise SystemExit(f"unsupported artifact file type: {name!r}")
-                  if path_name in seen:
-                      raise SystemExit(f"duplicate artifact path: {name!r}")
-                  seen.add(path_name)
-                  destination = os.path.realpath(os.path.join(root, *parts))
-                  if os.path.commonpath((root, destination)) != root:
-                      raise SystemExit(f"artifact path escapes extraction root: {name!r}")
-                  if is_directory:
-                      os.makedirs(destination, exist_ok=True)
-                  else:
-                      os.makedirs(os.path.dirname(destination), exist_ok=True)
-                      with package.open(info) as source, open(destination, "xb") as target:
-                          shutil.copyfileobj(source, target)
-          PY
-
-          node scripts/verify-site-package.mjs "$RUNNER_TEMP/site-package" kirari-test "$SOURCE_RUN_SHA"
-          manifest="$RUNNER_TEMP/site-package/site-package-manifest.json"
-          source_id="$(jq -r .upstream_github_artifact.id "$manifest")"
-          source_digest="$(jq -r .upstream_github_artifact.digest "$manifest")"
-          source_name="$(jq -r .upstream_github_artifact.name "$manifest")"
-          [[ "$(jq -r .upstream_github_artifact.run_id "$manifest")" == "$SOURCE_RUN_ID" ]] || { echo 'Upstream artifact run ID mismatch' >&2; exit 1; }
-          [[ "$(jq -r .upstream_github_artifact.run_attempt "$manifest")" == "$attempt" ]] || { echo 'Upstream artifact attempt mismatch' >&2; exit 1; }
-          [[ "$source_name" == "kirari-composition-${SOURCE_RUN_ID}-${attempt}" ]] || { echo 'Upstream composition artifact name mismatch' >&2; exit 1; }
-          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$source_id" > "$RUNNER_TEMP/source-artifact.json"
-          jq -e --arg id "$source_id" --arg digest "$source_digest" --arg name "$source_name" --arg run "$SOURCE_RUN_ID" '
-            .id == ($id | tonumber) and
-            .name == $name and
-            .digest == $digest and
-            .expired == false and
-            .workflow_run.id == ($run | tonumber)
-          ' "$RUNNER_TEMP/source-artifact.json" > /dev/null
-          echo "package_artifact_url=$(jq -r .archive_download_url "$RUNNER_TEMP/package-artifact.json")" >> "$GITHUB_OUTPUT"
+          jq -n \
+            --arg run_id "$SOURCE_RUN_ID" \
+            --arg run_attempt "$attempt" \
+            --arg head_sha "$(jq -r .head_sha "$RUNNER_TEMP/source-run.json")" \
+            --arg ref 'refs/heads/main' \
+            --arg event "$(jq -r .event "$RUNNER_TEMP/source-run.json")" \
+            --arg conclusion "$(jq -r .conclusion "$RUNNER_TEMP/source-run.json")" \
+            --arg workflow_path "$(jq -r .path "$RUNNER_TEMP/source-run.json")" \
+            --arg package_id "$PACKAGE_ARTIFACT_ID" \
+            --arg package_name "$expected_name" \
+            --arg package_digest "$PACKAGE_ARCHIVE_DIGEST" \
+            '{schema_version:1,source:{run_id:$run_id,run_attempt:$run_attempt,head_sha:$head_sha,ref:$ref,event:$event,conclusion:$conclusion,workflow_path:$workflow_path},package:{id:$package_id,name:$package_name,digest:$package_digest}}' \
+            > "$RUNNER_TEMP/site-artifact-expected.json"
+          node scripts/site-artifact.mjs verify \
+            --expected-json "$RUNNER_TEMP/site-artifact-expected.json" \
+            --output-dir "$RUNNER_TEMP/site-package" \
+            > "$RUNNER_TEMP/site-package-verification.json"
+          jq -e \
+            --arg id "$PACKAGE_ARTIFACT_ID" \
+            --arg digest "$PACKAGE_ARCHIVE_DIGEST" \
+            --arg run "$SOURCE_RUN_ID" \
+            --arg attempt "$attempt" \
+            '.result == "PASS" and .packageArtifact.id == $id and .packageArchiveSha256 == $digest and .upstream.run_id == $run and .upstream.run_attempt == $attempt' \
+            "$RUNNER_TEMP/site-package-verification.json" > /dev/null
         id: package
 
       - name: Install and audit browser validator

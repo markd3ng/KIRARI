@@ -26,6 +26,7 @@ pnpm-debug.log*
 .vercel
 
 package-lock.json
+!scripts/p4-production/tooling/package-lock.json
 bun.lockb
 yarn.lock
 

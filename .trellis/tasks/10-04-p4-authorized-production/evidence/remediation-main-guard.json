@@ -1,0 +1,13 @@
+{
+  "main_sha": "c79659046cf6ea73ba69e03c3937d904c07ba93b",
+  "source_ref": "https://github.com/markd3ng/KIRARI/blob/c79659046cf6ea73ba69e03c3937d904c07ba93b/vercel.json",
+  "main_rule": {
+    "main": false
+  },
+  "worktree_rule": {
+    "main": false
+  },
+  "source_guard": "PASS",
+  "provider_readback": "see remediation-readiness evidence",
+  "no_merge_performed": true
+}

@@ -1,0 +1,19 @@
+{
+  "result": "PASS",
+  "source_run_id": 37189363285,
+  "source_sha": "c79659046cf6ea73ba69e03c3937d904c07ba93b",
+  "package_artifact_id": 11297428920,
+  "package_archive_digest": "sha256:47dcbda5ed9e6ed72a6856af9700fd40b1afeeaa24623871005a515881b0c33c",
+  "upstream_artifact": {
+    "id": "11297403999",
+    "digest": "sha256:20d8a4657eecf2b372bebd5fcfc6e503b995230b865f4a9d40bc69fbd6448208",
+    "name": "kirari-composition-37189363285-1",
+    "run_id": "37189363285",
+    "run_attempt": "1"
+  },
+  "output_digest": "sha256:7587a1670ba52cecf67f04b213f33a55a4f42c110817cd10d49018f22b299901",
+  "composition_digest": "sha256:a56f0d07b34dfcbeaf13bfce4b6621eb4c06458126e09f9443dd74cbcee8fbcb",
+  "static_file_count": 315,
+  "candidate_target_policy": "PRODUCTION_CANONICAL_TARGET_MISMATCH",
+  "production_mutation_performed": false
+}

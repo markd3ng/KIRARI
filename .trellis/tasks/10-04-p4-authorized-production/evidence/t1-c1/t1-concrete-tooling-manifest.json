@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "kind": "T1_CONCRETE_TOOLING_MANIFEST",
+  "status": "PENDING_OWNER_DECISION",
+  "policy_framework": {
+    "status": "APPROVED",
+    "issue_number": 130,
+    "proposal_comment_id": 5996717676,
+    "approval_comment_id": 5997088875,
+    "approval_comment_url": "https://github.com/markd3ng/KIRARI/issues/130#issuecomment-5997088875",
+    "scope": "T1 policy framework only; no concrete CLI or advisory approval"
+  },
+  "candidate": {
+    "cli_name": "Vercel CLI",
+    "cli_version": "62.2.0",
+    "registry_dist_tag": "latest",
+    "stable_metadata_source": "https://registry.npmjs.org/vercel",
+    "package_lock_sha256": "sha256:4c0a503511c7f2448f17dbedd5a72a5fbbd24114c400afcf29180e3e65a05f44",
+    "tarball_integrity": "sha512-hwet6qXoOfZEc6waIx1VgI2nLl83wwuZZnFqKSsKJ47UFi9waEezPmAV7uNOx8Fq+6JTJIi+lRnxFXr9YFW3Eg==",
+    "tarball_sha256": "sha256:68a81cdbc5f8dd0b5a63d41fc702d97d28d65c6d1b473cb2f55142eaabd5be26",
+    "registry_signature_status": "VERIFIED_NPM_REGISTRY_SIGNATURE",
+    "whole_tree_signature_status": "INCONCLUSIVE_SIGSTORE_TUF_FETCH_FAILURE",
+    "publisher_provenance_status": "ABSENT_NO_DIST_ATTESTATIONS_OR_GIT_HEAD",
+    "sbom_status": "ABSENT_NO_PUBLISHED_CLI_SBOM",
+    "cli_package": "vercel"
+  },
+  "runtime": {
+    "node_version": "v22.12.0",
+    "npm_cli_sha256": "sha256:8e5f6f3429f8cdbe693cdc29904e9d5a7b127a494bd15c804bd54c7403bfcbe7",
+    "npm_tree_sha256": "sha256:4406efda68e7d5a39839552077b038b5b7d561282c7bd61fa45e19e80b4a283e",
+    "npm_version": "10.9.0",
+    "runner": {
+      "os": "Linux",
+      "arch": "x64",
+      "image": "ubuntu-24.04",
+      "image_version": "20260927.320.1",
+      "os_release": "Ubuntu 24.04.5 LTS"
+    }
+  },
+  "runner_image_note": "Observed in exact candidate CI. The workflow selects mutable ubuntu-24.04; every use must match measured ImageVersion and OS release. No deterministic-image claim is made.",
+  "install": {
+    "command": "npm ci --prefix scripts/p4-production/tooling --registry=https://registry.npmjs.org",
+    "mode": "npm ci",
+    "lifecycle_scripts": "enabled",
+    "credential_absent": true,
+    "minimal_environment": true,
+    "temporary_home": true
+  },
+  "execution": {
+    "entrypoint": "scripts/p4-production/tooling/node_modules/.bin/vercel",
+    "resolved_entrypoint": "scripts/p4-production/tooling/node_modules/vercel/dist/vc.js",
+    "args": [
+      "deploy",
+      "--prebuilt",
+      "--prod",
+      "--skip-domain",
+      "--yes"
+    ],
+    "metadata_fields": [
+      "githubCommitOrg",
+      "githubCommitRef",
+      "githubCommitRepo",
+      "githubCommitSha",
+      "githubDeployment",
+      "githubOrg",
+      "githubRepo"
+    ],
+    "temporary_home": true,
+    "auto_update_disabled": true,
+    "native_fallback_disabled": true,
+    "env_flags": {
+      "VERCEL_CLI_USE_NATIVE_BINARY": "0",
+      "NO_UPDATE_NOTIFIER": "1"
+    },
+    "material_source_sha256": "sha256:e99e1525b4c97c457a90a1f7e46e2c5aa9c3347fbaa3db8080c4c772062511ba",
+    "material_source_hashes": {
+      ".github/workflows/ci.yml": "sha256:268fbffc1ef8e4c00ee0279874c035941faa6fac282be314b3507f7256c13fe2",
+      ".github/workflows/site-production.yml": "sha256:69a80e5b141af4aabb3dd967369318fc2aabfd8a4313d1965a1eebafbd478403",
+      "package.json": "sha256:de2386c37adf8e082781ba4da39931c6e53b5fe93d25255f146138155db123d1",
+      "pnpm-lock.yaml": "sha256:346322940876476c912caf94db63d868ab9d52e5dd580a0445279c8e2e3a3e2e",
+      "pnpm-workspace.yaml": "sha256:a0ef98ce004d5ea90ac1ace9372c8853463ea0da9ffccb70b8b3094e6fcbd115",
+      "scripts/p3-browser/package.json": "sha256:6c28fe29b15fbf2bd5d8d8d6b13c14aa092173197524e863bb87079d23e5cd70",
+      "scripts/p3-browser/package-lock.json": "sha256:9fcef97d577b91dbf59a128f36ffff8f4bc6cab9607f210e0260ed0eca5eb73e",
+      "scripts/p4-production/run.mjs": "sha256:94697ce7c1495fc0d60937c5a8cff910e500656c31d326d4ba00d16d3c2f14de",
+      "scripts/p4-production/runtime-adapter.mjs": "sha256:89936d5f7ac3fce99c9c15dee6565d90e79b512a360043df0e50865a47a34d5c",
+      "scripts/deploy-vercel-production.mjs": "sha256:e99e1525b4c97c457a90a1f7e46e2c5aa9c3347fbaa3db8080c4c772062511ba",
+      "scripts/p4-production/tooling-gate.mjs": "sha256:030dfab65bb987dca9adb4c8167b7dd8ea0e1676114fc50ebf573980c3185397",
+      "scripts/p4-production/tooling-install.mjs": "sha256:5cbea8de43094ee72e28365772374268497824595ec5de670816a0f205b46d15",
+      "scripts/p4-production/npm-runtime.mjs": "sha256:18938892cd1e95c24be199101d2aff663baf024627175ed051e384edd1dcc067",
+      "scripts/p4-production/tooling-acceptance.mjs": "sha256:13b790a925b9ab038812f3c939fb8bcb37b887eb20498b8fe99b544bdeadab09",
+      "scripts/p4-production/owner-decision.mjs": "sha256:63ec3418e3648ec896ccf3ed556006f4924823461c03e1af2ca59182c704e5ca",
+      "scripts/p4-production/credential-gate.mjs": "sha256:2ec3142064b6ec976fad95b57e46d5b85ed7ff0816d68f00197841853b31dd52",
+      "scripts/p4-production/credential-contract.mjs": "sha256:156f9966e1a6a4988716dec25240c13593addf286d0ce375d5ea880ed6616c26",
+      ".nvmrc": "sha256:ccb4022e91abb8575a29d306d7aff041f578bb86eb1180d69475bb86a5c4512c",
+      "scripts/p4-production/tooling/package.json": "sha256:b9ff11a1a6597730a8ff8537490a0cd8261bd0abd4fd3d66af6361b750ec879f",
+      "scripts/p4-production/tooling/package-lock.json": "sha256:4c0a503511c7f2448f17dbedd5a72a5fbbd24114c400afcf29180e3e65a05f44"
+    }
+  },
+  "target": {
+    "team_id": "team_NsBZHGUVnyygP7veiROKLuUx",
+    "project_id": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+    "project": "kirari-main"
+  },
+  "installed_tree": {
+    "sha256": "sha256:0d09e9218186c4a2e1a5a19b6d47d91bc485be052c1cc484fdafb9e02d262e03",
+    "fingerprint_algorithm": "kirari-p4-installed-tree-v2",
+    "platform_scope": "Linux/x64"
+  },
+  "audit": {
+    "plain_command": "npm audit --prefix scripts/p4-production/tooling --audit-level moderate",
+    "json_command": "npm audit --prefix scripts/p4-production/tooling --audit-level moderate --json",
+    "plain_exit_code": 1,
+    "json_exit_code": 1,
+    "raw_result": "FAIL",
+    "audit_json_path": ".trellis/tasks/10-04-p4-authorized-production/evidence/t1-c1/t1-concrete-tooling-audit.json",
+    "audit_json_sha256": "sha256:5692d1f55776c14036dbbf7bb3e1a3d6d48d2cdb130309853fb0b4d8b4f087e5",
+    "human_inventory_path": ".trellis/tasks/10-04-p4-authorized-production/evidence/t1-c1/t1-concrete-tooling-advisory-inventory.md",
+    "inventory_sha256": "sha256:8ae91aa36cdd65090032a58fff2c6d84e238b161070e977c50211b6c524f65ba",
+    "package_entry_count": 33,
+    "advisory_record_count": 38,
+    "advisory_reference_count": 107,
+    "counts": {
+      "info": 0,
+      "low": 0,
+      "moderate": 8,
+      "high": 24,
+      "critical": 1,
+      "total": 33
+    }
+  },
+  "independent_review": {
+    "status": "REVIEWED_WITH_EXPOSED_RESIDUAL_RISK",
+    "path": ".trellis/tasks/10-04-p4-authorized-production/evidence/t1-c1/independent-security-review.json",
+    "sha256": "sha256:f585f1e3d59258362c8c5a911ad1902684ce43a77328c7ab3a0761c4c851174c"
+  },
+  "risk": {
+    "unknown_paths_exposed": true,
+    "unknown_paths": [
+      "complete startup/import reachability for each vulnerable package",
+      "install lifecycle/postinstall persistence from the shared job workspace or process state into the later credential-bearing deploy step",
+      "dynamic, fallback, and native-binary path reachability",
+      "complete per-advisory reachability through prebuilt deploy command processing",
+      "bundled CLI code attribution outside npm lockfile audit coverage",
+      "whole-tree registry signature verification after Sigstore TUF fetch failure",
+      "published CLI source/build provenance and complete package SBOM",
+      "non-Node executable lookup through inherited credential-step PATH",
+      "Node/npm runtime vulnerability coverage beyond the deployment-tool lock audit",
+      "whole Node runtime content digest and source/build provenance are not attested"
+    ],
+    "aggregate_residual_risk": "Unresolved moderate, high, and critical advisories may be reachable during package installation, CLI startup, local artifact/config parsing, network response handling, dynamic fallback, or a later credential-bearing deployment. The package audit and integrity checks do not prove runtime reachability or benign behavior, and bundled code provenance and whole-tree signature verification remain incomplete. Non-Node CLI helpers may still resolve through inherited operation PATH. Node and npm full-tree identity does not establish their advisory coverage or source/build provenance.",
+    "t1_c1_coupled_risk": "A compromised CLI or persisted same-runner install process can exercise the full separately approved same-project C1 credential capability set during the token-bearing phase."
+  },
+  "proposed_expiry": "2026-10-07T15:31:37Z",
+  "proposed_expiry_rationale": "A 48-hour decision window limits reliance on mutable registry and hosted-runner evidence and requires a refreshed review before any later use.",
+  "invalidation_triggers": [
+    "new_or_changed_advisory_or_audit_inventory",
+    "CLI_version_or_support_status_change",
+    "package_lock_tarball_integrity_signature_or_installed_tree_change",
+    "Node_or_npm_runtime_change",
+    "runner_OS_architecture_image_or_version_change",
+    "install_command_mode_lifecycle_or_credential_order_change",
+    "CLI_entrypoint_flags_or_material_source_hash_change",
+    "target_team_project_or_allowed_command_change",
+    "independent_review_change_or_revocation",
+    "owner_decision_expiry_or_revocation",
+    "new_reachability_or_supply_chain_evidence",
+    "C1_scope_or_capability_change"
+  ],
+  "owner_approval": {
+    "status": "PENDING",
+    "comment_id": null,
+    "expires_at": null
+  },
+  "ci_identity_evidence": {
+    "head_sha": "6cbb44d84579fb870a808f908c94d62eb48e41b2",
+    "run_id": 37406038134,
+    "artifact_id": 11387307450,
+    "artifact_sha256": "sha256:ac55d0e300bce0885641f119fc12dcbfef5fba4d173bd7aa57b9598abb7d6e84",
+    "run_url": "https://github.com/markd3ng/KIRARI/actions/runs/37406038134",
+    "artifact_url": "https://github.com/markd3ng/KIRARI/actions/runs/37406038134/artifacts/11387307450",
+    "scope": "Runtime/npm/installed CLI tree and complete audit were measured at this CI head. Final material source hashes are reviewed separately and will be remeasured by final-head CI."
+  }
+}

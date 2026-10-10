@@ -1,0 +1,28 @@
+{
+  "baseline_main_sha": "c79659046cf6ea73ba69e03c3937d904c07ba93b",
+  "team_id": "team_NsBZHGUVnyygP7veiROKLuUx",
+  "candidate_project": "kirari-main",
+  "candidate_project_id": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+  "production_domain": "kirari-main.vercel.app",
+  "existing_aliases": [
+    "kirari-main.vercel.app",
+    "kirari-main-martyjstogner-2766s-projects.vercel.app",
+    "kirari-main-git-main-martyjstogner-2766s-projects.vercel.app"
+  ],
+  "current_deployment_id": "dpl_7ACbEGqeC8f7yyqZqmAjzL78F5sB",
+  "current_deployment_url": "https://kirari-main-dsetnlu88-martyjstogner-2766s-projects.vercel.app",
+  "current_target": "production",
+  "current_source": "git",
+  "current_source_sha": "408dff70c5aa7b39cbd3df31103b5847dba9751f",
+  "current_ready": "READY",
+  "current_artifact_provenance": "UNKNOWN",
+  "rollback_candidate_available": false,
+  "legacy_vercel_rollback_flag": true,
+  "dedicated_github_environment_exists": false,
+  "legacy_production_environments_protection_rules": [],
+  "production_credential_permission": "UNKNOWN; local CLI token read-only project GET returned 403",
+  "trusted_sources_production_readback": "UNKNOWN; connector project view omits trustedSources",
+  "artifact_canonical_origin": "https://example.com",
+  "artifact_compatible_with_candidate": false,
+  "production_mutation_performed": false
+}

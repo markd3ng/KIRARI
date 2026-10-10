@@ -1,0 +1,182 @@
+{
+  "node": "v22.12.0",
+  "pnpm": "9.14.4",
+  "checks": [
+    {
+      "command": [
+        "node",
+        "apps/site/scripts/materialize-profile.mjs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.1,
+      "log_path": "/tmp/kirari-p4-remediation-checks/00.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "profile:check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.34,
+      "log_path": "/tmp/kirari-p4-remediation-checks/01.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "site:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 69.15,
+      "log_path": "/tmp/kirari-p4-remediation-checks/02.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "site:contract:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.29,
+      "log_path": "/tmp/kirari-p4-remediation-checks/03.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "composition:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 10.28,
+      "log_path": "/tmp/kirari-p4-remediation-checks/04.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "trellis:check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.56,
+      "log_path": "/tmp/kirari-p4-remediation-checks/05.log"
+    },
+    {
+      "command": [
+        "node",
+        "apps/site/scripts/qa-regression-check.mjs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.08,
+      "log_path": "/tmp/kirari-p4-remediation-checks/06.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "site:type-check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 5.15,
+      "log_path": "/tmp/kirari-p4-remediation-checks/07.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "site:astro-check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.41,
+      "log_path": "/tmp/kirari-p4-remediation-checks/08.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "edge:type-check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.17,
+      "log_path": "/tmp/kirari-p4-remediation-checks/09.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "edge:test"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.72,
+      "log_path": "/tmp/kirari-p4-remediation-checks/10.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "edge:deploy:dry"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.42,
+      "log_path": "/tmp/kirari-p4-remediation-checks/11.log"
+    },
+    {
+      "command": [
+        "node",
+        "apps/site/scripts/generate-vercel-config.mjs",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.06,
+      "log_path": "/tmp/kirari-p4-remediation-checks/12.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "build"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 13.47,
+      "log_path": "/tmp/kirari-p4-remediation-checks/13.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "release:check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.49,
+      "log_path": "/tmp/kirari-p4-remediation-checks/14.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "release:version-check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.31,
+      "log_path": "/tmp/kirari-p4-remediation-checks/15.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "audit",
+        "--audit-level",
+        "moderate"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.06,
+      "log_path": "/tmp/kirari-p4-remediation-checks/16.log"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.02,
+      "log_path": "/tmp/kirari-p4-remediation-checks/17.log"
+    }
+  ],
+  "root_audit": {
+    "gate": "pnpm audit --audit-level moderate",
+    "exit_code": 0,
+    "low": 1,
+    "high": 1,
+    "ignored_high": 1,
+    "exception": "existing #122 / CVE-2026-93748 only",
+    "new_exception_added": false
+  },
+  "implementation_change": "CI-only local browser ordering and its workflow-contract regression; root runtime/config/dependencies unchanged"
+}

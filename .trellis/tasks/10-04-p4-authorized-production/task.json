@@ -1,0 +1,39 @@
+{
+  "id": "p4-authorized-production",
+  "name": "p4-authorized-production",
+  "title": "P4 owner-authorized immutable Site production and rollback",
+  "description": "",
+  "status": "in_progress",
+  "dev_type": "deployment",
+  "scope": "RM-05 / Issue #99",
+  "package": null,
+  "priority": "P1",
+  "creator": "Ian",
+  "assignee": "Ian",
+  "createdAt": "2026-10-04",
+  "completedAt": null,
+  "branch": "codex/p4-authorized-production",
+  "base_branch": "main",
+  "worktree_path": "/Users/ian/.codex/worktrees/p4-t1-c1/KIRARI",
+  "commit": null,
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/133",
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "T1/C1 framework application and concrete decision-package continuation; GitHub Project 1 and #99 control plane. Raw CLI audit remains FAIL, concrete T1 approval PENDING, C1 actual metadata incomplete. No Production write authorized.",
+  "meta": {
+    "engineering_merge_gate": "BLOCKED_CONCRETE_T1_OWNER_DECISION_AND_FRESH_ROOT_DEPENDENCY_AUDIT",
+    "production_readiness": "C1_OWNER_SETUP_AUTHENTICATED_READBACK_AND_SEPARATE_DECISION_REQUIRED"
+  },
+  "evidence": {
+    "ownerResume20261010": {
+      "baseMain": "0945eb82e76cab1878e7324ef3447f37855dfe79",
+      "existingPr": 133,
+      "r3AndT1DependencyAdmission": "RETIRED",
+      "audit": "INFORMATIONAL_UNSUPPRESSED",
+      "productionDeploymentPerformed": false,
+      "nextGate": "EXACT_HEAD_CI_AND_INDEPENDENT_REVIEW_THEN_SEPARATE_PRODUCTION_DECISION"
+    }
+  }
+}
