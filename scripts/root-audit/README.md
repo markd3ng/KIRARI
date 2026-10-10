@@ -40,6 +40,26 @@ The ruleset is an inert planning wrapper with `apiPayload: null`, `enforcement: 
 
 A future exact-head implementation merge while root CI remains R3-red needs new narrow Owner authorization. It does not authorize App credentials, ruleset activation, R3 consumption, PR #133, Production, release/tag, P5, or Edge Gateway work.
 
+## Final admission inspection and isolated live verification
+
+PR #137 was merged under its exact Owner engineering authorization at `c46fa39e0028c03fc134952c985c10494a4daf63`. The reviewed source tree matched its frozen head. This established an inert engineering base; it did not establish protected main, App custody, operational success, or R3 consumption.
+
+`final-admission.mjs` reconstructs exact verifier evidence, checks current eligibility twice around authenticated publisher observations, and rejects drift, replay, expiry, revoked decisions, incorrect App provenance and unreadable APIs. Its fixed platform capability is `NOT_READY`. Even a valid observation returns `VALIDATED_BUT_BLOCKED`; the module issues no grant and performs no merge. GitHub's native merge API compares the expected head SHA but has no server transaction over decision expiry/revocation and Issue contracts. An exclusive external controller can reduce alternative merge paths, but a client-side last read still leaves a race before GitHub commits. App setup cannot close that platform limitation.
+
+`app-custody-inspect.mjs` is a local Owner-only metadata/token inspector for the fixed KIRARI repository and numeric identity. It verifies a real App's ID/client ID/slug/owner, minimal permissions, selected installation and exact short-lived token scope, then revokes and confirms rejection. Its transport permits only metadata reads, exact token mint and revocation; it cannot publish a production check, change refs/settings, merge or apply a ruleset. Run it from the independently reviewed source on an isolated Owner host with a private key file outside source trees. It does not attest required-check provenance or PR credential isolation from metadata alone.
+
+```sh
+KIRARI_APP_PRIVATE_KEY_FILE=/secure/local/publisher.pem node scripts/root-audit/app-custody-inspect.mjs /secure/local/app-public.json /secure/local/app-inspection.json
+```
+
+The public JSON contains numeric `id`, numeric `installationId`, `clientId` and `slug`, taken from actual Owner App settings. Private keys must be regular Owner-owned files, mode600 or tighter; never place key contents in public JSON, chat, source or evidence.
+
+The executable [live harness](./live-harness-setup.md) uses a disposable repository (private by default, or explicitly public with harmless fixture data), nonce-owned non-default branches, two separate checks-only lab Apps and an independent lab-only Owner administration credential. It exercises real GitHub check-source binding, native merge attempts, expiry/revocation/stale-green observations, client outage injection, token revocation, and exact ruleset disable/restore/readback. Its real mode has no path to KIRARI; loopback HTTP tests execute the same orchestrator using synthetic server fixtures. Controlled client faults are not a claim that GitHub's servers failed. A successful stale-green lab merge demonstrates the native limitation and retains `NOT_READY`.
+
+Real App/installation permissions and live native recovery remain unverified until Owner setup supplies real identities and isolated credentials. Private personal-repository rulesets also require a supported account plan; unavailable rulesets fail the harness rather than being silently skipped. Keep the production App installed only on KIRARI, with separate lab Apps installed only on the lab. No key may enter Actions or publisher opt-in be enabled while final admission remains unavailable. Disabled payload preparation never authorizes applying production protection.
+
+The advisory OCR launcher in pinned npm version1.12.11 can start a detached global updater during earlier composite steps. The workflow sets `OCR_NO_UPDATE=1` to preserve the pinned executable. The observed exit127 may be consistent with that reinstall race; the old log lacks enough telemetry to prove its exact low-level cause. A live advisory review must be observed separately before claiming launcher recovery.
+
 ## Verification
 
 Run `node --test scripts/root-audit/tests/*.test.mjs` and the existing workflow contract suite. Run `node scripts/root-audit/tests/activation-matrix.mjs <output.json>` for the isolated expected/observed matrix, and `node scripts/root-audit/tests/linux-isolation-smoke.mjs` only on Linux with the workflow's sudo boundary. Exact-head CI, independent code/security review, and independent Phase/Gate assessment are recorded in the existing Trellis task. Local mocks and candidate CI do not establish live enforcement.

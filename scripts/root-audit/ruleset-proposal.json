@@ -64,7 +64,8 @@
     "finalMergeAdmissionReady": false,
     "cachedSuccessDuringAppOutageIsAutomaticallyInvalidated": false,
     "platformLimit": "A GitHub check success has no decision-expiry predicate. Scheduled/API invalidation is asynchronous and can fail or race a merge; App uninstall/key revocation does not prove historical success is invalidated.",
-    "activationBlocker": "Separately reviewed final merge admission must close continuing-freshness/TOCTOU requirements before required-check success or enforcing main protection can be enabled."
+    "activationBlocker": "Separately reviewed final merge admission must close continuing-freshness/TOCTOU requirements before required-check success or enforcing main protection can be enabled.",
+    "capabilityInspector": "scripts/root-audit/final-admission.mjs"
   },
   "staleApprovalHandling": {
     "githubReviewApprovals": "dismiss on reviewable push; zero required approvals and no code-owner or last-push approval requirement",
@@ -91,23 +92,30 @@
     "isolatedDemonstrationVerified": false,
     "activationMustRejectDependentRecovery": true,
     "staticContractTest": "scripts/root-audit/tests/app-ruleset-contract.test.mjs",
-    "liveDemonstration": "NOT_RUN_NO_APP_OR_APPROVED_TEST_TARGET",
-    "lockoutRisk": "Activating a required check whose success is disabled blocks every ordinary merge. A repair PR cannot satisfy the protected-path gate; Owner settings recovery must work independently before activation."
+    "liveDemonstration": "PENDING_OWNER_APP_LAB_CREDENTIALS_EXECUTABLE_HARNESS_PREPARED",
+    "lockoutRisk": "Activating a required check whose success is disabled blocks every ordinary merge. A repair PR cannot satisfy the protected-path gate; Owner settings recovery must work independently before activation.",
+    "liveHarness": "scripts/root-audit/live-harness.mjs"
   },
   "apiPayload": null,
   "apiPayloadReady": false,
   "appProvenanceObserved": false,
   "continuingDecisionFreshnessEnforcementReady": false,
   "activationBlockers": [
-    "TRUSTED_IMPLEMENTATION_NOT_ESTABLISHED",
     "APP_IDENTITY_AND_CREDENTIAL_ISOLATION_NOT_LIVE_VERIFIED",
     "CHECKS_ONLY_RULESET_SOURCE_BINDING_NOT_LIVE_VERIFIED",
     "REQUIRED_CHECK_SUCCESS_DISABLED_TO_AVOID_CACHED_AUTHORIZATION",
     "FINAL_MERGE_ADMISSION_NOT_IMPLEMENTED_OR_VERIFIED",
     "ISOLATED_OUTAGE_AND_OWNER_RECOVERY_NOT_LIVE_VERIFIED",
-    "NEW_EXACT_HEAD_REVIEW_AND_SEPARATE_ACTIVATION_APPROVAL_REQUIRED"
+    "NEW_EXACT_HEAD_REVIEW_AND_SEPARATE_ACTIVATION_APPROVAL_REQUIRED",
+    "NATIVE_PLATFORM_HAS_NO_ATOMIC_EXTERNAL_AUTHORIZATION_PREDICATE"
   ],
   "liveConsumptionGate": "Do not apply this ruleset: the required check deliberately cannot succeed and activation would lock out ordinary merges. A schedule cannot establish atomic expiry/revocation at merge. Complete a separately reviewed final admission design, real App/check/Environment/recovery verification and exact Owner activation decision first. R3 consumption and PR133 merge remain unauthorized.",
   "applied": false,
-  "mainProtected": false
+  "mainProtected": false,
+  "engineeringBase": {
+    "mergedPr": 137,
+    "reviewedHead": "7eb894089f66bef290264c6d768540efaafa7abb",
+    "main": "c46fa39e0028c03fc134952c985c10494a4daf63",
+    "operationalAuthorizationEstablished": false
+  }
 }
