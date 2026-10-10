@@ -59,13 +59,14 @@ test("dependency audit is an independent informational job with raw report reten
 	assert.match(auditJob, /- name: Preserve raw dependency audit report\n        if: always\(\)/);
 	assert.match(auditJob, /pnpm audit --audit-level moderate/);
 	assert.match(auditJob, /pnpm audit --json/);
+	assert.match(auditJob, /- name: Report dependency audit\n        continue-on-error: true\n        run: \|/, "reported advisory failures must not turn the informational check red");
 	for (const file of ["dependency-audit.txt", "dependency-audit.json", "dependency-audit.stderr.txt"]) assert.ok(auditJob.includes("${{ runner.temp }}/" + file));
 	assert.doesNotMatch(workflow, /scripts\/root-audit\/|KIRARI_R3_/);
 	assert.equal(JSON.parse(readFileSync(join(repoRoot, "package.json"), "utf8")).pnpm.auditConfig, undefined, "audit findings must not be suppressed");
 });
 
 test("audit reporting preserves raw findings and errors without misreporting a successful audit", () => {
-	const run = auditJob.match(/- name: Report dependency audit\n        run: \|\n([\s\S]*?)(?=\n      - name:)/)?.[1];
+	const run = auditJob.match(/- name: Report dependency audit\n        continue-on-error: true\n        run: \|\n([\s\S]*?)(?=\n      - name:)/)?.[1];
 	assert.ok(run, "audit report step must exist");
 	const script = run.replace(/^          /gm, "");
 	for (const status of [0, 1, 42]) {

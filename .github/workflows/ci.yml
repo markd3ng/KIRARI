@@ -91,6 +91,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - name: Report dependency audit
+        continue-on-error: true
         run: |
           audit_status=0
           json_status=0
