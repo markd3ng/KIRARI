@@ -67,6 +67,25 @@ authorization variable to its child process.
 The complete mapping, composition identity, and verification contract is
 documented in [`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md).
 
+## Immutable Site Production
+
+The separate owner-authorized main-only Production workflow consumes retained
+CI Site packages and revalidates their archive digests and composition
+provenance. It uploads exact prebuilt output to staged Production, validates
+identity/content/health, then explicitly promotes the existing deployment.
+The main Git auto-deployment guard remains disabled. A dedicated protected
+GitHub Environment must hold the isolated `VERCEL_PRODUCTION_TOKEN` credential.
+Its environment-only scope requires owner verification before live readiness;
+the workflow cannot attest secret scope with its GitHub token. Production uses
+its own secret namespace and only maps it in the protected operation step.
+One-time exact target/artifact approval, consumed authorization claims,
+main/owner checks and workflow concurrency deny replay and target substitution.
+OIDC validation credentials stay on the approved HTTPS origin; evidence is
+bounded and excludes secret-bearing responses. Rollback requires a verified
+prior successful release record and restores its existing immutable deployment.
+The complete authorization, failure and owner setup contract is in
+[`docs/SITE_PRODUCTION.md`](./docs/SITE_PRODUCTION.md).
+
 ## Search Providers
 
 `search.google.cx` is a public Google Programmable Search Engine ID, not a
@@ -153,3 +172,20 @@ boundary as the rest of the site. Visitor-supplied or third-party API data
 must still traverse text/attribute-safe rendering paths. The edge proxy is an
 additional trust boundary between the visitor and the upstream API — it does
 not relax the rendering model.
+
+## P4 tooling and credential risk decisions
+
+Deployment-tool audits retain unsuppressed raw findings, service errors and exit
+statuses as informational reports. No T1 advisory exception, Trust Root/App or
+atomic dependency admission is required. Compatible upstream patches are used
+when available. Locked installation, source/CLI integrity and credential isolation
+remain strict; root dependency audit follows the same informational policy.
+
+C1 requires one-project resource scope and complete Developer plus only Full
+Production Deployment grants, with concrete sanitized Owner approval and fresh
+readback. A compromised CLI can exercise the disclosed extra same-project
+capabilities; Trusted Sources and the reviewed workflow do not impose a bearer
+token verb sandbox. Unverified principal/plan/group/scope/expiry or extra
+elevation blocks credential admission. See docs/SITE_PRODUCTION.md and the
+historical credential decision evidence for exact contracts. Production authorization remains
+a separate immutable-artifact/target/operation gate.

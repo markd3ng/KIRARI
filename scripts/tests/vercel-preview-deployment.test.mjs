@@ -36,7 +36,7 @@ test("deployment manifest rejects symlinks in uploaded output", () => {
 	const { root, output } = fixture();
 	try {
 		symlinkSync(join(output, "static/index.html"), join(output, "static/linked.html"));
-		assert.throws(() => deploymentFiles(root), /Symlink in Vercel output/);
+		assert.throws(() => deploymentFiles(root), /Vercel output contains a symlink/);
 	} finally {
 		rmSync(root, { recursive: true, force: true });
 	}
@@ -50,8 +50,8 @@ test("upload deduplication rejects different files that claim the same digest", 
 		const firstBytes = Buffer.from("<main>KIRARI</main>");
 		assert.equal(firstBytes.length, Buffer.byteLength("<main>PYTHON</main>"));
 		assert.throws(() => uniqueUploads([
-			{ file: ".vercel/output/static/index.html", sha: "forced-collision", size: firstBytes.length },
-			{ file: ".vercel/output/static/other.html", sha: "forced-collision", size: firstBytes.length },
+			{ file: ".vercel/output/static/index.html", sha: "a".repeat(40), size: firstBytes.length },
+			{ file: ".vercel/output/static/other.html", sha: "a".repeat(40), size: firstBytes.length },
 		], root), /SHA-1 collision in Vercel output/);
 	} finally {
 		rmSync(root, { recursive: true, force: true });
@@ -60,7 +60,11 @@ test("upload deduplication rejects different files that claim the same digest", 
 
 test("deployment status requests retry transient API failures", async () => {
 	const originalFetch = globalThis.fetch;
+	const originalToken = process.env.VERCEL_TOKEN;
+	const originalTeamId = process.env.VERCEL_ORG_ID;
 	let attempts = 0;
+	process.env.VERCEL_TOKEN = "test-vercel-token";
+	process.env.VERCEL_ORG_ID = "team_test";
 	globalThis.fetch = async () => {
 		attempts += 1;
 		return attempts === 1 ? new Response("temporarily unavailable", { status: 503 }) : new Response('{"readyState":"READY"}');
@@ -71,6 +75,10 @@ test("deployment status requests retry transient API failures", async () => {
 		assert.equal(attempts, 2);
 	} finally {
 		globalThis.fetch = originalFetch;
+		if (originalToken === undefined) delete process.env.VERCEL_TOKEN;
+		else process.env.VERCEL_TOKEN = originalToken;
+		if (originalTeamId === undefined) delete process.env.VERCEL_ORG_ID;
+		else process.env.VERCEL_ORG_ID = originalTeamId;
 	}
 });
 

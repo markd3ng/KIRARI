@@ -1,0 +1,5 @@
+{"file": "AGENTS.md", "reason": "Repository entry contract"}
+{"file": ".trellis/spec/site/frontend/quality-guidelines.md", "reason": "Build/provenance/guard guidance"}
+{"file": ".trellis/spec/guides/repository-workflow.md", "reason": "Full CI and documentation sync"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Reuse P3 boundaries"}
+{"file": ".github/workflows/site-staging.yml", "reason": "Existing staging authorization and credential flow"}

@@ -5,24 +5,39 @@ import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { extname, join, resolve, sep } from "node:path";
 import { chromium } from "playwright";
 import { browserContract } from "./contract.mjs";
+import { validateBrowserPages } from "./browser-health.mjs";
 import { requestGithubOidcToken } from "./github-oidc.mjs";
 import { createTrustedRequestHandler, expectedExternalOrigins } from "./request-routing.mjs";
+import {
+	assertProductionDeployment,
+	deriveProductionIndexingPolicy,
+	ProductionValidationError,
+	verifyDeployedStaticOutput,
+} from "../p4-production/production-validation.mjs";
 
 function argumentsMap(args) {
 	const values = new Map();
 	for (let i = 0; i < args.length; i += 1) {
 		const key = args[i];
-		if (!["--base-url", "--dist-root", "--manifest", "--report"].includes(key) || values.has(key)) throw new Error(`Unknown or repeated option: ${key}`);
+		if (!["--mode", "--phase", "--base-url", "--dist-root", "--manifest", "--report", "--binding", "--deployment", "--aliases", "--static-root", "--prior-release-record"].includes(key) || values.has(key)) throw new Error(`Unknown or repeated option: ${key}`);
 		const value = args[++i];
 		if (!value || value.startsWith("--")) throw new Error(`Missing value for ${key}`);
 		values.set(key, value);
 	}
+	const mode = values.get("--mode") ?? "preview";
+	const phase = values.get("--phase");
 	const hasBaseUrl = values.has("--base-url");
 	const hasDistRoot = values.has("--dist-root");
 	const hasManifest = values.has("--manifest");
-	if (!values.has("--report") || hasBaseUrl === hasDistRoot || (hasBaseUrl && !hasManifest) || (hasDistRoot && hasManifest)) {
+	const productionInputs = ["--binding", "--deployment", "--aliases", "--static-root"];
+	if (!values.has("--report") || !["preview", "production"].includes(mode)) throw new Error("Usage: validate.mjs [--mode preview|production] --report <file> ...");
+	if (mode === "preview" && (phase || hasBaseUrl === hasDistRoot || (hasBaseUrl && !hasManifest) || (hasDistRoot && hasManifest) || productionInputs.some((key) => values.has(key)) || values.has("--prior-release-record"))) {
 		throw new Error("Usage: validate.mjs --report <file> (--base-url <url> --manifest <file> | --dist-root <dir>)");
 	}
+	if (mode === "production" && (!hasBaseUrl || !hasManifest || !["staged", "live", "restore"].includes(phase) || hasDistRoot || productionInputs.some((key) => !values.has(key)) || (phase === "restore" ? !values.has("--prior-release-record") : values.has("--prior-release-record")))) {
+		throw new Error("Usage: validate.mjs --mode production --phase staged|live|restore --base-url <origin> --manifest <file> --binding <file> --deployment <file> --aliases <file> --static-root <dir> [--prior-release-record <file>] --report <file>");
+	}
+	values.set("--mode", mode);
 	return values;
 }
 
@@ -50,22 +65,42 @@ function serveStatic(dist) {
 	});
 }
 
-function requireNoindex(response, path) {
-	const value = response.headers()["x-robots-tag"] ?? "";
-	if (!/noindex/i.test(value)) throw new Error(`Preview route ${path} is missing noindex protection (x-robots-tag=${JSON.stringify(value)})`);
-	return value;
-}
-
 async function main() {
 	const args = argumentsMap(process.argv.slice(2));
+	const mode = args.get("--mode");
+	const production = mode === "production";
+	const phase = args.get("--phase");
 	const distRoot = args.get("--dist-root") ? resolve(args.get("--dist-root")) : undefined;
 	const manifest = args.get("--manifest") ? JSON.parse(readFileSync(args.get("--manifest"), "utf8")) : undefined;
 	const contract = manifest?.browser_contract ?? browserContract(distRoot);
 	const local = distRoot ? await serveStatic(distRoot) : undefined;
 	const baseUrl = new URL(args.get("--base-url") ?? local.url);
-	if (!/^https?:$/.test(baseUrl.protocol) || baseUrl.username || baseUrl.password || baseUrl.pathname !== "/" || baseUrl.search || baseUrl.hash) throw new Error("Base URL must be a plain HTTP(S) origin");
+	if (!(production ? baseUrl.protocol === "https:" : /^https?:$/.test(baseUrl.protocol)) || baseUrl.username || baseUrl.password || (production && baseUrl.port) || baseUrl.pathname !== "/" || baseUrl.search || baseUrl.hash) throw new Error("Base URL must be a plain HTTP(S) origin");
 	const origin = baseUrl.origin;
+	let productionContext;
+	let productionPolicy;
+	let byteVerification;
+	if (production) {
+		const binding = JSON.parse(readFileSync(args.get("--binding"), "utf8"));
+		const deployment = JSON.parse(readFileSync(args.get("--deployment"), "utf8"));
+		const aliasesDocument = JSON.parse(readFileSync(args.get("--aliases"), "utf8"));
+		const aliases = Array.isArray(aliasesDocument) ? aliasesDocument : aliasesDocument.aliasBindings;
+		const priorReleaseRecord = args.has("--prior-release-record") ? JSON.parse(readFileSync(args.get("--prior-release-record"), "utf8")) : undefined;
+		productionContext = assertProductionDeployment({ baseUrl: origin, binding, deployment, aliasBindings: aliases, phase, priorReleaseRecord });
+		productionPolicy = deriveProductionIndexingPolicy({
+			staticRoot: resolve(args.get("--static-root")),
+			canonicalOrigin: productionContext.target.canonical_origin,
+			domains: productionContext.target.domains,
+		});
+	}
 	const VERCEL_TRUSTED_OIDC_TOKEN = distRoot ? undefined : await requestGithubOidcToken();
+	if (production) {
+		byteVerification = await verifyDeployedStaticOutput({
+			staticRoot: resolve(args.get("--static-root")),
+			baseUrl: origin,
+			oidcToken: VERCEL_TRUSTED_OIDC_TOKEN,
+		});
+	}
 	const consoleErrors = [];
 	const pageErrors = [];
 	const failedRequests = [];
@@ -73,10 +108,12 @@ async function main() {
 	const expectedExternalRequests = [];
 	const badResponses = [];
 	const loadedAssets = new Set();
-	const routeResults = [];
+	let routeResults = [];
 	let browser;
 	let context;
 	let validationComplete = false;
+	let consoleErrorCount = 0;
+	let pageErrorCount = 0;
 	try {
 		browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}) });
 		context = await browser.newContext({ serviceWorkers: "block" });
@@ -91,8 +128,15 @@ async function main() {
 			},
 		});
 		await context.route("**/*", trustedRequestHandler);
-		page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
-		page.on("pageerror", (error) => pageErrors.push(error.message));
+		page.on("console", (message) => {
+			if (message.type() !== "error") return;
+			try {
+				if (new URL(message.location().url).pathname.endsWith("/__kirari_p3_not_found__")) return;
+			} catch {}
+			consoleErrorCount += 1;
+			if (!production) consoleErrors.push(message.text());
+		});
+		page.on("pageerror", (error) => { pageErrorCount += 1; if (!production) pageErrors.push(error.message); });
 		page.on("requestfailed", (request) => {
 			const error = request.failure()?.errorText ?? "failed";
 			const requestOrigin = new URL(request.url()).origin;
@@ -111,56 +155,42 @@ async function main() {
 			}
 		});
 
-		const rootResponse = await page.goto(new URL("/", origin).href, { waitUntil: "domcontentloaded" });
-		if (rootResponse?.status() !== 200) throw new Error(`Root route returned HTTP ${rootResponse?.status() ?? "no response"}`);
-		const robots = requireNoindex(rootResponse, "/");
-		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
-
-		for (const route of contract.routes) {
-			const response = await page.goto(new URL(route.path, origin).href, { waitUntil: "domcontentloaded" });
-			if (response?.status() !== 200) throw new Error(`Route ${route.path} returned HTTP ${response?.status() ?? "no response"}`);
-			const routeRobots = requireNoindex(response, route.path);
-			const title = await page.title();
-			const bodyText = (await page.locator("body").innerText()).replace(/\s+/g, " ").trim();
-			if (route.title && title !== route.title) throw new Error(`Route ${route.path} title mismatch: ${JSON.stringify(title)}`);
-			if (route.content_marker && !bodyText.replace(/\s+/g, "").includes(route.content_marker.replace(/\s+/g, ""))) throw new Error(`Route ${route.path} is missing content marker ${JSON.stringify(route.content_marker)}`);
-			await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
-			if (contract.assets?.images?.length) {
-				await page.locator("img").first().scrollIntoViewIfNeeded().catch(() => {});
-				await page.waitForTimeout(200);
-			}
-			routeResults.push({ path: route.path, status: response.status(), noindex: routeRobots, title, contentMarker: route.content_marker });
-		}
-
-		if (contract.navigation) {
-			await page.goto(new URL(contract.routes[0].path, origin).href, { waitUntil: "domcontentloaded" });
-			const targetUrl = new URL(contract.navigation, `${origin}/`);
-			const anchorIndex = await page.locator("a[href]").evaluateAll((anchors, target) => anchors.findIndex((anchor) => {
-				try { return new URL(anchor.href).href === target; } catch { return false; }
-			}), targetUrl.href);
-			if (anchorIndex < 0) throw new Error(`Browser contract navigation link is missing: ${targetUrl.pathname}`);
-			await page.locator("a[href]").nth(anchorIndex).click();
-			await page.waitForURL((url) => url.href === targetUrl.href, { timeout: 10000 });
-		}
-
-		const missingUrl = new URL("/__kirari_p3_not_found__", origin);
-		const missingPage = await context.newPage();
-		const missingResponse = await missingPage.goto(missingUrl.href, { waitUntil: "domcontentloaded" });
-		if (missingResponse?.status() !== 404) throw new Error(`Unknown route returned HTTP ${missingResponse?.status() ?? "no response"}, expected 404`);
-		await missingPage.close();
-		const requiredAssets = [];
-		for (const path of contract.assets.stylesheets ?? []) requiredAssets.push(`stylesheet:${path}`);
-		for (const path of contract.assets.scripts ?? []) requiredAssets.push(`script:${path}`);
-		const absentAssets = requiredAssets.filter((asset) => !loadedAssets.has(asset));
-		if ((contract.assets.images ?? []).length && ![...loadedAssets].some((asset) => asset.startsWith("image:"))) absentAssets.push("image:* (no successful image request)");
-		if (absentAssets.length) throw new Error(`Expected browser assets did not load: ${absentAssets.join(", ")}`);
+		const { rootRobots: robots, routeResults: validatedRoutes, requiredAssets } = await validateBrowserPages({
+			page,
+			context,
+			origin,
+			contract,
+			mode,
+			productionPolicy,
+			loadedAssets,
+		});
+		routeResults = validatedRoutes;
 		if (failedRequests.length || badResponses.length) throw new Error(`Browser network failures: ${failedRequests.length} failed requests, ${badResponses.length} error responses`);
 		if (externalRequests.length) throw new Error(`Unexpected external browser calls: ${externalRequests.map((item) => item.url).join(", ")}`);
-		if (consoleErrors.length || pageErrors.length) throw new Error(`Browser console errors: ${consoleErrors.length + pageErrors.length}`);
+		if (consoleErrorCount || pageErrorCount) throw new Error(`Browser console errors: ${consoleErrorCount + pageErrorCount}`);
 
 		validationComplete = true;
-		const report = {
+		const report = production ? {
 			result: "PASS",
+			mode,
+			phase,
+			baseUrl: origin,
+			canonicalOrigin: productionPolicy.canonicalOrigin,
+			indexable: productionPolicy.indexable,
+			canonicalDocuments: productionPolicy.canonicalDocuments,
+			robotsSitemapCount: productionPolicy.robotsSitemapCount,
+			routes: routeResults.length,
+			assets: { required: requiredAssets.length, loaded: loadedAssets.size },
+			expectedExternalCalls: expectedExternalRequests.length,
+			browserConsoleErrors: consoleErrorCount,
+			pageErrors: pageErrorCount,
+			failedBrowserRequests: failedRequests.length,
+			badResponses: badResponses.length,
+			unexpectedExternalCalls: externalRequests.length,
+			...byteVerification,
+		} : {
+			result: "PASS",
+			mode,
 			baseUrl: origin,
 			noindex: robots,
 			routes: routeResults,
@@ -177,8 +207,22 @@ async function main() {
 		await page.close().catch(() => {});
 		await trustedRequestHandler.waitForIdle();
 	} catch (error) {
-		const report = {
+		const report = production ? {
 			result: "FAIL",
+			mode,
+			phase,
+			baseUrl: origin,
+			canonicalOrigin: productionPolicy?.canonicalOrigin,
+			indexable: productionPolicy?.indexable ?? false,
+			browserConsoleErrors: consoleErrorCount,
+			pageErrors: pageErrorCount,
+			failedBrowserRequests: failedRequests.length,
+			badResponses: badResponses.length,
+			unexpectedExternalCalls: externalRequests.length,
+			errorCode: error instanceof ProductionValidationError ? error.code : "PRODUCTION_BROWSER_VALIDATION_FAILED",
+		} : {
+			result: "FAIL",
+			mode,
 			baseUrl: origin,
 			routes: routeResults,
 			browserConsoleErrors: consoleErrors,
@@ -200,4 +244,37 @@ async function main() {
 	}
 }
 
-main().catch((error) => { console.error(error.message); process.exitCode = 1; });
+main().catch((error) => {
+	const args = process.argv.slice(2);
+	if (args.includes("--mode") && args[args.indexOf("--mode") + 1] === "production") {
+		const reportIndex = args.indexOf("--report");
+		if (reportIndex >= 0 && args[reportIndex + 1]) {
+			let baseUrl = "";
+			const baseUrlIndex = args.indexOf("--base-url");
+			if (baseUrlIndex >= 0) {
+				try { baseUrl = new URL(args[baseUrlIndex + 1]).origin; } catch {}
+			}
+			const report = {
+				result: "FAIL",
+				mode: "production",
+				phase: args.includes("--phase") ? args[args.indexOf("--phase") + 1] : undefined,
+				baseUrl,
+				canonicalOrigin: undefined,
+				indexable: false,
+				browserConsoleErrors: 0,
+				pageErrors: 0,
+				failedBrowserRequests: 0,
+				badResponses: 0,
+				unexpectedExternalCalls: 0,
+				errorCode: error instanceof ProductionValidationError ? error.code : "PRODUCTION_VALIDATION_SETUP_FAILED",
+			};
+			try { writeFileSync(args[reportIndex + 1], `${JSON.stringify(report, null, 2)}\n`); } catch {}
+			console.error(JSON.stringify(report, null, 2));
+		} else {
+			console.error("{\"result\":\"FAIL\",\"mode\":\"production\",\"errorCode\":\"PRODUCTION_VALIDATION_SETUP_FAILED\"}");
+		}
+	} else {
+		console.error(error.message);
+	}
+	process.exitCode = 1;
+});

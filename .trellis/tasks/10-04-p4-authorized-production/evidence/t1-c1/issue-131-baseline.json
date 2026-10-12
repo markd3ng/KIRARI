@@ -1,0 +1,15 @@
+{
+  "body": "PARENT_CONTRACT=#99 / RM-05\nPROPOSED_PHASE=P4_AUTHORIZED_PRODUCTION_DEPLOYMENT\nWORKSTREAM=C\n\nSCOPE\nReuse P3 browser core with production canonical/robots/network contract; bind secret-free release evidence to exact deployment and artifact.\n\nDEPENDENCY\nIndependent implementation; integration consumes A/B verified identities.\n\nACCEPTANCE_CRITERIA\n- Deliver the scoped engineering implementation with focused negative/positive checks and reviewed PR.\n- Preserve P1\u2013P3, the main Git deployment guard and immutable no-rebuild chain.\n- No production mutation, production settings/secrets, DNS, release/tag, indexing, Gateway or P5+ action is authorized.\n\nDELIVERY_EVIDENCE\nPositive/negative production policy and evidence tests, local browser proof.\n\nSTATUS\nEngineering acceptance complete at PR #133 HEAD 30ed167ed57e18de0308e7ba1e0c9d0e70ab7570; independent audit accepted local Production browser/package validation only. Implementation remains unmerged; no live Production evidence or operation is claimed. #99 remains open until separately authorized production evidence and independent Phase Exit Audit pass.\n",
+  "number": 131,
+  "projectItems": [
+    {
+      "status": {
+        "optionId": "bc11403b",
+        "name": "Done"
+      },
+      "title": "KIRARI \u2014 Development & Security"
+    }
+  ],
+  "state": "CLOSED",
+  "title": "[P4-C] Production browser validation and safe release evidence"
+}

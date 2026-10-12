@@ -1,0 +1,110 @@
+[
+  {
+    "command": "node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/p3-browser-oidc.test.mjs scripts/tests/p3-staging-workflow-contract.test.mjs scripts/tests/vercel-preview-deployment.test.mjs",
+    "exit_code": 1,
+    "seconds": 8.4,
+    "log": "/tmp/kirari-p4-ci-0.log"
+  },
+  {
+    "command": "node apps/site/scripts/materialize-profile.mjs",
+    "exit_code": 0,
+    "seconds": 0.1,
+    "log": "/tmp/kirari-p4-ci-1.log"
+  },
+  {
+    "command": "pnpm profile:check",
+    "exit_code": 0,
+    "seconds": 0.8,
+    "log": "/tmp/kirari-p4-ci-2.log"
+  },
+  {
+    "command": "pnpm site:test",
+    "exit_code": 0,
+    "seconds": 70.2,
+    "log": "/tmp/kirari-p4-ci-3.log"
+  },
+  {
+    "command": "pnpm site:contract:test",
+    "exit_code": 0,
+    "seconds": 2.5,
+    "log": "/tmp/kirari-p4-ci-4.log"
+  },
+  {
+    "command": "pnpm trellis:check",
+    "exit_code": 0,
+    "seconds": 0.7,
+    "log": "/tmp/kirari-p4-ci-5.log"
+  },
+  {
+    "command": "node apps/site/scripts/qa-regression-check.mjs",
+    "exit_code": 0,
+    "seconds": 0.1,
+    "log": "/tmp/kirari-p4-ci-6.log"
+  },
+  {
+    "command": "pnpm site:type-check",
+    "exit_code": 0,
+    "seconds": 5.0,
+    "log": "/tmp/kirari-p4-ci-7.log"
+  },
+  {
+    "command": "pnpm site:astro-check",
+    "exit_code": 0,
+    "seconds": 7.7,
+    "log": "/tmp/kirari-p4-ci-8.log"
+  },
+  {
+    "command": "pnpm edge:type-check",
+    "exit_code": 0,
+    "seconds": 1.3,
+    "log": "/tmp/kirari-p4-ci-9.log"
+  },
+  {
+    "command": "pnpm edge:test",
+    "exit_code": 0,
+    "seconds": 1.1,
+    "log": "/tmp/kirari-p4-ci-10.log"
+  },
+  {
+    "command": "pnpm edge:deploy:dry",
+    "exit_code": 0,
+    "seconds": 1.6,
+    "log": "/tmp/kirari-p4-ci-11.log"
+  },
+  {
+    "command": "pnpm deploy:config:check",
+    "exit_code": 0,
+    "seconds": 0.7,
+    "log": "/tmp/kirari-p4-ci-12.log"
+  },
+  {
+    "command": "pnpm build",
+    "exit_code": 0,
+    "seconds": 11.9,
+    "log": "/tmp/kirari-p4-ci-13.log"
+  },
+  {
+    "command": "pnpm release:check",
+    "exit_code": 0,
+    "seconds": 0.7,
+    "log": "/tmp/kirari-p4-ci-14.log"
+  },
+  {
+    "command": "pnpm release:version-check",
+    "exit_code": 0,
+    "seconds": 0.7,
+    "log": "/tmp/kirari-p4-ci-15.log"
+  },
+  {
+    "command": "pnpm audit --audit-level moderate",
+    "exit_code": 1,
+    "seconds": 70.8,
+    "log": "/tmp/kirari-p4-ci-16.log"
+  },
+  {
+    "command": "git diff --check",
+    "exit_code": 0,
+    "seconds": 0.0,
+    "log": "/tmp/kirari-p4-ci-17.log"
+  }
+]
