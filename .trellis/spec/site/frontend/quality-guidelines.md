@@ -225,6 +225,16 @@ report, full JSON inventory, service errors and actual statuses without suppress
 No T1 exception/manifest approval or retired R3 infrastructure is required.
 Locked installation, installed CLI/source integrity, isolation, browser verification,
 explicit Production artifact/target authorization and rollback checks remain strict.
-C1 requires separate sanitized concrete credential approval and fresh authenticated
-scope/role readback before credentials are mapped. See docs/SITE_PRODUCTION.md.
+C1 schema2 targets the actual Hobby account through a project-scoped PAT,
+finite authenticated Owner setup lifecycle/principal/scope evidence and exact
+credential fingerprint, with a new detached Issue129 manifest approval.
+The protected C1 read step maps the isolated token after credential-free install
+and prepared Owner authorization; fresh unfiltered complete project visibility
+and exact project/team identity must pass before the operation and each write.
+Do not require unavailable Hobby RBAC/groups/extended permissions or scoped-PAT
+user/team metadata introspection. Reject raw secrets, stale/incomplete provider
+proof, credential substitution and expired/edited/revoked decisions. Preserve
+all separate main/artifact/Owner/replay/health/alias/rollback boundaries.
+Same-project extra capabilities are disclosed, not claimed to be sandboxed.
+See docs/SITE_PRODUCTION.md.
 Dependency reporting does not authorize secrets/settings/token creation or Production.

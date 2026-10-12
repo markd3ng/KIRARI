@@ -1,0 +1,53 @@
+{
+  "focused_tests": {
+    "passed": 84,
+    "failed": 0,
+    "skipped": 0
+  },
+  "P3_P4_regressions_before_Chromium_install": {
+    "passed": 181,
+    "failed": 0,
+    "skipped": 1,
+    "skip": "Actual Production Chromium subsequently executed successfully"
+  },
+  "full_repository_checks": {
+    "passed": 17,
+    "failed": 0,
+    "commands_file": "full-check-results.json"
+  },
+  "production_browser": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "actual_Chromium": true,
+    "scope": "mocked local HTTPS Production fixture, not live Production"
+  },
+  "P3_browser_first_run": {
+    "minimal": "PASS",
+    "full": "PASS",
+    "migrated": "FAIL_EXTERNAL_ICON_ENDPOINT_NETWORK_REQUESTS",
+    "source_changes": "NONE_IN_P3_BROWSER",
+    "retry": "PASS_ALL_THREE_REAL_CHROMIUM"
+  },
+  "live_project_PAT_proof": "NOT_EXECUTED_NO_PRODUCTION_PAT_CREATED",
+  "secret_value_retained": false,
+  "production_deployment_performed": false,
+  "P3_browser_final": {
+    "minimal": "PASS",
+    "full": "PASS",
+    "migrated": "PASS",
+    "source_changed_for_retry": false
+  },
+  "raw_logs_retained_in_existing_parent_task": "/Users/ian/Desktop/Projects/KIRARI/.trellis/tasks/10-07-p4-r3-trusted-base-bootstrap/evidence/c1-hobby-20261012/local-validation",
+  "independent_review_pagination_correction": {
+    "finding": "Valid Base32 continuation tokens were rejected",
+    "fixed": true,
+    "P3_P4_pinned_runtime_regression": {
+      "passed": 157,
+      "failed": 0,
+      "skipped": 0
+    },
+    "runtime": "Node22.12.0",
+    "local_log_sha256": "sha256:8d2df16326c383fc0be9bc1fbfcb99dc063cf6559496d7fab27b97e0d3516928"
+  }
+}

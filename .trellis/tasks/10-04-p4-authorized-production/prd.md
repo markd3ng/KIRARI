@@ -19,3 +19,9 @@ Independent gpt-6-luna/max streams research/remediate A/B/C. Main integrates and
 ## Approved T1/C1 application — 2026-10-05
 
 Approved T1/C1 frameworks replace the abstract old tooling/exact-verb credential blockers only as specified by Owner request (evidence/t1-c1/owner-request.txt). Produce independent concrete decision manifests, no concrete self-approval. Full unchanged audit always runs, raw FAIL remains FAIL, amended acceptance fails closed without exact separate Owner approval. C1 exact-project Developer + only Full Production Deployment; unknown setup/grants remain blocked. Preserve all existing deployment/P1–P3 invariants. Stop before any Production action.
+
+## Owner-authorized Hobby C1 remediation — 2026-10-12
+
+Continue from main c2231c8572fb9e0961bbd296e3678acdc86a407f. Replace impossible Pro/Enterprise role/group/extended-permission assertions with exact project-scoped PAT binding on the actual Hobby account. Keep exact target/main/Owner/artifact/replay/15-minute/isolation/health/rollback controls, Issue129 detached concrete decision and no Production execution. Scope is engineering only; current candidate is not selected and a new exact merge decision is required.
+
+Provider facts, failure readbacks, threat model and implementation/verification design: evidence/c1-hobby-20261012/capability-matrix.md and design.md. Implement schema2 with exact credential fingerprint plus authenticated Owner setup lifecycle/principal/scope metadata; fresh unfiltered project list and exact project read runtime proof; tests for malformed/unrelated/unauthenticated/stale/expired/secret-bearing/wrong-target/missing or revoked Owner approval and zero writes on failure. Run full P3/P4/build/type/QA/Trellis/browser and standard CI, then fresh independent source/security review. One unmerged PR; no duplicate governance Issue, actual token/Environment setup, Production, release/tag/P5/Gateway.

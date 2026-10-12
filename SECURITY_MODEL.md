@@ -181,11 +181,23 @@ atomic dependency admission is required. Compatible upstream patches are used
 when available. Locked installation, source/CLI integrity and credential isolation
 remain strict; root dependency audit follows the same informational policy.
 
-C1 requires one-project resource scope and complete Developer plus only Full
-Production Deployment grants, with concrete sanitized Owner approval and fresh
-readback. A compromised CLI can exercise the disclosed extra same-project
-capabilities; Trusted Sources and the reviewed workflow do not impose a bearer
-token verb sandbox. Unverified principal/plan/group/scope/expiry or extra
-elevation blocks credential admission. See docs/SITE_PRODUCTION.md and the
-historical credential decision evidence for exact contracts. Production authorization remains
-a separate immutable-artifact/target/operation gate.
+C1 uses the actual Hobby project-scoped PAT model, not paid RBAC assertions.
+A schema2 sanitized setup manifest pins principal, exact team/project, finite
+lifecycle, scope provenance, complete same-project capability disclosure and
+SHA256 of the exact credential. A fresh Issue129 Owner decision binds its
+canonical digest; prior C1 decisions do not transfer. Runtime authenticated,
+unfiltered paginated project listing and exact-project read must expose only
+the approved target and match the credential fingerprint. User/team/token
+metadata belongs to authenticated Owner setup because scoped PATs cannot read
+those resources. Missing, stale, malformed, expired or revoked proof fails.
+
+The token is mapped only into the protected C1 read and final operation steps,
+after credential-free installation and prepared exact artifact authorization.
+No Production write is allowed before C1 succeeds, and C1 is rechecked before
+each write. Provider project scope is the cross-project boundary; same-project
+settings, variables, domains and other deployments may remain accessible to a
+compromised PAT. Workflow checks are not a bearer-token verb or OS sandbox.
+Those expanded Hobby capabilities require a fresh detached Owner risk decision.
+Production authorization remains separately bound to the immutable artifact,
+exact target/current main, one-use claim, short lifetime, validated staging,
+alias/public health and approved rollback record. See docs/SITE_PRODUCTION.md.

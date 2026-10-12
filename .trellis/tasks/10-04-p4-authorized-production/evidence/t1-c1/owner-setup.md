@@ -1,3 +1,5 @@
+> Historical C1 RBAC setup instructions below are superseded by the Owner's Hobby engineering direction on2026-10-12. Do not upgrade the plan or fabricate Developer/groups/extended permissions. Current support: [Hobby C1 setup](../c1-hobby-20261012/owner-setup.md). No actual setup, token creation or Production execution is authorized by this engineering change.
+
 # C1 Owner setup and evidence request
 
 `C1_CONCRETE_CREDENTIAL_MANIFEST=INCOMPLETE_OWNER_SETUP_REQUIRED`.

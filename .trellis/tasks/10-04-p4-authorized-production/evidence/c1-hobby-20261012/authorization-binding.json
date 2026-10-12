@@ -1,0 +1,8 @@
+{
+  "baseline_main_sha": "c2231c8572fb9e0961bbd296e3678acdc86a407f",
+  "owner_instruction_sha256": "8a06a88c70c0243baf679a789ec07ed10a7c6c705aece3acb714c943c45b40bd",
+  "engineering_authorized": true,
+  "merge_authorized": false,
+  "production_authorized": false,
+  "credential_creation_authorized": false
+}

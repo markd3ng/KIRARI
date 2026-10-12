@@ -6,8 +6,9 @@ import { arch, platform, release } from "node:os";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { fingerprintInstalledTree, TOOLING_MATERIAL_SOURCE_PATHS, TOOLING_TREE_FINGERPRINT_ALGORITHM } from "./tooling-identity.mjs";
-import { credentialManifestDigest, validateCredentialContract } from "./credential-contract.mjs";
+import { C1_TARGET, credentialManifestDigest, validateCredentialContract } from "./credential-contract.mjs";
 import { readConcreteOwnerDecision } from "./owner-decision.mjs";
+import { readVercelCredentialObservation } from "./credential-provider.mjs";
 
 import { npmRuntime, spawnNpm } from "./npm-runtime.mjs";
 
@@ -90,11 +91,12 @@ async function decision(kind, digest, prefix, env, fetchImpl) {
 
 export async function evaluateCurrentCredential({ env = process.env, fetchImpl = fetch, readProviderObservation } = {}) {
 	const manifest = optionalJson(join(ROOT, EVIDENCE, "c1-concrete-credential-manifest.json"));
-	// A checked-in flag cannot attest current provider roles or token scope. Until
-	// an authenticated complete reader is available, admission remains unavailable.
-	const observed = typeof readProviderObservation === "function" ? await readProviderObservation() : null;
 	const ownerDecision = manifest ? await decision("C1_CONCRETE_CREDENTIAL_MANIFEST", credentialManifestDigest(manifest), "c1", env, fetchImpl) : null;
-	return validateCredentialContract({ manifest, observed, ownerDecision });
+	if (!ownerDecision) return validateCredentialContract({ manifest, observed: null, ownerDecision });
+	if (env.VERCEL_ORG_ID !== C1_TARGET.team_id || env.VERCEL_PROJECT_ID !== C1_TARGET.project_id) throw new Error("C1_CREDENTIAL_TARGET_MISMATCH");
+	const observed = typeof readProviderObservation === "function" ? await readProviderObservation()
+		: await readVercelCredentialObservation({ token: env.VERCEL_TOKEN, fetchImpl });
+	return { ...validateCredentialContract({ manifest, observed, ownerDecision }), observation: observed };
 }
 
 /** Recheck digest, expiry, revocation and installed identity before each write. */
