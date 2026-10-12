@@ -12,19 +12,19 @@
   "assignee": "Ian",
   "createdAt": "2026-10-04",
   "completedAt": null,
-  "branch": "codex/p4-authorized-production",
+  "branch": "codex/p4-c1-hobby",
   "base_branch": "main",
-  "worktree_path": "/Users/ian/.codex/worktrees/p4-t1-c1/KIRARI",
+  "worktree_path": "/Users/ian/.codex/worktrees/p4-c1-hobby/KIRARI",
   "commit": null,
   "pr_url": "https://github.com/markd3ng/KIRARI/pull/133",
   "subtasks": [],
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "T1/C1 framework application and concrete decision-package continuation; GitHub Project 1 and #99 control plane. Raw CLI audit remains FAIL, concrete T1 approval PENDING, C1 actual metadata incomplete. No Production write authorized.",
+  "notes": "PR133 exact engineering merge is complete at mainc2231c8572fb9e0961bbd296e3678acdc86a407f with main CI38195793414 SUCCESS. Current Owner engineering authorization replaces impossible C1 paid RBAC assumptions on the verified Hobby target. No implementation merge, actual credential/Environment setup or Production operation is authorized. See evidence/c1-hobby-20261012.",
   "meta": {
-    "engineering_merge_gate": "BLOCKED_CONCRETE_T1_OWNER_DECISION_AND_FRESH_ROOT_DEPENDENCY_AUDIT",
-    "production_readiness": "C1_OWNER_SETUP_AUTHENTICATED_READBACK_AND_SEPARATE_DECISION_REQUIRED"
+    "engineering_merge_gate": "HOBBY_C1_ENGINEERING_IMPLEMENTATION_IN_PROGRESS_NEW_EXACT_OWNER_MERGE_DECISION_REQUIRED",
+    "production_readiness": "HOBBY_C1_SETUP_MANIFEST_NEW_OWNER_DECISION_AND_SEPARATE_PRODUCTION_AUTHORIZATION_REQUIRED"
   },
   "evidence": {
     "ownerResume20261010": {
@@ -34,6 +34,14 @@
       "audit": "INFORMATIONAL_UNSUPPRESSED",
       "productionDeploymentPerformed": false,
       "nextGate": "EXACT_HEAD_CI_AND_INDEPENDENT_REVIEW_THEN_SEPARATE_PRODUCTION_DECISION"
+    },
+    "ownerHobbyC120261012": {
+      "baseline_main": "c2231c8572fb9e0961bbd296e3678acdc86a407f",
+      "model": "C1_HOBBY_PROJECT_SCOPED_PAT",
+      "merge_authorized": false,
+      "credential_setup_performed": false,
+      "production_authorized": false,
+      "production_deployment_performed": false
     }
   }
 }

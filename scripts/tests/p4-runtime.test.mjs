@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { readVercelCredentialObservation } from "../p4-production/credential-provider.mjs";
 import { coordinateProduction, writeOperationEvidence } from "../p4-production/run.mjs";
 
 const d = (c) => `sha256:${c.repeat(64)}`;
@@ -88,4 +89,13 @@ test("failed authorized rollback retains its post-write INCOMPLETE evidence", as
 	assert.equal(JSON.parse(readFileSync(join(directory, "operation-result.json"))).production_alias_change_attempted, true);
 	assert.equal(JSON.parse(readFileSync(join(directory, "rollback-record.json"))).result, "INCOMPLETE");
 	assert.equal(existsSync(join(directory, "production-record.json")), false);
+});
+
+test("a revoked C1 credential prevents any Production operation", async (t) => {
+	const x = scenario(t);
+	x.input.guard = () => readVercelCredentialObservation({ token: "vcp_SYNTHETIC_TEST_VALUE_NOT_A_REAL_TOKEN", fetchImpl: async () => new Response("revoked", { status: 403 }) });
+	const result = await coordinateProduction(x.input);
+	assert.equal(result.result, "FAIL"); assert.deepEqual(x.calls, []);
+	assert.equal(result.productionDeploymentCreationAttempted, false);
+	assert.equal(result.productionAliasChangeAttempted, false);
 });

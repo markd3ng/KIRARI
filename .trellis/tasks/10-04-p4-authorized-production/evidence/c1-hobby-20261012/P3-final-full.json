@@ -1,0 +1,80 @@
+{
+  "result": "PASS",
+  "mode": "preview",
+  "baseUrl": "http://127.0.0.1:49224",
+  "noindex": "noindex",
+  "routes": [
+    {
+      "path": "/",
+      "status": 200,
+      "noindex": "noindex",
+      "title": "Full Site - A contract fixture",
+      "contentMarker": ""
+    },
+    {
+      "path": "/posts/getting-started/",
+      "status": 200,
+      "noindex": "noindex",
+      "title": "Getting Started - Full Site",
+      "contentMarker": ""
+    },
+    {
+      "path": "/en-US/posts/en-us/translation/",
+      "status": 200,
+      "noindex": "noindex",
+      "title": "Getting Started - Full Site",
+      "contentMarker": ""
+    }
+  ],
+  "assets": {
+    "required": 19,
+    "loaded": 39,
+    "observed": [
+      "image:/_astro/demo-avatar.asuJasgv_1kijFK.webp",
+      "image:/notbyai/zh-TW.svg",
+      "image:/og/test.png",
+      "script:/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BSGeYvm2.js",
+      "script:/_astro/Comments.astro_astro_type_script_index_0_lang.yabr3GWl.js",
+      "script:/_astro/DisplaySettings.BiIETDK3.js",
+      "script:/_astro/Icon.-aCI3pKC.js",
+      "script:/_astro/Layout.astro_astro_type_script_index_0_lang.BijYSkJg.js",
+      "script:/_astro/Layout.astro_astro_type_script_index_1_lang.ZQkYcbMS.js",
+      "script:/_astro/Layout.astro_astro_type_script_index_2_lang.DzLXFYi5.js",
+      "script:/_astro/LightDarkSwitch.BG8PxdTm.js",
+      "script:/_astro/Search.Bcrj8laY.js",
+      "script:/_astro/_...slug_.astro_astro_type_script_index_0_lang.BVQMDiRV.js",
+      "script:/_astro/_...slug_.astro_astro_type_script_index_0_lang.OqZMDyjd.js",
+      "script:/_astro/client.Dkt2ZmF4.js",
+      "script:/_astro/client.svelte.DHVkhadV.js",
+      "script:/_astro/config.C1EhKYkW.js",
+      "script:/_astro/disclose-version.DwdwGuwu.js",
+      "script:/_astro/page.DzOHT7cC.js",
+      "script:/_astro/photoswipe-lightbox.esm.B51AhzpJ.js",
+      "script:/_astro/photoswipe.esm.BtiZBkcP.js",
+      "script:/_astro/prefetch.CJ0OvU8O.js",
+      "script:/_astro/preload-helper.jj3nf-Cm.js",
+      "script:/_astro/preload-icons.x9srID-s.js",
+      "script:/_astro/setting-utils.rXz8xBPE.js",
+      "script:/_astro/transition-manager.ouI5nD-0.js",
+      "script:/_astro/translation.B38ZPyDj.js",
+      "script:/pagefind/pagefind.js",
+      "stylesheet:/_astro/LandingPage.CHLxr5Zp.css",
+      "stylesheet:/_astro/Layout.DN277Tmi.css",
+      "stylesheet:/_astro/Markdown.D5uZSIDl.css",
+      "stylesheet:/_astro/icon.CSM9xcaz.css",
+      "stylesheet:/_astro/main.DdWFCSfO.css",
+      "stylesheet:/_astro/markdown-extend.BZ5bzdE2.css",
+      "stylesheet:/_astro/markdown.B8BsCmy9.css",
+      "stylesheet:/_astro/photoswipe.pe3E5Za-.css",
+      "stylesheet:/_astro/style.CoS3sda4.css",
+      "stylesheet:/_astro/transition.D_Yd0no2.css",
+      "stylesheet:/_astro/variables.EkVDoU0_.css"
+    ]
+  },
+  "navigation": "/posts/getting-started/",
+  "expectedExternalCalls": 0,
+  "browserConsoleErrors": 0,
+  "failedBrowserRequests": 0,
+  "badResponses": 0,
+  "unexpectedExternalCalls": 0
+}

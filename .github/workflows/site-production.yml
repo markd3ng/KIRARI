@@ -176,6 +176,9 @@ jobs:
           LD_PRELOAD: ''
           LD_LIBRARY_PATH: ''
           GH_TOKEN: ${{ github.token }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_PRODUCTION_TOKEN }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_PRODUCTION_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PRODUCTION_PROJECT_ID }}
         run: >-
           "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" scripts/p4-production/credential-gate.mjs
 

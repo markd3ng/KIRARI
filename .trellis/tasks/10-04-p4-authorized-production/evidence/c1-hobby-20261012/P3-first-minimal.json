@@ -1,0 +1,8 @@
+{
+  "fixture": "minimal",
+  "result": "PASS",
+  "browserConsoleErrors": 0,
+  "failedBrowserRequests": 0,
+  "error": null,
+  "production_action": false
+}

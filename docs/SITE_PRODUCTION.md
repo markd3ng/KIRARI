@@ -45,15 +45,39 @@ environment must explicitly report `can_admins_bypass: false`; missing or true
 is rejected. The reviewer rule must explicitly report `prevent_self_review: false`
 so that the sole authorized owner dispatcher can approve the protected job.
 Its deployment policy must allow only the `main` branch, and a
-policy reported as a tag is rejected. The C1 contract permits only an expiring PAT scoped to exactly project
-`prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk` in team `team_NsBZHGUVnyygP7veiROKLuUx`,
-with effective Team Developer plus only Full Production Deployment. A separate
-Owner decision must bind the complete sanitized principal/plan/direct and
-group role/permission/scope/expiry manifest. Owner, Member, Project Admin,
-unknown groups, extra extended grants, and broader token scopes fail closed.
-The one-project role retains extra domain, deployment, and development/preview
-variable capabilities; project-settings endpoint granularity remains UNKNOWN.
-Workflow confinement does not sandbox a compromised token-bearing process.
+policy reported as a tag is rejected. The C1 Hobby contract uses an expiring personal access token scoped to exactly
+project `prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk` in team
+`team_NsBZHGUVnyygP7veiROKLuUx`. It does not require unavailable paid-plan
+Developer roles, Access Groups or extended permissions. The schema2 manifest
+uses model `C1_HOBBY_PROJECT_SCOPED_PAT`; previous C1 manifests and decisions
+cannot approve it.
+
+An authenticated Owner setup read supplies the principal, Hobby team identity,
+token ID/name/creation/finite expiry and exact project-scope selection. The token
+API exposes lifecycle metadata but its published response schema omits project
+scope, so scope selection uses the authenticated Account Tokens UI. Do not infer
+project scope from a team scope entry or a403. Bind the exact secret by its
+SHA256 fingerprint, retain no value/prefix/suffix, and obtain a new finite,
+digest-bound Owner comment on Issue129. The signed setup manifest is distinct
+from fresh runtime proof; static authentication flags are not provider reads.
+
+The scoped PAT runtime reader calls only unfiltered `GET /v10/projects` and
+`GET /v9/projects/<exact-id>` without team/search/project filters. Complete
+bounded pagination must expose exactly kirari-main in the approved team, and
+its fresh readback/fingerprint must match the approved credential. Provider
+failures, incomplete or malformed data, stale proof, changed secret, expired
+lifetime or edited/revoked Owner decision fail closed. Scoped PATs cannot read
+user/team/token resources; do not require those setup endpoints at runtime.
+
+A project-scoped PAT has broader same-project rights, potentially including
+settings, Production/Preview variables and domains as well as deploy/promote/
+rollback of other artifacts. It is not an endpoint least-privilege credential,
+and the workflow does not sandbox a compromised token-bearing process. The
+manifest and new Owner decision must disclose/accept these limits. Provider
+project scoping, exact credential binding and runtime visibility checks confine
+the cross-project boundary; independent artifact/target authorization confines
+the reviewed workflow's writes.
+
 Configure the dedicated
 `VERCEL_PRODUCTION_TOKEN` environment secret and environment variables
 `VERCEL_PRODUCTION_ORG_ID` / `VERCEL_PRODUCTION_PROJECT_ID` there. The production
@@ -112,11 +136,14 @@ bytes and reviewed source, isolated temporary HOME, disabled native fallback
 and credential-free installation remain strict. CI runs local Production Chromium
 before the CLI install and identity check. Findings cannot skip the browser proof.
 
-The separate C1 credential boundary remains: sanitized concrete credential
-approval and authenticated current scope/role readback are required before
-mapping Production credentials. Its current reader is unavailable, so live
-credential readiness remains blocked; this is separate from dependency reporting.
-See the historical [credential decision evidence](../.trellis/tasks/10-04-p4-authorized-production/evidence/t1-c1/).
+The separate C1 boundary remains: the protected C1 read step maps the isolated
+Production token only after credential-free tooling installation and prepared
+exact Owner authorization. It performs authenticated project scope/identity
+readback and emits only safe IDs, time, fingerprint and manifest digest. No
+Production operation starts without a PASS; the operation and each write
+recheck C1. Actual setup metadata, a concrete manifest and new detached Owner
+decision remain pending, so engineering mocks are not live credential readiness.
+See [Hobby setup and capability evidence](../.trellis/tasks/10-04-p4-authorized-production/evidence/c1-hobby-20261012/owner-setup.md).
 Explicit artifact/target/operation authorization, protected Environment and exact
 Trusted Sources readback remain required before any Production operation.
 

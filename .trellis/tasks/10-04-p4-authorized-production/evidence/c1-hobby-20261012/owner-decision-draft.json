@@ -1,0 +1,12 @@
+{
+  "status": "NOT_READY_DO_NOT_POST",
+  "owner_decision_authorized": false,
+  "reason": "Actual authenticated Owner setup, scoped PAT identity/fingerprint/expiry and concrete manifest are absent. A future human decision must use the then-current complete manifest digest.",
+  "future_comment": {
+    "schema_version": 1,
+    "kind": "C1_CONCRETE_CREDENTIAL_MANIFEST",
+    "decision": "APPROVED",
+    "manifest_sha256": null,
+    "expires_at": null
+  }
+}

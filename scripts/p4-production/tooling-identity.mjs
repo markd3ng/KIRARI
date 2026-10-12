@@ -21,6 +21,7 @@ export const TOOLING_MATERIAL_SOURCE_PATHS = [
 	"scripts/p4-production/owner-decision.mjs",
 	"scripts/p4-production/credential-gate.mjs",
 	"scripts/p4-production/credential-contract.mjs",
+	"scripts/p4-production/credential-provider.mjs",
 	".nvmrc",
 	"scripts/p4-production/tooling/package.json",
 	"scripts/p4-production/tooling/package-lock.json",

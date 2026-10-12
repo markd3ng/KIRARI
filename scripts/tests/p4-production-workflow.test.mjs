@@ -52,7 +52,7 @@ test("the no-secret preflight consumes one exact claim before the protected envi
 	assert.match(preflight, /verifySitePackageArchive/);
 });
 
-test("production credentials exist only on the final runtime step after browser setup and package revalidation", () => {
+test("Production credentials stay in the protected C1 read step and final operation after credential-free install", () => {
 	const productionBlock = workflow.match(/^  production:[\s\S]*$/m)?.[0] ?? "";
 	const runtimeStep = stepBlock(productionBlock, "Stage, validate and explicitly promote approved Production output");
 	assert.ok(runtimeStep, "runtime operation must be a dedicated final step");
@@ -64,7 +64,13 @@ test("production credentials exist only on the final runtime step after browser 
 	assert.match(runtimeStep, /PRODUCTION_PACKAGE_VERIFICATION: \$\{\{ steps\.consume\.outputs\.package_verification_path \}\}/);
 	assert.match(runtimeStep, /PRODUCTION_EVIDENCE_DIR: \$\{\{ steps\.consume\.outputs\.evidence_dir \}\}/);
 	assert.match(runtimeStep, /VERCEL_CLI_PATH:/);
-	for (const step of ["Install and audit production browser validator", "Install browser runtime", "Install pinned Vercel CLI before credentials are mapped", "Report dependency audit and verify locked CLI identity", "Verify separate concrete C1 approval and sanitized credential evidence", "Recheck authorization and consume the exact immutable package"]) {
+	const credentialRead = stepBlock(productionBlock, "Verify separate concrete C1 approval and sanitized credential evidence");
+	assert.match(credentialRead, /VERCEL_TOKEN: \$\{\{ secrets\.VERCEL_PRODUCTION_TOKEN \}\}/);
+	assert.match(credentialRead, /run: node scripts\/p4-production\/credential-gate.mjs/);
+	assert.ok(productionBlock.indexOf("Install pinned Vercel CLI before credentials are mapped") < productionBlock.indexOf(credentialRead));
+	assert.ok(productionBlock.indexOf(credentialRead) < productionBlock.indexOf("Recheck authorization and consume the exact immutable package"));
+	assert.equal((workflow.match(/secrets\.VERCEL_PRODUCTION_TOKEN/g) ?? []).length, 2);
+	for (const step of ["Install and audit production browser validator", "Install browser runtime", "Install pinned Vercel CLI before credentials are mapped", "Report dependency audit and verify locked CLI identity", "Recheck authorization and consume the exact immutable package"]) {
 		const block = stepBlock(productionBlock, step);
 		assert.ok(block, `missing step ${step}`);
 		assert.doesNotMatch(block, /VERCEL_TOKEN|secrets\.VERCEL/);

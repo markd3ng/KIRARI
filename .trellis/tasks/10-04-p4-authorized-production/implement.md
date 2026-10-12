@@ -38,3 +38,9 @@ New admission checks PASS 96/96; full P4 PASS 180/180; P3 regressions PASS 29/29
 ## P4 engineering resume — 2026-10-10
 
 Merge current main into the existing PR branch without rewriting history. Resolve CI/test conflicts by retaining main informational audit and strict verification, adding original P4 contracts and Production Chromium/locked CLI checks. Remove the unused root-audit branch implementation and T1 dependency acceptance engine; retain historical evidence and the separate C1 credential boundary. Run standard engineering CI, P3/P4 regressions and independent source review. No Production workflow dispatch, credential setup, settings mutation or PR #133 merge is authorized by this engineering continuation.
+
+## Owner-authorized Hobby C1 remediation — 2026-10-12
+
+Continue from main c2231c8572fb9e0961bbd296e3678acdc86a407f. Replace impossible Pro/Enterprise role/group/extended-permission assertions with exact project-scoped PAT binding on the actual Hobby account. Keep exact target/main/Owner/artifact/replay/15-minute/isolation/health/rollback controls, Issue129 detached concrete decision and no Production execution. Scope is engineering only; current candidate is not selected and a new exact merge decision is required.
+
+Provider facts, failure readbacks, threat model and implementation/verification design: evidence/c1-hobby-20261012/capability-matrix.md and design.md. Implement schema2 with exact credential fingerprint plus authenticated Owner setup lifecycle/principal/scope metadata; fresh unfiltered project list and exact project read runtime proof; tests for malformed/unrelated/unauthenticated/stale/expired/secret-bearing/wrong-target/missing or revoked Owner approval and zero writes on failure. Run full P3/P4/build/type/QA/Trellis/browser and standard CI, then fresh independent source/security review. One unmerged PR; no duplicate governance Issue, actual token/Environment setup, Production, release/tag/P5/Gateway.
