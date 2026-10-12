@@ -39,6 +39,7 @@ for (const [name, change, reason] of [
 	["wrong name", x => { x.observed.projects[0].name = "kirari-dev"; }, "observed.projects"],
 	["unrelated visible project", x => { x.observed.projects.push({ id: "prj_other", name: "other", account_id: C1_TARGET.team_id }); }, "observed.projects"],
 	["broad token scope", x => { x.manifest.claims.token.scope.kind = "team"; }, "claims.token.scope"],
+	["multi-project ids with project scope", x => { x.manifest.claims.token.scope.project_ids.push("prj_other"); }, "claims.token.scope: only the exact approved project is permitted"],
 	["different credential even with only one project", x => { x.observed.credential_sha256 = `sha256:${"b".repeat(64)}`; }, "credential_sha256"],
 	["unauthenticated readback", x => { x.observed.authenticated = false; }, "authenticated"],
 	["stale proof", x => { x.observed.observed_at = "2026-10-12T03:54:59Z"; }, "observed_at"],
@@ -62,6 +63,8 @@ for (const [name, change, reason] of [
 	["expired Owner decision", x => { x.ownerDecision.expires_at = "2026-10-12T03:59:59Z"; }, "expired"],
 	["Owner decision beyond credential lifetime", x => { x.ownerDecision.expires_at = "2026-10-15T04:00:00Z"; }, "outlive"],
 	["revoked Owner decision", x => { x.ownerDecision.revocation_status = "REVOKED"; }, "revocation"],
+	["stale revocation scan", x => { x.ownerDecision.revocation_checked_at = "2026-10-12T03:54:59Z"; }, "ownerDecision: current authenticated revocation scan is required"],
+	["unknown revocation status", x => { x.ownerDecision.revocation_status = "UNKNOWN"; }, "ownerDecision: current authenticated revocation scan is required"],
 	["unauthenticated Owner approval", x => { x.ownerDecision.authenticated = false; }, "Owner"],
 	["wrong Issue", x => { x.ownerDecision.issue_number = 130; }, "129"],
 ]) test(`Hobby C1 rejects ${name}`, () => {
