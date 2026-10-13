@@ -83,6 +83,12 @@ main/owner checks and workflow concurrency deny replay and target substitution.
 OIDC validation credentials stay on the approved HTTPS origin; evidence is
 bounded and excludes secret-bearing responses. Rollback requires a verified
 prior successful release record and restores its existing immutable deployment.
+Configured Production domains are bound exactly from Project Domains. Generated
+project/team/main aliases are separately validated using the approved C1 namespace
+and expected deployment; they never expand canonical domains. Raw Trusted Sources
+policy is normalized and re-read before writes. Missing policy remains unavailable
+proof; MCP summaries, static approval flags and unverified revision timestamps
+cannot replace it or broaden the project-scoped PAT.
 The complete authorization, failure and owner setup contract is in
 [`docs/SITE_PRODUCTION.md`](./docs/SITE_PRODUCTION.md).
 

@@ -15,6 +15,7 @@ import { loadApprovedRollback, restoreApprovedRelease, assertProductionAliasSnap
 import { verifyProductionPreflight } from "./preflight.mjs";
 import { productionApprovalDigest } from "../production-authorization.mjs";
 import { assertConcreteProductionContracts } from "./tooling-gate.mjs";
+import { assertProductionAliases } from "./alias-policy.mjs";
 
 function assert(condition, code) { if (!condition) throw new Error(code); }
 
@@ -24,19 +25,22 @@ export function normalizeAliasSnapshot(raw, target) {
 		const projectId = entry.projectId ?? entry.project?.id;
 		const deploymentId = entry.deploymentId ?? entry.deployment?.id ?? null;
 		assert(projectId === target.project_id && typeof entry.alias === "string", "PRODUCTION_ALIAS_IDENTITY_MISMATCH");
-		return { alias: entry.alias, projectId, deploymentId, redirect: entry.redirect ?? null };
+		return { alias: entry.alias, projectId, deploymentId, redirect: entry.redirect ?? null,
+			...(entry.teamId === undefined ? {} : { teamId: entry.teamId }) };
 	});
 }
 
-/** Include implicit Production aliases as well as configured domains. */
-export function deriveProductionDomains(configured, aliases, currentId) {
+/** Only authoritative configured Project Domains enter the Owner's domain binding. */
+export function deriveProductionDomains(configured, target) {
 	assert(Array.isArray(configured), "PRODUCTION_DOMAIN_METADATA_MISSING");
 	const names = configured.filter((domain) => !domain.gitBranch && !domain.customEnvironmentId).map((domain) => {
 		assert(typeof domain.name === "string" && !domain.redirect, "PRODUCTION_DOMAIN_REDIRECT_UNAPPROVED");
+		assert(domain.projectId === undefined || domain.projectId === target?.project_id, "PRODUCTION_DOMAIN_PROJECT_MISMATCH");
 		return domain.name;
 	});
-	for (const alias of aliases) if (currentId && alias.deploymentId === currentId) names.push(alias.alias);
-	return [...new Set(names)].sort();
+	assert(new Set(names).size === names.length, "PRODUCTION_DOMAIN_METADATA_AMBIGUOUS");
+	if (target) assert(sameDomains(names, target.domains) && names.includes(new URL(target.canonical_origin).hostname), "PRODUCTION_DOMAIN_SET_DRIFT");
+	return names.sort();
 }
 
 function sameDomains(left, right) { return JSON.stringify([...left].sort()) === JSON.stringify([...right].sort()); }
@@ -47,6 +51,7 @@ export async function createProductionRuntime({ binding, packageVerification, en
 	const workspace = mkdtempSync(join(tmpdir(), "kirari-production-runtime-"));
 	let rollbackCandidate = null;
 	let staged = null;
+	let aliasIdentity;
 	if (binding.rollback_record) {
 		try {
 			const loaded = await loadApprovedRollback({ binding, token: env.GH_TOKEN, outputDirectory: join(workspace, "rollback"), fetchImpl });
@@ -58,7 +63,7 @@ export async function createProductionRuntime({ binding, packageVerification, en
 		}
 	}
 	const guard = async () => {
-		await assertConcreteProductionContracts({ env, fetchImpl });
+		aliasIdentity = await assertConcreteProductionContracts({ env, fetchImpl });
 		const context = { eventName: env.GITHUB_EVENT_NAME, ref: env.GITHUB_REF, actor: env.GITHUB_ACTOR,
 			triggeringActor: env.PRODUCTION_TRIGGERING_ACTOR ?? env.GITHUB_TRIGGERING_ACTOR,
 			repositoryOwner: env.GITHUB_REPOSITORY_OWNER, repository: env.GITHUB_REPOSITORY,
@@ -76,19 +81,15 @@ export async function createProductionRuntime({ binding, packageVerification, en
 		const entries = aliases.filter((item) => item.alias === canonicalHost);
 		assert(entries.length <= 1, "PRODUCTION_CANONICAL_ALIAS_AMBIGUOUS");
 		const currentId = entries[0]?.deploymentId ?? null;
-		if (currentId) assertProductionAliasSnapshot(aliases, target, currentId);
+		assertProductionAliasSnapshot(aliases, target, currentId, aliasIdentity);
 		return currentId;
 	};
 	const aliasesFor = async (expectedId) => {
 		const aliases = await rawAliases();
-		if (expectedId === null) {
-			assert(!aliases.some((item) => target.domains.includes(item.alias)), "PRODUCTION_ALIAS_UNEXPECTED");
-			return [];
-		}
-		assertProductionAliasSnapshot(aliases, target, expectedId);
-		const affected = deriveProductionDomains(await getVercelProjectDomains(options), aliases, expectedId);
+		assertProductionAliasSnapshot(aliases, target, expectedId, aliasIdentity);
+		const affected = deriveProductionDomains(await getVercelProjectDomains(options), target);
 		assert(sameDomains(affected, target.domains), "PRODUCTION_ALIAS_SET_DRIFT");
-		return target.domains.map((domain) => ({ domain, deployment_id: expectedId }));
+		return expectedId === null ? [] : target.domains.map((domain) => ({ domain, deployment_id: expectedId }));
 	};
 	const waitForAliases = async (expectedId) => {
 		const deadline = Date.now() + 120_000;
@@ -105,7 +106,8 @@ export async function createProductionRuntime({ binding, packageVerification, en
 		validateVercelProjectIdentity(project, target);
 		const aliases = await rawAliases();
 		const currentId = await currentProductionId();
-		const domains = deriveProductionDomains(await getVercelProjectDomains(options), aliases, currentId);
+		assertProductionAliases(aliases, target, currentId, aliasIdentity);
+		const domains = deriveProductionDomains(await getVercelProjectDomains(options), target);
 		assert(sameDomains(domains, target.domains), "PRODUCTION_DOMAIN_SET_DRIFT");
 		const currentDeployment = currentId ? await getVercelDeployment({ ...options, deploymentIdOrUrl: currentId }) : null;
 		if (currentDeployment) validateVercelDeploymentIdentity(currentDeployment, target);
@@ -134,6 +136,7 @@ export async function createProductionRuntime({ binding, packageVerification, en
 	const restoreRollback = async (candidate, currentDeploymentId) => {
 		const outcome = await restoreApprovedRelease({
 		candidate, currentDeploymentId,
+		aliasIdentity,
 		api: {
 			getProject: async () => { const project = await getVercelProject(options); validateVercelProjectIdentity(project, target); return project; },
 			getDeployment: async (id) => getVercelDeployment({ ...options, deploymentIdOrUrl: id }),

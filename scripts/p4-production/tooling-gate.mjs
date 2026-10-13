@@ -96,7 +96,11 @@ export async function evaluateCurrentCredential({ env = process.env, fetchImpl =
 	if (env.VERCEL_ORG_ID !== C1_TARGET.team_id || env.VERCEL_PROJECT_ID !== C1_TARGET.project_id) throw new Error("C1_CREDENTIAL_TARGET_MISMATCH");
 	const observed = typeof readProviderObservation === "function" ? await readProviderObservation()
 		: await readVercelCredentialObservation({ token: env.VERCEL_TOKEN, fetchImpl });
-	return { ...validateCredentialContract({ manifest, observed, ownerDecision }), observation: observed };
+	const result = validateCredentialContract({ manifest, observed, ownerDecision });
+	return { ...result, observation: observed, approved_target: result.result === "PASS" ? {
+		team_id: manifest.claims.team.id, team_slug: manifest.claims.team.slug,
+		project_id: manifest.claims.project.id, project: manifest.claims.project.name,
+	} : undefined };
 }
 
 /** Recheck digest, expiry, revocation and installed identity before each write. */
@@ -108,7 +112,9 @@ export async function assertConcreteProductionContracts({ env = process.env, fet
 	const audit = json(join(outputDirectory, "audit-execution.json"));
 	const observed = await collectToolingObservation({ env, audit, outputDirectory, verifiedTarball: { integrity: prior.candidate.tarball_integrity, sha256: prior.candidate.tarball_sha256 } });
 	if (JSON.stringify(observed) !== JSON.stringify(prior)) throw new Error("TOOLING_INSTALLED_IDENTITY_CHANGED");
-	if ((await evaluateCurrentCredential({ env, fetchImpl })).result !== "PASS") throw new Error("CONCRETE_C1_ADMISSION_FAILED");
+	const credential = await evaluateCurrentCredential({ env, fetchImpl });
+	if (credential.result !== "PASS") throw new Error("CONCRETE_C1_ADMISSION_FAILED");
+	return credential.approved_target;
 }
 
 async function main() {

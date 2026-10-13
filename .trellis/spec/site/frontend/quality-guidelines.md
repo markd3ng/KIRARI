@@ -127,6 +127,47 @@ created by browser scripts.
 
 ## Verification
 
+### Production Target and Trusted Sources
+
+#### 1. Scope / Trigger
+Apply to Production snapshots, staging/promotion, public validation and rollback.
+Configured domains and generated aliases have separate security meanings.
+
+#### 2. Signatures
+- `deriveProductionDomains(configured, target)` in `runtime-adapter.mjs`.
+- `assertProductionAliases(aliases, target, expectedDeployment, identity)` in `alias-policy.mjs`.
+- `assertProductionAliasSnapshot(aliases, target, expectedDeployment, identity)` is the shared rollback boundary.
+- `normalizeVercelTrustedSources(project)` in `trusted-sources.mjs` feeds `validateVercelTrustedSources(project, target)`.
+
+#### 3. Contracts
+- Only complete Project Domains records with no `gitBranch`/`customEnvironmentId` enter `target.domains`. Compare exactly with the Owner binding, including canonical origin; redirects/project substitution/duplicates reject.
+- `identity={team_id,team_slug,project_id,project}` is returned only after the current C1 contract passes. Construct generated project/team/main names from it, never by guessing a namespace from alias strings. Require exact project, optional team ID, no redirect and expected deployment. Generated names never expand canonical domains or release-record domains.
+- Unaffected own-namespace Preview branch rows grant no Production access. Custom/foreign/lookalike aliases and foreign branches on the Production deployment reject. Truncated/unrecognized shapes fail closed.
+- Normalize current `oidcProviders` issuer-to-array schema and supported legacy containers. Current optional `projects` can be omitted only inside a present supported policy; explicit CI trust=false is always required. Preserve exact GitHub issuer/audience/repository/main/workflow claims and only Production destination.
+- Missing raw policy is unavailable proof. Runtime performs authenticated raw GETs before writes. MCP projections/local flags/saved snapshots and unverified updatedAt/ETag are not substitutes. Existing authorization/replay/15-minute/Environment/C1/artifact boundaries remain independent.
+
+#### 4. Validation & Error Matrix
+| Condition | Result |
+|---|---|
+| Exact configured set plus expected generated project/main aliases | Accept separately; configured set unchanged |
+| Unexpected configured domain/redirect/project/duplicate | Reject before writes |
+| Generated alias has foreign namespace/project/deployment or redirect | Reject |
+| Missing/null raw Trusted Sources | `Vercel project Trusted Sources readback is unavailable` |
+| Missing/enabled same-repository CI control, extra projects/providers/claims or broad preset | Reject |
+| Local snapshot/summary/revision timestamp offered instead of raw policy | No fallback; remain blocked |
+
+#### 5. Good/Base/Bad Cases
+- Good: canonical configured domain plus approved-team project/main aliases all bind expected Production deployment.
+- Base: empty first-release alias snapshot with current deployment=null; no generated names become configured domains.
+- Bad: arbitrary custom hostname, foreign branch bound to Production, absent raw policy or issuer-shadowing entry.
+
+#### 6. Tests Required
+Run alias/trust negatives, authorization/C1/preflight/replay/immutable-artifact/runtime/first-release/rollback and P3 regressions. Require actual Chromium Production fixture, type/build/Trellis checks and standard CI. Tests must not mutate a real Production target.
+
+#### 7. Wrong vs Correct
+Wrong: merge every alias bound to Production into `target.domains`, or substitute `updatedAt` for a missing policy.
+Correct: derive exact configured domains from Project Domains; validate generated aliases separately with the C1-approved namespace; require fresh authenticated raw Trusted Sources.
+
 Run from the workspace root:
 
 ```bash

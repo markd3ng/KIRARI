@@ -1,0 +1,20 @@
+{
+  "baseline_main": "497e258fbdea911f0710d19585c76d8888117543",
+  "scoped_regressions": {
+    "passed": 227,
+    "failed": 0,
+    "skipped": 0,
+    "node": "22.12.0",
+    "required_actual_chromium_fixture": true
+  },
+  "pnpm_check": "PASS",
+  "pnpm_build": "PASS_BUILD_ONLY_112_PAGES",
+  "read_only_c1_run": 38342158272,
+  "c1_read_only_result": "PASS",
+  "live_configured_domain_model": "PASS",
+  "live_trusted_sources_readback": "UNAVAILABLE_FAIL_CLOSED",
+  "main_material_drift_before_edit": "NONE",
+  "production_deployment_performed": false,
+  "production_authorization_generated": false,
+  "merge_authorized": false
+}

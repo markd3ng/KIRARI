@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { compareRemoteFileInventory, deploymentFiles, fileInventory, verifySitePackage, vercelRequest } from "./site-artifact.mjs";
+import { normalizeVercelTrustedSources } from "./p4-production/trusted-sources.mjs";
 
 const PROJECT_ID = /^prj_[A-Za-z0-9]+$/;
 const TEAM_ID = /^team_[A-Za-z0-9]+$/;
@@ -81,41 +82,10 @@ function expectedOidc(target) {
 	};
 }
 
-function trustedSourcesFromProject(project) {
-	if (Object.hasOwn(project, "trustedSources") && Object.hasOwn(project, "trusted_sources")) {
-		throw new Error("Vercel project Trusted Sources readback is ambiguous");
-	}
-	const trustedSources = project.trustedSources ?? project.trusted_sources;
-	assertRecord(trustedSources, "Vercel project Trusted Sources readback is unavailable");
-	if (trustedSources.enableVercelCiSameRepository !== false) {
-		throw new Error("Vercel Trusted Sources same-repository CI trust must be explicitly disabled");
-	}
-	const projects = trustedSources.projects;
-	if (!projects || typeof projects !== "object" || Object.keys(projects).length !== 0) {
-		throw new Error("Vercel project Trusted Sources must explicitly contain no additional project rules");
-	}
-	const sourceFields = ["externalSources", "external_sources", "oidcProviders", "oidc_providers"];
-	if (sourceFields.filter((key) => Object.hasOwn(trustedSources, key)).length !== 1) {
-		throw new Error("Vercel project Trusted Sources provider readback is ambiguous or unavailable");
-	}
-	if (Array.isArray(trustedSources.externalSources)) return trustedSources.externalSources;
-	if (Array.isArray(trustedSources.external_sources)) return trustedSources.external_sources;
-	const providers = trustedSources.oidcProviders ?? trustedSources.oidc_providers;
-	if (providers && typeof providers === "object" && !Array.isArray(providers)) {
-		const result = [];
-		for (const [issuer, configured] of Object.entries(providers)) {
-			const entries = Array.isArray(configured) ? configured : [configured];
-			for (const entry of entries) result.push({ ...entry, issuer: entry?.issuer ?? issuer });
-		}
-		return result;
-	}
-	throw new Error("Vercel project Trusted Sources schema is unsupported");
-}
-
 export function validateVercelTrustedSources(project, target) {
 	assertRecord(project, "Vercel project readback is invalid");
 	const expected = expectedOidc(target);
-	const sources = trustedSourcesFromProject(project);
+	const sources = normalizeVercelTrustedSources(project).externalSources;
 	if (sources.length !== 1) throw new Error("Vercel project must have exactly one reviewed GitHub OIDC Trusted Source");
 	const source = sources[0];
 	if (source?.issuer !== expected.issuer) throw new Error("Vercel GitHub OIDC issuer does not match the reviewed Trusted Source");

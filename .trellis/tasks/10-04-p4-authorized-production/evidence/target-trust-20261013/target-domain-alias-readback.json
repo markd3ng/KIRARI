@@ -1,0 +1,282 @@
+{
+  "observed_at": "2026-10-13T03:27:25.998Z",
+  "project": {
+    "id": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+    "name": "kirari-main",
+    "accountId": "team_NsBZHGUVnyygP7veiROKLuUx",
+    "productionId": "dpl_7ACbEGqeC8f7yyqZqmAjzL78F5sB",
+    "productionBranch": "main"
+  },
+  "domains": {
+    "rows": [
+      {
+        "name": "kirari-main.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "gitBranch": null,
+        "customEnvironmentId": null,
+        "redirect": null,
+        "verified": true
+      }
+    ],
+    "pages": 1,
+    "complete": true
+  },
+  "aliases": {
+    "rows": [
+      {
+        "alias": "kirari-main-git-codex-p4-c1-f70000-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_DWZSXs978g1qpcczKMP6x9GwsJu6",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p4-c1-hobby-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_H9zLrJyHgC1tRMt5xmgWVcr5QZAD",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p4-re-d3ae49-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_EQUby1unQmYnvp6MN3VHfiYBaPyn",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p4-li-ea743f-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_GYxcqez8WvwBgV2QJNHoae5Xw996",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p4-tr-f7cf73-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_72eBRBgrS3qTrVH5keEb9uMypJva",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-r3-ba-2d1ab1-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_5Wv3vRL8emBvu4FbgQuBC31v8hRH",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p4-pr-fc6af0-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_67oyrGNYiKKMhARLNrVFLcrG77Zg",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p4-au-d1daee-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_g7Tjab62pTNFLd3Nz17Ec8MyCr5h",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p3-ar-087cde-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_69h7qWjvNU1ZVHq5gaUdLy9rqAHo",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p3-co-be4761-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_77Zm9sK5f3NNncxbKt4MjoxCxKe6",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p3-co-466871-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_84BXiBvjLhBKZFpJzBMYXb2V8FmK",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p3-st-f7c71c-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_AisVizSReFZiXYPAT4rijQq8jh5p",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p3-pl-ee365d-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_CQFuJ2Tec84Waon6A3DZgv4EwFNL",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p2-co-d71197-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_Hz3optMkyS4oEVstCkLZc53dioX8",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p2-ve-5f93ea-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_CCf9DXxe7PLKSsWxgJQEtbriLuSM",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p2-ar-542a1d-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_GGXVy7gmXtKAzfb9pRV5ywchAuXm",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p2-config-pr-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_An1aGv9BbajENJXjGUgxzgvx8kwf",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-config-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_3vRyLw1ri26mcFjidmxGpjqLDD8K",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p2-si-cde405-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_3RkCMzLbiccwwyyNx3SyvScUJ8nh",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p2-ocr-gate-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_BR6Vd9KnVgi61SxP25Vj1Loh2eWw",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-p1-co-61e6d0-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_HixBmNkFjw5k4nbjpyqi7zmbybTd",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-verce-d19f30-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_FHs5JmahWSfiGpb1aFASRqgUHkU1",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-codex-secur-4226a0-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_GPA9KeZ2hKGSTG71fbELMkg4o91A",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-dad5cf-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_EwweG7Zyt6Dm7iRdY858DkDck8Uw",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-86970c-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_GX7eyDKnR2aLHSGbCuMF81wKZhMA",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-e629e1-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_Dfywy6YyppyL2R24PnvUus5WfCKp",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-7d32da-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_wai2JCMNK6GAdjZw6paUuHh53KRn",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-ead522-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_BnTJHNyPWLXYRyUwRPxSATGnCtQt",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-0412bd-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_4pgcdGSYDcBnQaQFskVQnQ2V3BDc",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-7f22b5-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_8y6dMLeM3sUD7crkchrhYfKy5HR6",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-756c4d-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_FcPKyBRYZdzffL5c7iR3iaBYWjxU",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-e212ed-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_75SHoWPEjukN8gChSkvB8sFvxPbi",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-3791a4-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_6BknKTdFzS3MC6HwpwQ5RuHqTPQv",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-1c7ec6-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_7m9guxm9Mxj7RjWW8p19Fuam6yd2",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-2fc349-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_5dxPTmXT2pjL2LyZfPpSyyV7KVbk",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-fa71b3-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_EyV7vmSfNAv9UQi7QpFuWS1AwW8L",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-e7554f-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_4Tt3Ricbt4vutT6sKDSmMgQW6ZoA",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dependabot-01427f-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_CeqZr8wE2C6EPMFL2F1HuFyvCxeE",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-dev-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_6uWcFASvCyy3M9iUnyKxkHV4fN5A",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_7ACbEGqeC8f7yyqZqmAjzL78F5sB",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_7ACbEGqeC8f7yyqZqmAjzL78F5sB",
+        "redirect": null
+      },
+      {
+        "alias": "kirari-main-git-main-martyjstogner-2766s-projects.vercel.app",
+        "projectId": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+        "deploymentId": "dpl_7ACbEGqeC8f7yyqZqmAjzL78F5sB",
+        "redirect": null
+      }
+    ],
+    "pages": 1,
+    "complete": true
+  }
+}
