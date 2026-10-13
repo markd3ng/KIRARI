@@ -144,7 +144,8 @@ saved snapshot/`authenticated` flag nor `updatedAt`/ETag substitutes for that re
 no verified provider revision semantics or snapshot fallback is implemented.
 The existing 15-minute exact authorization/replay checks remain unchanged.
 If fresh Owner and scoped-PAT reads cannot expose the required policy, remain
-blocked and obtain separately authorized exact Owner setup/readback. See
+blocked and obtain separately authorized Owner read-only authentication/readback;
+only a confirmed mismatch warrants separately authorized policy setup. See
 the [current remediation evidence](../.trellis/tasks/10-04-p4-authorized-production/evidence/target-trust-20261013/README.md).
 Authenticated actual readback and authoritative semantic interpretation both
 remain required. Preserve documented implicit same-project access.

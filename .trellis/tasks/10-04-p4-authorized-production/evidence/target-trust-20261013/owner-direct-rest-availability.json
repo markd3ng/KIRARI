@@ -1,0 +1,9 @@
+{
+  "observed_at": "2026-10-13T04:01:03.470963+00:00",
+  "credential_class": "existing Vercel CLI OAuth (no refresh or file change)",
+  "expected_owner_principal_matches": true,
+  "expires_at": "2026-07-20T15:26:54+00:00",
+  "reads": [],
+  "credential_value_retained": false,
+  "result": "UNAVAILABLE_EXISTING_OAUTH_EXPIRED_NO_REFRESH"
+}
