@@ -43,6 +43,7 @@ for (const mutate of [
 
 for (const mutate of [
 	r => { r.to = { preset: "all-custom" }; },
+	r => { r.to.preset = "all-custom"; },
 	r => { r.to.slugs.push("preview"); },
 	r => { r.to.unreviewed = true; },
 	r => { r.claims.ref = ["*"]; },

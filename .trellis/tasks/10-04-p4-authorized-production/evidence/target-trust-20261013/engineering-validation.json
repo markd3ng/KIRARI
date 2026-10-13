@@ -1,7 +1,7 @@
 {
   "baseline_main": "497e258fbdea911f0710d19585c76d8888117543",
   "scoped_regressions": {
-    "passed": 227,
+    "passed": 228,
     "failed": 0,
     "skipped": 0,
     "node": "22.12.0",
