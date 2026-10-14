@@ -5,6 +5,7 @@ import { downloadVerifiedArtifact, extractSiteArtifactArchive, readSiteArtifactZ
 import { assertProductionSourceRun, assertSourceShaIsMainAncestor } from "../production-authorization.mjs";
 import { assertProductionReleaseRecord } from "./evidence.mjs";
 import { assertProductionBrowserReport } from "./production-validation.mjs";
+import { assertProductionAliases } from "./alias-policy.mjs";
 
 const sha = /^[a-f0-9]{40}$/;
 const digest = /^sha256:[a-f0-9]{64}$/;
@@ -121,30 +122,26 @@ export function assertRollbackDeployment(deployment, candidate) {
 	return deployment;
 }
 
-export function assertProductionAliasSnapshot(aliases, target, expectedDeployment) {
-	requireCondition(Array.isArray(aliases), "Production aliases are missing");
-	for (const domain of target.domains) {
-		const entries = aliases.filter((entry) => entry.alias === domain);
-		requireCondition(entries.length === 1 && entries[0].projectId === target.project_id && entries[0].deploymentId === expectedDeployment && !entries[0].redirect, "Production alias/deployment substitution");
-	}
+export function assertProductionAliasSnapshot(aliases, target, expectedDeployment, identity) {
+	assertProductionAliases(aliases, target, expectedDeployment, identity);
 	return true;
 }
 
 /** Restore an existing immutable deployment. The injected adapter never rebuilds. */
-export async function restoreApprovedRelease({ candidate, currentDeploymentId, api, verifyBytes, validateProduction }) {
+export async function restoreApprovedRelease({ candidate, currentDeploymentId, aliasIdentity, api, verifyBytes, validateProduction }) {
 	requireCondition(deploymentId.test(currentDeploymentId) && currentDeploymentId !== candidate.target.deployment_id, "Rollback must select a distinct prior approved deployment");
 	const target = candidate.target;
 	const project = await api.getProject(target.project_id);
 	requireCondition(project.id === target.project_id && project.name === target.project && project.accountId === target.team_id, "Rollback project/team identity mismatch");
 	assertRollbackDeployment(await api.getDeployment(target.deployment_id), candidate);
-	assertProductionAliasSnapshot(await api.getAliases(), target, currentDeploymentId);
+	assertProductionAliasSnapshot(await api.getAliases(), target, currentDeploymentId, aliasIdentity);
 	const before = await verifyBytes(candidate);
 	requireCondition(before.result === "PASS" && before.byte_output_digest === candidate.record.byte_output_digest && before.inventory_digest === candidate.record.inventory_digest, "Rollback immutable output could not be reverified");
 	// A failure before this call performs no production write. After it, every failure is INCOMPLETE.
 	try {
 		await api.promoteExisting(target.deployment_id);
 		assertRollbackDeployment(await api.getDeployment(target.deployment_id), candidate);
-		assertProductionAliasSnapshot(await api.getAliases(), target, target.deployment_id);
+		assertProductionAliasSnapshot(await api.getAliases(), target, target.deployment_id, aliasIdentity);
 		const browser = await validateProduction(candidate);
 		assertProductionBrowserReport(browser);
 		requireCondition(browser.phase === "restore" && browser.baseUrl === target.canonical_origin, "Restored production health validation failed");

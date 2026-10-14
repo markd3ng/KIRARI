@@ -17,7 +17,7 @@ workflow's reviewed main SHA; it must be a verified ancestor.
 
 The P3 package's embedded Preview target describes how it was packaged. It is
 preserved byte for byte. Production authorization independently binds the
-actual Vercel team, project, complete affected domain set, canonical origin,
+actual Vercel team, project, exact configured Production domain set, canonical origin,
 current deployment and operation. Changing those values requires a new
 approval. Production does not rerun Astro, postbuild, indexing or Site code.
 
@@ -26,6 +26,24 @@ and deployment. The immutable HTML canonicals and robots sitemap must match
 the selected production canonical origin. A package using `https://example.com`
 cannot be released to a different canonical origin. Select a newly reviewed
 CI artifact with the correct Site settings; never edit the downloaded package.
+
+Only the authoritative, paginated Project Domains endpoint supplies the configured
+Production domains. Explicit Preview/custom-environment records are excluded;
+unexpected configured Production domains, duplicate records, project substitution
+and redirects reject the operation. The canonical origin must remain in that exact set.
+
+Vercel's [generated URLs](https://vercel.com/docs/deployments/generated-urls)
+are separate from configured domains. The project/team Production URL and the
+main branch URL are constructed from the digest-approved C1 project/team slug,
+not guessed from aliases or accepted by a broad `.vercel.app` suffix. Their
+project identity, optional team identity, lack of redirects and expected
+current/new Production deployment binding are checked before writes and after
+promotion/rollback. They never enter `target.domains`, canonical indexing policy
+or the configured-domain release record. Do not delete them to satisfy an
+authorization comparison. Other branch URLs in the same provider namespace
+remain Preview observations only; custom hosts, lookalikes, foreign namespaces
+and foreign branch aliases on the Production deployment reject validation.
+Unsupported provider URL truncation fails closed rather than guessing ownership.
 
 ## Authorization boundary
 
@@ -99,12 +117,36 @@ the exact approved HTTPS deployment origin and is never recorded in evidence
 or forwarded to external origins. Public production domains are validated
 without giving external services deployment credentials.
 
-The authenticated project readback must also explicitly report
-`enableVercelCiSameRepository: false` and an empty `trustedSources.projects`
-collection. Added Vercel project rules, customized self-access rules, and
-missing or unrecognized values fail closed. This is the current source parser expectation. The provider semantics of
-`enableVercelCiSameRepository` are undocumented in the evidence available here;
-its literal value is not an Owner setup instruction or verified trust policy.
+The authenticated raw project readback must explicitly report
+`enableVercelCiSameRepository: false`, one GitHub OIDC rule with exact audience,
+repository, main ref, Production workflow ref and Production destination, and no
+additional project rules. The current [Vercel SDK schema](https://github.com/vercel/sdk/blob/main/docs/models/getprojecttrustedsources.md)
+uses an `oidcProviders` issuer-to-rule-array map and optional `projects`.
+An omitted `projects` within that present current policy means no additional
+stored project rules; legacy external-source containers still require explicit
+empty project rules. The normalizer rejects shadowed/ambiguous containers,
+extra providers (including empty rules), issuer overrides, unknown policy fields,
+broad destination presets and missing CI trust controls. Absent CI trust defaults
+to enabled at the provider and does not qualify. Added project/customized
+self-access rules fail closed. The current SDK documents the same-repository
+CI control and its enabled default. A literal repository value is not
+authenticated provider proof or authorization to change the actual setting.
+
+A missing/null whole Trusted Sources field means **unavailable readback**, not
+proof that the policy is absent. Keep project-scoped PAT reads, Owner/control-plane
+raw REST/dashboard reads and MCP summaries distinct: the MCP project response
+may omit the policy and combine configured domains with generated aliases.
+The C1 identity reader also deliberately projects project identity; its PASS
+does not attest raw Trusted Sources field visibility. Do not broaden the PAT.
+
+Runtime re-reads the complete raw project policy before each write. Neither a
+saved snapshot/`authenticated` flag nor `updatedAt`/ETag substitutes for that read;
+no verified provider revision semantics or snapshot fallback is implemented.
+The existing 15-minute exact authorization/replay checks remain unchanged.
+If fresh Owner and scoped-PAT reads cannot expose the required policy, remain
+blocked and obtain separately authorized Owner read-only authentication/readback;
+only a confirmed mismatch warrants separately authorized policy setup. See
+the [current remediation evidence](../.trellis/tasks/10-04-p4-authorized-production/evidence/target-trust-20261013/README.md).
 Authenticated actual readback and authoritative semantic interpretation both
 remain required. Preserve documented implicit same-project access.
 Do not infer the stored rules from a connector projection that omits them.
