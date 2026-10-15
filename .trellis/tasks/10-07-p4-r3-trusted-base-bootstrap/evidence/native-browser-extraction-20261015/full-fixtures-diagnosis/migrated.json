@@ -1,0 +1,52 @@
+{
+  "result": "FAIL",
+  "mode": "preview",
+  "baseUrl": "http://127.0.0.1:64890",
+  "providerDeploymentIdentityVerified": false,
+  "routes": [
+    {
+      "path": "/",
+      "status": 200,
+      "noindex": "noindex",
+      "title": "KIRARI - KIRARI",
+      "contentMarker": "Documenting Ideas.Sharing Knowledge."
+    },
+    {
+      "path": "/posts/mapping-test/",
+      "status": 200,
+      "noindex": "noindex",
+      "title": "Tag and Category Mapping Test - KIRARI",
+      "contentMarker": ""
+    },
+    {
+      "path": "/posts/devops-guide/",
+      "status": 200,
+      "noindex": "noindex",
+      "title": "Docker and Kubernetes Deployment Guide - KIRARI",
+      "contentMarker": ""
+    }
+  ],
+  "browserConsoleErrors": 0,
+  "pageErrors": 0,
+  "failedBrowserRequests": 2,
+  "badResponses": 0,
+  "unexpectedExternalCalls": 0,
+  "localMissingPaths": [
+    "/__kirari_p3_not_found__"
+  ],
+  "networkFailures": [
+    {
+      "origin": "https://api.unisvg.com",
+      "path": "/material-symbols.json",
+      "resourceType": "fetch",
+      "errorCode": "FETCH_TIMEOUT"
+    },
+    {
+      "origin": "https://api.unisvg.com",
+      "path": "/fa6-brands.json",
+      "resourceType": "fetch",
+      "errorCode": "FETCH_TIMEOUT"
+    }
+  ],
+  "errorCode": "SITE_BROWSER_VALIDATION_FAILED"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "p4-r3-trusted-base-bootstrap",
+  "name": "p4-r3-trusted-base-bootstrap",
+  "title": "P4 / RM-05 — Restore native Git deployment and reconcile roadmap",
+  "status": "in_progress",
+  "priority": "P1",
+  "creator": "Ian",
+  "assignee": "Ian",
+  "createdAt": "2026-10-07",
+  "completedAt": null,
+  "branch": "codex/native-git-deployment-correction",
+  "base_branch": "main",
+  "worktree_path": "/Users/ian/.codex/worktrees/p4-c1-hobby/KIRARI",
+  "baseline_main_sha": "c6db5da47d1b5d853a38032e1b676fb0cf2c013a",
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/143",
+  "scope": "Owner-directed native deployment architecture correction. Engineering implementation, roadmap updates, checks and PR only; no merge or Production mutations.",
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "Continues existing P4 task. Previously merged deployment orchestration is historical and will be retired, not represented as completed native Production infrastructure. Root task evidence retains previous history. Engineering PR143 opened; frozen source independently reviewed, exact initial-head CI38668940112 and advisory OCR38668940211 succeeded. Native Preview matches initial head; Production remains unchanged. Two OCR-confirmed test coverage improvements are prepared for final-head revalidation."
+}

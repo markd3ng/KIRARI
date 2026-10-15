@@ -1,0 +1,54 @@
+{
+  "provenance": {
+    "exit": 0,
+    "started_at": "2026-10-15T01:43:05.296Z",
+    "completed_at": "2026-10-15T01:43:06.896Z",
+    "endpoint": "https://api.vercel.com/v9/projects/prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk?teamId=team_NsBZHGUVnyygP7veiROKLuUx",
+    "method": "GET",
+    "authentication_source": "EXISTING_OWNER_CLI_SESSION",
+    "authenticated_raw_response": true
+  },
+  "identity": {
+    "id": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+    "name": "kirari-main",
+    "team_id": "team_NsBZHGUVnyygP7veiROKLuUx"
+  },
+  "settings": {
+    "autoAssignCustomDomains": true,
+    "autoAssignCustomDomainsUpdatedBy": "system",
+    "buildCommand": null,
+    "framework": "astro",
+    "installCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "sourceFilesOutsideRootDirectory": true,
+    "gitProviderOptions": {
+      "createDeployments": "enabled"
+    }
+  },
+  "settings_fields_present": {
+    "commandForIgnoringBuildStep": false,
+    "ignoreCommand": false,
+    "autoAssignCustomDomains": true
+  },
+  "git_link": {
+    "type": "github",
+    "repo": "KIRARI",
+    "repoId": 1156039202,
+    "org": "markd3ng",
+    "productionBranch": "main",
+    "sourceless": true,
+    "createdAt": 1773294622321,
+    "updatedAt": 1773294622321
+  },
+  "environment_assignments": [],
+  "production_target": {
+    "id": "dpl_7ACbEGqeC8f7yyqZqmAjzL78F5sB",
+    "url": "kirari-main-dsetnlu88-martyjstogner-2766s-projects.vercel.app",
+    "readyState": "READY",
+    "target": "production",
+    "commit": "408dff70c5aa7b39cbd3df31103b5847dba9751f"
+  },
+  "raw_policy_not_inspected": true,
+  "live_mutations_performed": false
+}

@@ -1,3 +1,7 @@
+> **Historical scope, superseded by the native Git architecture correction (2026-10-15).**
+> Do not execute the custom admission/upload/promotion plan below. Current implementation and acceptance are in `../10-07-p4-r3-trusted-base-bootstrap/` and Issue #99.
+> P4 remains incomplete; this retirement does not claim Production deployment or authorize operational changes.
+
 > **Owner continuation — 2026-10-10:** PR #139 retired the R3 dependency admission platform. T1 dependency approval/exception requirements below are historical and superseded. Current work refreshes existing PR #133 on main `0945eb82e76cab1878e7324ef3447f37855dfe79`, removes obsolete root-audit/T1 consumers, and retains strict artifact, credential, browser and rollback checks. Production remains separately authorized.
 
 # Execution

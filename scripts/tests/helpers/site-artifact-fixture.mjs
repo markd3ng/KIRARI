@@ -37,13 +37,13 @@ export function createSiteArtifactFetchMock(fixture) {
 		[packageArtifactId, {
 			id: Number(packageArtifactId), name: fixture.expected.package.name, digest: fixture.expected.package.digest, expired: false,
 			expires_at: new Date(Date.now() + 24 * 60 * 60_000).toISOString(),
-			workflow_run: { id: Number(runId), head_sha: sourceSha, head_branch: "main" },
+			workflow_run: { id: Number(runId), head_sha: fixture.expected.source.head_sha, head_branch: fixture.expected.source.ref.slice("refs/heads/".length) },
 			archive_download_url: `https://api.github.com/repos/markd3ng/KIRARI/actions/artifacts/${packageArtifactId}/zip`,
 		}],
 		[compositionArtifactId, {
 			id: Number(compositionArtifactId), name: `kirari-composition-${runId}-${runAttempt}`, digest: fixture.upstreamDigest, expired: false,
 			expires_at: new Date(Date.now() + 24 * 60 * 60_000).toISOString(),
-			workflow_run: { id: Number(runId), head_sha: sourceSha, head_branch: "main" },
+			workflow_run: { id: Number(runId), head_sha: fixture.expected.source.head_sha, head_branch: fixture.expected.source.ref.slice("refs/heads/".length) },
 			archive_download_url: `https://api.github.com/repos/markd3ng/KIRARI/actions/artifacts/${compositionArtifactId}/zip`,
 		}],
 	]);
@@ -71,7 +71,7 @@ export function createSiteArtifactFetchMock(fixture) {
 	};
 }
 
-export function createSiteArtifactFixture() {
+export function createSiteArtifactFixture({ coreSha = sourceSha, workflowSha = sourceSha, branch = "main" } = {}) {
 	const root = mkdtempSync(join(tmpdir(), "kirari-site-artifact-fixture-"));
 	const compositionRoot = join(root, "composition");
 	const distRoot = join(compositionRoot, "dist");
@@ -85,7 +85,7 @@ export function createSiteArtifactFixture() {
 	writeFileSync(join(distRoot, "posts/demo/index.html"), '<!doctype html><html><head><title>Demo</title></head><body><h1>Demo article</h1></body></html>\n');
 	writeFileSync(join(distRoot, "styles.css"), "body { color: #123; }\n");
 	const provenance = createProvenanceManifest({
-		core: { kind: "git", repository: "https://github.com/markd3ng/KIRARI", requested_ref: "main", resolved_sha: sourceSha },
+		core: { kind: "git", repository: "https://github.com/markd3ng/KIRARI", requested_ref: "selected-core", resolved_sha: coreSha },
 		site: { kind: "git", repository: "https://github.com/markd3ng/KIRARI", requested_ref: "site-fixture", resolved_sha: "b".repeat(40), source_subdirectory: "site" },
 		siteSchemaVersion: 2,
 		toolchain: { node: "22.0.0", pnpm: "9.14.4", platform: "linux", architecture: "x64", lockfile: { path: "pnpm-lock.yaml", digest: sha256Digest(Buffer.from("fixture lock")) } },
@@ -110,8 +110,8 @@ export function createSiteArtifactFixture() {
 	assert.equal(packaged.status, 0, `${packaged.stdout}\n${packaged.stderr}`);
 	const packageZipBytes = zipDirectory(packageRoot, packageZipPath);
 	const expected = {
-		schema_version: 1,
-		source: { run_id: runId, run_attempt: runAttempt, head_sha: sourceSha, ref: "refs/heads/main", event: "workflow_dispatch", conclusion: "success", workflow_path: ".github/workflows/ci.yml" },
+		schema_version: 2,
+		source: { run_id: runId, run_attempt: runAttempt, head_sha: workflowSha, ref: `refs/heads/${branch}` },
 		package: { id: packageArtifactId, name: `kirari-site-package-${runId}-${runAttempt}`, digest: sha256Digest(packageZipBytes) },
 	};
 	return {

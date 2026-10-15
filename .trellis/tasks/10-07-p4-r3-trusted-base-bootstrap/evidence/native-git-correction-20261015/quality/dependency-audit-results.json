@@ -1,0 +1,47 @@
+{
+  "captured_at": "2026-10-15T01:56:43.492969+00:00",
+  "node": "22.12.0",
+  "build_only": true,
+  "results": [
+    {
+      "name": "browser-tooling-audit",
+      "command": [
+        "npm",
+        "audit",
+        "--prefix",
+        "scripts/p3-browser",
+        "--audit-level",
+        "moderate"
+      ],
+      "exit_code": 0,
+      "blocking": true,
+      "duration_seconds": 1.35,
+      "log": "browser-tooling-audit.log"
+    },
+    {
+      "name": "dependency-audit",
+      "command": [
+        "pnpm",
+        "audit",
+        "--audit-level",
+        "moderate"
+      ],
+      "exit_code": 1,
+      "blocking": false,
+      "duration_seconds": 2.38,
+      "log": "dependency-audit.log"
+    },
+    {
+      "name": "dependency-audit-json",
+      "command": [
+        "pnpm",
+        "audit",
+        "--json"
+      ],
+      "exit_code": 1,
+      "blocking": false,
+      "duration_seconds": 2.67,
+      "log": "dependency-audit-json.log"
+    }
+  ]
+}

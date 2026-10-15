@@ -1,0 +1,270 @@
+{
+  "purpose": "Immutable audit provenance only; not an approval or runtime state database. Full sanitized snapshots retained in local Trellis evidence; compact normalized all-field report is committed.",
+  "files": [
+    {
+      "path": "evidence/native-git-correction-20261014/all-issues-before.json",
+      "sha256": "3c8180f0d4f786089ea591c8cf112af6f03e5217bacf36a0f4c6f2e49be7e4ad",
+      "bytes": 2923984
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/environments-before.json",
+      "sha256": "9c76e80dfe258c77ff67c103087833f511dee3bf6f15d501f5f26edf089dadea",
+      "bytes": 8431
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/github-audit-summary.json",
+      "sha256": "fabbfa19fbb414d4f8182f55da85c54dc64616bb3fe98e58f0fb97a2bd3b6ab4",
+      "bytes": 688
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/issue-dependencies-before.json",
+      "sha256": "d1eb45ebd645fc4fa88aab6ec966b1a4f2f7cfc1a03a6cf67d928cc256ab97ca",
+      "bytes": 26860
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/issues-only-before.json",
+      "sha256": "70392f62f888410fd5f4cfc7a3f51b3269ba49e5b41e7a16a022ae0615155a9f",
+      "bytes": 261643
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/main-protection-before.json",
+      "sha256": "9155a84afc6a0139ee7d4956f5dd5c402290e0e0935625c349e6d8ba5fb43d85",
+      "bytes": 149
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/ocr-model-before.json",
+      "sha256": "7b92f97d217085140b03c24f1282cdcf3ddf8c165274bc251d303f9c952eefb4",
+      "bytes": 143
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/project-before.json",
+      "sha256": "4950bb4189e37122a51e30a7c22d2d51edb95b84ac1d4d6789f24f316ab0b277",
+      "bytes": 227244
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/repo-before.json",
+      "sha256": "497b898acce4cb44a3a87502223e8e447bbb529395335637bbdbf5b1e349967f",
+      "bytes": 6656
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/repository-secret-names.json",
+      "sha256": "58bcaefda1f23c5e0a27721eaa1d131cbed239f3aca419b2ea52e7372c76cfcb",
+      "bytes": 441
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/rulesets-before.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "bytes": 3
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/vercel-current-production-before.json",
+      "sha256": "a8e25795802d5413d5c845922baca9ca18098d746a5a120004e31958223699f6",
+      "bytes": 1518
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/vercel-deployments-before.json",
+      "sha256": "09d3d71566574e1d2436a62383fc68455bcdab7dae07b4fdbcacd295aa0eb7ea",
+      "bytes": 50558
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/vercel-domains-before.json",
+      "sha256": "fbc0491a719dc23b922192ad93dd45d3771e06273ca75f97ef5513460458960e",
+      "bytes": 692
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/vercel-latest-preview-before.json",
+      "sha256": "5582d323d7c2bd5864e1ac015d2fb5bb7c474a0bbc90dc79d5a9066e05839a55",
+      "bytes": 1123
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/vercel-owner-team-before.json",
+      "sha256": "f16be1390d1243a70dcb19c2bb6aefb3b6c75412053ecb3e0adfda71019fdcd2",
+      "bytes": 945
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/vercel-project-before.json",
+      "sha256": "12c965e0de2135bea726ce33df799a21946019f83dde8c820ed6f768e5e1d268",
+      "bytes": 2502
+    },
+    {
+      "path": "evidence/native-git-correction-20261014/workflows-before.json",
+      "sha256": "f3eec337619866e1c57e125809aaecb43997eaddd35c6ca07fbec066b33ccefb",
+      "bytes": 4136
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/after-roadmap/all-issues-before.json",
+      "sha256": "f1c227697f90382ea67b8c0f1c229fde55983148f3705f2f87200aa687d82272",
+      "bytes": 2943061
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/after-roadmap/environments-before.json",
+      "sha256": "9c76e80dfe258c77ff67c103087833f511dee3bf6f15d501f5f26edf089dadea",
+      "bytes": 8431
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/after-roadmap/github-audit-summary.json",
+      "sha256": "83aec7d736add5666ae535464922fe17d027043e7ad0dc0742bac7f6b34c6208",
+      "bytes": 702
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/after-roadmap/issue-dependencies-before.json",
+      "sha256": "ad91acf6654df30b84b227953fb450c4f9c647af2b702d0a8d58852dbc17f670",
+      "bytes": 44808
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/after-roadmap/issues-only-before.json",
+      "sha256": "1642face1de37cde8af38b62fbfaedbe8b6fe84e0d1db3e00bcbb636e6377bd9",
+      "bytes": 280800
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/after-roadmap/main-protection-before.json",
+      "sha256": "9155a84afc6a0139ee7d4956f5dd5c402290e0e0935625c349e6d8ba5fb43d85",
+      "bytes": 149
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/after-roadmap/ocr-model-before.json",
+      "sha256": "7b92f97d217085140b03c24f1282cdcf3ddf8c165274bc251d303f9c952eefb4",
+      "bytes": 143
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/after-roadmap/project-before.json",
+      "sha256": "095f908a881c95676487f8074c18b4b24b1e42a30d85807e2d399a0f445c68aa",
+      "bytes": 254290
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/after-roadmap/repo-before.json",
+      "sha256": "5003ff5ac84d5bde38798feb82e29fb5f03dbe90a480a31f7ce6aa0aef148645",
+      "bytes": 6656
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/after-roadmap/repository-secret-names.json",
+      "sha256": "58bcaefda1f23c5e0a27721eaa1d131cbed239f3aca419b2ea52e7372c76cfcb",
+      "bytes": 441
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/after-roadmap/rulesets-before.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "bytes": 3
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/after-roadmap/workflows-before.json",
+      "sha256": "f3eec337619866e1c57e125809aaecb43997eaddd35c6ca07fbec066b33ccefb",
+      "bytes": 4136
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/all-issues-before.json",
+      "sha256": "3c8180f0d4f786089ea591c8cf112af6f03e5217bacf36a0f4c6f2e49be7e4ad",
+      "bytes": 2923984
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/dependency-update-readbacks.json",
+      "sha256": "e5223a1ca646a45dabdb8baf6d7d11c2b990beb19a47e2d3933de9a76f0685f4",
+      "bytes": 2009
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/environments-before.json",
+      "sha256": "9c76e80dfe258c77ff67c103087833f511dee3bf6f15d501f5f26edf089dadea",
+      "bytes": 8431
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/github-audit-summary.json",
+      "sha256": "c46c4188c6c194a42ef6bc849ec14b5aaef261ca56ee4804b291d6f5a9672f05",
+      "bytes": 688
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/issue-100-signal-readback.json",
+      "sha256": "51583d8e0dc937af74d18a922dba5c26a220cf00802797a208e166216d0f879b",
+      "bytes": 210
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/issue-dependencies-before.json",
+      "sha256": "d1eb45ebd645fc4fa88aab6ec966b1a4f2f7cfc1a03a6cf67d928cc256ab97ca",
+      "bytes": 26860
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/issue-update-readbacks.json",
+      "sha256": "f7bd13cd01472abc58e3fa73ccb1ecc976405c3a2285dc759693b86a316dc880",
+      "bytes": 8428
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/issues-only-before.json",
+      "sha256": "70392f62f888410fd5f4cfc7a3f51b3269ba49e5b41e7a16a022ae0615155a9f",
+      "bytes": 261643
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/main-protection-before.json",
+      "sha256": "9155a84afc6a0139ee7d4956f5dd5c402290e0e0935625c349e6d8ba5fb43d85",
+      "bytes": 149
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/ocr-model-before.json",
+      "sha256": "7b92f97d217085140b03c24f1282cdcf3ddf8c165274bc251d303f9c952eefb4",
+      "bytes": 143
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/phase-options-after.json",
+      "sha256": "fe09e7a3ceff9be56417da03dabe0a43b857fa544f61653e42b7aa184222acf6",
+      "bytes": 1183
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/phase-options-before.json",
+      "sha256": "e0a191324d22f83e4f9e46cf27608b2d7da30b500b4d57cd72e4e3f79fdb0e84",
+      "bytes": 519
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/project-before.json",
+      "sha256": "375bfea09a8431fc959861538b6634b7c2193da0ee84b6542b0b5c3116fb8cef",
+      "bytes": 227244
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/project-field-updates.json",
+      "sha256": "73173a6a344dc514060e0d9da155ea57c94a9b9c54345e0f8f2cd6216a942d1c",
+      "bytes": 2685
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/repo-before.json",
+      "sha256": "497b898acce4cb44a3a87502223e8e447bbb529395335637bbdbf5b1e349967f",
+      "bytes": 6656
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/repository-secret-names.json",
+      "sha256": "58bcaefda1f23c5e0a27721eaa1d131cbed239f3aca419b2ea52e7372c76cfcb",
+      "bytes": 441
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/roadmap-apply-summary.json",
+      "sha256": "194d1487344abb431e3a4143cdc9b6970c82eb7591a77db8f34759daebdf2793",
+      "bytes": 316
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/rulesets-before.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "bytes": 3
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/vercel-current-domains.json",
+      "sha256": "3b61631c0498ab456d910e4e3d6ef7cb1dcb9ce3640e95c6f09336e7471ceb03",
+      "bytes": 527
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/vercel-current-project.json",
+      "sha256": "95b406f72679a9b64aa9d59934203c641e1717506c4ae8333acac2e8ea0bdd51",
+      "bytes": 1624
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/vercel-env-metadata.json",
+      "sha256": "df17eeea5e9273eeb71c6b1e367307b3b48b4100fce3f426411f4df3f7264951",
+      "bytes": 417
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/vercel-owner-identity.json",
+      "sha256": "7c2791b4652b1609bdda86709b977ff83906307e6d4f186daa8f38590442708b",
+      "bytes": 364
+    },
+    {
+      "path": "evidence/native-git-correction-20261015/workflows-before.json",
+      "sha256": "f3eec337619866e1c57e125809aaecb43997eaddd35c6ca07fbec066b33ccefb",
+      "bytes": 4136
+    }
+  ]
+}

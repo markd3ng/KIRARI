@@ -1,29 +1,30 @@
-import { assertCanonicalLink, assertIndexableHeaders } from "./production-browser-helpers.mjs";
+import { assertCanonicalLink, assertIndexableHeaders } from "./page-policy.mjs";
 
 function requireNoindex(response, path) {
 	const value = response.headers()["x-robots-tag"] ?? "";
-	if (!/noindex/i.test(value)) throw new Error(`Preview route ${path} is missing noindex protection (x-robots-tag=${JSON.stringify(value)})`);
+	if (!/noindex/i.test(value)) throw new Error(`Non-indexable route ${path} is missing noindex protection (x-robots-tag=${JSON.stringify(value)})`);
 	return value;
 }
 
-export async function validateBrowserPages({ page, context, origin, contract, mode, productionPolicy, loadedAssets }) {
+export async function validateBrowserPages({ page, context, origin, contract, mode, indexingPolicy, loadedAssets }) {
 	const production = mode === "production";
+	const indexable = production && indexingPolicy.indexable;
 	const rootResponse = await page.goto(new URL("/", origin).href, { waitUntil: "domcontentloaded" });
 	if (rootResponse?.status() !== 200) throw new Error(`Root route returned HTTP ${rootResponse?.status() ?? "no response"}`);
-	const rootRobots = production ? (assertIndexableHeaders(rootResponse.headers()), "indexable") : requireNoindex(rootResponse, "/");
+	const rootRobots = indexable ? (assertIndexableHeaders(rootResponse.headers()), "indexable") : requireNoindex(rootResponse, "/");
 	await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
 	const routeResults = [];
 	for (const route of contract.routes) {
 		const response = await page.goto(new URL(route.path, origin).href, { waitUntil: "domcontentloaded" });
 		if (response?.status() !== 200) throw new Error(`Route ${route.path} returned HTTP ${response?.status() ?? "no response"}`);
-		const routeRobots = production ? (assertIndexableHeaders(response.headers()), "indexable") : requireNoindex(response, route.path);
-		if (production) await assertCanonicalLink(page, route, productionPolicy.canonicalOrigin);
+		const routeRobots = indexable ? (assertIndexableHeaders(response.headers()), "indexable") : requireNoindex(response, route.path);
+		if (production) await assertCanonicalLink(page, route, indexingPolicy.canonicalOrigin);
 		const title = await page.title();
 		const bodyText = (await page.locator("body").innerText()).replace(/\s+/g, " ").trim();
 		if (route.title && title !== route.title) throw new Error(`Route ${route.path} title mismatch: ${JSON.stringify(title)}`);
 		if (route.content_marker && !bodyText.replace(/\s+/g, "").includes(route.content_marker.replace(/\s+/g, ""))) throw new Error(`Route ${route.path} is missing content marker ${JSON.stringify(route.content_marker)}`);
 		await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
-		if (contract.assets?.images?.length) {
+		if (contract.assets?.images?.length && await page.locator("img").count()) {
 			await page.locator("img").first().scrollIntoViewIfNeeded().catch(() => {});
 			await page.waitForTimeout(200);
 		}

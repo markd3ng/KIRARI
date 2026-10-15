@@ -5,13 +5,12 @@ import { pathToFileURL } from "node:url";
 import { verifySitePackage } from "./site-artifact.mjs";
 
 function main() {
-	const [rootArg, targetName = "kirari-test", sourceRunSha] = process.argv.slice(2);
-	if (!rootArg) throw new Error("Usage: node scripts/verify-site-package.mjs <package-root> [target-name] [source-run-sha]");
-	const verified = verifySitePackage({ packageRoot: resolve(rootArg), targetName, sourceRunSha });
+	const [rootArg, expectedCoreSha] = process.argv.slice(2);
+	if (!rootArg) throw new Error("Usage: node scripts/verify-site-package.mjs <package-root> [expected-core-sha]");
+	const verified = verifySitePackage({ packageRoot: resolve(rootArg), expectedCoreSha });
 	console.log(JSON.stringify({
 		result: "PASS",
-		project: targetName,
-		target: verified.manifest.target.environment,
+		format: verified.manifest.package_format,
 		coreSha: verified.provenance.core.resolved_sha,
 		siteRepository: verified.provenance.site.repository,
 		siteSha: verified.provenance.site.resolved_sha,

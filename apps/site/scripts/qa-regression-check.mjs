@@ -626,9 +626,9 @@ addCheck(
 );
 const deploymentEnabled = vercelConfig.git?.deploymentEnabled;
 addCheck(
-	"Vercel Git deployments are disabled only for main",
-	deploymentEnabled?.main === false && Object.keys(deploymentEnabled).length === 1,
-	"Only main must be disabled; dev, test, and unspecified branches must retain Vercel defaults",
+	"Vercel native Git deployments remain enabled for production and previews",
+	deploymentEnabled === undefined || deploymentEnabled === true,
+	"Use Vercel's default Git deployments for main and feature branches; do not disable them for a custom release controller",
 );
 addCheck(
 	"search results render untrusted content as text",

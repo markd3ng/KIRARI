@@ -129,9 +129,8 @@ function main() {
 	const browser = browserContract(dist);
 	cpSync(provenancePath, join(output, "provenance.json"));
 	writeFileSync(join(output, "site-package-manifest.json"), `${JSON.stringify({
-		schema_version: 1,
+		schema_version: 2,
 		package_format: "vercel-build-output-api-v3",
-		target: { platform: "vercel", project: "kirari-test", environment: "preview", deploy_mode: "prebuilt" },
 		functions_classification: "STATIC_ONLY_NO_FUNCTIONS_REQUIRED",
 		source_provenance_sha256: `sha256:${provenanceSha}`,
 		source_artifact: provenance.artifact,

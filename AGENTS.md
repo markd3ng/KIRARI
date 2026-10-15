@@ -34,6 +34,21 @@ Do not infer current behavior from `tmp/`, old plans, audits, or generated
 materialized copies. Do not modify runtime behavior during documentation-only
 tasks.
 
+## Deployment architecture
+
+KIRARI uses the hosting provider's native deployment mechanism. GitHub Actions
+validates source and produces optional portable artifacts, but does not duplicate
+the provider's native release controller.
+
+Keep Core/Site source pinning, reproducible builds, provenance, ordinary security
+controls and CI tests when they serve an independent product requirement. Edge
+Gateway adapters are optional application capabilities, separate from Site hosting.
+Do not rebuild custom OIDC deploy orchestration, runtime Trusted Sources gates,
+per-release approval bindings or redundant staging/promotion pipelines unless the
+Owner explicitly adopts a new deployment architecture. Production completion
+requires an actual provider deployment with matching project, environment, commit
+and canonical domain plus browser verification; green source CI is insufficient.
+
 <!-- TRELLIS:START -->
 # Trellis Instructions
 

@@ -115,7 +115,6 @@ export function createVercelConfig(config) {
 		buildCommand: "pnpm build",
 		outputDirectory: "apps/site/dist",
 		framework: "astro",
-		git: { deploymentEnabled: { main: false } },
 		rewrites: [
 			{ source: "/search", destination: "/search/" },
 			{ source: "/:lang/search", destination: "/:lang/search/" },

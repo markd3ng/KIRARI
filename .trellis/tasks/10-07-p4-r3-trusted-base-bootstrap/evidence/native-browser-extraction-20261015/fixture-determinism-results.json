@@ -1,0 +1,111 @@
+{
+  "recorded_at": "2026-10-15T02:01:22.846712+00:00",
+  "baseline_head": "c6db5da47d1b5d853a38032e1b676fb0cf2c013a",
+  "branch": "codex/native-git-deployment-correction",
+  "scope": "bounded local fixture determinism, live network remains real",
+  "diagnosis": [
+    {
+      "origin": "https://api.unisvg.com",
+      "path": "/material-symbols.json",
+      "resourceType": "fetch",
+      "errorCode": "FETCH_TIMEOUT"
+    },
+    {
+      "origin": "https://api.unisvg.com",
+      "path": "/fa6-brands.json",
+      "resourceType": "fetch",
+      "errorCode": "FETCH_TIMEOUT"
+    }
+  ],
+  "resolution": "Exact allowlisted Iconify requests use locked installed icon JSON only for local fixture mode; unknown icons or request shapes fail. Live base URL retains real external fetch and failure.",
+  "focused": {
+    "node": "22.12.0",
+    "required_chromium": true,
+    "tests": 22,
+    "pass": 22,
+    "fail": 0,
+    "skipped": 0,
+    "duration_ms": 26166.563875,
+    "log": "final-focused.log"
+  },
+  "full_fixtures": {
+    "minimal": {
+      "result": "PASS",
+      "routes": 1,
+      "loaded_assets": 32,
+      "external_transport": "NOT_CHECKED",
+      "fixture_icons": {
+        "requests": 0,
+        "resolvedIcons": 0,
+        "sets": []
+      },
+      "failed_browser_requests": 0,
+      "browser_console_errors": 0,
+      "page_errors": 0,
+      "bad_responses": 0,
+      "unexpected_external_calls": 0
+    },
+    "full": {
+      "result": "PASS",
+      "routes": 3,
+      "loaded_assets": 39,
+      "external_transport": "NOT_CHECKED",
+      "fixture_icons": {
+        "requests": 0,
+        "resolvedIcons": 0,
+        "sets": []
+      },
+      "failed_browser_requests": 0,
+      "browser_console_errors": 0,
+      "page_errors": 0,
+      "bad_responses": 0,
+      "unexpected_external_calls": 0
+    },
+    "migrated": {
+      "result": "PASS",
+      "routes": 3,
+      "loaded_assets": 43,
+      "external_transport": "NOT_CHECKED",
+      "fixture_icons": {
+        "requests": 9,
+        "resolvedIcons": 9,
+        "sets": [
+          {
+            "package": "@iconify-json/fa6-brands",
+            "version": "1.2.6",
+            "sha256": "5d548dd51c431f5baa482be3ba63c05a0d910fdd19b7f2d657abdf60dd04dbeb"
+          },
+          {
+            "package": "@iconify-json/fa6-solid",
+            "version": "1.2.4",
+            "sha256": "0943b4b81864b12d85012a1b9b72ea68376e31acea24dea5075e032353347126"
+          },
+          {
+            "package": "@iconify-json/material-symbols",
+            "version": "1.2.73",
+            "sha256": "0233c6eb29af11dee4dcf43051a128772479812a8abed01e7844bddaee6f5b54"
+          }
+        ]
+      },
+      "failed_browser_requests": 0,
+      "browser_console_errors": 0,
+      "page_errors": 0,
+      "bad_responses": 0,
+      "unexpected_external_calls": 0
+    }
+  },
+  "source_frozen": true,
+  "source_sha256": {
+    "scripts/p3-browser/fixture-icons.mjs": "8be0d16fd7cbbf9778a87e634aa38c062946c23eba17807507c0f53161d19201",
+    "scripts/p3-browser/request-routing.mjs": "06a6cb231f310745992b776ffbeba02fdf7bb0cacc2103406bc05a1831b38a47",
+    "scripts/p3-browser/validate.mjs": "97afc23f615bb7bb448a79c72a8ed0f27e974cd4d477d98f0c9f9e0309391753",
+    "scripts/p3-browser/site-fixture.mjs": "7ef1a2251b4d48f301aac00d1432a0a4660b681d0dcdabfe349b21e035db3483",
+    "scripts/tests/browser-request-routing.test.mjs": "3703e1d62402f3d436e0b648d7c5e2941f8b6f9c658eb591af53ed35dfc2fdc8",
+    "scripts/tests/site-browser-fixture.test.mjs": "13b6f14ddd0b37eb746837fda1bb90efab6e3a53455ad8b93508093a886ff18f",
+    "docs/SITE_PRODUCTION.md": "c1cbd4378d2c408b7c137b881ec7d69773b91034d04ae13b7f138501d5342ed1"
+  },
+  "provider_identity_verified": false,
+  "public_external_transport_verified": false,
+  "github_provider_auth_mutations": false,
+  "commit_or_deploy": false
+}

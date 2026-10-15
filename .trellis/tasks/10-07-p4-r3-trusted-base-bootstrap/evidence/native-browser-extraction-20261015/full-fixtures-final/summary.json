@@ -1,0 +1,23 @@
+{
+  "result": "PASS",
+  "fixtures": [
+    {
+      "fixture": "minimal",
+      "report": "/Users/ian/.codex/worktrees/p4-c1-hobby/KIRARI/.trellis/tasks/10-07-p4-r3-trusted-base-bootstrap/evidence/native-browser-extraction-20261015/full-fixtures-final/minimal.json",
+      "routes": 1,
+      "assets": 32
+    },
+    {
+      "fixture": "full",
+      "report": "/Users/ian/.codex/worktrees/p4-c1-hobby/KIRARI/.trellis/tasks/10-07-p4-r3-trusted-base-bootstrap/evidence/native-browser-extraction-20261015/full-fixtures-final/full.json",
+      "routes": 3,
+      "assets": 39
+    },
+    {
+      "fixture": "migrated",
+      "report": "/Users/ian/.codex/worktrees/p4-c1-hobby/KIRARI/.trellis/tasks/10-07-p4-r3-trusted-base-bootstrap/evidence/native-browser-extraction-20261015/full-fixtures-final/migrated.json",
+      "routes": 3,
+      "assets": 43
+    }
+  ]
+}

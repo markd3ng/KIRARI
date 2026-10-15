@@ -205,8 +205,20 @@ can read or from network access.
 The manual composition workflow treats Site changes as executable input: it
 uses read-only repository permissions and provides no production credentials.
 This does not isolate untrusted changes from the runner's filesystem or
-network. Build and artifact publication do not deploy; deployment remains a
-separate workflow.
+network. Build and artifact publication do not deploy. The selected hosting provider
+owns native deployment; Vercel builds from its connected Git repository.
+
+## Optional Portable Build Output Export
+
+The read-only composition CI job also runs `scripts/package-vercel-site.mjs` to
+export static output in Build Output API v3 format. Its schema-2
+`site-package-manifest.json` records Core/Site provenance, upstream artifact identity,
+output digest and browser contract. It has no project, Preview/Production environment
+or `--prebuilt` deployment destination binding; `kirari-test` is not an export target.
+The exporter rejects Site-owned Functions/API routes rather than claiming runtime
+support. `node scripts/verify-site-package.mjs <package-root> [expected-core-sha]`
+verifies the export locally without credentials or deployment. Native Vercel Git
+hosting still builds from source and does not consume this export as a release.
 
 ## Verification contract
 
@@ -244,6 +256,6 @@ production configuration.
   code.
 - Keep build and test side-effect-free with respect to Git, deployment, and
   external indexing. The manual composition workflow may publish a downloadable
-  CI artifact, but deployment remains a separate workflow.
+  CI artifact; native hosting deployment is a separate provider responsibility.
 - Verify how platform-specific functions are packaged before claiming that a
   static `dist` upload includes them.

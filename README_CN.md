@@ -144,12 +144,14 @@ artifact 保留 30 天。组合构建使用 UTC，并以所选输入中较晚的
 revision 选择、Site schema、toolchain、错误诊断和按原始 SHA pair 重建方式见外部 Site 构建文档。
 Git checkout 不能有暂存、未暂存或未跟踪的改动。
 
-外部 Site 生产发布使用独立的所有者授权流程，重新验证不可变 CI 制品，隔离生产凭据，
-验证生产健康状态，并支持基于已批准发布记录的回滚。合并 `main` 不会启用 Vercel Git
-自动部署。发布前置条件与一次性授权边界见 [Site Production](./docs/SITE_PRODUCTION.md)。
+Vercel 使用原生 Git 部署：功能分支 PR 使用 Preview，审阅后合并到生产分支
+`main`，由 Vercel 构建和托管。GitHub Actions 负责源代码检查与可选的可移植制品，
+不再上传或提升另一份 Production 制品。Vercel 根目录保持仓库根目录，构建命令为
+`pnpm build`，输出目录为 `apps/site/dist`。
+生产验证与恢复见 [Site Production](./docs/SITE_PRODUCTION.md)。
 
-依赖审计仅作信息报告；锁定 CLI/源代码完整性与脱敏凭据审批仍是必要检查。
-生产发布需要独立、精确的所有者授权。
+Core/Site provenance 描述构建输入和输出；原生托管平台重新构建不代表与保留的 CI
+制品字节相同。依赖审计保持信息报告，正常构建、测试、类型与安全检查保留。
 
 这两种模式都只生成静态产物：不拉取或切换 Git ref、不提交、不推送、不部署、不打包
 Cloudflare Pages Functions，也不发送 IndexNow/Google 收录通知。

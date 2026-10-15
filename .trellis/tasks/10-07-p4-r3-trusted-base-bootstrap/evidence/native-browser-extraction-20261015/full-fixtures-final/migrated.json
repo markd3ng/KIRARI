@@ -1,0 +1,109 @@
+{
+  "result": "PASS",
+  "mode": "preview",
+  "baseUrl": "http://127.0.0.1:49552",
+  "providerDeploymentIdentityVerified": false,
+  "byteEquality": "NOT_CHECKED",
+  "externalTransport": "NOT_CHECKED",
+  "fixtureIcons": {
+    "requests": 9,
+    "resolvedIcons": 9,
+    "sets": [
+      {
+        "package": "@iconify-json/fa6-brands",
+        "version": "1.2.6",
+        "sha256": "5d548dd51c431f5baa482be3ba63c05a0d910fdd19b7f2d657abdf60dd04dbeb"
+      },
+      {
+        "package": "@iconify-json/fa6-solid",
+        "version": "1.2.4",
+        "sha256": "0943b4b81864b12d85012a1b9b72ea68376e31acea24dea5075e032353347126"
+      },
+      {
+        "package": "@iconify-json/material-symbols",
+        "version": "1.2.73",
+        "sha256": "0233c6eb29af11dee4dcf43051a128772479812a8abed01e7844bddaee6f5b54"
+      }
+    ]
+  },
+  "noindex": "noindex",
+  "routes": [
+    {
+      "path": "/",
+      "status": 200,
+      "noindex": "noindex",
+      "title": "KIRARI - KIRARI",
+      "contentMarker": "Documenting Ideas.Sharing Knowledge."
+    },
+    {
+      "path": "/posts/mapping-test/",
+      "status": 200,
+      "noindex": "noindex",
+      "title": "Tag and Category Mapping Test - KIRARI",
+      "contentMarker": ""
+    },
+    {
+      "path": "/posts/devops-guide/",
+      "status": 200,
+      "noindex": "noindex",
+      "title": "Docker and Kubernetes Deployment Guide - KIRARI",
+      "contentMarker": ""
+    }
+  ],
+  "assets": {
+    "required": 22,
+    "loaded": 43,
+    "observed": [
+      "image:/_astro/demo-avatar.CxcI0ivM_ZbDosA.webp",
+      "image:/_astro/demo-banner.WD4SMgz__ZHq3fP.webp",
+      "image:/_astro/demo-banner.WD4SMgz__Zv2JmO.webp",
+      "image:/notbyai/en-US.svg",
+      "script:/_astro/Advertisement.astro_astro_type_script_index_0_lang.C6FAJUIS.js",
+      "script:/_astro/Announcement.astro_astro_type_script_index_0_lang.CSWz2ybn.js",
+      "script:/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BSGeYvm2.js",
+      "script:/_astro/Comments.astro_astro_type_script_index_0_lang.yabr3GWl.js",
+      "script:/_astro/DisplaySettings.-NHqYWCe.js",
+      "script:/_astro/Icon.-aCI3pKC.js",
+      "script:/_astro/LandingPage.astro_astro_type_script_index_0_lang.DLkwOd43.js",
+      "script:/_astro/Layout.astro_astro_type_script_index_0_lang.BijYSkJg.js",
+      "script:/_astro/Layout.astro_astro_type_script_index_1_lang.D-zPZprh.js",
+      "script:/_astro/Layout.astro_astro_type_script_index_2_lang.DzLXFYi5.js",
+      "script:/_astro/LightDarkSwitch.DV3Hmg_T.js",
+      "script:/_astro/Search.TgIyTeAJ.js",
+      "script:/_astro/SharePoster.iNLQcjw4.js",
+      "script:/_astro/TOC.astro_astro_type_script_index_0_lang.OIuRgad5.js",
+      "script:/_astro/_...slug_.astro_astro_type_script_index_0_lang.OqZMDyjd.js",
+      "script:/_astro/client.Dkt2ZmF4.js",
+      "script:/_astro/client.svelte.DHVkhadV.js",
+      "script:/_astro/config.D46tny_1.js",
+      "script:/_astro/disclose-version.DwdwGuwu.js",
+      "script:/_astro/dismissible-widget.pn3sByN-.js",
+      "script:/_astro/page.DzOHT7cC.js",
+      "script:/_astro/prefetch.CJ0OvU8O.js",
+      "script:/_astro/preload-helper.jj3nf-Cm.js",
+      "script:/_astro/preload-icons.x9srID-s.js",
+      "script:/_astro/setting-utils.D_YPdmkj.js",
+      "script:/_astro/transition-manager.ouI5nD-0.js",
+      "script:/_astro/translation.DglEl1_J.js",
+      "script:/pagefind/pagefind.js",
+      "stylesheet:/_astro/LandingPage.CHLxr5Zp.css",
+      "stylesheet:/_astro/Layout.DN277Tmi.css",
+      "stylesheet:/_astro/MainGridLayout.zz8u81v2.css",
+      "stylesheet:/_astro/Markdown.D5uZSIDl.css",
+      "stylesheet:/_astro/main.D8v8zxXL.css",
+      "stylesheet:/_astro/markdown-extend.BZ5bzdE2.css",
+      "stylesheet:/_astro/markdown.B8BsCmy9.css",
+      "stylesheet:/_astro/photoswipe.pe3E5Za-.css",
+      "stylesheet:/_astro/style.CoS3sda4.css",
+      "stylesheet:/_astro/transition.D_Yd0no2.css",
+      "stylesheet:/_astro/variables.EkVDoU0_.css"
+    ]
+  },
+  "navigation": "/posts/mapping-test/",
+  "expectedExternalCalls": 9,
+  "browserConsoleErrors": 0,
+  "pageErrors": 0,
+  "failedBrowserRequests": 0,
+  "badResponses": 0,
+  "unexpectedExternalCalls": 0
+}

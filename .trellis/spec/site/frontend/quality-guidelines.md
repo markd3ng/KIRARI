@@ -127,46 +127,19 @@ created by browser scripts.
 
 ## Verification
 
-### Production Target and Trusted Sources
+### Native Deployment And Production Evidence
 
-#### 1. Scope / Trigger
-Apply to Production snapshots, staging/promotion, public validation and rollback.
-Configured domains and generated aliases have separate security meanings.
+GitHub Actions validates source and optional portable Core/Site artifacts; Vercel
+native Git integration controls Preview and Production. Keep the repository root,
+`pnpm build` and `apps/site/dist`. Browser fixture PASS is local engineering proof;
+actual Production acceptance needs fresh exact project/team/environment/commit,
+READY deployment, canonical serving domain and real browser smoke evidence.
+Do not use CI success, Preview or a local snapshot as public Production proof.
 
-#### 2. Signatures
-- `deriveProductionDomains(configured, target)` in `runtime-adapter.mjs`.
-- `assertProductionAliases(aliases, target, expectedDeployment, identity)` in `alias-policy.mjs`.
-- `assertProductionAliasSnapshot(aliases, target, expectedDeployment, identity)` is the shared rollback boundary.
-- `normalizeVercelTrustedSources(project)` in `trusted-sources.mjs` feeds `validateVercelTrustedSources(project, target)`.
-
-#### 3. Contracts
-- Only complete Project Domains records with no `gitBranch`/`customEnvironmentId` enter `target.domains`. Compare exactly with the Owner binding, including canonical origin; redirects/project substitution/duplicates reject.
-- `identity={team_id,team_slug,project_id,project}` is returned only after the current C1 contract passes. Construct generated project/team/main names from it, never by guessing a namespace from alias strings. Require exact project, optional team ID, no redirect and expected deployment. Generated names never expand canonical domains or release-record domains.
-- Unaffected own-namespace Preview branch rows grant no Production access. Custom/foreign/lookalike aliases and foreign branches on the Production deployment reject. Truncated/unrecognized shapes fail closed.
-- Normalize current `oidcProviders` issuer-to-array schema and supported legacy containers. Current optional `projects` can be omitted only inside a present supported policy; explicit CI trust=false is always required. Preserve exact GitHub issuer/audience/repository/main/workflow claims and only Production destination.
-- Missing raw policy is unavailable proof. Runtime performs authenticated raw GETs before writes. MCP projections/local flags/saved snapshots and unverified updatedAt/ETag are not substitutes. Existing authorization/replay/15-minute/Environment/C1/artifact boundaries remain independent.
-
-#### 4. Validation & Error Matrix
-| Condition | Result |
-|---|---|
-| Exact configured set plus expected generated project/main aliases | Accept separately; configured set unchanged |
-| Unexpected configured domain/redirect/project/duplicate | Reject before writes |
-| Generated alias has foreign namespace/project/deployment or redirect | Reject |
-| Missing/null raw Trusted Sources | `Vercel project Trusted Sources readback is unavailable` |
-| Missing/enabled same-repository CI control, extra projects/providers/claims or broad preset | Reject |
-| Local snapshot/summary/revision timestamp offered instead of raw policy | No fallback; remain blocked |
-
-#### 5. Good/Base/Bad Cases
-- Good: canonical configured domain plus approved-team project/main aliases all bind expected Production deployment.
-- Base: empty first-release alias snapshot with current deployment=null; no generated names become configured domains.
-- Bad: arbitrary custom hostname, foreign branch bound to Production, absent raw policy or issuer-shadowing entry.
-
-#### 6. Tests Required
-Run alias/trust negatives, authorization/C1/preflight/replay/immutable-artifact/runtime/first-release/rollback and P3 regressions. Require actual Chromium Production fixture, type/build/Trellis checks and standard CI. Tests must not mutate a real Production target.
-
-#### 7. Wrong vs Correct
-Wrong: merge every alias bound to Production into `target.domains`, or substitute `updatedAt` for a missing policy.
-Correct: derive exact configured domains from Project Domains; validate generated aliases separately with the C1-approved namespace; require fresh authenticated raw Trusted Sources.
+Keep composition, safe parsing/path/archive and meaningful browser/security tests.
+Negative architecture tests must reject a competing GitHub Production controller
+and a main-disable rule; they must not recreate per-release C1/OIDC/Trusted Sources
+or approval-binding admission. No tests mutate a real Production target.
 
 Run from the workspace root:
 
@@ -186,96 +159,30 @@ Use pnpm and Node `>=22.12.0`.
 Repository-wide commit, release, and documentation rules live in
 `.trellis/spec/guides/repository-workflow.md`.
 
-## Scenario: Main-Branch Vercel Git Deployment Guard
+## Native Hosting Architecture Contract
 
-### 1. Scope / Trigger
-- Applies to Vercel projects linked to this repository when Git commits arrive on `main`.
+- `createVercelConfig(config)` in `apps/site/scripts/security-policy.mjs` generates
+  root `vercel.json`; update the generator and materialized output together.
+- Native Git deployment keeps main and feature branches eligible. Do not add a
+  main-disable override or a duplicate manual Production upload/promotion workflow.
+- Run config parity and QA/native-architecture regressions. Provider settings,
+  domains and secrets require separate operational decisions; source changes alone
+  do not prove a current public deployment.
+- Preserve PR source checks, read-only config composition and advisory OCR with
+  informational dependency audits. Build jobs do not need Production credentials.
+- Optional Build Output export preserves product provenance without project,
+  environment or release destination binding; verify its current source schema.
+- Optional Gateway runtime adapters are application capabilities independent of
+  Site hosting and P4 acceptance. P5/P6/P8 do not inherit retired admission gates.
+- Indexing stays opt-in/default-off; #100 requires verified native Production
+  project/environment/commit/domain/deployment identity, never generic main CI.
+- Current architecture cutover awaits a separate Owner merge/deployment decision.
+  Native rollback can disable automatic domain assignment until undone; follow
+  [Site Production](../../../../docs/SITE_PRODUCTION.md) and current provider docs.
 
-### 2. Signatures
-- `createVercelConfig(config)` in `apps/site/scripts/security-policy.mjs` generates root `vercel.json`.
-- `git.deploymentEnabled` is a Vercel branch-name-to-boolean map.
-
-### 3. Contracts
-- `main: false` suppresses automatic Git deployments from `main`; unspecified branches retain Vercel's enabled default.
-- Keep the rule in the generator and regenerate `vercel.json`; do not edit only the generated copy.
-- This setting does not change Vercel project settings, domains, environment variables, aliases, or manual deployment/promotion behavior.
-
-### 4. Validation & Error Matrix
-| Condition | Result |
-|---|---|
-| Generated JSON differs from `createVercelConfig` | `pnpm deploy:config:check` fails |
-| `main` is enabled or another branch override is added | QA regression check fails |
-| Vercel deployment appears for a guarded `main` SHA | Stop; do not merge the dependent release PR |
-
-### 5. Good/Base/Bad Cases
-- Good: `main` is the only explicit branch rule and is `false`.
-- Base: `dev`, `test`, and other unspecified branches retain Vercel's default behavior.
-- Bad: editing only generated `vercel.json`, disabling all branches, or adding overrides for `dev` / `test`.
-
-### 6. Tests Required
-- QA regression check asserts that `main` is the sole branch override and is `false`.
-- Run `pnpm deploy:config:check`, validate the current Vercel JSON Schema, and read back deployments for every linked project after the guard reaches `main`.
-
-### 7. Wrong vs Correct
-#### Wrong
-Edit `vercel.json` alone; generation checks will report drift and a later regeneration will drop the guard.
-
-#### Correct
-Update `createVercelConfig`, regenerate `vercel.json`, and verify that only `main` is disabled.
-
-## Scenario: Approved Immutable Site Production (RM-05)
-
-- `.github/workflows/site-production.yml` is a separate manual owner/main
-  workflow. The protected `kirari-site-production` Environment holds isolated
-  credentials only after explicit one-time authorization and immutable claim.
-- A production proposal binds current main/workflow SHA, source CI run/attempt
-  and SHA, package ID/archive digest, Core/Site SHAs, team/project, complete
-  affected domain set, canonical origin, current deployment and operation.
-  Reruns, replay, drift and missing environment protection fail closed.
-- Authenticated Trusted Sources readback must include the exact sole GitHub
-  Production workflow rule, `enableVercelCiSameRepository: false`, and an empty
-  `projects` collection. Additional configured project/self-access rules or
-  unknown fields fail closed; omitted connector fields are not stored-state proof.
-- Reuse P3 artifact/package/browser boundaries. Verify both Site and upstream
-  composition archive digests and provenance. Preserve approved package bytes;
-  its historical Preview metadata does not authorize the Production target.
-- Stage exact Build Output API v3 output as Production with documented prebuilt
-  skip-domain behavior; validate READY identity, output bytes and browser before
-  explicitly pointing traffic to the existing deployment without rebuilding.
-- Production canonical/robots expectations derive from immutable output and
-  the approved canonical origin. A mismatched canonical or unintended noindex
-  cannot become a PASS release record. P4 makes zero indexing notifications.
-- Rollback requires a retained successful owner/main production workflow
-  evidence archive, exact record digest and approved deployment identity.
-  Restore that existing deployment, validate aliases and health, and never
-  label a simulation or incomplete restoration as live PASS.
-- A runtime factory that fails while loading rollback evidence removes its
-  temporary workspace before propagating failure; test this with unavailable
-  metadata and an isolated temporary directory.
-- Run focused production authorization/artifact/evidence/rollback negatives,
-  existing P1–P3 contracts and the full repository CI. Preserve
-  `git.deploymentEnabled.main=false` and test generated config parity.
-- Owner setup, failure behavior and official platform references are maintained
-  in `docs/SITE_PRODUCTION.md`; engineering readiness is separate from live
-  phase completion.
-
-## P4 tooling and credential boundary
-
-Deployment-tool dependency audit is informational and retains the standard human
-report, full JSON inventory, service errors and actual statuses without suppression.
-No T1 exception/manifest approval or retired R3 infrastructure is required.
-Locked installation, installed CLI/source integrity, isolation, browser verification,
-explicit Production artifact/target authorization and rollback checks remain strict.
-C1 schema2 targets the actual Hobby account through a project-scoped PAT,
-finite authenticated Owner setup lifecycle/principal/scope evidence and exact
-credential fingerprint, with a new detached Issue129 manifest approval.
-The protected C1 read step maps the isolated token after credential-free install
-and prepared Owner authorization; fresh unfiltered complete project visibility
-and exact project/team identity must pass before the operation and each write.
-Do not require unavailable Hobby RBAC/groups/extended permissions or scoped-PAT
-user/team metadata introspection. Reject raw secrets, stale/incomplete provider
-proof, credential substitution and expired/edited/revoked decisions. Preserve
-all separate main/artifact/Owner/replay/health/alias/rollback boundaries.
-Same-project extra capabilities are disclosed, not claimed to be sandboxed.
-See docs/SITE_PRODUCTION.md.
-Dependency reporting does not authorize secrets/settings/token creation or Production.
+KIRARI uses the hosting provider's native deployment mechanism. GitHub Actions
+validates source and produces optional portable artifacts, but does not duplicate
+the provider's native release controller. Normal signing, provenance and security
+checks with independent purpose remain valid. Provider-native GitHub Pages Actions
+are valid for a separately selected hosting platform. Do not rebuild retired C1,
+raw Trusted Sources or per-release approval machinery without a new Owner choice.

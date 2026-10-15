@@ -67,30 +67,25 @@ authorization variable to its child process.
 The complete mapping, composition identity, and verification contract is
 documented in [`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md).
 
-## Immutable Site Production
+## Native Site Hosting
 
-The separate owner-authorized main-only Production workflow consumes retained
-CI Site packages and revalidates their archive digests and composition
-provenance. It uploads exact prebuilt output to staged Production, validates
-identity/content/health, then explicitly promotes the existing deployment.
-The main Git auto-deployment guard remains disabled. A dedicated protected
-GitHub Environment must hold the isolated `VERCEL_PRODUCTION_TOKEN` credential.
-Its environment-only scope requires owner verification before live readiness;
-the workflow cannot attest secret scope with its GitHub token. Production uses
-its own secret namespace and only maps it in the protected operation step.
-One-time exact target/artifact approval, consumed authorization claims,
-main/owner checks and workflow concurrency deny replay and target substitution.
-OIDC validation credentials stay on the approved HTTPS origin; evidence is
-bounded and excludes secret-bearing responses. Rollback requires a verified
-prior successful release record and restores its existing immutable deployment.
-Configured Production domains are bound exactly from Project Domains. Generated
-project/team/main aliases are separately validated using the approved C1 namespace
-and expected deployment; they never expand canonical domains. Raw Trusted Sources
-policy is normalized and re-read before writes. Missing policy remains unavailable
-proof; MCP summaries, static approval flags and unverified revision timestamps
-cannot replace it or broaden the project-scoped PAT.
-The complete authorization, failure and owner setup contract is in
-[`docs/SITE_PRODUCTION.md`](./docs/SITE_PRODUCTION.md).
+Vercel's connected Git integration owns Preview and Production deployment.
+GitHub Actions checks source and can publish portable build artifacts without
+Production deployment credentials. It does not upload, stage or promote an
+alternative Production artifact. Core/Site pinning, provenance, safe parsing,
+CSP and browser regression checks retain their independent security purpose.
+
+Build-time Site code remains trusted executable input. Isolate provider variables
+by environment; do not expose private credentials to `PUBLIC_*`, committed config,
+portable artifacts or unreviewed Preview builds. Use normal review and provider
+access controls; these controls are not a filesystem sandbox. The architecture
+correction does not assert that GitHub branch protection is configured.
+
+Production acceptance verifies the actual project, Production environment,
+commit, canonical domain and browser behavior. A successful CI or Preview result
+cannot substitute. The current architecture cutover needs a separate Owner
+merge/deployment decision; no provider change is authorized by documentation.
+See [Site Production](./docs/SITE_PRODUCTION.md).
 
 ## Search Providers
 
@@ -152,8 +147,8 @@ through compatible upstream fixes; do not force unsupported versions to silence
 advisories. KIRARI does not require a custom dependency exception consumer, GitHub
 App trust root or atomic merge admission system.
 
-Build, tests, typechecks, QA, credential isolation and deployment-policy checks
-remain strict. Production deployment still requires separate Owner authorization.
+Build, tests, typechecks, QA, safe secret handling and native-deployment configuration
+checks remain strict. The architecture cutover requires separate Owner authorization.
 
 ## Edge Proxy Trust Boundary
 
@@ -179,31 +174,11 @@ must still traverse text/attribute-safe rendering paths. The edge proxy is an
 additional trust boundary between the visitor and the upstream API — it does
 not relax the rendering model.
 
-## P4 tooling and credential risk decisions
+## Retired Deployment Controller
 
-Deployment-tool audits retain unsuppressed raw findings, service errors and exit
-statuses as informational reports. No T1 advisory exception, Trust Root/App or
-atomic dependency admission is required. Compatible upstream patches are used
-when available. Locked installation, source/CLI integrity and credential isolation
-remain strict; root dependency audit follows the same informational policy.
-
-C1 uses the actual Hobby project-scoped PAT model, not paid RBAC assertions.
-A schema2 sanitized setup manifest pins principal, exact team/project, finite
-lifecycle, scope provenance, complete same-project capability disclosure and
-SHA256 of the exact credential. A fresh Issue129 Owner decision binds its
-canonical digest; prior C1 decisions do not transfer. Runtime authenticated,
-unfiltered paginated project listing and exact-project read must expose only
-the approved target and match the credential fingerprint. User/team/token
-metadata belongs to authenticated Owner setup because scoped PATs cannot read
-those resources. Missing, stale, malformed, expired or revoked proof fails.
-
-The token is mapped only into the protected C1 read and final operation steps,
-after credential-free installation and prepared exact artifact authorization.
-No Production write is allowed before C1 succeeds, and C1 is rechecked before
-each write. Provider project scope is the cross-project boundary; same-project
-settings, variables, domains and other deployments may remain accessible to a
-compromised PAT. Workflow checks are not a bearer-token verb or OS sandbox.
-Those expanded Hobby capabilities require a fresh detached Owner risk decision.
-Production authorization remains separately bound to the immutable artifact,
-exact target/current main, one-use claim, short lifetime, validated staging,
-alias/public health and approved rollback record. See docs/SITE_PRODUCTION.md.
+Per-release C1/T1 credential manifests, OIDC/Trusted Sources runtime admission,
+approval bindings and custom upload/promotion/rollback records are retired.
+Their historical security work remains traceable in [PR #142](https://github.com/markd3ng/KIRARI/pull/142)
+and Trellis task history; it does not authorize the native cutover. Removing source
+consumers does not revoke live credentials or delete provider settings. Cleanup
+requires verified consumers and an appropriate separate operational decision.

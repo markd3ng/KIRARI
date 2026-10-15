@@ -150,14 +150,16 @@ Composed builds also isolate content caches and index search pages in a stable o
 See the build guide for ref selection, schema/toolchain identity, diagnostics,
 and input-pair rebuild instructions.
 
-External Site Production uses a separate owner-approved immutable CI package
-path, with protected credentials, production validation and approved-record
-rollback. Merging main keeps Vercel Git auto-deployment disabled. See
-[Site Production](./docs/SITE_PRODUCTION.md) for release prerequisites and the
-exact one-time authorization boundary.
+Vercel uses native Git deployment: reviewed feature PRs receive Preview deployments;
+merging into the configured Production branch `main` triggers Vercel's build and
+hosting. GitHub Actions runs source checks and produces optional portable artifacts.
+It does not upload or promote a separate Production artifact. Keep the Vercel root
+at the repository root, build with `pnpm build`, and serve `apps/site/dist`.
+See [Site Production](./docs/SITE_PRODUCTION.md) for deployment acceptance and recovery.
 
-Dependency audits are informational. Locked CLI/source integrity and sanitized
-credential approval remain required; Production needs separate exact authorization.
+Core/Site provenance describes build inputs and output; a native provider rebuild
+is not claimed to have the same bytes as a retained CI artifact. Dependency audits
+remain informational; ordinary build, test, typecheck and security checks remain.
 
 Both modes build static output only. They do not fetch or switch refs, commit,
 push, deploy, package Cloudflare Pages Functions, or submit IndexNow/Google

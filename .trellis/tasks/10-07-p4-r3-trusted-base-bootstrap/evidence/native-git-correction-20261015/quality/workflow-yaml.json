@@ -1,0 +1,24 @@
+{
+  "parser": "js-yaml",
+  "actionlint": false,
+  "results": [
+    {
+      "file": ".github/workflows/ci.yml",
+      "parsed": true,
+      "jobs": [
+        "verify",
+        "dependency-audit",
+        "site-browser-validation",
+        "composition",
+        "browser-fixtures"
+      ]
+    },
+    {
+      "file": ".github/workflows/ocr-review.yml",
+      "parsed": true,
+      "jobs": [
+        "review"
+      ]
+    }
+  ]
+}

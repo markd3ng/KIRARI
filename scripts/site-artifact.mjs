@@ -6,7 +6,7 @@ import { Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
-import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Readable } from "node:stream";
 import { digestArtifactTree, validateProvenanceManifest } from "./composition-provenance.mjs";
@@ -15,14 +15,11 @@ import { parseHeaders, parseRedirects } from "./package-vercel-site.mjs";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const extractorPath = join(repoRoot, "scripts/extract-site-artifact.py");
 const GITHUB_API = "https://api.github.com";
-const VERCEL_API = "https://api.vercel.com";
-const SHA1 = /^[a-f0-9]{40}$/;
 const SHA256 = /^sha256:[a-f0-9]{64}$/;
 const MAX_ARCHIVE_BYTES = 1_073_741_824;
 const MAX_ARCHIVE_MEMBER_BYTES = 1_073_741_824;
 const MAX_API_JSON_BYTES = 1_048_576;
-const DEFAULT_PACKAGE_TARGET = Object.freeze({ platform: "vercel", project: "kirari-test", environment: "preview", deploy_mode: "prebuilt" });
-const EXPECTED_SOURCE_KEYS = ["run_id", "run_attempt", "head_sha", "ref", "event", "conclusion", "workflow_path"];
+const EXPECTED_SOURCE_KEYS = ["run_id", "run_attempt", "head_sha", "ref"];
 const EXPECTED_PACKAGE_KEYS = ["id", "name", "digest"];
 const EXPECTED_ROOT_KEYS = ["schema_version", "source", "package"];
 
@@ -47,15 +44,13 @@ function assertSha256(value, label) {
 function validateExpected(expected) {
 	assertRecord(expected, "Expected verification input");
 	assertExactKeys(expected, EXPECTED_ROOT_KEYS, "Expected verification input");
-	if (expected.schema_version !== 1) throw new Error("Expected verification schema_version must be 1");
+	if (expected.schema_version !== 2) throw new Error("Expected verification schema_version must be 2");
 	assertRecord(expected.source, "Expected source");
 	assertExactKeys(expected.source, EXPECTED_SOURCE_KEYS, "Expected source");
 	assertNumericString(expected.source.run_id, "Expected source run_id");
 	assertNumericString(expected.source.run_attempt, "Expected source run_attempt");
 	if (typeof expected.source.head_sha !== "string" || !/^[a-f0-9]{40}$/.test(expected.source.head_sha)) throw new Error("Expected source head_sha must be a full lowercase commit SHA");
-	if (expected.source.ref !== "refs/heads/main" || expected.source.event !== "workflow_dispatch" || expected.source.conclusion !== "success" || expected.source.workflow_path !== ".github/workflows/ci.yml") {
-		throw new Error("Expected source must be a successful main CI workflow_dispatch run");
-	}
+	if (!/^refs\/heads\/[A-Za-z0-9._/-]+$/.test(expected.source.ref)) throw new Error("Expected source ref must identify a branch");
 	assertRecord(expected.package, "Expected package artifact");
 	assertExactKeys(expected.package, EXPECTED_PACKAGE_KEYS, "Expected package artifact");
 	assertNumericString(String(expected.package.id), "Expected package artifact id");
@@ -109,10 +104,6 @@ function compareStrings(left, right) {
 	return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function sha1(buffer) {
-	return createHash("sha1").update(buffer).digest("hex");
-}
-
 function sha256(buffer) {
 	return `sha256:${createHash("sha256").update(buffer).digest("hex")}`;
 }
@@ -124,7 +115,7 @@ export function fileInventory(directory) {
 	});
 }
 
-export function deploymentFiles(packageRoot) {
+export function outputInventory(packageRoot) {
 	const root = canonicalDirectory(packageRoot, "Site package root");
 	const outputRoot = join(root, ".vercel/output");
 	const configPath = join(outputRoot, "config.json");
@@ -138,59 +129,10 @@ export function deploymentFiles(packageRoot) {
 	const files = walkRegularFiles(outputRoot, { label: "Vercel output" }).map(({ absolutePath, relativePath }) => {
 		const content = readFileSync(absolutePath);
 		const file = safeArtifactPath(`.vercel/output/${relativePath}`, "Vercel output path");
-		return { file, sha: sha1(content), size: content.length };
+		return { file, sha256: sha256(content), size: content.length };
 	});
 	if (!files.some((file) => file.file === ".vercel/output/static/index.html")) throw new Error("Vercel output is missing static/index.html");
 	return files;
-}
-
-export function uniqueUploads(files, packageRoot) {
-	const root = canonicalDirectory(packageRoot, "Site package root");
-	const byDigest = new Map();
-	for (const file of files) {
-		if (!SHA1.test(file.sha) || !Number.isSafeInteger(file.size) || file.size < 0) throw new Error("Vercel output upload entry is invalid");
-		const localPath = safeArtifactPath(file.localPath ?? file.file, "Vercel output path");
-		const previous = byDigest.get(file.sha);
-		if (previous) {
-			const previousBytes = readFileSync(join(root, previous.localPath));
-			const currentBytes = readFileSync(join(root, localPath));
-			if (previous.size !== file.size || !previousBytes.equals(currentBytes)) throw new Error(`SHA-1 collision in Vercel output: ${file.sha}`);
-		} else {
-			byDigest.set(file.sha, { ...file, localPath });
-		}
-	}
-	return [...byDigest.values()];
-}
-
-export function compareRemoteFileInventory(remoteTree, expectedFiles) {
-	if (!Array.isArray(remoteTree) || !Array.isArray(expectedFiles)) throw new Error("Remote deployment file inventory is invalid");
-	const remote = [];
-	const visit = (nodes, prefix = "") => {
-		for (const node of nodes) {
-			assertRecord(node, "Remote deployment file entry");
-			if (typeof node.name !== "string" || (node.type !== "file" && node.type !== "directory")) throw new Error("Remote deployment file entry is invalid");
-			const path = safeArtifactPath(prefix ? `${prefix}/${node.name}` : node.name, "Remote deployment path");
-			if (node.type === "directory") {
-				if (!Array.isArray(node.children)) throw new Error("Remote deployment directory listing is incomplete");
-				visit(node.children, path);
-			} else {
-				if (typeof node.uid !== "string" || !SHA1.test(node.uid)) throw new Error("Remote deployment file digest is invalid");
-				remote.push({ file: path, sha: node.uid });
-			}
-		}
-	};
-	// Vercel's deployment-file API can expose the uploaded source under one
-	// synthetic `src` directory. Strip only that exact single-root wrapper;
-	// every actual file path and digest still has to match the package.
-	if (remoteTree.length === 1 && remoteTree[0]?.name === "src" && remoteTree[0]?.type === "directory" && Array.isArray(remoteTree[0]?.children)) {
-		visit(remoteTree[0].children);
-	} else {
-		visit(remoteTree);
-	}
-	remote.sort((left, right) => compareStrings(left.file, right.file));
-	const expected = expectedFiles.map(({ file, sha }) => ({ file, sha })).sort((left, right) => compareStrings(left.file, right.file));
-	if (JSON.stringify(remote) !== JSON.stringify(expected)) throw new Error("Vercel deployment file inventory does not match the verified artifact");
-	return { fileCount: remote.length, inventorySha256: sha256(Buffer.from(JSON.stringify(remote))) };
 }
 
 function parseJsonFile(filePath, label) {
@@ -199,11 +141,6 @@ function parseJsonFile(filePath, label) {
 	} catch {
 		throw new Error(`${label} is missing or invalid JSON`);
 	}
-}
-
-function listExpectedTarget(targetName) {
-	if (typeof targetName !== "string" || !/^[a-z0-9][a-z0-9-]{0,62}$/.test(targetName)) throw new Error("Site package Preview target is invalid");
-	return { ...DEFAULT_PACKAGE_TARGET, project: targetName };
 }
 
 function compareJsonValue(left, right) {
@@ -249,20 +186,20 @@ function verifyUpstreamComposition({ packageRoot, upstreamRoot, manifest, proven
 	return { compositionDigest: distDigest, fileCount: distFiles.length };
 }
 
-export function verifySitePackage({ packageRoot, targetName = "kirari-test", sourceRunSha, sourceRun, upstreamRoot } = {}) {
+export function verifySitePackage({ packageRoot, expectedCoreSha, sourceRun, upstreamRoot } = {}) {
 	const root = canonicalDirectory(packageRoot, "Site package root");
 	const packageEntries = readdirSync(root).sort();
 	if (!compareJsonValue(packageEntries, [".vercel", "provenance.json", "site-package-manifest.json"])) throw new Error("Site package root contains unexpected files");
 	walkRegularFiles(root, { label: "Site package root" });
-	if (sourceRunSha !== undefined && (typeof sourceRunSha !== "string" || !/^[a-f0-9]{40}$/.test(sourceRunSha))) throw new Error("Source CI run SHA must be a full lowercase commit SHA");
+	if (expectedCoreSha !== undefined && (typeof expectedCoreSha !== "string" || !/^[a-f0-9]{40}$/.test(expectedCoreSha))) throw new Error("Expected Core SHA must be a full lowercase commit SHA");
 	const manifest = parseJsonFile(join(root, "site-package-manifest.json"), "Site package manifest");
 	const provenanceBytes = readFileSync(join(root, "provenance.json"));
 	const provenance = parseJsonFile(join(root, "provenance.json"), "Site package provenance");
 	validateProvenanceManifest(provenance);
-	const expectedSourceSha = sourceRun?.head_sha ?? sourceRunSha;
-	if (expectedSourceSha && provenance.core.resolved_sha !== expectedSourceSha) throw new Error("Package Core SHA does not match the verified source CI run SHA");
-	if (manifest.schema_version !== 1 || manifest.package_format !== "vercel-build-output-api-v3") throw new Error("Unsupported Site package manifest");
-	if (!compareJsonValue(manifest.target, listExpectedTarget(targetName))) throw new Error("Site package target must retain its original kirari-test Preview metadata");
+	const expectedSourceSha = expectedCoreSha;
+	if (expectedSourceSha && provenance.core.resolved_sha !== expectedSourceSha) throw new Error("Package Core SHA does not match the selected Core SHA");
+	if (manifest.schema_version !== 2 || manifest.package_format !== "vercel-build-output-api-v3") throw new Error("Unsupported Site package manifest");
+	if (Object.hasOwn(manifest, "target")) throw new Error("Portable Site packages cannot bind a deployment destination");
 	if (manifest.functions_classification !== "STATIC_ONLY_NO_FUNCTIONS_REQUIRED") throw new Error("Package does not have the accepted static-only Functions classification");
 	const upstream = manifest.upstream_github_artifact;
 	if (!/^\d+$/.test(upstream?.id ?? "") || !/^\d+$/.test(upstream?.run_id ?? "") || !/^\d+$/.test(upstream?.run_attempt ?? "")) {
@@ -345,9 +282,9 @@ function validateArtifactRecord(record, expected, source, repository) {
 	assertRecord(record, "GitHub artifact metadata");
 	const recordId = typeof record.id === "number" && Number.isSafeInteger(record.id) ? String(record.id) : record.id;
 	if (recordId !== expected.id || record.name !== expected.name || record.digest !== expected.digest || record.expired !== false) {
-		throw new Error("GitHub artifact metadata does not match the approved artifact identity");
+		throw new Error("GitHub artifact metadata does not match the expected artifact identity");
 	}
-	if (String(record.workflow_run?.id) !== source.run_id || record.workflow_run?.head_sha !== source.head_sha || record.workflow_run?.head_branch !== "main" || record.name !== `kirari-${record.name.startsWith("kirari-site-package-") ? "site-package" : "composition"}-${source.run_id}-${source.run_attempt}`) {
+	if (String(record.workflow_run?.id) !== source.run_id || record.workflow_run?.head_sha !== source.head_sha || record.workflow_run?.head_branch !== source.ref.slice("refs/heads/".length) || record.name !== `kirari-${record.name.startsWith("kirari-site-package-") ? "site-package" : "composition"}-${source.run_id}-${source.run_attempt}`) {
 		throw new Error("GitHub artifact does not belong to the verified source run and attempt");
 	}
 	assertSha256(record.digest, "GitHub artifact digest");
@@ -454,15 +391,15 @@ export async function downloadVerifiedArtifact({ repository, artifactId, expecte
 	assertRecord(expectedRun, "Expected GitHub artifact run");
 	assertNumericString(String(expectedRun.id), "Expected GitHub artifact run ID");
 	assertNumericString(String(expectedRun.attempt), "Expected GitHub artifact run attempt");
-	if (!/^[a-f0-9]{40}$/.test(expectedRun.head_sha ?? "") || expectedRun.head_branch !== "main") throw new Error("Expected GitHub artifact run must be a main-branch source");
+	if (!/^[a-f0-9]{40}$/.test(expectedRun.head_sha ?? "") || typeof expectedRun.head_branch !== "string" || !/^[A-Za-z0-9._/-]+$/.test(expectedRun.head_branch)) throw new Error("Expected GitHub artifact run must identify its source SHA and branch");
 	if (typeof destination !== "string" || !destination || existsSync(destination) || lstatIfExists(destination)) throw new Error("GitHub artifact destination must be a new path");
 	const expected = { id: String(artifactId), name: expectedName, digest: expectedDigest };
-	const source = { run_id: String(expectedRun.id), run_attempt: String(expectedRun.attempt), head_sha: expectedRun.head_sha };
+	const source = { run_id: String(expectedRun.id), run_attempt: String(expectedRun.attempt), head_sha: expectedRun.head_sha, ref: `refs/heads/${expectedRun.head_branch}` };
 	const metadataUrl = artifactEndpoint(repository, expected.id);
 	const record = await apiJson(metadataUrl, token, fetchImpl);
 	assertRecord(record, "GitHub artifact metadata");
-	if (String(record.id) !== expected.id || record.name !== expected.name || record.digest !== expected.digest || record.expired !== false) throw new Error("GitHub artifact metadata does not match the approved artifact identity");
-	if (String(record.workflow_run?.id) !== source.run_id || record.workflow_run?.head_sha !== source.head_sha || record.workflow_run?.head_branch !== "main") throw new Error("GitHub artifact does not belong to the verified source run");
+	if (String(record.id) !== expected.id || record.name !== expected.name || record.digest !== expected.digest || record.expired !== false) throw new Error("GitHub artifact metadata does not match the expected artifact identity");
+	if (String(record.workflow_run?.id) !== source.run_id || record.workflow_run?.head_sha !== source.head_sha || record.workflow_run?.head_branch !== expectedRun.head_branch) throw new Error("GitHub artifact does not belong to the verified source run");
 	if (typeof record.expires_at !== "string" || !Number.isFinite(Date.parse(record.expires_at)) || Date.parse(record.expires_at) <= Date.now()) throw new Error("GitHub artifact is expired or has invalid expiration metadata");
 	const archiveUrl = `${metadataUrl}/zip`;
 	if (record.archive_download_url !== archiveUrl) throw new Error("GitHub artifact archive URL does not match its metadata endpoint");
@@ -470,7 +407,7 @@ export async function downloadVerifiedArtifact({ repository, artifactId, expecte
 	const actualDigest = await sha256File(destination);
 	if (actualDigest !== expectedDigest) {
 		rmSync(destination, { force: true });
-		throw new Error("Downloaded GitHub artifact digest does not match the approved digest");
+		throw new Error("Downloaded GitHub artifact digest does not match the expected digest");
 	}
 	return { id: expected.id, name: expectedName, digest: actualDigest, archivePath: resolve(destination), expiresAt: record.expires_at };
 }
@@ -499,7 +436,7 @@ export async function verifySitePackageArchive({ expected, outputDirectory, toke
 		const packageArchiveUrl = validateArtifactRecord(packageRecord, expected.package, expected.source, repository);
 		await downloadArtifactZip(packageArchiveUrl, token, packageZip, fetchImpl);
 		const actualPackageDigest = await sha256File(packageZip);
-		if (actualPackageDigest !== expected.package.digest) throw new Error("Downloaded Site package archive digest does not match the approved digest");
+		if (actualPackageDigest !== expected.package.digest) throw new Error("Downloaded Site package archive digest does not match the expected digest");
 		extractSiteArtifactArchive(packageZip, outputPath);
 		packageExtracted = true;
 
@@ -546,7 +483,7 @@ export async function verifySitePackageArchive({ expected, outputDirectory, toke
 			outputDirectory: verified.outputDirectory,
 			staticRoot: verified.staticRoot,
 			outputDigest: verified.outputDigest,
-			deploymentFiles: deploymentFiles(outputPath),
+			outputInventory: outputInventory(outputPath),
 			fileInventory: verified.fileInventory,
 			compositionDigest: verified.composition.compositionDigest,
 			compositionFileCount: verified.composition.fileCount,
@@ -567,39 +504,6 @@ function lstatIfExists(path) {
 	} catch {
 		return null;
 	}
-}
-
-export async function vercelRequest(path, options = {}, retryTransient = false, { token = process.env.VERCEL_TOKEN, teamId = process.env.VERCEL_ORG_ID, fetchImpl = fetch } = {}) {
-	if (!token || !teamId) throw new Error("VERCEL_TOKEN and VERCEL_ORG_ID are required");
-	if (typeof path !== "string" || !path.startsWith("/") || path.startsWith("//")) throw new Error("Vercel API path is invalid");
-	const url = new URL(path, VERCEL_API);
-	url.searchParams.set("teamId", teamId);
-	for (let attempt = 0; ; attempt += 1) {
-		let response;
-		try {
-			response = await fetchImpl(url, {
-				...options,
-				redirect: "error",
-				signal: AbortSignal.timeout(120_000),
-				headers: { ...options.headers, Authorization: `Bearer ${token}` },
-			});
-		} catch {
-			if (!retryTransient || attempt === 4) throw new Error("Vercel API request failed");
-			await pause(250 * 2 ** attempt);
-			continue;
-		}
-		if (response.ok) return response;
-		await response.body?.cancel();
-		if (retryTransient && (response.status >= 500 || response.status === 429) && attempt < 4) {
-			await pause(250 * 2 ** attempt);
-			continue;
-		}
-		throw new Error(`Vercel API request failed with HTTP ${response.status}`);
-	}
-}
-
-function pause(milliseconds) {
-	return new Promise((resolvePromise) => setTimeout(resolvePromise, milliseconds));
 }
 
 function mainUsage() {
@@ -631,5 +535,3 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
 		process.exitCode = 1;
 	}
 }
-
-export { DEFAULT_PACKAGE_TARGET };

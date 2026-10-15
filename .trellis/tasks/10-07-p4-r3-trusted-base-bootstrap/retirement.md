@@ -1,3 +1,5 @@
+> Historical R3 retirement snapshot (2026-10-10). The later Owner native Git correction in this task supersedes the P3/P4 OIDC, main-disable guard and custom release objectives described below. Follow the current PRD/design and `docs/SITE_PRODUCTION.md`; this document preserves history only.
+
 # Owner decision: retire R3 admission and resume P4 — 2026-10-10
 
 The Owner explicitly cancelled the custom R3 Trust Root, GitHub App publisher,
