@@ -443,7 +443,7 @@ server = "https://www.plantuml.com/plantuml"
 theme = "kirari" # kirari | github | vitepress | obsidian
 ```
 
-启用 Mermaid 时，Markdown pipeline 会自动识别 fenced `mermaid` 代码块。PlantUML 为可选功能，默认关闭。
+Mermaid 仅在全局 `[mermaid].enable` 与文章 frontmatter `mermaid: true` 同时启用时渲染（文章默认关闭）。禁用或语法错误时保留可读源码；Astro 路由切换及明暗主题变化会更新图表。PlantUML 为可选功能，默认关闭。
 
 ### 统计分析
 
@@ -456,11 +456,12 @@ theme = "kirari" # kirari | github | vitepress | obsidian
 | Plausible | `analytics.plausible.domain` | `PUBLIC_PLAUSIBLE_DOMAIN` |
 | Microsoft Clarity | `analytics.clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` |
 | Fathom | `analytics.fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
-| Simple Analytics | `analytics.simpleAnalyticsDomain` | — |
+| Simple Analytics | `analytics.simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
 | Matomo | `analytics.matomo.siteId` + `src` | `PUBLIC_MATOMO_SITE_ID`、`PUBLIC_MATOMO_SRC` |
 | Amplitude | `analytics.amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
 
 Umami、Plausible、Matomo 支持可选 `integrity`（SRI），用于固定版本脚本。
+统计组件与静态 CSP 生成器使用相同的 `PUBLIC_*` 配置覆盖，包括 Astro 的 `.env.production`。更换提供商配置时，在相同构建环境中运行 `node apps/site/scripts/generate-vercel-config.mjs` 更新 `vercel.json`；Pages 的 `_headers` 在 postbuild 生成。禁用统计不会在现有基线之外增加提供商来源，详见 [来源矩阵](./SECURITY_MODEL.md#analytics-provider-sources)。Consent 与 SPA 事件语义属于 #106，CSP 兼容不代表已取得同意。
 
 ### Landing Page
 

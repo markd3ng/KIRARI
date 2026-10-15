@@ -53,7 +53,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - name: Verify source, portable artifacts, and browser safety
-        run: node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/browser-request-routing.test.mjs scripts/tests/site-package-output.test.mjs scripts/tests/site-artifact.test.mjs scripts/tests/static-site-validation.test.mjs scripts/tests/native-deployment-architecture.test.mjs
+        run: node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/browser-request-routing.test.mjs scripts/tests/site-package-output.test.mjs scripts/tests/site-artifact.test.mjs scripts/tests/static-site-validation.test.mjs scripts/tests/native-deployment-architecture.test.mjs scripts/tests/trellis-adapter-sync.test.mjs
       - run: node apps/site/scripts/materialize-profile.mjs
       - run: pnpm profile:check
       - run: pnpm site:test
@@ -177,7 +177,20 @@ jobs:
           LD_LIBRARY_PATH: ''
           REQUIRE_SITE_BROWSER: 'true'
         run: >-
-          "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" --test scripts/tests/site-browser-fixture.test.mjs
+          "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" --test scripts/tests/site-browser-fixture.test.mjs apps/site/scripts/tests/mermaid-browser.test.mjs
+      - name: Verify P5 TOC accessibility and analytics CSP in Chromium
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
+        run: |
+          node scripts/p5-browser/toc-browser.mjs
+          node scripts/p5-browser/analytics-browser.mjs
+          pnpm build
+          node scripts/p5-browser/site-smoke.mjs
 
   composition:
     if: >-

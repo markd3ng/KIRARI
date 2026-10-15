@@ -1,0 +1,11 @@
+# #103 CSP provider alignment
+
+Baseline `1d8997d`: eight providers already render in `apps/site/src/components/Analytics.astro`, gated by PROD + master enable in `layouts/Layout.astro`. Static policy knew fixed GA/Clarity sources and three optional custom URLs but omitted Fathom/Amplitude scripts and collectors, default Umami/Plausible collectors and Simple Analytics ingestion. Static writers read TOML while app configuration also resolves PUBLIC overrides and Astro dotenv.
+
+Minimal fix shares only analytics resolution (`src/utils/analytics-settings.mjs`) with config-loader and static policy. Build writer helper uses **Astro's own installed Vite dotenv loader**, production mode and process-env precedence. Both `generate-vercel-config.mjs` and `postbuild.mjs` use it. Umami/Plausible existing default script constants are shared with the renderer. Runtime provider APIs, consent policy, async vendor initialization and master defaults are unchanged.
+
+Explicit existing-provider origin matrix + primary references are in `SECURITY_MODEL.md#analytics-provider-sources`. The existing Umami default returned 403 during source research; this source-policy task does not assert vendor availability. Custom scripts can have arbitrary behavior: same-origin collection/proxy and known official endpoints are supported, not inferred arbitrary downstream hosts. No new wildcard baseline, inline-policy tightening or new provider.
+
+Validation: 15 policy fixtures cover eight providers plus custom/default sources, disabled/orphan settings and both policy generators; four real Astro dotenv fixtures cover production files/process/TOML precedence and opt-out. The existing checked-in disabled `vercel.json` stays byte-identical. Analytics Chromium fixture renders actual component markup and intercepts eight scripts/eight collector requests, zero CSP violations and zero real vendor requests. Full default-profile smoke separately verifies disabled analytics sends no provider request; vendor SDK event semantics/consent are #106.
+
+No real dependency or Owner product decision blocks #103 engineering. Deployment configuration and credentials were not changed. The Issue stays open pending PR acceptance; this report does not close P5.

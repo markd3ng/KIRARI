@@ -1,4 +1,5 @@
 ---
+import { UMAMI_SCRIPT, PLAUSIBLE_SCRIPT } from "../utils/analytics-settings.mjs";
 import type { AnalyticsConfig } from "../types/config";
 
 interface Props {
@@ -6,8 +7,8 @@ interface Props {
 }
 
 const { config } = Astro.props;
-const umamiSrc = config.umami?.src || "https://analytics.umami.is/script.js";
-const plausibleSrc = config.plausible?.src || "https://plausible.io/js/script.js";
+const umamiSrc = config.umami?.src || UMAMI_SCRIPT;
+const plausibleSrc = config.plausible?.src || PLAUSIBLE_SCRIPT;
 const scriptReferrerPolicy = "strict-origin-when-cross-origin";
 const sriCrossOrigin = "anonymous";
 ---

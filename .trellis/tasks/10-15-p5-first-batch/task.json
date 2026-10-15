@@ -1,0 +1,31 @@
+{
+  "id": "p5-first-batch",
+  "name": "p5-first-batch",
+  "title": "P5 baseline alignment and first hardening batch",
+  "description": "",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "Owner-authorized P5 first engineering batch; alignment and PRs only, no merge/Production actions",
+  "package": "site",
+  "priority": "P1",
+  "creator": "Ian",
+  "assignee": "Ian",
+  "createdAt": "2026-10-15",
+  "completedAt": null,
+  "branch": "codex/p5-first-batch",
+  "base_branch": "main",
+  "worktree_path": "/Users/ian/.codex/worktrees/p5-hardening/KIRARI",
+  "commit": "eb9b5ff928f3ef994a0a32d2156157bed7155b65",
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/144",
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "research/baseline-alignment.md",
+    "research/gateway-later-roadmap.md",
+    "evidence/local-verification.md"
+  ],
+  "notes": "PR #144 opened for four P5 fixes; local quality and independent review passed. CI/OCR pending on final head. P5 remains 0 completed / 8 open until accepted. No merge/Production actions.",
+  "meta": {},
+  "baseline_main_sha": "1d8997d647c17d448be906108b510f75c24e0efa"
+}

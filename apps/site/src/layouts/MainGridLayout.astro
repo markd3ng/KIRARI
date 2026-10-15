@@ -172,7 +172,7 @@ const mainPanelTop = siteConfig.banner.enable
             <div id="toc-inner-wrapper" class="fixed w-[var(--toc-width)] max-h-[calc(100vh_-_6rem)] overflow-y-scroll overflow-x-hidden hide-scrollbar" style={`top: var(--toc-top, ${mainPanelTop});`}>
                 <div id="toc" class="w-full h-full transition-swup-fade" transition:name="toc-content">
                     <div class="h-8 w-full"></div>
-                    <TOC headings={headings} layout="floating"></TOC>
+                    <TOC headings={headings} layout="floating" lang={pageLang}></TOC>
                     <div class="h-8 w-full"></div>
                 </div>
             </div>
