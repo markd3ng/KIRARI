@@ -56,3 +56,20 @@ Documentation sync is blocking when a change alters a documented contract:
 
 Do not update documentation mechanically when behavior did not change. Do not
 leave a changed public or security contract documented only in source comments.
+
+## Hosting Architecture
+
+KIRARI uses the hosting provider's native deployment mechanism. GitHub Actions
+validates source and produces optional portable artifacts, but does not duplicate
+the provider's native release controller. Vercel uses native feature Preview and
+main Production Git builds; preserve source checks and advisory OCR independently
+of Production credentials. Core/Site pins/config refs/export/provenance stay product
+contracts. Optional Gateway adapters are independent application work.
+
+Do not restore per-release C1/OIDC approval bindings, raw Trusted Sources admission,
+or custom stage/promote pipelines without a new Owner architecture decision.
+This does not prohibit normal security controls/signing/provenance or provider-native
+GitHub Pages Actions for a separately chosen host. The correction PR's merge may
+publish Production and requires the separate Owner cutover decision. Actual public
+Production serving and browser evidence are required before P4 completion or
+opt-in indexing; CI/build success alone is insufficient.

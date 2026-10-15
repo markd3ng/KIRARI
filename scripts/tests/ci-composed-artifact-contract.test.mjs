@@ -35,16 +35,15 @@ test("normal deterministic CI remains intact and composition is limited to manua
 	for (const command of ["pnpm install --frozen-lockfile", "pnpm site:test", "pnpm site:contract:test", "pnpm site:type-check", "pnpm site:astro-check", "pnpm edge:type-check", "pnpm edge:test", "pnpm edge:deploy:dry", "pnpm build", "pnpm release:check", "pnpm release:version-check", "node apps/site/scripts/qa-regression-check.mjs", "node apps/site/scripts/generate-vercel-config.mjs --check", "git diff --check"]) {
 		assert.ok(verifyJob.includes(command), `verify job must retain ${command}`);
 	}
-	const nodeTests = verifyJob.match(/^      - run: node --test (.+)$/m)?.[1]?.split(/\s+/) ?? [];
+	const nodeTests = verifyJob.match(/^        run: node --test (.+)$/m)?.[1]?.split(/\s+/) ?? [];
 	for (const file of [
 		"scripts/tests/ci-profile-contract.test.mjs",
 		"scripts/tests/ci-composed-artifact-contract.test.mjs",
 		"scripts/tests/composed-build.test.mjs",
 		"scripts/tests/ocr-review-workflow-contract.test.mjs",
 		"scripts/tests/p3-browser-contract.test.mjs",
-		"scripts/tests/p3-browser-oidc.test.mjs",
-		"scripts/tests/p3-staging-workflow-contract.test.mjs",
-		"scripts/tests/vercel-preview-deployment.test.mjs",
+		"scripts/tests/browser-request-routing.test.mjs",
+		"scripts/tests/site-package-output.test.mjs",
 	]) assert.ok(nodeTests.includes(file), `verify must run ${file}`);
 	assert.match(compositionJob, /^    if: >-\n([\s\S]*?)^    runs-on:/m);
 	const condition = compositionJob.match(/^    if: >-\n([\s\S]*?)^    runs-on:/m)?.[1]?.replaceAll(/\s+/g, " ").trim();
@@ -118,7 +117,7 @@ test("manual selectors and config events resolve exact Site and immutable Core r
 	assert.match(validateSite, /gitlink_mode" != "160000"[\s\S]*?gitlink_sha" =~ \^\[a-f0-9\]\{40\}\$/);
 	assert.match(validateSite, /core_ref="\$gitlink_sha"/);
 
-	assert.ok(compositionJob.indexOf("- name: Checkout workflow source") < compositionJob.indexOf("- name: Package verified Site output for Vercel Preview"));
+	assert.ok(compositionJob.indexOf("- name: Checkout workflow source") < compositionJob.indexOf("- name: Export portable Vercel Build Output"));
 	assert.ok(compositionJob.indexOf("- name: Checkout Site") < compositionJob.indexOf("- name: Validate Site boundary and resolve Core ref"));
 	assert.ok(compositionJob.indexOf("- name: Validate Site boundary and resolve Core ref") < compositionJob.indexOf("- name: Checkout Core"));
 	assert.match(checkoutCore, /uses: actions\/checkout@v4[\s\S]*?repository: \$\{\{ github\.repository \}\}[\s\S]*?ref: \$\{\{ steps\.site_contract\.outputs\.core_ref \}\}[\s\S]*?path: core[\s\S]*?fetch-depth: 0[\s\S]*?persist-credentials: false/);
@@ -126,14 +125,14 @@ test("manual selectors and config events resolve exact Site and immutable Core r
 
 test("composition uses the canonical builder, requires Contract v2 on config events, and uploads provenance", () => {
 	const sourceDependencies = step("Install workflow source dependencies");
-	const packageSite = step("Package verified Site output for Vercel Preview");
+	const packageSite = step("Export portable Vercel Build Output");
 	const build = step("Compose selected revisions");
 	const upload = step("Upload composed artifact");
 	const summary = step("Add artifact details to summary");
 	assert.ok(sourceDependencies && packageSite && build && upload && summary, "composition must install workflow source dependencies, package, build, upload, and summarize its artifact");
 	assert.match(sourceDependencies, /run: pnpm install --frozen-lockfile --filter kirari/);
 	assert.match(packageSite, /SOURCE_ARTIFACT_DIGEST: sha256:\$\{\{ steps\.upload\.outputs\.artifact-digest \}\}/);
-	assert.ok(compositionJob.indexOf("- name: Install workflow source dependencies") < compositionJob.indexOf("- name: Package verified Site output for Vercel Preview"));
+	assert.ok(compositionJob.indexOf("- name: Install workflow source dependencies") < compositionJob.indexOf("- name: Export portable Vercel Build Output"));
 	assert.match(build, /working-directory: core/);
 	assert.match(build, /CORE_REF: \$\{\{ steps\.site_contract\.outputs\.core_ref \}\}/);
 	assert.match(build, /SITE_REF: \$\{\{ steps\.site_selection\.outputs\.ref \}\}/);

@@ -1,49 +1,40 @@
 # Vercel Deployment
 
-## When To Use This
+Connect the repository using Vercel's native Git integration. Vercel owns Preview
+and Production orchestration; GitHub Actions runs source checks and optional
+portable artifact builds.
 
-You want to deploy KIRARI as a static site on Vercel. No Edge Function
-required.
+## Project Settings
 
-## Prerequisites
+|Setting|Value|
+|---|---|
+|Root directory|Repository root (empty or `.`)|
+|Framework|Astro; verify the existing project's effective configuration|
+|Install command|`pnpm install --frozen-lockfile`|
+|Build command|`pnpm build`|
+|Output directory|`apps/site/dist`|
+|Production branch|`main`|
 
-- Vercel account
-- Vercel CLI or Git integration
-- Node.js 22.12.0 or newer
+Use Node.js matching root `package.json` and the pinned pnpm `packageManager`.
+Keep feature branches eligible for native Preview. Verify ignored-build settings
+and dashboard overrides before cutover. The generated repository-root `vercel.json`
+preserves search rewrites, immutable asset caching and security headers. Run
+`node apps/site/scripts/generate-vercel-config.mjs --check` when changing provider
+URLs or security-sensitive feature configuration.
 
-## One-Click Path
+Ordinary static hosting needs no deployment token in GitHub CI. Optional runtime
+integrations may need provider-scoped secrets; isolate them by environment and
+never place private credentials in public Site configuration. Optional Gateway
+adapters do not replace native Site hosting.
 
-1. Import your Git repository in Vercel.
-2. Set:
-   - **Framework preset**: Astro
-   - **Build command**: `pnpm build`
-   - **Output directory**: `apps/site/dist`
-3. Deploy.
+## Verify And Recover
 
-## Manual Path
+Verify the actual Production project/environment, commit, READY deployment,
+canonical serving domain and browser routes/search/RSS/assets. Green CI or Preview
+alone is insufficient. Indexing stays disabled by default and requires verified
+Production evidence before opt-in notifications.
 
-For RM-05 external Site production, use the separately reviewed
-[immutable Site Production workflow](./SITE_PRODUCTION.md). It requires exact
-owner approval and consumes a retained CI package. Main Git auto-deployment
-remains disabled. The local source-build example below is a separate owner
-deployment method and does not prove immutable artifact promotion.
-
-```bash
-pnpm build
-npx vercel --prod
-```
-
-## Environment Variables
-
-None required.
-
-## Verification
-
-Visit your deployed site. Confirm all routes work, including search and RSS.
-
-## Notes
-
-- The repository-root `vercel.json` sets `apps/site/dist`, search rewrites,
-  immutable asset caching, and security headers.
-- Run `node apps/site/scripts/generate-vercel-config.mjs --check` after changing
-  provider URLs or security-sensitive feature configuration.
+See [Site Production](./SITE_PRODUCTION.md) for native acceptance and recovery.
+For the architecture correction, merging the candidate may trigger Production;
+await the separately scoped Owner cutover decision. No custom manual uploader,
+C1 manifest or Trusted Sources raw policy readback is needed to review that PR.

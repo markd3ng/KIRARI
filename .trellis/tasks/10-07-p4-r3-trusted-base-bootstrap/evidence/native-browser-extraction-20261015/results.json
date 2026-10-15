@@ -1,0 +1,46 @@
+{
+  "recorded_at": "2026-10-15T01:44:39.818701+00:00",
+  "scope": "owned browser/static extraction, local fixtures only",
+  "branch": "codex/native-git-deployment-correction",
+  "baseline_head": "c6db5da47d1b5d853a38032e1b676fb0cf2c013a",
+  "working_tree_changes": true,
+  "node": "22.12.0",
+  "command": "PATH=/Users/ian/.local/share/fnm/node-versions/v22.12.0/installation/bin:$PATH REQUIRE_SITE_BROWSER=true node --test scripts/tests/site-browser-fixture.test.mjs scripts/tests/static-site-validation.test.mjs scripts/tests/browser-request-routing.test.mjs scripts/tests/p3-browser-contract.test.mjs",
+  "result": "PASS",
+  "tests": 19,
+  "pass": 19,
+  "fail": 0,
+  "skipped": 0,
+  "cancelled": 0,
+  "duration_ms": 23460.3705,
+  "chromium_required": true,
+  "actual_chromium_exercised": true,
+  "syntax_checks": "PASS for static-site-validation.mjs, validate.mjs, site-fixture.mjs",
+  "git_diff_check": "PASS",
+  "initial_failure": {
+    "kind": "existing absent-image wait exposed by broader fixture",
+    "error": "spawnSync ETIMEDOUT after 30000ms",
+    "fix": "Only scroll image when that page has an img element."
+  },
+  "source_sha256": {
+    "scripts/static-site-validation.mjs": "6e47b24f33ad095774d0021a43b177ae07651f24c52c67eb7d4bc78ee19a69f6",
+    "scripts/p3-browser/page-policy.mjs": "ed52fe8a3c1543166dc316f025a7673fc1d5097d99300860bc8dff0afdeabd0f",
+    "scripts/p3-browser/site-fixture.mjs": "9839b828ad3ff55da073a95bcfcd147bcc875eb401a74722abf4cb1378222988",
+    "scripts/p3-browser/validate.mjs": "99e0e70be657b17503fe31a48f2439962b7db2bb34bbfe39d79968c2963f84c1",
+    "scripts/p3-browser/request-routing.mjs": "985cf01a0dd18d852e3769dd6a1f7eb58ffd56d83bdc4a0fef7486ac313e80d2",
+    "scripts/p3-browser/browser-health.mjs": "41940b1958e7a09ed84283bf9d4f71da8efa505ce7bc7a36d2f22e570889e285",
+    "scripts/tests/static-site-validation.test.mjs": "7c9982b82d5d49acde3a0eff882d32432c7adc70b0bcda2f7c8c253f4046bac5",
+    "scripts/tests/site-browser-fixture.test.mjs": "64b2eff51323ba9b0e86b91827a2b9569fef2bf268586588aea818253bae036d",
+    "scripts/tests/browser-request-routing.test.mjs": "2d3ef65b1cc330bd703a9d4614cf3e1a4ef10421f39658e51e55dc062494d106"
+  },
+  "provider_deployment_identity_verified": false,
+  "provider_api_calls": false,
+  "credential_access": false,
+  "github_writes": false,
+  "deployment_or_commit": false,
+  "not_run": [
+    "workspace full CI/build (root ownership)",
+    "external Site build-fixtures runner (root full-validation ownership)",
+    "live native deployment or protected URL verification"
+  ]
+}

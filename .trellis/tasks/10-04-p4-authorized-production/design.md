@@ -1,3 +1,7 @@
+> **Historical scope, superseded by the native Git architecture correction (2026-10-15).**
+> Do not execute the custom admission/upload/promotion plan below. Current implementation and acceptance are in `../10-07-p4-r3-trusted-base-bootstrap/` and Issue #99.
+> P4 remains incomplete; this retirement does not claim Production deployment or authorize operational changes.
+
 > Current C1 design —2026-10-12: the Owner authorizes Hobby-compatible project-scoped PAT remediation from exact post-PR133 main. This supersedes only paid RBAC C1 role/group/grant requirements. Current [capability matrix](evidence/c1-hobby-20261012/capability-matrix.md) and [design](evidence/c1-hobby-20261012/design.md) separate authenticated Owner setup metadata from scoped runtime proof. Prior decisions do not transfer; no merge/setup/Production authorization. All artifact/current-main/Owner/replay/health/rollback invariants below remain.
 
 > **Owner continuation — 2026-10-10:** PR #139 retired the R3 dependency admission platform. T1 dependency approval/exception requirements below are historical and superseded. Current work refreshes existing PR #133 on main `0945eb82e76cab1878e7324ef3447f37855dfe79`, removes obsolete root-audit/T1 consumers, and retains strict artifact, credential, browser and rollback checks. Production remains separately authorized.

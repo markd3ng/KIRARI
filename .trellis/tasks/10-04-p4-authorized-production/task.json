@@ -1,11 +1,11 @@
 {
   "id": "p4-authorized-production",
   "name": "p4-authorized-production",
-  "title": "P4 owner-authorized immutable Site production and rollback",
+  "title": "Historical P4 custom release plan — superseded by native Git correction",
   "description": "",
   "status": "in_progress",
   "dev_type": "deployment",
-  "scope": "RM-05 / Issue #99",
+  "scope": "Retired implementation plan only; do not execute. Current P4 remains in progress in 10-07-p4-r3-trusted-base-bootstrap / Issue #99.",
   "package": null,
   "priority": "P1",
   "creator": "Ian",
@@ -43,5 +43,7 @@
       "production_authorized": false,
       "production_deployment_performed": false
     }
-  }
+  },
+  "superseded_by": "10-07-p4-r3-trusted-base-bootstrap",
+  "retirement_reason": "Owner-directed native hosting architecture; no Production completion claimed"
 }

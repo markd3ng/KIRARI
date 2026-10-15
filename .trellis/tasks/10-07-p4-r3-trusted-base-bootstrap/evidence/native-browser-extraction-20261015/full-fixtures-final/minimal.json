@@ -1,0 +1,68 @@
+{
+  "result": "PASS",
+  "mode": "preview",
+  "baseUrl": "http://127.0.0.1:49417",
+  "providerDeploymentIdentityVerified": false,
+  "byteEquality": "NOT_CHECKED",
+  "externalTransport": "NOT_CHECKED",
+  "fixtureIcons": {
+    "requests": 0,
+    "resolvedIcons": 0,
+    "sets": []
+  },
+  "noindex": "noindex",
+  "routes": [
+    {
+      "path": "/",
+      "status": 200,
+      "noindex": "noindex",
+      "title": "Minimal Site - A contract fixture",
+      "contentMarker": ""
+    }
+  ],
+  "assets": {
+    "required": 16,
+    "loaded": 32,
+    "observed": [
+      "image:/_astro/demo-avatar.asuJasgv_1kijFK.webp",
+      "script:/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BSGeYvm2.js",
+      "script:/_astro/DisplaySettings.BM2eCzxG.js",
+      "script:/_astro/Icon.-aCI3pKC.js",
+      "script:/_astro/Layout.astro_astro_type_script_index_0_lang.BijYSkJg.js",
+      "script:/_astro/Layout.astro_astro_type_script_index_1_lang.B9MhYW26.js",
+      "script:/_astro/Layout.astro_astro_type_script_index_2_lang.DzLXFYi5.js",
+      "script:/_astro/LightDarkSwitch.G6mCmBs_.js",
+      "script:/_astro/Search.wXvvm8Xe.js",
+      "script:/_astro/client.Dkt2ZmF4.js",
+      "script:/_astro/client.svelte.DHVkhadV.js",
+      "script:/_astro/config.CWCmbMOv.js",
+      "script:/_astro/disclose-version.DwdwGuwu.js",
+      "script:/_astro/page.DzOHT7cC.js",
+      "script:/_astro/prefetch.CJ0OvU8O.js",
+      "script:/_astro/preload-helper.jj3nf-Cm.js",
+      "script:/_astro/preload-icons.x9srID-s.js",
+      "script:/_astro/setting-utils.BNeaIh_o.js",
+      "script:/_astro/transition-manager.ouI5nD-0.js",
+      "script:/_astro/translation.DnKF1aAJ.js",
+      "script:/pagefind/pagefind.js",
+      "stylesheet:/_astro/LandingPage.CHLxr5Zp.css",
+      "stylesheet:/_astro/Layout.DN277Tmi.css",
+      "stylesheet:/_astro/Markdown.D5uZSIDl.css",
+      "stylesheet:/_astro/icon.CSM9xcaz.css",
+      "stylesheet:/_astro/main.DdWFCSfO.css",
+      "stylesheet:/_astro/markdown-extend.BZ5bzdE2.css",
+      "stylesheet:/_astro/markdown.B8BsCmy9.css",
+      "stylesheet:/_astro/photoswipe.pe3E5Za-.css",
+      "stylesheet:/_astro/style.CoS3sda4.css",
+      "stylesheet:/_astro/transition.D_Yd0no2.css",
+      "stylesheet:/_astro/variables.EkVDoU0_.css"
+    ]
+  },
+  "navigation": "/",
+  "expectedExternalCalls": 0,
+  "browserConsoleErrors": 0,
+  "pageErrors": 0,
+  "failedBrowserRequests": 0,
+  "badResponses": 0,
+  "unexpectedExternalCalls": 0
+}
