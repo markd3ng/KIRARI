@@ -3,9 +3,11 @@ import { createRequire } from "node:module";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { extname, join, relative } from "node:path";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
-const siteRoot = new URL("../../", import.meta.url).pathname;
+const WAIT_TIMEOUT = 30_000;
+const siteRoot = fileURLToPath(new URL("../../", import.meta.url));
 const browserRequire = createRequire(new URL("../../../../scripts/p3-browser/package.json", import.meta.url));
 
 test("real Astro/Expressive Code Mermaid gates, route swaps, themes and errors", { timeout: 180_000 }, async (context) => {
@@ -25,7 +27,20 @@ test("real Astro/Expressive Code Mermaid gates, route swaps, themes and errors",
 		mkdirSync(join(root, "src/layouts"), { recursive: true });
 		mkdirSync(join(root, "src/utils"), { recursive: true });
 		symlinkSync(realpathSync(join(siteRoot, "node_modules")), join(root, "node_modules"), "dir");
-		for (const name of ["mermaid-runtime.ts", "transition-manager.ts"]) cpSync(join(siteRoot, "src/utils", name), join(root, "src/utils", name));
+		for (const name of ["mermaid-runtime.ts", "transition-manager.ts"]) {
+			const target = join(root, "src/utils", name);
+			cpSync(join(siteRoot, "src/utils", name), target);
+			if (name === "mermaid-runtime.ts") {
+				const runtime = readFileSync(target, "utf8");
+				const renderCall = "const { svg, bindFunctions } = await mermaid.render(";
+				assert.ok(runtime.includes(renderCall), "fixture can inject one transient renderer failure");
+				writeFileSync(target, runtime.replace(renderCall, `if (sessionStorage.getItem("fixtureMermaidFailure") === "1") {
+						sessionStorage.setItem("fixtureMermaidFailure", "0");
+						throw new Error("injected transient renderer failure");
+					}
+					${renderCall}`));
+			}
+		}
 		writeFileSync(join(root, "astro.config.mjs"), `import {defineConfig} from 'astro/config';
 import {unified} from '@astrojs/markdown-remark';
 import expressiveCode from 'astro-expressive-code';
@@ -53,10 +68,15 @@ installMermaid(transitionManager); transitionManager.init();
 		assert.equal(build.status, 0, `${build.error || ''}\n${build.stdout}\n${build.stderr}`);
 		browser = await chromium.launch({ headless: true });
 		const page = await browser.newPage();
+		page.setDefaultTimeout(WAIT_TIMEOUT);
+		page.setDefaultNavigationTimeout(WAIT_TIMEOUT);
 		const pageErrors = [];
 		const rendererRequests = [];
 		page.on("request", (request) => { if (/mermaid\.core/.test(request.url())) rendererRequests.push(request.url()); });
 		page.on("pageerror", (error) => pageErrors.push(error.message));
+		await page.addInitScript(() => {
+			if (sessionStorage.getItem("fixtureMermaidFailure") === null) sessionStorage.setItem("fixtureMermaidFailure", "1");
+		});
 		await page.route("https://mermaid-fixture.invalid/**", async (route) => {
 			const pathname = new URL(route.request().url()).pathname;
 			const path = join(root, "dist", pathname.endsWith("/") ? `${pathname}index.html` : pathname);
@@ -66,7 +86,7 @@ installMermaid(transitionManager); transitionManager.init();
 		});
 		for (const name of ["off-off", "off-on", "disabled", "default"]) {
 			await page.goto(`https://mermaid-fixture.invalid/${name}/`);
-			await page.waitForLoadState("networkidle");
+			await page.waitForLoadState("networkidle", { timeout: WAIT_TIMEOUT });
 			assert.equal(await page.locator("pre.mermaid svg").count(), 0, name);
 			assert.equal(await page.locator("pre.mermaid").textContent(), "graph TD; A-->B\n");
 			assert.equal(await page.locator("pre.mermaid").getAttribute("tabindex"), "0");
@@ -76,34 +96,48 @@ installMermaid(transitionManager); transitionManager.init();
 		assert.equal(await page.evaluate(() => document.documentElement.dataset.conditionalScriptRan), undefined);
 		await page.evaluate(() => { window.fixtureDocument = true; });
 		await page.locator("#enabled").click();
-		await page.waitForSelector('pre[data-mermaid-rendered="default"] svg');
+		await page.waitForSelector('pre[data-mermaid-render-error="render"]', { timeout: WAIT_TIMEOUT });
+		assert.equal(await page.locator('pre[data-mermaid-rendered="default"] svg').count(), 0, "transient failure keeps the source fallback");
+		await page.evaluate(() => document.dispatchEvent(new Event("astro:after-swap")));
+		await page.waitForSelector('pre[data-mermaid-rendered="default"] svg', { timeout: WAIT_TIMEOUT });
+		await page.waitForSelector('pre[aria-label*="could not"]', { timeout: WAIT_TIMEOUT });
 		assert.equal(await page.evaluate(() => window.fixtureDocument), true, "Astro swapped without document reload");
 		assert.equal(await page.locator("pre.mermaid svg").count(), 1);
 		assert.match(await page.locator('pre.mermaid[aria-label*="could not"]').textContent(), /invalid Mermaid/);
 		assert.equal(await page.locator(".expressive-code").count(), 1, "normal JS still uses Expressive Code");
+		assert.equal(await page.locator("pre.mermaid svg").getAttribute("role"), "img");
+		assert.equal(await page.locator("pre.mermaid svg").getAttribute("aria-label"), "Mermaid diagram");
+		assert.equal(await page.locator("pre.mermaid").first().getAttribute("tabindex"), null, "the rendered diagram is not an unnamed focus stop");
 		const firstId = await page.locator("pre.mermaid svg").getAttribute("id");
-		await page.evaluate(() => { document.dispatchEvent(new Event("astro:after-swap")); document.dispatchEvent(new Event("astro:after-swap")); });
-		await page.waitForTimeout(100);
-		assert.equal(await page.locator("pre.mermaid svg").getAttribute("id"), firstId, "same diagram not rendered twice");
-		await page.evaluate(() => document.documentElement.classList.add("dark"));
-		await page.waitForSelector('pre[data-mermaid-rendered="dark"] svg');
+		await page.evaluate(() => {
+			const block = document.querySelector("pre.mermaid");
+			window.fixtureDiagramReplacements = 0;
+			new MutationObserver((records) => {
+				window.fixtureDiagramReplacements += records.filter((record) => record.type === "childList").length;
+			}).observe(block, { childList: true });
+			document.dispatchEvent(new Event("astro:after-swap"));
+			document.dispatchEvent(new Event("astro:after-swap"));
+			document.documentElement.classList.add("dark");
+		});
+		await page.waitForSelector('pre[data-mermaid-rendered="dark"] svg', { timeout: WAIT_TIMEOUT });
+		await page.waitForFunction(() => window.fixtureDiagramReplacements === 1, undefined, { timeout: WAIT_TIMEOUT });
 		const darkId = await page.locator("pre.mermaid svg").getAttribute("id");
 		assert.notEqual(darkId, firstId);
 		await page.evaluate(() => document.documentElement.classList.remove("dark"));
-		await page.waitForSelector('pre[data-mermaid-rendered="default"] svg');
+		await page.waitForSelector('pre[data-mermaid-rendered="default"] svg', { timeout: WAIT_TIMEOUT });
 		await page.locator("#disabled").click();
-		await page.waitForURL("**/disabled/");
-		await page.waitForLoadState("networkidle");
+		await page.waitForURL("**/disabled/", { timeout: WAIT_TIMEOUT });
+		await page.waitForLoadState("networkidle", { timeout: WAIT_TIMEOUT });
 		assert.equal(await page.locator("pre.mermaid svg").count(), 0, "enabled runtime cannot render disabled destination");
 		await page.locator("#translated").click();
-		await page.waitForSelector("pre.mermaid svg");
+		await page.waitForSelector("pre.mermaid svg", { timeout: WAIT_TIMEOUT });
 		assert.equal(await page.locator("pre.mermaid svg").count(), 1);
 		await page.goBack();
-		await page.waitForURL("**/disabled/");
-		await page.waitForSelector('article[data-mermaid-enabled="false"]');
+		await page.waitForURL("**/disabled/", { timeout: WAIT_TIMEOUT });
+		await page.waitForSelector('article[data-mermaid-enabled="false"]', { timeout: WAIT_TIMEOUT });
 		assert.equal(await page.locator("pre.mermaid svg").count(), 0);
 		await page.goto("https://mermaid-fixture.invalid/enabled/");
-		await page.waitForSelector("pre.mermaid svg");
+		await page.waitForSelector("pre.mermaid svg", { timeout: WAIT_TIMEOUT });
 		assert.equal(await page.locator("pre.mermaid svg").count(), 1, "enabled initial load renders once");
 		assert.ok(rendererRequests.length > 0);
 		assert.equal(await page.locator('body > div[aria-hidden="true"]').count(), 0, "renderer containers cleaned up");

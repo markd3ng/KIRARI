@@ -1,4 +1,4 @@
-import { resolveBuildAnalytics } from "./build-analytics-settings.mjs";
+import { ANALYTICS_BUILD_MODE, resolveBuildAnalytics } from "./build-analytics-settings.mjs";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parse } from "smol-toml";
@@ -11,7 +11,7 @@ const materializedConfigPath = resolve(siteRoot, "kirari.config.toml");
 const sourcePath = existsSync(profileConfigPath) ? profileConfigPath : materializedConfigPath;
 const targetPath = resolve(repoRoot, "vercel.json");
 const config = parse(readFileSync(sourcePath, "utf8"));
-config.analytics = resolveBuildAnalytics(config.analytics);
+config.analytics = resolveBuildAnalytics(config.analytics, { mode: ANALYTICS_BUILD_MODE });
 const output = `${JSON.stringify(createVercelConfig(config), null, 2)}\n`;
 
 if (process.argv.includes("--check")) {

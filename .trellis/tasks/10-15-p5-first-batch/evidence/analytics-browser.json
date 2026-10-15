@@ -1,7 +1,8 @@
 {
   "result": "PASS",
-  "scripts": 8,
+  "scriptRequests": 8,
+  "uniqueScriptHosts": 8,
   "controlledCollectors": 8,
   "cspViolations": 0,
-  "realVendorRequests": 0
+  "providerRequestsIntercepted": 16
 }

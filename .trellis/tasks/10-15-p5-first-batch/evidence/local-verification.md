@@ -1,18 +1,19 @@
-# Local verification — Node 22.12.0 / pnpm 9.14.4
+# Local verification — Node 26.10.0 / pnpm 9.14.4
 
-- Fresh main/ancestor verification: exact `1d8997d647c17d448be906108b510f75c24e0efa`.
-- Frozen-lockfile install and separate locked Playwright install: PASS; no dependency upgrades.
-- Site test suite: 90/90 at the initial complete run; added dotenv suite separately 4/4. Final focused first-batch run 34/34 plus strict declaration regression 1/1, zero skips (includes the added four).
-- Root CI regression list: 58/58. Site contract 7/7. Edge tests 10/10.
-- Site TypeScript, Astro check, QA, profile materialization, Trellis checker, Edge TypeScript + local Wrangler dry build, deployment config synchronization, release and version checks: PASS. Wrangler dry build is local packaging, not a deployment.
-- Full static build: PASS, 112 pages. Indexing submissions skipped; default output preserved. `git diff --check`: PASS.
-- Actual TOC Chromium fixture: four viewport/layout variants, 16 no-reload swaps, real keyboard focus, accessibility/current-location and capture cleanup/reconnect: PASS.
-- Actual Astro + Expressive Code Mermaid Chromium fixture: all gates/default false, direct load, swaps/back, duplicate events, themes/error fallback and disabled network gate: PASS.
-- Actual Analytics component + intercepted script/collector CSP fixture: 8 scripts / 8 collectors / 0 CSP violations / 0 real vendor requests: PASS.
-- Full default-profile static output Chromium: 1600px + 390px, all five Mermaid diagrams, actual sidebar placement, locale route forward/back, 0 analytics requests, 0 page errors, 0 unexpected CSP violations: PASS. The unchanged baseline policy blocks 9 Iconify fallback requests per viewport; these exact existing `connect-src` domains are counted and documented, not claimed absent or globally ignored.
+GitHub Actions remains pinned by `.nvmrc` to Node 22.12.0. Local checks below ran with the installed Node 26.10.0; exact-head GitHub CI is the merge gate.
 
-Independent reviewers found and resolved dotenv parity, missing browser CI registration, and translated floating TOC language propagation. Reciprocal ownership avoids an author signing off their own feature. Reports: `research/independent-review.md` (#103/#104/#109) and `research/independent-review-105-104.md` (#105/#104).
+- `pnpm check`: PASS — Site TypeScript/Astro checks, Edge TypeScript/tests, profile materialization and Trellis adapter sync.
+- `REQUIRE_SITE_BROWSER=true pnpm site:test`: **98/98 PASS, zero skips**, including actual Mermaid Chromium retry and CSP URI classification regressions.
+- CI root regression list: **58/58 PASS**. Site contract: 7/7. Edge tests: 10/10.
+- Site QA, Vercel config synchronization, release/version checks, Wrangler local dry build and `git diff --check`: PASS.
+- Full static build: PASS, 112 pages. Indexing submissions were skipped by the existing fail-closed policy; no deployment was run.
+- Actual TOC Astro/ClientRouter Chromium fixture: four viewport/layout combinations, four real route swaps each, keyboard focus, named landmark, active location, reconnect and detached-listener cleanup: PASS; zero page errors.
+- Actual Astro + Expressive Code Mermaid fixture: all gates, disabled initial routes, injected transient render failure, same-theme retry, malformed-source fallback, SVG accessible name, theme redraw, route/back behavior and disabled destination: PASS.
+- Analytics/CSP browser fixture: 8 observed script hosts, 8 controlled collectors, 0 CSP violations, 16 provider requests intercepted locally.
+- Full-profile static-site smoke: desktop 1600px and mobile 390px; 5/5 diagrams rendered, 2 counted route swaps, sidebar placement intact, 0 default analytics requests, 0 page errors, 0 unexpected CSP violations. The existing policy blocked 9 Iconify fallback requests per viewport; those exact baseline domains were counted.
+- CSP blocked-URI regression covers absolute URL, `inline`, `eval`, `data:`, `blob:`, relative and malformed values; non-URL tokens remain visible as unexpected violations rather than throwing.
+- Analytics mode is explicit across Astro production build and both CSP writers; page/policy environment booleans share one parser. Simple Analytics host and HTTPS-origin forms resolve identically; malformed HTTP/path inputs disable both script and CSP entries.
 
-Remote PR, CI and advisory OCR evidence is recorded after PR creation. No manual Production deployment, settings, credentials, merge, real analytics event, or indexing notification was performed.
+OCR triage for pre-fix PR head `f53b2e5ea901ff3caa7ac6e14b8eeefafcfc29f5`: 13 inline items, 30 summary items, and one overlapping item. Duplicate Mermaid retry reports were merged. The actionable retry, wait timeout, CSP URI, evidence-counting, environment-isolation and Analytics configuration findings were fixed and regression-tested. All 30 summary items were low severity. The SVG warning has no untrusted runtime Markdown input path in this static repository; article Markdown is repository-owned and Mermaid rendering remains `securityLevel: "strict"`, so no sanitizer dependency was added. No human blocking review was present on that inspected head.
 
-Strict declaration follow-up: default Astro dependency declaration skip hid TS2439 in the initial ambient type import. Import type expression fixes it; isolated NodeNext `skipLibCheck:false` regression validates the declaration and rejects an invalid numeric assignment with TS2322. Whole Site type-check passes after the fix.
+The standard GitHub checks are read separately from these local results before the approved merge decision. No Vercel project settings, credentials, deployment controller or Production workflow was modified or invoked. Worker forwarding risk remains isolated to #102.

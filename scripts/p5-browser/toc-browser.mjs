@@ -11,6 +11,7 @@ const siteRequire = createRequire(join(repo, 'apps/site/package.json'));
 const browserRequire = createRequire(join(repo, 'scripts/p3-browser/package.json'));
 const { build } = await import(pathToFileURL(siteRequire.resolve('astro')));
 const { chromium } = browserRequire('playwright');
+const WAIT_TIMEOUT = 30_000;
 const fixture = await mkdtemp(join(repo, '.tmp-toc-browser-'));
 let server;
 let browser;
@@ -57,6 +58,8 @@ html {scroll-behavior:smooth;} body{margin:24px;font-family:Arial;}section{min-h
         for (const layout of ['floating', 'sidebar']) {
             const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
             const page = await context.newPage();
+            page.setDefaultTimeout(WAIT_TIMEOUT);
+            page.setDefaultNavigationTimeout(WAIT_TIMEOUT);
             const errors = [];
             page.on('pageerror', error => errors.push(error.message));
             await page.addInitScript(() => {
@@ -89,7 +92,7 @@ html {scroll-behavior:smooth;} body{margin:24px;font-family:Arial;}section{min-h
             for (let cycle = 0; cycle < 4; cycle++) {
                 const toc = page.getByRole('navigation', { name: 'Table of Contents', exact: true });
                 await toc.waitFor();
-                await page.waitForFunction(() => document.querySelector('table-of-contents')?.tocEl != null);
+                await page.waitForFunction(() => document.querySelector('table-of-contents')?.tocEl != null, undefined, { timeout: WAIT_TIMEOUT });
                 const current = toc.locator('[aria-current="location"]');
                 await current.waitFor();
                 assert.equal(await current.count(), 1);
@@ -107,7 +110,7 @@ html {scroll-behavior:smooth;} body{margin:24px;font-family:Arial;}section{min-h
                 assert.equal(await page.evaluate(() => window.tocProbe.clickCalls), cycle + 1);
                 // Navigate while RAF/correction work is still in flight.
                 await page.locator('#route').click();
-                await page.waitForFunction(swaps => window.tocProbe.swaps === swaps, cycle + 1);
+                await page.waitForFunction(swaps => window.tocProbe.swaps === swaps, cycle + 1, { timeout: WAIT_TIMEOUT });
                 assert.equal(await page.evaluate(() => window.tocProbe.token), token, 'route swap must retain JS global (no document reload)');
                 const cleanup = await page.evaluate(() => window.tocProbe.old.every(toc => !toc.tocEl && toc.scrollCorrectionTimers.length === 0 && !toc.resizeObserver && !toc.updatePending && toc.headingIdxMap.size === 0));
                 assert.equal(cleanup, true);
@@ -121,18 +124,19 @@ html {scroll-behavior:smooth;} body{margin:24px;font-family:Arial;}section{min-h
                 assert.equal(await page.evaluate(() => window.tocProbe.clickCalls), cycle + 1, 'detached TOCs must no longer receive captured click listeners');
             }
             // Reattach the exact element to exercise browser custom-element callbacks.
-            await page.waitForFunction(() => document.querySelector('table-of-contents')?.tocEl != null);
+            await page.waitForFunction(() => document.querySelector('table-of-contents')?.tocEl != null, undefined, { timeout: WAIT_TIMEOUT });
             await page.evaluate(() => {
                 const toc = document.querySelector('table-of-contents');
                 const parent = toc.parentElement;
                 toc.remove();
                 parent.append(toc);
             });
-            await page.waitForFunction(() => document.querySelector('table-of-contents')?.tocEl != null);
+            await page.waitForFunction(() => document.querySelector('table-of-contents')?.tocEl != null, undefined, { timeout: WAIT_TIMEOUT });
             await page.getByRole('navigation', { name: 'Table of Contents', exact: true }).locator('a').first().click();
             assert.equal(await page.evaluate(() => window.tocProbe.clickCalls), 5, 'reattach should dispatch exactly one click callback');
             assert.deepEqual(errors, []);
-            results.push({ width, layout, routeSwaps: 4, noReload: true, keyboardFocus: true, namedLandmark: true, oneCurrentLocation: true, reattachSingleClick: true, detachedListenersRemoved: true, responsiveIndent: width < 768 ? 20 : 24, pageErrors: errors.length });
+            const routeSwaps = await page.evaluate(() => window.tocProbe.swaps);
+            results.push({ width, layout, routeSwaps, noReload: true, keyboardFocus: true, namedLandmark: true, oneCurrentLocation: true, reattachSingleClick: true, detachedListenersRemoved: true, responsiveIndent: width < 768 ? 20 : 24, pageErrors: errors.length });
             await context.close();
         }
     }

@@ -2,6 +2,25 @@
 export const UMAMI_SCRIPT = "https://analytics.umami.is/script.js";
 export const PLAUSIBLE_SCRIPT = "https://plausible.io/js/script.js";
 
+export function parseEnvBoolean(value, fallback) {
+	const normalized = typeof value === "string" ? value.trim().toLowerCase() : "";
+	if (["true", "1", "yes", "on"].includes(normalized)) return true;
+	if (["false", "0", "no", "off"].includes(normalized)) return false;
+	return fallback;
+}
+
+function normalizeSimpleAnalyticsDomain(value) {
+	const input = typeof value === "string" ? value.trim() : "";
+	if (!input) return "";
+	try {
+		const url = new URL(input.includes("://") ? input : `https://${input}`);
+		if (url.protocol !== "https:" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) return "";
+		return url.host;
+	} catch {
+		return "";
+	}
+}
+
 export function resolveAnalyticsSettings(raw = {}, readString = envString, readBoolean = envBoolean) {
 	const text = (value) => typeof value === "string" ? value : "";
 	const field = (key, value) => readString(key, text(value));
@@ -14,7 +33,7 @@ export function resolveAnalyticsSettings(raw = {}, readString = envString, readB
 		googleAnalyticsId: field("PUBLIC_GOOGLE_ANALYTICS_ID", raw.googleAnalyticsId),
 		clarityProjectId: readString("PUBLIC_CLARITY_PROJECT_ID", readString("PUBLIC_CLARITY_ID", text(raw.clarityProjectId))),
 		fathomSiteId: field("PUBLIC_FATHOM_SITE_ID", raw.fathomSiteId),
-		simpleAnalyticsDomain: field("PUBLIC_SIMPLE_ANALYTICS_DOMAIN", raw.simpleAnalyticsDomain),
+		simpleAnalyticsDomain: normalizeSimpleAnalyticsDomain(field("PUBLIC_SIMPLE_ANALYTICS_DOMAIN", raw.simpleAnalyticsDomain)),
 		amplitudeApiKey: field("PUBLIC_AMPLITUDE_API_KEY", raw.amplitudeApiKey),
 		umami: raw.umami?.id || umamiId ? {
 			id: field("PUBLIC_UMAMI_ID", raw.umami?.id),
@@ -39,8 +58,5 @@ function envString(key, fallback = "") {
 	return value || fallback;
 }
 function envBoolean(key, fallback) {
-	const value = envString(key).toLowerCase();
-	if (["true", "1", "yes", "on"].includes(value)) return true;
-	if (["false", "0", "no", "off"].includes(value)) return false;
-	return fallback;
+	return parseEnvBoolean(envString(key), fallback);
 }

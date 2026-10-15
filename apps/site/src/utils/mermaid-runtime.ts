@@ -27,7 +27,6 @@ export function installMermaid(transitions: Pick<typeof transitionManager, "on">
 				if (!block.isConnected) continue;
 				const state = states.get(block) || { source: block.textContent || "", theme: undefined };
 				states.set(block, state);
-				state.theme = theme;
 				const container = document.createElement("div");
 				container.setAttribute("aria-hidden", "true");
 				container.style.cssText = "position:fixed;visibility:hidden;pointer-events:none";
@@ -39,14 +38,23 @@ export function installMermaid(transitions: Pick<typeof transitionManager, "on">
 					);
 					if (!block.isConnected) continue;
 					block.innerHTML = svg;
+					const renderedSvg = block.querySelector("svg");
+					renderedSvg?.setAttribute("role", "img");
+					renderedSvg?.setAttribute("aria-label", "Mermaid diagram");
 					block.removeAttribute("aria-label");
+					block.removeAttribute("tabindex");
 					block.dataset.mermaidRendered = theme;
+					delete block.dataset.mermaidRenderError;
 					bindFunctions?.(block);
+					// Commit only after rendering succeeds so a later refresh can retry failures.
+					state.theme = theme;
 				} catch (error) {
 					const code = document.createElement("code");
 					code.textContent = state.source;
 					block.replaceChildren(code);
+					block.setAttribute("tabindex", "0");
 					block.setAttribute("aria-label", "Mermaid diagram could not be rendered; source shown");
+					block.dataset.mermaidRenderError = "render";
 					delete block.dataset.mermaidRendered;
 					console.warn("[Mermaid] Diagram rendering failed; source retained.", error);
 				} finally {
@@ -54,6 +62,11 @@ export function installMermaid(transitions: Pick<typeof transitionManager, "on">
 				}
 			}
 		} catch (error) {
+			for (const block of candidates) {
+				if (!block.isConnected) continue;
+				block.dataset.mermaidRenderError = "renderer";
+				block.setAttribute("aria-label", "Mermaid renderer unavailable; source shown");
+			}
 			console.warn("[Mermaid] Renderer unavailable; source retained.", error);
 		}
 	}

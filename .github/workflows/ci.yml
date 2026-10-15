@@ -179,6 +179,13 @@ jobs:
         run: >-
           "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" --test scripts/tests/site-browser-fixture.test.mjs apps/site/scripts/tests/mermaid-browser.test.mjs
       - name: Verify P5 TOC accessibility and analytics CSP in Chromium
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
         run: |
           node scripts/p5-browser/toc-browser.mjs
           node scripts/p5-browser/analytics-browser.mjs

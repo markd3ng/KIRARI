@@ -2,6 +2,8 @@
  * Environment variable type definition
  * 环境变量类型定义
  */
+import { parseEnvBoolean } from "./analytics-settings.mjs";
+
 type EnvRecord = Record<string, string | undefined>;
 
 /**
@@ -105,20 +107,5 @@ export const getEnvStringFromKeys = (
  */
 export const getEnvBoolean = (key: string, fallback = false): boolean => {
 	const value = readEnv(key);
-	if (value === undefined) return fallback;
-
-	switch (value.toLowerCase()) {
-		case "true":
-		case "1":
-		case "yes":
-		case "on":
-			return true;
-		case "false":
-		case "0":
-		case "no":
-		case "off":
-			return false;
-		default:
-			return fallback;
-	}
+	return parseEnvBoolean(value, fallback);
 };

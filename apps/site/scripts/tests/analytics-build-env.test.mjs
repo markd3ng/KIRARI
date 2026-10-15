@@ -4,8 +4,9 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { resolveBuildAnalytics } from "../build-analytics-settings.mjs";
+import { ANALYTICS_BUILD_MODE, resolveBuildAnalytics } from "../build-analytics-settings.mjs";
 import { buildContentSecurityPolicy, createVercelConfig } from "../security-policy.mjs";
+import { parseEnvBoolean, resolveAnalyticsSettings } from "../../src/utils/analytics-settings.mjs";
 
 const site = fileURLToPath(new URL("../../", import.meta.url));
 const keys = ["PUBLIC_ANALYTICS_ENABLE", "PUBLIC_UMAMI_ID", "PUBLIC_UMAMI_SRC"];
@@ -77,6 +78,23 @@ test("dotenv opt-out suppresses rendered scripts and provider origins", (context
 test("both real policy writers resolve the build environment before creating policy", () => {
 	for (const name of ["postbuild.mjs", "generate-vercel-config.mjs"]) {
 		const source = readFileSync(new URL(`../${name}`, import.meta.url), "utf8");
-		assert.match(source, /config\.analytics = resolveBuildAnalytics\(config\.analytics\)/);
+		assert.match(source, /config\.analytics = resolveBuildAnalytics\(config\.analytics, \{ mode: ANALYTICS_BUILD_MODE \}\)/);
 	}
+	const packageJson = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
+	assert.match(packageJson.scripts.build, /astro build --mode production/);
+	assert.equal(ANALYTICS_BUILD_MODE, "production");
+});
+
+test("rendered and build-time analytics share every supported boolean spelling", () => {
+	const values = [
+		["true", true], ["1", true], ["yes", true], ["on", true],
+		["false", false], ["0", false], ["no", false], ["off", false],
+	];
+	for (const [value, expected] of values) {
+		const readString = (key, fallback = "") => key === "PUBLIC_ANALYTICS_ENABLE" ? value : fallback;
+		const readBoolean = (key, fallback) => parseEnvBoolean(readString(key), fallback);
+		assert.equal(parseEnvBoolean(value, !expected), expected);
+		assert.equal(resolveAnalyticsSettings({}, readString, readBoolean).enable, expected);
+	}
+	assert.equal(parseEnvBoolean("unknown", true), true);
 });

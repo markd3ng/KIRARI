@@ -36,6 +36,18 @@ test("unconfigured providers and orphan script URLs add no origins", () => {
  assert.equal(policy({ enable: true, umami: { src: "https://orphan.example/script.js" }, plausible: { src: "https://orphan.example/script.js" } }), baseline);
  assert.ok(!policy({ enable: true, matomo: { siteId: "1", src: "javascript:alert(1)" } }).includes("javascript:"));
 });
+test("Simple Analytics accepts a host or HTTPS origin and omits malformed host input consistently", () => {
+ for (const [input, expected] of [["stats.example", "stats.example"], ["https://stats.example", "stats.example"]]) {
+  const settings = resolveAnalyticsSettings({ enable: true, simpleAnalyticsDomain: input }, (key, fallback = "") => key === "PUBLIC_SIMPLE_ANALYTICS_DOMAIN" ? input : fallback, (_key, fallback) => fallback);
+  assert.equal(settings.simpleAnalyticsDomain, expected);
+  assert.ok(sources(policy(settings), "script-src").includes(`https://${expected}`));
+ }
+ for (const input of ["http://stats.example", "https://stats.example/path", "javascript:alert(1)"]) {
+  const settings = resolveAnalyticsSettings({ enable: true, simpleAnalyticsDomain: input }, (key, fallback = "") => key === "PUBLIC_SIMPLE_ANALYTICS_DOMAIN" ? input : fallback, (_key, fallback) => fallback);
+  assert.equal(settings.simpleAnalyticsDomain, "");
+  assert.equal(policy(settings), baseline);
+ }
+});
 test("documented environment settings resolve identically for app and policy", () => {
  const env = { PUBLIC_ANALYTICS_ENABLE: "true", PUBLIC_UMAMI_ID: "test", PUBLIC_UMAMI_SRC: "https://env.example/script.js", PUBLIC_CLARITY_ID: "alias" };
  const string = (key, fallback = "") => env[key]?.trim() || fallback;
