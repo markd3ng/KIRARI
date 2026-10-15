@@ -1,5 +1,5 @@
 declare module "*analytics-settings.mjs" {
- import type { AnalyticsConfig } from "../types/config";
+ type AnalyticsConfig = import("../types/config.js").AnalyticsConfig;
  export const UMAMI_SCRIPT: string;
  export const PLAUSIBLE_SCRIPT: string;
  export function resolveAnalyticsSettings(

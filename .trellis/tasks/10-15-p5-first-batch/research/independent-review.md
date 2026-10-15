@@ -44,3 +44,9 @@ Reviewer authored #105, so **#105 has no independent signoff from this review**.
 - No further actionable runtime/helper/type/docs issue found in the final delta. Prior dotenv and browser-CI findings remain resolved. Independent #105 signoff remains excluded.
 
 Root resolution of final smoke assertion note: added explicit `placement.sidebar === true` and `toc.isVisible()` checks; reran both viewport cases successfully. Existing Iconify blocks remain counted.
+
+## Final strict declaration follow-up
+
+- Root's stricter standalone TypeScript check found TS2439 in the earlier ambient module's import declaration; the shared project configuration's `skipLibCheck` had hidden it. The earlier review statement about retained typing did not independently establish declaration validity. Root corrected the declaration to a scoped `type AnalyticsConfig = import("../types/config.js").AnalyticsConfig`.
+- Independently reviewed the corrected `analytics-settings-types.d.ts` and new `apps/site/scripts/tests/analytics-types.test.mjs`. The declaration uses a type-only import expression, retains the actual shared config type and exports the resolver's `AnalyticsConfig` return type. No actionable issue found.
+- Independently ran the new test on Node 22.23.3: **1/1 PASS**. It compiles the real declaration/caller with strict NodeNext resolution and `skipLibCheck: false`, requires no declaration diagnostics, and requires numeric assignment of the string provider key to fail with TS2322 (rather than silently accepting `any`). Focused diff check passes. No runtime/source edits by this reviewer.

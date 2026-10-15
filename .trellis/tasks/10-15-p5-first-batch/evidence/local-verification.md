@@ -2,7 +2,7 @@
 
 - Fresh main/ancestor verification: exact `1d8997d647c17d448be906108b510f75c24e0efa`.
 - Frozen-lockfile install and separate locked Playwright install: PASS; no dependency upgrades.
-- Site test suite: 90/90 at the initial complete run; added dotenv suite separately 4/4. Final focused first-batch run 34/34, zero skips (includes the added four).
+- Site test suite: 90/90 at the initial complete run; added dotenv suite separately 4/4. Final focused first-batch run 34/34 plus strict declaration regression 1/1, zero skips (includes the added four).
 - Root CI regression list: 58/58. Site contract 7/7. Edge tests 10/10.
 - Site TypeScript, Astro check, QA, profile materialization, Trellis checker, Edge TypeScript + local Wrangler dry build, deployment config synchronization, release and version checks: PASS. Wrangler dry build is local packaging, not a deployment.
 - Full static build: PASS, 112 pages. Indexing submissions skipped; default output preserved. `git diff --check`: PASS.
@@ -14,3 +14,5 @@
 Independent reviewers found and resolved dotenv parity, missing browser CI registration, and translated floating TOC language propagation. Reciprocal ownership avoids an author signing off their own feature. Reports: `research/independent-review.md` (#103/#104/#109) and `research/independent-review-105-104.md` (#105/#104).
 
 Remote PR, CI and advisory OCR evidence is recorded after PR creation. No manual Production deployment, settings, credentials, merge, real analytics event, or indexing notification was performed.
+
+Strict declaration follow-up: default Astro dependency declaration skip hid TS2439 in the initial ambient type import. Import type expression fixes it; isolated NodeNext `skipLibCheck:false` regression validates the declaration and rejects an invalid numeric assignment with TS2322. Whole Site type-check passes after the fix.
