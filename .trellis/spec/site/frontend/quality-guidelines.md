@@ -186,3 +186,23 @@ the provider's native release controller. Normal signing, provenance and securit
 checks with independent purpose remain valid. Provider-native GitHub Pages Actions
 are valid for a separately selected hosting platform. Do not rebuild retired C1,
 raw Trusted Sources or per-release approval machinery without a new Owner choice.
+
+
+### P5 lifecycle and provider regressions
+
+TOC custom-element disconnect must release capture-matched listeners, animation
+callbacks, timers, RAFs and both observers, and reset reconnect state. Both layout
+variants expose a named navigation landmark and one active `aria-current=location`;
+keyboard activation moves focus to the heading without adding a Tab stop.
+
+Mermaid conversion preserves source independently of runtime enablement. Only a
+post explicitly marked enabled by both global configuration and frontmatter may
+render; persistent Astro handlers must not render a later disabled destination.
+Share the renderer across locale routes, serialize its global configuration, keep
+source for theme redraw/error fallback, and test initial and SPA entry.
+
+Analytics configuration resolution is shared between the component and static
+CSP writers. Preserve the disabled policy baseline, gate additions on configured
+providers, cover default/custom scripts and collectors, and use intercepted vendor
+requests for browser CSP tests. Consent and actual provider event semantics are
+separate acceptance conditions in #106.

@@ -457,7 +457,7 @@ server = "https://www.plantuml.com/plantuml"
 theme = "kirari" # kirari | github | vitepress | obsidian
 ```
 
-Mermaid fenced code blocks are auto-detected by the Markdown pipeline when Mermaid is enabled. PlantUML is optional and off by default.
+Mermaid renders only when both `[mermaid].enable` and the post frontmatter `mermaid: true` are enabled (post default: false). Disabled or invalid diagrams retain readable source. Rendering follows Astro navigation and light/dark theme changes. PlantUML is optional and off by default.
 
 ### Analytics
 
@@ -470,11 +470,14 @@ Master switch: `analytics.enable`. Scripts load only when `true && PROD`.
 | Plausible | `analytics.plausible.domain` | `PUBLIC_PLAUSIBLE_DOMAIN` |
 | Microsoft Clarity | `analytics.clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` |
 | Fathom | `analytics.fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
-| Simple Analytics | `analytics.simpleAnalyticsDomain` | — |
+| Simple Analytics | `analytics.simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
 | Matomo | `analytics.matomo.siteId` + `src` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC` |
 | Amplitude | `analytics.amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
 
 Umami, Plausible, Matomo support optional `integrity` (SRI) for pinned scripts.
+The renderer and static CSP generators resolve the same `PUBLIC_*` analytics overrides.
+When changing provider settings, regenerate `vercel.json` with `node apps/site/scripts/generate-vercel-config.mjs` using the same build environment; Pages `_headers` is generated during postbuild. Disabled analytics adds no provider origins beyond the existing baseline. See the [provider origin matrix](./SECURITY_MODEL.md#analytics-provider-sources).
+Consent and provider SPA event semantics are tracked separately in #106; CSP compatibility does not establish consent.
 
 ### Landing Page
 

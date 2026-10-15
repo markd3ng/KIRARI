@@ -1,3 +1,5 @@
+import { resolveAnalyticsSettings, UMAMI_SCRIPT, PLAUSIBLE_SCRIPT } from "../src/utils/analytics-settings.mjs";
+
 const BASE_SCRIPT_SOURCES = [
 	"'self'",
 	"'unsafe-inline'",
@@ -72,13 +74,34 @@ export function buildContentSecurityPolicy(config = {}) {
 	const edge = asRecord(config.edge);
 	if (edge.enabled === true) addOrigin(connectSources, edge.apiBase);
 
-	const analytics = asRecord(config.analytics);
-	if (analytics.enable === true) {
-		for (const section of ["umami", "plausible", "matomo"]) {
-			const source = asRecord(analytics[section]).src;
+	const analytics = resolveAnalyticsSettings(asRecord(config.analytics));
+	if (analytics.enable) {
+		const sameOrigin = (source) => {
 			addOrigin(scriptSources, source);
 			addOrigin(connectSources, source);
+		};
+		if (analytics.umami?.id) {
+			const source = analytics.umami.src || UMAMI_SCRIPT;
+			sameOrigin(source);
+			if (["https://analytics.umami.is", "https://cloud.umami.is"].some((host) => source.startsWith(`${host}/`))) {
+				connectSources.add("https://gateway.umami.is");
+			}
 		}
+		if (analytics.plausible?.domain) sameOrigin(analytics.plausible.src || PLAUSIBLE_SCRIPT);
+		if (analytics.matomo) sameOrigin(analytics.matomo.src);
+		if (analytics.fathomSiteId) sameOrigin("https://cdn.usefathom.com/script.js");
+		if (analytics.simpleAnalyticsDomain) {
+			sameOrigin(`https://${analytics.simpleAnalyticsDomain}/latest.js`);
+			// The shipped Simple Analytics script sends to this fixed collector,
+			// including when its script is served through a custom domain.
+			connectSources.add("https://queue.simpleanalyticscdn.com");
+		}
+		if (analytics.amplitudeApiKey) {
+			scriptSources.add("https://cdn.amplitude.com");
+			connectSources.add("https://api2.amplitude.com");
+		}
+		// GA4 and Clarity's documented script/collector sources already belong
+		// to the preserved baseline above; do not widen them per enabled flag.
 	}
 
 	const fonts = asRecord(config.fonts);

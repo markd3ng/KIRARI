@@ -1,0 +1,14 @@
+{
+  "captured_at": "2026-10-15T07:28:56.798104+00:00",
+  "project_id": "PVT_kwHODRFUbM4BlFsV",
+  "field_count": 16,
+  "item_count": 33,
+  "archived_items": 0,
+  "issue_count": 35,
+  "open_issues": 13,
+  "closed_issues": 22,
+  "dependency_records": 35,
+  "all_project_values_fetched": true,
+  "failed_reads": {},
+  "evidence_directory": "/Users/ian/.codex/worktrees/p5-hardening/KIRARI/.trellis/tasks/10-15-p5-first-batch/evidence/baseline-github"
+}

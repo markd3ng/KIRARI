@@ -83,8 +83,9 @@ correction does not assert that GitHub branch protection is configured.
 
 Production acceptance verifies the actual project, Production environment,
 commit, canonical domain and browser behavior. A successful CI or Preview result
-cannot substitute. The current architecture cutover needs a separate Owner
-merge/deployment decision; no provider change is authorized by documentation.
+cannot substitute. The Owner-authorized native cutover completed in
+[PR #143](https://github.com/markd3ng/KIRARI/pull/143); P4 is complete.
+Documentation changes do not authorize new provider operations.
 See [Site Production](./docs/SITE_PRODUCTION.md).
 
 ## Search Providers
@@ -148,7 +149,7 @@ advisories. KIRARI does not require a custom dependency exception consumer, GitH
 App trust root or atomic merge admission system.
 
 Build, tests, typechecks, QA, safe secret handling and native-deployment configuration
-checks remain strict. The architecture cutover requires separate Owner authorization.
+checks remain strict. Subsequent development uses ordinary reviewed PRs and native Git deployment.
 
 ## Edge Proxy Trust Boundary
 
@@ -179,6 +180,43 @@ not relax the rendering model.
 Per-release C1/T1 credential manifests, OIDC/Trusted Sources runtime admission,
 approval bindings and custom upload/promotion/rollback records are retired.
 Their historical security work remains traceable in [PR #142](https://github.com/markd3ng/KIRARI/pull/142)
-and Trellis task history; it does not authorize the native cutover. Removing source
+and Trellis task history. The native cutover completed separately in PR #143. Removing source
 consumers does not revoke live credentials or delete provider settings. Cleanup
 requires verified consumers and an appropriate separate operational decision.
+
+
+## Analytics Provider Sources
+
+Analytics stays off by default and renders only in a Production-mode build with
+its master switch enabled. Both static policy writers use the same resolved
+analytics settings as the component, including documented environment overrides.
+No baseline sources or inline-script policy were removed in P5 #103.
+
+| Existing provider | Script origin | Collector origin when selected |
+|---|---|---|
+| GA4 | `www.googletagmanager.com` | existing `www.google-analytics.com`, `analytics.google.com`, `region1.google-analytics.com` |
+| Clarity | `www.clarity.ms` | existing `*.clarity.ms` |
+| Umami | configured source, default `analytics.umami.is` | same origin; official Cloud hosts also allow `gateway.umami.is` |
+| Plausible | configured source, default `plausible.io` | same origin |
+| Fathom | `cdn.usefathom.com` | `cdn.usefathom.com` |
+| Simple Analytics | configured script hostname | same origin for proxy; `queue.simpleanalyticscdn.com` for standard script |
+| Matomo | configured source | same origin (`matomo.php`) |
+| Amplitude Browser 2.11.1 | `cdn.amplitude.com` | `api2.amplitude.com` (default US ingestion) |
+
+Origins use HTTPS unless the existing explicit custom URL selects HTTP; source
+mapping does not introduce wildcard grants for new providers. Image tracking
+continues to use the unchanged baseline `img-src https:`. Custom scripts that
+send to another collector need explicit review; arbitrary custom-script behavior
+cannot be inferred from its URL. Runtime provider APIs, consent, revocation and
+SPA event deduplication remain #106 rather than CSP acceptance.
+
+Primary references: [Umami Cloud ingestion](https://docs.umami.is/docs/api/sending-stats),
+[Plausible proxy](https://plausible.io/docs/proxy/introduction),
+[Matomo CSP](https://matomo.org/faq/general/faq_20904/),
+[Simple Analytics script](https://docs.simpleanalytics.com/script) and
+[proxy](https://docs.simpleanalytics.com/proxy),
+[Amplitude ingestion](https://amplitude.com/docs/sdks/analytics/proxy-requests).
+Fathom's shipped [script](https://cdn.usefathom.com/script.js) uses its script
+hostname for both image and Beacon collection. The existing Umami default returned
+403 during this audit; CSP mapping is not a claim that the vendor endpoint is
+currently available. No real tracking events or credentials were sent in tests.

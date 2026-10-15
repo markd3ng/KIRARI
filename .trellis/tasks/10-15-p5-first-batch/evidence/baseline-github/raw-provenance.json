@@ -1,0 +1,17 @@
+[
+  {
+    "file": "all-issues-before.json",
+    "sha256": "c63ce94fafed1f27d4ce73c9392202f5ad0f4fe6793462897fd110a1e7197bed",
+    "local_raw_path": "/tmp/kirari-p5-baseline-full/all-issues-before.json"
+  },
+  {
+    "file": "issues-only-before.json",
+    "sha256": "2c8c2e5c6b516c1ce220cadfae1b43456c829f04efbe1be01a76985a3269144c",
+    "local_raw_path": "/tmp/kirari-p5-baseline-full/issues-only-before.json"
+  },
+  {
+    "file": "project-before.json",
+    "sha256": "ef6a271339dcfd4bde1b1af9dd683abddcabf9c7b558fa5ba54fac8710c0790e",
+    "local_raw_path": "/tmp/kirari-p5-baseline-full/project-before.json"
+  }
+]

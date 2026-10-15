@@ -1,0 +1,31 @@
+{
+  "id": "p5-first-batch",
+  "name": "p5-first-batch",
+  "title": "P5 baseline alignment and first hardening batch",
+  "description": "",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "Owner-authorized P5 first engineering batch; alignment and PRs only, no merge/Production actions",
+  "package": "site",
+  "priority": "P1",
+  "creator": "Ian",
+  "assignee": "Ian",
+  "createdAt": "2026-10-15",
+  "completedAt": null,
+  "branch": "codex/p5-first-batch",
+  "base_branch": "main",
+  "worktree_path": "/Users/ian/.codex/worktrees/p5-hardening/KIRARI",
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "research/baseline-alignment.md",
+    "research/gateway-later-roadmap.md",
+    "evidence/local-verification.md"
+  ],
+  "notes": "First four P5 issues implemented and locally verified; awaiting review/CI and Owner merge. P5 remains 0 completed / 8 open until accepted. Gateway and P6–P8 source-backed alignment recorded; no Production actions.",
+  "meta": {},
+  "baseline_main_sha": "1d8997d647c17d448be906108b510f75c24e0efa"
+}

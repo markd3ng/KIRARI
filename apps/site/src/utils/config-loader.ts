@@ -1,3 +1,4 @@
+import { resolveAnalyticsSettings } from "./analytics-settings.mjs";
 import { parse } from "smol-toml";
 import siteDefaults from "../../site-defaults.json";
 import { getEnvBoolean, getEnvString, getEnvStringFromKeys } from "./env";
@@ -1399,10 +1400,6 @@ export const loadConfig = (): Config => {
 		return DEFAULT_CONFIG.site.banner.position || "center";
 	};
 
-	const envUmamiId = getEnvString("PUBLIC_UMAMI_ID");
-	const envPlausibleDomain = getEnvString("PUBLIC_PLAUSIBLE_DOMAIN");
-	const envMatomoSiteId = getEnvString("PUBLIC_MATOMO_SITE_ID");
-	const envMatomoSrc = getEnvString("PUBLIC_MATOMO_SRC");
 	const languageMap = getLanguageConfigMap(i18n?.languages);
 	const enabledLanguages = getEnabledLangsFromI18n(i18n?.languages);
 	const validatePostSlugStrategy = (value: unknown): "file" | "crc32" => {
@@ -1724,29 +1721,7 @@ export const loadConfig = (): Config => {
 			customScript: combineTrustedSnippets(getString(footer?.customScript, DEFAULT_CONFIG.footer.customScript), footerCustomScriptFile),
 			customScriptFile: footerCustomScriptFile,
 		},
-		analytics: {
-			enable: getEnvBoolean("PUBLIC_ANALYTICS_ENABLE", getBoolean(analytics?.enable, DEFAULT_CONFIG.analytics.enable || false)),
-			googleAnalyticsId: getEnvString("PUBLIC_GOOGLE_ANALYTICS_ID", getString(analytics?.googleAnalyticsId, DEFAULT_CONFIG.analytics.googleAnalyticsId || "")),
-			clarityProjectId: getEnvStringFromKeys(["PUBLIC_CLARITY_PROJECT_ID", "PUBLIC_CLARITY_ID"], getString(analytics?.clarityProjectId, DEFAULT_CONFIG.analytics.clarityProjectId || "")),
-			fathomSiteId: getEnvString("PUBLIC_FATHOM_SITE_ID", getString(analytics?.fathomSiteId, DEFAULT_CONFIG.analytics.fathomSiteId || "")),
-			simpleAnalyticsDomain: getEnvString("PUBLIC_SIMPLE_ANALYTICS_DOMAIN", getString(analytics?.simpleAnalyticsDomain, DEFAULT_CONFIG.analytics.simpleAnalyticsDomain || "")),
-			amplitudeApiKey: getEnvString("PUBLIC_AMPLITUDE_API_KEY", getString(analytics?.amplitudeApiKey, DEFAULT_CONFIG.analytics.amplitudeApiKey || "")),
-			umami: analytics?.umami?.id || envUmamiId ? {
-				id: getEnvString("PUBLIC_UMAMI_ID", getString(analytics?.umami?.id, "")),
-				src: getEnvString("PUBLIC_UMAMI_SRC", getString(analytics?.umami?.src, "")),
-				integrity: getEnvString("PUBLIC_UMAMI_INTEGRITY", getString(analytics?.umami?.integrity, "")),
-			} : DEFAULT_CONFIG.analytics.umami,
-			plausible: analytics?.plausible?.domain || envPlausibleDomain ? {
-				domain: getEnvString("PUBLIC_PLAUSIBLE_DOMAIN", getString(analytics?.plausible?.domain, "")),
-				src: getEnvString("PUBLIC_PLAUSIBLE_SRC", getString(analytics?.plausible?.src, "")),
-				integrity: getEnvString("PUBLIC_PLAUSIBLE_INTEGRITY", getString(analytics?.plausible?.integrity, "")),
-			} : DEFAULT_CONFIG.analytics.plausible,
-			matomo: (analytics?.matomo?.siteId && analytics?.matomo?.src) || (envMatomoSiteId && envMatomoSrc) ? {
-				siteId: getEnvString("PUBLIC_MATOMO_SITE_ID", getString(analytics?.matomo?.siteId, "")),
-				src: getEnvString("PUBLIC_MATOMO_SRC", getString(analytics?.matomo?.src, "")),
-				integrity: getEnvString("PUBLIC_MATOMO_INTEGRITY", getString(analytics?.matomo?.integrity, "")),
-			} : DEFAULT_CONFIG.analytics.matomo,
-		},
+		analytics: resolveAnalyticsSettings(analytics, getEnvString, getEnvBoolean),
 		llms: {
 			enable: getBoolean(llms?.enable, DEFAULT_CONFIG.llms.enable),
 			sitemap: getBoolean(llms?.sitemap, DEFAULT_CONFIG.llms.sitemap || false),
