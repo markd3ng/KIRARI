@@ -115,6 +115,31 @@ test("proxyGitHubCard strips its local prefix and client credentials", async () 
 	);
 });
 
+test("rejects authority-changing GitHub suffixes before sending the Worker token", async () => {
+	let fetchCalls = 0;
+	await withMockFetch(
+		() => {
+			fetchCalls += 1;
+			return new Response("unexpected");
+		},
+		async () => {
+			for (const suffix of ["//attacker.example/private", "///attacker.example/private", "/\\attacker.example/private"]) {
+				const response = await worker.fetch(
+					new Request(`https://edge.example.test/api/github${suffix}`),
+					{ ...enabledEnv, KIRARI_GITHUB_TOKEN: "worker-secret" },
+				);
+
+				assert.equal(response.status, 400);
+				assert.equal(response.headers.get("cache-control"), "no-store");
+				assert.equal(response.headers.get("access-control-allow-origin"), "*");
+				assert.deepEqual(await response.json(), { error: "Invalid upstream path" });
+			}
+
+			assert.equal(fetchCalls, 0);
+		},
+	);
+});
+
 test("proxyAvatar strips its local prefix and preserves query parameters", async () => {
 	await withMockFetch(
 		(request) => {

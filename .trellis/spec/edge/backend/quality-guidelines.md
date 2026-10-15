@@ -15,6 +15,11 @@ Every new route or changed method/header/cache contract needs a Node built-in
 test. Follow `withMockFetch` in `test/index.test.ts`; avoid adding a test
 framework for this package.
 
+After stripping a route prefix and resolving a suffix, require the URL origin
+to equal that route's fixed upstream origin. Reject authority-changing
+network-path or backslash forms before `fetch`; credentials must never be sent
+to a caller-selected host.
+
 Verify:
 
 ```bash

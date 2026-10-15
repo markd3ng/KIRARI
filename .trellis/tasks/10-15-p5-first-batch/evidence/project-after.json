@@ -1,0 +1,66 @@
+[
+  {
+    "issue": 102,
+    "title": "[RM-08] Establish the KIRARI Edge Gateway capability core and migrate GHCardCache contracts",
+    "state": null,
+    "status": "Todo",
+    "phase": "Phase 5",
+    "roadmapStatus": "Next Executable Phase"
+  },
+  {
+    "issue": 103,
+    "title": "[RM-09] Align generated CSP with documented analytics providers",
+    "state": null,
+    "status": "Done",
+    "phase": "Phase 5",
+    "roadmapStatus": "Next Executable Phase"
+  },
+  {
+    "issue": 104,
+    "title": "[RM-10] Fix TOC lifecycle cleanup and expose the active location accessibly",
+    "state": null,
+    "status": "Done",
+    "phase": "Phase 5",
+    "roadmapStatus": "Next Executable Phase"
+  },
+  {
+    "issue": 105,
+    "title": "[RM-11] Detect missing canonical files in Trellis adapter synchronization",
+    "state": null,
+    "status": "Done",
+    "phase": "Phase 5",
+    "roadmapStatus": "Next Executable Phase"
+  },
+  {
+    "issue": 109,
+    "title": "[RM-14] Verify and align Mermaid conversion, gating, and route lifecycle",
+    "state": null,
+    "status": "Done",
+    "phase": "Phase 5",
+    "roadmapStatus": "Next Executable Phase"
+  },
+  {
+    "issue": 110,
+    "title": "[RM-15] Package the KIRARI Edge Gateway Cloudflare Workers adapter",
+    "state": null,
+    "status": "Todo",
+    "phase": "Phase 5",
+    "roadmapStatus": "Next Executable Phase"
+  },
+  {
+    "issue": 111,
+    "title": "[RM-16] Package the KIRARI Edge Gateway Vercel adapter",
+    "state": null,
+    "status": "Todo",
+    "phase": "Phase 5",
+    "roadmapStatus": "Next Executable Phase"
+  },
+  {
+    "issue": 112,
+    "title": "[RM-17] Validate and package the KIRARI Edge Gateway EdgeOne Makers adapter",
+    "state": null,
+    "status": "Todo",
+    "phase": "Phase 5",
+    "roadmapStatus": "Next Executable Phase"
+  }
+]

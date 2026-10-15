@@ -136,19 +136,29 @@ async function proxyRoute(
 	url: URL,
 	env: Env,
 ): Promise<Response> {
+	const upstreamUrl = createUpstreamUrl(url, route.prefix, route.origin);
+	if (!upstreamUrl) {
+		return withCors(
+			Response.json(
+				{ error: "Invalid upstream path" },
+				{ status: 400, headers: { "Cache-Control": "no-store" } },
+			),
+		);
+	}
 	const headers = createUpstreamHeaders(request);
 	route.configureHeaders?.(headers, request, env);
 	return proxyRequest(
 		request,
-		createUpstreamUrl(url, route.prefix, route.origin),
+		upstreamUrl,
 		headers,
 		route.cacheControl,
 	);
 }
 
-function createUpstreamUrl(url: URL, prefix: string, origin: string) {
+function createUpstreamUrl(url: URL, prefix: string, origin: string): URL | null {
 	const pathname = url.pathname.slice(prefix.length) || "/";
 	const upstream = new URL(pathname, origin);
+	if (upstream.origin !== new URL(origin).origin) return null;
 	upstream.search = url.search;
 	return upstream;
 }
