@@ -91,10 +91,10 @@ SHA-256 values below bind reviewed on-disk bytes. Deleted paths record baseline 
 | `scripts/site-artifact.mjs` | `sha256:13b5e903ceb9a282bcd40b0a4b72bcc1b77b8e46fecb15937010e6620a187fbd` |
 | `scripts/static-site-validation.mjs` | `sha256:b3c6faef521d46a6e6fd2cb7b131a825a74f174f9ceb418c7fa46b92d796d83a` |
 | `scripts/tests/browser-request-routing.test.mjs` | `sha256:3703e1d62402f3d436e0b648d7c5e2941f8b6f9c658eb591af53ed35dfc2fdc8` |
-| `scripts/tests/ci-composed-artifact-contract.test.mjs` | `sha256:f9d5c01fe611d064fac5967ea644f138290727e4b44ba13a98e0633ebdc41800` |
+| `scripts/tests/ci-composed-artifact-contract.test.mjs` | `sha256:433df5107c2642c55c8de7213509ecfacc8259b708357acc404063da45a672df` |
 | `scripts/tests/composed-build.test.mjs` | `sha256:d814673ee26fcd69ff20c28ff593fb163e69e5b61d7480cb586474dfff620c62` |
 | `scripts/tests/helpers/site-artifact-fixture.mjs` | `sha256:768a47ade8e3fc673980b2dfbb727667e09c5ece0d485db1a91575fdec555485` |
-| `scripts/tests/native-deployment-architecture.test.mjs` | `sha256:7cc060ca9ccb977e2e06b8514e437c41b1098ae3e1889fbbd6d3763a279d41da` |
+| `scripts/tests/native-deployment-architecture.test.mjs` | `sha256:18dfaadbc87c2c64340ed4726cac2053b5e8bd5cb9691ca1a9cbc3cbb5bbef23` |
 | `scripts/tests/p3-browser-oidc.test.mjs` | `DELETED; baseline blob e52d04ef33a184b1fcaec75fb5faf399d7262558` |
 | `scripts/tests/p3-staging-workflow-contract.test.mjs` | `DELETED; baseline blob c2cafd3b58ceec4781d36e46de73b0f00cfe8821` |
 | `scripts/tests/p4-alias-policy.test.mjs` | `DELETED; baseline blob 4896fea998b5b618d05e3a3937f5bc40a5b2fbf4` |
@@ -154,3 +154,9 @@ Read current cutover.md, task.json, PRD/design/implement.md and research/quality
 Frozen browser delta reviewed at 2026-10-15T02:01:22.573470+00:00.
 
 Staging follow-up: root removed one redundant blank line at EOF in scripts/static-site-validation.mjs after staged diff --check detected it. This is whitespace-only (old bytes equal new bytes plus one newline); functional reviewed content is unchanged. Table identity is updated to the final staged bytes. Staged whitespace validation passes.
+
+## Advisory OCR follow-up — frozen test-only delta
+
+PASS. Independently triaged all eight medium inline and all 22 low summary comments from run38668940211/1; see advisory-ocr-triage.md. No confirmed runtime/security defects. Confirmed two test coverage gaps have been corrected: all ten retained CI suites are asserted, and deployment REST mutation detection now handles implicit body/form writes and flags before/after endpoint, including attached short flags. Positive GET inspection, log descriptions, source-only vercel build --prod and independent provenance remain allowed. Independently ran the two affected suites after final freeze: 8/8 PASS, zero skips. Hash rows above bind these final two test files. Runtime source did not change; no heavy rebuild or provider operation was necessary for test-only corrections. Initial PR head12cb0c2 exact review is extended by these frozen test bytes; root must record the resulting final commit/CI before exact-head acceptance.
+
+Advisory follow-up reviewed at 2026-10-15T02:26:18.738986+00:00.

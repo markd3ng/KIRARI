@@ -44,6 +44,9 @@ test("normal deterministic CI remains intact and composition is limited to manua
 		"scripts/tests/p3-browser-contract.test.mjs",
 		"scripts/tests/browser-request-routing.test.mjs",
 		"scripts/tests/site-package-output.test.mjs",
+		"scripts/tests/site-artifact.test.mjs",
+		"scripts/tests/static-site-validation.test.mjs",
+		"scripts/tests/native-deployment-architecture.test.mjs",
 	]) assert.ok(nodeTests.includes(file), `verify must run ${file}`);
 	assert.match(compositionJob, /^    if: >-\n([\s\S]*?)^    runs-on:/m);
 	const condition = compositionJob.match(/^    if: >-\n([\s\S]*?)^    runs-on:/m)?.[1]?.replaceAll(/\s+/g, " ").trim();
