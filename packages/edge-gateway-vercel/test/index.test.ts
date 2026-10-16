@@ -15,6 +15,7 @@ function repositoryResponse(): Response {
 function environment(overrides: Record<string, string | undefined> = {}) {
 	return {
 		KIRARI_GATEWAY_ENABLED: "true",
+		VERCEL_PROJECT_ID: "prj_gateway_test",
 		...overrides,
 	};
 }
@@ -182,7 +183,7 @@ test("CACHE_PERSISTENT stores Core timestamps, hashes environment and branch int
 	assert.match(keys[0], /^kirari-gateway:v1:[a-f0-9]{24}:[a-f0-9]{64}$/);
 });
 
-test("CACHE_PERSISTENT isolates Production and Preview branch records", async () => {
+test("CACHE_PERSISTENT isolates project, Production and Preview branch records", async () => {
 	const records = new Map<string, unknown>();
 	const cache = {
 		async get(key: string) { return records.get(key) ?? null; },
@@ -204,8 +205,9 @@ test("CACHE_PERSISTENT isolates Production and Preview branch records", async ()
 	await createHandler({ VERCEL_ENV: "preview", VERCEL_GIT_COMMIT_REF: "feature/cache" })(new Request(`${apiBase}${repositoryPath}`));
 	await createHandler({ VERCEL_ENV: "production", VERCEL_GIT_COMMIT_REF: "main" })(new Request(`${apiBase}${repositoryPath}`));
 	await createHandler({ VERCEL_ENV: "preview", VERCEL_GIT_COMMIT_REF: "other-branch" })(new Request(`${apiBase}${repositoryPath}`));
-	assert.equal(fetchCalls, 3);
-	assert.equal(records.size, 3);
+	await createHandler({ VERCEL_PROJECT_ID: "prj_other_project", VERCEL_ENV: "preview", VERCEL_GIT_COMMIT_REF: "feature/cache" })(new Request(`${apiBase}${repositoryPath}`));
+	assert.equal(fetchCalls, 4);
+	assert.equal(records.size, 4);
 });
 
 test("unavailable, malformed, oversized, and failing Runtime Cache paths downgrade safely", async (context) => {
@@ -302,6 +304,33 @@ test("Preview without a Git branch identity bypasses Runtime Cache without acces
 				KIRARI_GATEWAY_CACHE_LEVEL: "CACHE_PERSISTENT",
 				VERCEL_ENV: "preview",
 				VERCEL_GIT_COMMIT_REF: gitRef,
+			}),
+			getRuntimeCache: () => {
+				cacheCalls += 1;
+				return { async get() { cacheCalls += 1; return null; }, async set() { cacheCalls += 1; } };
+			},
+			fetch: async () => { fetchCalls += 1; return repositoryResponse(); },
+		});
+		for (let request = 0; request < 2; request += 1) {
+			const response = await handler(new Request(`${apiBase}${repositoryPath}`));
+			assert.equal(response.status, 200);
+			assert.equal(response.headers.get("x-kirari-cache-level"), "CACHE_NONE");
+		}
+		assert.equal(cacheCalls, 0);
+		assert.equal(fetchCalls, 2);
+	}
+});
+
+test("missing project identity bypasses Runtime Cache without accessing storage", async () => {
+	for (const projectId of [undefined, "", "   "]) {
+		let cacheCalls = 0;
+		let fetchCalls = 0;
+		const handler = createVercelGatewayHandler({
+			environment: environment({
+				KIRARI_GATEWAY_CACHE_LEVEL: "CACHE_PERSISTENT",
+				VERCEL_PROJECT_ID: projectId,
+				VERCEL_ENV: "production",
+				VERCEL_GIT_COMMIT_REF: "main",
 			}),
 			getRuntimeCache: () => {
 				cacheCalls += 1;

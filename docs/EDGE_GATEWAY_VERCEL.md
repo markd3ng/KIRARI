@@ -39,7 +39,7 @@ forwarded to upstreams.
 |---|---|---|
 | `CACHE_NONE` | No cache headers or storage | Default; all response paths remain `no-store` |
 | `CACHE_EDGE` | Vercel CDN response cache for anonymous 200 responses only; `s-maxage=60`, `stale-while-revalidate=30` | Regional, best effort, may be evicted; no Core stale fallback. The browser-facing `Cache-Control: no-store` remains in place |
-| `CACHE_PERSISTENT` | `@vercel/functions` Runtime Cache with Core freshness/stale timestamps | Provider-defined, region-scoped behavior; keys include Vercel environment and Preview Git branch; each serialized item is capped below 2 MB |
+| `CACHE_PERSISTENT` | `@vercel/functions` Runtime Cache with Core freshness/stale timestamps | Provider-defined, region-scoped behavior; keys include Vercel project ID, environment and Preview Git branch; each serialized item is capped below 2 MB |
 
 The adapter does not treat CDN response caching and Runtime Cache as equivalent.
 For `CACHE_EDGE`, responses with Origin, Cookie, or Authorization headers, and
@@ -60,13 +60,23 @@ not sent to clients.
 ## Preview and validation
 
 When the optional adapter is enabled for a Preview environment, the same route
-and allowlists apply there. Runtime Cache keys include both `VERCEL_ENV` and
-`VERCEL_GIT_COMMIT_REF`, so Preview branches do not read Production entries or
-each other's records. Keep Preview secrets scoped to Preview and limit them to
+and allowlists apply there. Runtime Cache keys include `VERCEL_PROJECT_ID`,
+`VERCEL_ENV` and `VERCEL_GIT_COMMIT_REF`, so normal application keys do not
+collide between projects, environments or Preview branches. Keep Preview secrets scoped to Preview and limit them to
 the explicitly allowed public repositories.
 When a Preview has no non-empty `VERCEL_GIT_COMMIT_REF`, the adapter cannot
 establish branch isolation and uses `CACHE_NONE` without accessing Runtime
 Cache. It never substitutes one shared Preview cache scope.
+Missing project identity also causes `CACHE_NONE` without storage access.
+These values come from Vercel's system environment; this adapter does not
+change project settings to expose them.
+
+Vercel isolates Runtime Cache by deployment environment. Pro/Enterprise cache
+storage is project-scoped, while Hobby projects in one team share storage.
+The adapter's project namespace prevents ordinary key collisions; it is not a
+provider access-control boundary against a malicious writer with access to the
+same shared cache. Treat those team projects as one cache trust boundary and
+cache only the Core-approved public data.
 
 The repository's checks cover route rewrite parity, method/path/query and
 upstream restrictions, secret non-leakage, cache isolation, TTLs, resource

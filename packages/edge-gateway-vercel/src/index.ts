@@ -156,10 +156,12 @@ function createRuntimeCachePort(
 }
 
 function getRuntimeCacheScope(environment: Environment): string | undefined {
+	const projectId = environment.VERCEL_PROJECT_ID?.trim();
+	if (!projectId) return undefined;
 	const vercelEnvironment = environment.VERCEL_ENV || "development";
 	if (vercelEnvironment === "preview" && !environment.VERCEL_GIT_COMMIT_REF?.trim()) return undefined;
 	const gitRef = environment.VERCEL_GIT_COMMIT_REF || vercelEnvironment;
-	return `${vercelEnvironment}:${gitRef}`;
+	return JSON.stringify([projectId, vercelEnvironment, gitRef]);
 }
 
 function runtimeCacheKey(scope: string, coreKey: string): string {
