@@ -16,11 +16,11 @@
   "base_branch": "main",
   "worktree_path": null,
   "commit": null,
-  "pr_url": null,
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/146",
   "subtasks": [],
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "Portable core implementation and independent review fixes are complete locally. Final verification: 31 Gateway tests pass (including streamed size and 8-second body timeout); root pnpm check, site build, browser suite, release/contract checks, and edge deploy dry-run pass. Independent review verdict PASS. No adapter or production changes. Awaiting focused PR and GitHub CI.",
+  "notes": "PR #146 contains the portable Core. Final local verification: pnpm check and pnpm build pass; Gateway has 37 passing tests and type-check includes test files. Regression coverage includes URL/cache isolation, redirect failures and timeouts, explicit upstream Content-Type, and transformed response size. Independent review verdict PASS. Final changes still require push and exact-head GitHub CI. No adapter or production changes.",
   "meta": {}
 }

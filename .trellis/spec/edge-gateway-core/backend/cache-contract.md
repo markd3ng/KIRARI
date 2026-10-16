@@ -4,4 +4,6 @@
 
 Cache entries contain only bounded 200/404 responses, safe headers, bytes, and absolute freshness/stale timestamps. Use operation-specific TTLs and a short 404 TTL. Do not store rate-limit, authorization, redirect, server, malformed-content, or oversized responses. Stale entries are fallback data only when a refresh fails or is non-cacheable.
 
+Repository responses rewrite avatar URLs to the incoming request origin and configured route prefix. Their cache identity must include both values so cached bodies cannot leak a URL from another host or Gateway mount.
+
 `EdgeCache` and `PersistentCache` adapters declare their real consistency model. The Core makes no global consistency promise. Cloudflare Cache API is data-center local; Cloudflare KV is eventually consistent. Vercel CDN/runtime cache and EdgeOne Makers storage have distinct or partially unverified behavior. Adapters must use `CACHE_NONE` where a capability is unavailable or not verified.

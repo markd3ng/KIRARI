@@ -6,7 +6,7 @@
 - [x] Add package type-check/test to normal root and GitHub CI without adding adapter or deployment behavior.
 - [x] Run package tests/type-check, root checks, build, contract/release checks, browser checks, dry-run adapter checks, and `git diff --check`.
 - [x] Independently review and fix confirmed findings; exact PR HEAD and GitHub CI remain pending.
-- [ ] Create a focused Core PR. Merge only after the accepted Core contract, review, and required checks pass.
+- [x] Create focused Core PR #146. Merge only after the accepted Core contract, independent review, and exact-head required checks pass.
 - [ ] Keep Issue #102 open until Core acceptance; start no #110–#112 adapter implementation before that gate.
 
 No production project settings, credentials, or deployments are in scope.

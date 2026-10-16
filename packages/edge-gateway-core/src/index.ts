@@ -7,6 +7,7 @@ const BANGUMI_API_ORIGIN = "https://api.bgm.tv";
 const GITHUB_API_VERSION = "2022-11-28";
 const USER_AGENT = "KIRARI-Edge-Gateway";
 const UPSTREAM_TIMEOUT_MS = 8_000;
+const DEFAULT_AVATAR_SIZE = 96;
 const MAX_REQUEST_URL_LENGTH = 4_096;
 const MAX_JSON_RESPONSE_BYTES = 1_000_000;
 const MAX_AVATAR_RESPONSE_BYTES = 512_000;
@@ -72,7 +73,7 @@ type RouteResult =
 
 type CorsDecision = { allowed: true; headers: Headers } | { allowed: false };
 type CachePolicy = { freshSeconds: number; staleSeconds: number };
-type TimedResponse = { response: Response; signal: AbortSignal; cleanup: () => void };
+type TimedResponse = { response: Response; timedOut: () => boolean; cleanup: () => void };
 type UpstreamResult =
 	| { ok: true; entry: CacheEntry }
 	| { ok: false; status: number; error: string; headers: Record<string, string> };
@@ -80,6 +81,7 @@ type UpstreamResult =
 class BodyTooLargeError extends Error {}
 class InvalidUpstreamContentError extends Error {}
 class UnsafeRedirectError extends Error {}
+class UpstreamTimeoutError extends Error {}
 
 /**
  * Creates a provider-neutral Gateway handler. Adapters supply Web-compatible
@@ -190,7 +192,7 @@ async function handleOperation(
 		corsHeaders: Headers;
 	},
 ): Promise<Response> {
-	const key = buildCacheKey(operation);
+	const key = buildCacheKey(operation, requestUrl.origin, context.routePrefix);
 	let store: EdgeCache | PersistentCache | undefined;
 	let effectiveCacheLevel: CacheLevel = "CACHE_NONE";
 	if (context.cacheLevel === "CACHE_EDGE" && context.edgeCache) {
@@ -222,7 +224,7 @@ async function handleOperation(
 	try {
 		upstream = await fetchUpstream(request, requestUrl, operation, context);
 	} catch {
-		upstream = { ok: false, status: 504, error: "upstream_timeout", headers: {} };
+		upstream = { ok: false, status: 502, error: "upstream_unavailable", headers: {} };
 	}
 
 	if (!upstream.ok) {
@@ -285,8 +287,10 @@ async function fetchUpstream(
 	let timedResponse: TimedResponse;
 	try {
 		timedResponse = await fetchWithTimeout(context.fetcher, upstreamUrl, headers, request.signal);
-	} catch {
-		return { ok: false, status: 504, error: "upstream_timeout", headers: {} };
+	} catch (error) {
+		return error instanceof UpstreamTimeoutError
+			? { ok: false, status: 504, error: "upstream_timeout", headers: {} }
+			: { ok: false, status: 502, error: "upstream_unavailable", headers: {} };
 	}
 
 	try {
@@ -297,19 +301,26 @@ async function fetchUpstream(
 			}
 			const location = upstream.headers.get("location");
 			if (!location) return { ok: false, status: 502, error: "upstream_redirect_rejected", headers: {} };
+			let redirectUrl: URL;
 			try {
-				const redirectUrl = new URL(location, upstreamUrl);
-				if (!isAllowedAvatarRedirect(redirectUrl)) {
-					return { ok: false, status: 502, error: "upstream_redirect_rejected", headers: {} };
-				}
-				await upstream.body?.cancel();
-				timedResponse.cleanup();
-				upstreamUrl = redirectUrl;
-				timedResponse = await fetchWithTimeout(context.fetcher, upstreamUrl, buildUpstreamHeaders(operation), request.signal);
-				upstream = timedResponse.response;
+				redirectUrl = new URL(location, upstreamUrl);
 			} catch {
 				return { ok: false, status: 502, error: "upstream_redirect_rejected", headers: {} };
 			}
+			if (!isAllowedAvatarRedirect(redirectUrl)) {
+				return { ok: false, status: 502, error: "upstream_redirect_rejected", headers: {} };
+			}
+			await upstream.body?.cancel();
+			timedResponse.cleanup();
+			upstreamUrl = redirectUrl;
+			try {
+				timedResponse = await fetchWithTimeout(context.fetcher, upstreamUrl, buildUpstreamHeaders(operation), request.signal);
+			} catch (error) {
+				return error instanceof UpstreamTimeoutError
+					? { ok: false, status: 504, error: "upstream_timeout", headers: {} }
+					: { ok: false, status: 502, error: "upstream_unavailable", headers: {} };
+			}
+			upstream = timedResponse.response;
 			if (isRedirect(upstream.status)) {
 				return { ok: false, status: 502, error: "upstream_redirect_rejected", headers: {} };
 			}
@@ -336,17 +347,15 @@ async function fetchUpstream(
 			return { ok: false, status: 502, error: "upstream_rejected", headers: safeHeaders };
 		}
 
-		const contentType = upstream.headers.get("content-type") ?? defaultContentType(operation);
-		if (!isExpectedContentType(operation, contentType)) {
+		const contentType = upstream.headers.get("content-type");
+		if (!contentType || !isExpectedContentType(operation, contentType)) {
 			return { ok: false, status: 502, error: "upstream_invalid_response", headers: safeHeaders };
 		}
 
 		let body: Uint8Array;
+		const maxBodyBytes = operation.kind === "github.avatar" ? MAX_AVATAR_RESPONSE_BYTES : MAX_JSON_RESPONSE_BYTES;
 		try {
-			body = await readBoundedBody(
-				upstream,
-				operation.kind === "github.avatar" ? MAX_AVATAR_RESPONSE_BYTES : MAX_JSON_RESPONSE_BYTES,
-			);
+			body = await readBoundedBody(upstream, maxBodyBytes);
 			if (operation.kind === "github.repository") {
 				body = rewriteRepositoryAvatar(body, requestUrl.origin, context.routePrefix);
 			} else if (operation.kind !== "github.avatar") {
@@ -357,7 +366,7 @@ async function fetchUpstream(
 				}
 			}
 		} catch (error) {
-			if (timedResponse.signal.aborted) {
+			if (timedResponse.timedOut()) {
 				return { ok: false, status: 504, error: "upstream_timeout", headers: safeHeaders };
 			}
 			if (error instanceof BodyTooLargeError || error instanceof InvalidUpstreamContentError) {
@@ -366,7 +375,8 @@ async function fetchUpstream(
 			return { ok: false, status: 502, error: "upstream_unavailable", headers: safeHeaders };
 		}
 
-		if (body.byteLength > (operation.kind === "github.avatar" ? MAX_AVATAR_RESPONSE_BYTES : MAX_JSON_RESPONSE_BYTES)) {
+		// Repository avatar rewriting can enlarge an otherwise bounded upstream JSON body.
+		if (body.byteLength > maxBodyBytes) {
 			return { ok: false, status: 502, error: "upstream_invalid_response", headers: safeHeaders };
 		}
 
@@ -393,10 +403,14 @@ async function fetchWithTimeout(
 	requestSignal: AbortSignal,
 ): Promise<TimedResponse> {
 	const controller = new AbortController();
+	let timedOut = false;
 	const abortFromRequest = () => controller.abort(requestSignal.reason);
 	if (requestSignal.aborted) abortFromRequest();
 	else requestSignal.addEventListener("abort", abortFromRequest, { once: true });
-	const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+	const timeout = setTimeout(() => {
+		timedOut = true;
+		controller.abort();
+	}, UPSTREAM_TIMEOUT_MS);
 	const cleanup = () => {
 		clearTimeout(timeout);
 		requestSignal.removeEventListener("abort", abortFromRequest);
@@ -408,9 +422,10 @@ async function fetchWithTimeout(
 			redirect: "manual",
 			signal: controller.signal,
 		});
-		return { response, signal: controller.signal, cleanup };
+		return { response, timedOut: () => timedOut, cleanup };
 	} catch (error) {
 		cleanup();
+		if (timedOut) throw new UpstreamTimeoutError();
 		throw error;
 	}
 }
@@ -520,7 +535,7 @@ function parseOperation(url: URL, routePrefix: string): RouteResult {
 	if (provider === "github" && operation === "avatar") {
 		if (args.length !== 1) return invalidRequestOrNotFound(args.length === 1);
 		if (!hasOnlyQuery(url, ["size"])) return invalidRequest();
-		const sizeText = url.searchParams.get("size") ?? "96";
+		const sizeText = url.searchParams.get("size") ?? String(DEFAULT_AVATAR_SIZE);
 		const size = /^\d{1,3}$/.test(sizeText) ? Number(sizeText) : Number.NaN;
 		if (!isValidName(args[0]) || !Number.isInteger(size) || size < 16 || size > 256) return invalidRequest();
 		return { ok: true, operation: { kind: "github.avatar", owner: args[0], size } };
@@ -625,10 +640,6 @@ function safeUpstreamHeaders(headers: Headers): Record<string, string> {
 	return result;
 }
 
-function defaultContentType(operation: Exclude<GatewayOperation, { kind: "health" }>) {
-	return operation.kind === "github.avatar" ? "image/png" : "application/json; charset=utf-8";
-}
-
 function isExpectedContentType(operation: Exclude<GatewayOperation, { kind: "health" }>, contentType: string) {
 	const normalized = contentType.toLowerCase();
 	if (operation.kind === "github.avatar") return /^image\/(png|jpeg|gif|webp|avif)(;|$)/.test(normalized);
@@ -684,7 +695,7 @@ function rewriteRepositoryAvatar(body: Uint8Array, requestOrigin: string, routeP
 	if (!isRecord(parsed) || !isRecord(parsed.owner) || typeof parsed.owner.login !== "string") return body;
 	const owner = parsed.owner.login;
 	if (!isValidName(owner)) return body;
-	parsed.owner.avatar_url = `${requestOrigin}${routePrefix}/github/avatar/${encodeURIComponent(owner)}?size=96`;
+	parsed.owner.avatar_url = `${requestOrigin}${routePrefix}/github/avatar/${encodeURIComponent(owner)}?size=${DEFAULT_AVATAR_SIZE}`;
 	return new TextEncoder().encode(JSON.stringify(parsed));
 }
 
@@ -697,8 +708,15 @@ function getCachePolicy(operation: Exclude<GatewayOperation, { kind: "health" }>
 	return { freshSeconds: 300, staleSeconds: 3_600 };
 }
 
-function buildCacheKey(operation: Exclude<GatewayOperation, { kind: "health" }>) {
-	return `kirari-edge:v1:${encodeURIComponent(JSON.stringify(operation))}`;
+function buildCacheKey(
+	operation: Exclude<GatewayOperation, { kind: "health" }>,
+	requestOrigin: string,
+	routePrefix: string,
+) {
+	const cacheIdentity = operation.kind === "github.repository"
+		? { ...operation, requestOrigin, routePrefix }
+		: operation;
+	return `kirari-edge:v1:${encodeURIComponent(JSON.stringify(cacheIdentity))}`;
 }
 
 function isValidCacheEntry(

@@ -24,7 +24,16 @@ function jsonResponse(value: unknown, init: ResponseInit = {}) {
 
 function createMemoryCache(seed?: CacheEntry): EdgeCache & { entries: Map<string, CacheEntry> } {
 	const entries = new Map<string, CacheEntry>();
-	if (seed) entries.set("kirari-edge:v1:%7B%22kind%22%3A%22github.repository%22%2C%22owner%22%3A%22octo%22%2C%22repo%22%3A%22demo%22%7D", seed);
+	if (seed) entries.set(
+		`kirari-edge:v1:${encodeURIComponent(JSON.stringify({
+			kind: "github.repository",
+			owner: "octo",
+			repo: "demo",
+			requestOrigin: new URL(base).origin,
+			routePrefix: DEFAULT_ROUTE_PREFIX,
+		}))}`,
+		seed,
+	);
 	return {
 		consistency: "edge-local",
 		entries,
@@ -284,6 +293,40 @@ test("rejects an avatar redirect to any unapproved host", async () => {
 	assert.equal(fetchCalls, 1);
 });
 
+test("maps a network failure after the approved avatar redirect to unavailable", async () => {
+	let fetchCalls = 0;
+	const handler = createGatewayHandler({
+		fetch: async () => {
+			fetchCalls += 1;
+			if (fetchCalls === 1) return new Response(null, { status: 302, headers: { location: "https://avatars.githubusercontent.com/u/123" } });
+			throw new Error("network unavailable");
+		},
+	});
+	const response = await handler(makeRequest("/github/avatar/octo"));
+	assert.equal(response.status, 502);
+	assert.deepEqual(await response.json(), { error: "upstream_unavailable" });
+	assert.equal(fetchCalls, 2);
+});
+
+test("maps a timeout after the approved avatar redirect to timeout", async () => {
+	let fetchCalls = 0;
+	const handler = createGatewayHandler({
+		fetch: async (_input, init) => {
+			fetchCalls += 1;
+			if (fetchCalls === 1) return new Response(null, { status: 302, headers: { location: "https://avatars.githubusercontent.com/u/123" } });
+			const signal = init?.signal;
+			assert.ok(signal);
+			return new Promise<Response>((_resolve, reject) => {
+				signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+			});
+		},
+	});
+	const response = await handler(makeRequest("/github/avatar/octo"));
+	assert.equal(response.status, 504);
+	assert.deepEqual(await response.json(), { error: "upstream_timeout" });
+	assert.equal(fetchCalls, 2);
+});
+
 test("does not expose upstream error bodies, credentials, or arbitrary headers", async () => {
 	const handler = createGatewayHandler({
 		fetch: async (_input, init) => {
@@ -311,11 +354,25 @@ test("does not expose upstream error bodies, credentials, or arbitrary headers",
 	assert.equal(response.headers.get("x-internal-debug"), null);
 });
 
-test("maps fetch failure to a generic timeout response", async () => {
+test("maps ordinary upstream network failures to an unavailable response, not a timeout", async () => {
 	const handler = createGatewayHandler({ fetch: async () => { throw new Error("Bearer secret-value"); } });
 	const response = await handler(makeRequest("/github/repository/octo/demo"));
-	assert.equal(response.status, 504);
-	assert.deepEqual(await response.json(), { error: "upstream_timeout" });
+	assert.equal(response.status, 502);
+	assert.deepEqual(await response.json(), { error: "upstream_unavailable" });
+});
+
+test("does not label a caller-aborted request as an upstream timeout", async () => {
+	const controller = new AbortController();
+	controller.abort();
+	const handler = createGatewayHandler({
+		fetch: async (_input, init) => {
+			assert.equal(init?.signal?.aborted, true);
+			throw new Error("request aborted");
+		},
+	});
+	const response = await handler(makeRequest("/github/repository/octo/demo", { signal: controller.signal }));
+	assert.equal(response.status, 502);
+	assert.deepEqual(await response.json(), { error: "upstream_unavailable" });
 });
 
 test("keeps the upstream timeout active while reading a stalled response body", async () => {
@@ -343,6 +400,23 @@ test("rejects an oversized upstream response before returning or caching it", as
 	const response = await handler(makeRequest("/github/repository/octo/demo"));
 	assert.equal(response.status, 502);
 	assert.deepEqual(await response.json(), { error: "upstream_invalid_response" });
+});
+
+test("keeps rewritten repository JSON within the response and cache size bound", async () => {
+	const prefix = '{"owner":{"login":"octo","avatar_url":"https://avatars.githubusercontent.com/u/1"},"padding":"';
+	const suffix = '"}';
+	const body = `${prefix}${"x".repeat(999_990 - prefix.length - suffix.length)}${suffix}`;
+	assert.equal(new TextEncoder().encode(body).byteLength, 999_990);
+	const cache = createMemoryCache();
+	const handler = createGatewayHandler({
+		cacheLevel: "CACHE_EDGE",
+		edgeCache: cache,
+		fetch: async () => new Response(body, { headers: { "content-type": "application/json" } }),
+	});
+	const response = await handler(makeRequest("/github/repository/octo/demo"));
+	assert.equal(response.status, 502);
+	assert.deepEqual(await response.json(), { error: "upstream_invalid_response" });
+	assert.equal(cache.entries.size, 0);
 });
 
 test("bounds streamed upstream bodies even when Content-Length is absent", async () => {
@@ -392,6 +466,32 @@ test("uses edge cache for a fresh hit and reports the active level", async () =>
 	assert.equal(second.headers.get("etag"), "\"v1\"");
 	assert.equal(fetchCalls, 1);
 	assert.equal(cache.entries.size, 1);
+});
+
+test("partitions rewritten repository responses by request origin", async () => {
+	const entries = new Map<string, CacheEntry>();
+	const cache: EdgeCache = {
+		consistency: "provider-defined",
+		async get(key) { return entries.get(key) ?? null; },
+		async put(key, entry) { entries.set(key, entry); },
+	};
+	let fetchCalls = 0;
+	const handler = createGatewayHandler({
+		mode: "standalone",
+		allowedOrigins: ["https://one.example", "https://two.example"],
+		cacheLevel: "CACHE_EDGE",
+		edgeCache: cache,
+		fetch: async () => {
+			fetchCalls += 1;
+			return jsonResponse({ owner: { login: "octo", avatar_url: "https://avatars.githubusercontent.com/u/1" } });
+		},
+	});
+	const first = await handler(new Request("https://one.example/_kirari/edge/github/repository/octo/demo"));
+	const second = await handler(new Request("https://two.example/_kirari/edge/github/repository/octo/demo"));
+	assert.equal((await first.json()).owner.avatar_url, "https://one.example/_kirari/edge/github/avatar/octo?size=96");
+	assert.equal((await second.json()).owner.avatar_url, "https://two.example/_kirari/edge/github/avatar/octo?size=96");
+	assert.equal(second.headers.get("x-kirari-cache"), "MISS");
+	assert.equal(fetchCalls, 2);
 });
 
 test("serves a stale cache entry only when the upstream refresh fails", async () => {
@@ -467,6 +567,16 @@ test("does not cache unsuccessful or malformed repository JSON responses", async
 	const response = await handler(makeRequest("/github/repository/octo/demo"));
 	assert.equal(response.status, 502);
 	assert.deepEqual(await response.json(), { error: "upstream_invalid_response" });
+});
+
+test("rejects upstream payloads without an explicit expected Content-Type", async () => {
+	const fetch = async () => new Response(new Uint8Array([0x7b, 0x7d]));
+	const apiResponse = await createGatewayHandler({ fetch })(makeRequest("/github/repository/octo/demo"));
+	const avatarResponse = await createGatewayHandler({ fetch })(makeRequest("/github/avatar/octo"));
+	assert.equal(apiResponse.status, 502);
+	assert.deepEqual(await apiResponse.json(), { error: "upstream_invalid_response" });
+	assert.equal(avatarResponse.status, 502);
+	assert.deepEqual(await avatarResponse.json(), { error: "upstream_invalid_response" });
 });
 
 test("rejects malformed JSON for non-repository operations before it can be cached", async () => {
