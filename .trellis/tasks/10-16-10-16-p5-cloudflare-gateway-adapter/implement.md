@@ -6,7 +6,7 @@
 - [x] Add focused Worker tests and route/cache/token regression coverage.
 - [x] Document routes, Service Binding option, local/preview limits, and cache consistency.
 - [x] Run focused checks, full local checks, release regression checks, dry-run build, and site build.
-- [x] Complete the independent review of the final follow-up patch.
+- [x] Complete the independent review of the newest cache-boundary follow-up.
 - [x] Create and deliver the focused #110 PR #147; update it with the review fixes below.
 
 ## Review follow-up
@@ -56,3 +56,17 @@ pnpm release:check
 pnpm build
 git diff --check
 ```
+
+
+## Latest OCR disposition
+
+The current OCR pass reported eight items. The expired-cache write race is handled as a controlled adapter write failure; Core catches it, downgrades to `CACHE_NONE/BYPASS`, and the end-to-end injected-clock test verifies no entry was stored; invalid Cache API response
+bodies are canceled without waiting on a possibly tee-backed stream; and a regression
+test proves the Gateway remains behind the existing `KIRARI_EDGE_ENABLED` master
+switch. The `releaseLock()` concern is contradicted by the successful completed-stream
+round-trip test and standard reader behavior. Missing cache bindings intentionally
+downgrade to `CACHE_NONE`, already documented and tested. The per-request handler
+construction suggestion is a non-blocking optimization without a measured regression;
+Worker bindings are request-scoped and no handler cache has been introduced. The
+`workspace:*` concern is non-blocking because both packages are private workspace
+packages.

@@ -51,10 +51,17 @@ export function createCloudflareEdgeCache(cache: CachePort, now: () => number = 
 		async get(key) {
 			const cacheKey = await createCacheKey(key);
 			const response = await cache.match(cacheKey);
-			if (!response || response.status !== 200) return null;
+			if (!response) return null;
+			if (response.status !== 200) {
+				discardResponseBody(response);
+				return null;
+			}
 
 			const metadata = readResponseMetadata(response.headers);
-			if (!metadata) return null;
+			if (!metadata) {
+				discardResponseBody(response);
+				return null;
+			}
 			const body = await readBoundedResponseBody(response, MAX_CACHE_BODY_BYTES);
 			if (!body) return null;
 			return { ...metadata, body };
@@ -62,6 +69,7 @@ export function createCloudflareEdgeCache(cache: CachePort, now: () => number = 
 		async put(key, entry) {
 			assertCacheEntrySize(entry);
 			const ttlSeconds = getCacheTtlSeconds(entry.staleUntil, now());
+			if (ttlSeconds === null) throw new Error("Gateway cache entry expired before adapter write.");
 			const cacheKey = await createCacheKey(key);
 			const headers = writeResponseMetadata(entry);
 			headers.set("Cache-Control", `public, max-age=${ttlSeconds}`);
@@ -107,6 +115,8 @@ export function createCloudflarePersistentCache(kv: KvBinding, now: () => number
 		},
 		async put(key, entry) {
 			assertCacheEntrySize(entry);
+			const expirationTtl = getKvExpirationTtl(entry.staleUntil, now());
+			if (expirationTtl === null) throw new Error("Gateway cache entry expired before adapter write.");
 			const metadata = new TextEncoder().encode(JSON.stringify({
 				status: entry.status,
 				headers: entry.headers,
@@ -122,7 +132,7 @@ export function createCloudflarePersistentCache(kv: KvBinding, now: () => number
 			record.set(metadata, CACHE_RECORD_HEADER_BYTES);
 			record.set(entry.body, CACHE_RECORD_HEADER_BYTES + metadata.byteLength);
 			await kv.put(await hashKey(key), record.buffer, {
-				expirationTtl: getKvExpirationTtl(entry.staleUntil, now()),
+				expirationTtl,
 			});
 		},
 	};
@@ -258,16 +268,23 @@ function maxCacheRecordBytes() {
 }
 
 function getCacheTtlSeconds(staleUntil: number, now: number) {
-	return Math.ceil(getRemainingTtlSeconds(staleUntil, now));
+	const remainingTtl = getRemainingTtlSeconds(staleUntil, now);
+	return remainingTtl === null ? null : Math.ceil(remainingTtl);
 }
 
 function getKvExpirationTtl(staleUntil: number, now: number) {
-	return Math.max(MIN_CACHE_TTL_SECONDS, getRemainingTtlSeconds(staleUntil, now));
+	const remainingTtl = getRemainingTtlSeconds(staleUntil, now);
+	return remainingTtl === null ? null : Math.max(MIN_CACHE_TTL_SECONDS, remainingTtl);
 }
 
 function getRemainingTtlSeconds(staleUntil: number, now: number) {
-	if (!Number.isFinite(staleUntil) || staleUntil <= now) throw new Error("Gateway cache entry is already stale.");
+	// A just-expired entry is a normal write-time race; skip caching the response.
+	if (!Number.isFinite(staleUntil) || staleUntil <= now) return null;
 	return Math.ceil((staleUntil - now) / 1_000);
+}
+
+function discardResponseBody(response: Response) {
+	void response.body?.cancel().catch(() => undefined);
 }
 
 async function createCacheKey(key: string): Promise<Request> {

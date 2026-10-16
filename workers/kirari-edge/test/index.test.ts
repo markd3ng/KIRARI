@@ -33,6 +33,26 @@ test("returns 404 when the edge runtime is disabled", async () => {
 	assert.equal(await response.text(), "Edge disabled");
 });
 
+test("Gateway route remains disabled unless the master edge switch is enabled", async () => {
+	let fetchCalls = 0;
+	await withMockFetch(
+		() => {
+			fetchCalls += 1;
+			return Response.json({ unexpected: true });
+		},
+		async () => {
+			const response = await worker.fetch(
+				new Request("https://site.example/_kirari/edge/github/repository/octo/demo"),
+				{},
+			);
+
+			assert.equal(response.status, 404);
+			assert.equal(await response.text(), "Edge disabled");
+			assert.equal(fetchCalls, 0);
+		},
+	);
+});
+
 test("returns 404 when enabled but no feature route matches", async () => {
 	const response = await worker.fetch(new Request("https://edge.example.test/nope"), {
 		KIRARI_EDGE_ENABLED: "true",

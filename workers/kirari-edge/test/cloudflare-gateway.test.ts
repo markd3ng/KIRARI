@@ -76,10 +76,29 @@ test("Cloudflare Cache API declines and read failures propagate for Core downgra
 	await assert.rejects(createCloudflareEdgeCache(failingCache).get("cache-key"), /cache read failed/);
 });
 
-test("Cloudflare Cache API refuses expired and oversized entries", async () => {
-	const cache = createCloudflareEdgeCache(new MemoryCache(), () => 25_000);
-	await assert.rejects(cache.put("expired", entry()), /already stale/);
+test("Cloudflare Cache API signals an entry that expires during the write race", async () => {
+	const backingCache = new MemoryCache();
+	const cache = createCloudflareEdgeCache(backingCache, () => 25_000);
+	await assert.rejects(cache.put("expired", entry()), /expired before adapter write/);
+	assert.equal(backingCache.entries.size, 0);
 	await assert.rejects(cache.put("oversized", entry({ body: new Uint8Array(1_000_001) })), /body exceeds/);
+});
+
+test("Cloudflare Cache API cancels bodies from invalid cached responses", async () => {
+	for (const { status, headers } of [{ status: 200, headers: {} }, { status: 500, headers: {} }]) {
+		let cancelled = false;
+		const trackedResponse = new Response(new ReadableStream({ cancel() { cancelled = true; } }), {
+			status,
+			headers,
+		});
+		const cache = createCloudflareEdgeCache({
+			match: async () => trackedResponse,
+			put: async () => undefined,
+		});
+
+		assert.equal(await cache.get("invalid"), null);
+		assert.equal(cancelled, true);
+	}
 });
 
 test("Cloudflare Cache API ignores an oversized stored record", async () => {
@@ -123,7 +142,8 @@ test("KV rejects malformed, oversized, and expired records without exposing thei
 	const cache = createCloudflarePersistentCache(kv, () => 1_000);
 	await kv.put("bad", new Uint8Array([0, 0, 0, 8, 123]).buffer);
 	assert.equal(await cache.get("bad"), null);
-	await assert.rejects(cache.put("expired", entry({ staleUntil: 500 })), /already stale/);
+	await assert.rejects(cache.put("expired", entry({ staleUntil: 500 })), /expired before adapter write/);
+	assert.equal(kv.lastExpirationTtl, undefined);
 	await assert.rejects(cache.put("oversized", entry({ body: new Uint8Array(1_000_001) })), /body exceeds/);
 });
 
@@ -154,6 +174,22 @@ test("Gateway truthfully downgrades declined edge writes and unavailable KV bind
 	});
 	const kvResponse = await kvHandler(new Request("https://site.example/_kirari/edge/github/repository/octo/demo"));
 	assert.equal(kvResponse.headers.get("x-kirari-cache-level"), "CACHE_NONE");
+});
+
+test("Gateway reports CACHE_NONE when an entry expires before the adapter write", async () => {
+	const backingCache = new MemoryCache();
+	let nowCalls = 0;
+	const handler = createCloudflareGatewayHandler({ KIRARI_GATEWAY_CACHE_LEVEL: "CACHE_EDGE" }, {
+		cache: backingCache,
+		now: () => ++nowCalls <= 4 ? 0 : 8 * 24 * 60 * 60 * 1_000,
+		fetch: async () => Response.json({ full_name: "octo/demo", owner: { login: "octo" } }),
+	});
+
+	const response = await handler(new Request("https://site.example/_kirari/edge/github/repository/octo/demo"));
+	assert.equal(response.status, 200);
+	assert.equal(response.headers.get("x-kirari-cache-level"), "CACHE_NONE");
+	assert.equal(response.headers.get("x-kirari-cache"), "BYPASS");
+	assert.equal(backingCache.entries.size, 0);
 });
 
 test("Gateway token binding is inert without an explicit public repository allowlist", async () => {
