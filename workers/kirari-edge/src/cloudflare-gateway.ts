@@ -42,6 +42,8 @@ export type CloudflareGatewayRuntime = {
 	now?: () => number;
 };
 
+const CACHE_LEVELS: readonly CacheLevel[] = ["CACHE_NONE", "CACHE_EDGE", "CACHE_PERSISTENT"];
+
 /** Adapt Cloudflare's per-datacenter Cache API to the Core's edge-cache port. */
 export function createCloudflareEdgeCache(cache: CachePort, now: () => number = Date.now): EdgeCache {
 	return {
@@ -131,7 +133,7 @@ export function createCloudflareGatewayHandler(
 	env: CloudflareGatewayEnv,
 	runtime: CloudflareGatewayRuntime = {},
 ) {
-	const cacheLevel = env.KIRARI_GATEWAY_CACHE_LEVEL as CacheLevel | undefined;
+	const cacheLevel = parseCacheLevel(env.KIRARI_GATEWAY_CACHE_LEVEL);
 	const publicRepositories = (env.KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES ?? "")
 		.split(",")
 		.map((repository) => repository.trim())
@@ -153,6 +155,16 @@ export function createCloudflareGatewayHandler(
 		getGitHubToken: canUseToken ? () => env.KIRARI_GITHUB_TOKEN : undefined,
 		githubTokenPublicRepositories: publicRepositories,
 	});
+}
+
+function parseCacheLevel(value: string | undefined): CacheLevel | undefined {
+	if (value === undefined) return undefined;
+	if (isCacheLevel(value)) return value;
+	throw new TypeError("KIRARI_GATEWAY_CACHE_LEVEL must be CACHE_NONE, CACHE_EDGE, or CACHE_PERSISTENT.");
+}
+
+function isCacheLevel(value: string): value is CacheLevel {
+	return CACHE_LEVELS.some((level) => level === value);
 }
 
 function readResponseMetadata(headers: Headers): Omit<CacheEntry, "body"> | null {

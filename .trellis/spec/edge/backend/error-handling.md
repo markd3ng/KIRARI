@@ -9,6 +9,8 @@ Current response contract:
 - Upstream throw: structured log plus CORS-safe JSON `502` and `no-store`.
 - Invalid Gateway adapter configuration: sanitized structured log plus JSON
   `503` and `no-store`; do not log environment values or exception messages.
+- Unexpected Gateway handler throw: sanitized structured log plus generic JSON
+  `500` and `no-store`.
 - Upstream HTTP statuses: preserved, with project cache/CORS headers applied.
 
 Do not leak upstream exception text, tokens, request credentials, or binding

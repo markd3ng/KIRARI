@@ -225,6 +225,33 @@ test("Cloudflare Gateway fails closed on invalid cache-level configuration", asy
 	assert.doesNotMatch(logs[0], /must-not-appear-in-logs|CACHE_REMOTE/);
 });
 
+test("Cloudflare Gateway turns unexpected Core failures into a generic logged 500", async () => {
+	const originalError = console.error;
+	const originalNow = Date.now;
+	const logs: string[] = [];
+	console.error = (message?: unknown) => logs.push(String(message));
+	Date.now = () => {
+		throw new Error("sensitive runtime detail");
+	};
+	try {
+		const response = await worker.fetch(
+			new Request("https://site.example/_kirari/edge/github/repository/octo/demo"),
+			enabledEnv,
+		);
+		assert.equal(response.status, 500);
+		assert.deepEqual(await response.json(), { error: "gateway_internal_error" });
+		assert.equal(response.headers.get("cache-control"), "no-store");
+		assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+	} finally {
+		console.error = originalError;
+		Date.now = originalNow;
+	}
+	assert.equal(logs.length, 1);
+	assert.match(logs[0], /kirari_edge_gateway_failure/);
+	assert.match(logs[0], /Error/);
+	assert.doesNotMatch(logs[0], /sensitive runtime detail/);
+});
+
 test("rejects authority-changing GitHub suffixes before sending the Worker token", async () => {
 	let fetchCalls = 0;
 	await withMockFetch(

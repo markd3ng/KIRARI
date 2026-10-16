@@ -24,7 +24,10 @@ GitHub requests remain anonymous unless both `KIRARI_GITHUB_TOKEN` and
 `KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES` are present. The latter is a
 comma-separated list of public `owner/repository` names. The Core attaches the
 token only to its named GitHub REST operations for repositories on that list.
-The old `/api/github/*` compatibility path no longer attaches the Worker token.
+The old `/api/github/*` compatibility path remains anonymous because its
+free-form suffix cannot enforce that allowlist. Anonymous GitHub API rate limits
+apply on that route; use a named Gateway operation when server-side access
+through the explicit repository allowlist is required.
 
 For local testing, use `pnpm edge:test`, `pnpm edge:type-check`, or Wrangler's
 local `dev` mode with local bindings. Unit tests use injected cache/KV doubles;

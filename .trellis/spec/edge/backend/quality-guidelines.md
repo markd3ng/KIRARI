@@ -9,8 +9,9 @@ Route prefixes and upstreams are fixed in `src/index.ts`:
 
 `/_kirari/edge/*` is delegated to `@kirari/edge-gateway-core`; do not add
 operation parsing, upstream selection, or cache policy to the Worker. The
-legacy `/api/github/*` route is anonymous. Gateway GitHub credentials require
-both `KIRARI_GITHUB_TOKEN` and an explicit comma-separated
+legacy `/api/github/*` route is anonymous because its free-form suffix cannot
+enforce the Gateway's named-operation and public-repository allowlist. Gateway
+GitHub credentials require both `KIRARI_GITHUB_TOKEN` and an explicit comma-separated
 `KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES` allowlist; never attach the token to a
 legacy suffix-proxy request.
 

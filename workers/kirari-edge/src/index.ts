@@ -50,6 +50,8 @@ const PROXY_ROUTES: ProxyRouteConfig[] = [
 		origin: "https://api.github.com",
 		cacheControl: "public, max-age=300, stale-while-revalidate=3600",
 		configureHeaders(headers, request) {
+			// This legacy suffix proxy stays anonymous; only named Gateway
+			// operations can attach a token under the public-repository allowlist.
 			headers.set("Accept", request.headers.get("accept") || "application/vnd.github+json");
 			headers.set("X-GitHub-Api-Version", "2022-11-28");
 		},
@@ -102,7 +104,20 @@ export default {
 			}
 			// This is a same-origin Core route. Keep its exact-origin CORS decision;
 			// the legacy wildcard CORS wrapper would weaken that boundary.
-			return gatewayHandler(request);
+			try {
+				return await gatewayHandler(request);
+			} catch (error) {
+				console.error(
+					JSON.stringify({
+						event: "kirari_edge_gateway_failure",
+						error_name: error instanceof Error ? error.name : "UnknownError",
+					}),
+				);
+				return Response.json(
+					{ error: "gateway_internal_error" },
+					{ status: 500, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } },
+				);
+			}
 		}
 
 		const route = resolveRoute(url.pathname, env);

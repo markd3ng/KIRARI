@@ -6,7 +6,7 @@
 - [x] Add focused Worker tests and route/cache/token regression coverage.
 - [x] Document routes, Service Binding option, local/preview limits, and cache consistency.
 - [x] Run focused checks, full local checks, release regression checks, dry-run build, and site build.
-- [x] Complete an independent review of the current working tree; no blocking findings.
+- [x] Complete the independent review of the final follow-up patch.
 - [x] Create and deliver the focused #110 PR #147; update it with the review fixes below.
 
 ## Review follow-up
@@ -31,6 +31,14 @@ OCR review disposition:
 
 The independent review passed on the current code. GitHub CI and advisory OCR
 must still pass on the updated PR HEAD before #110 can be considered accepted.
+
+The next OCR pass reported three additional points. The Worker now validates
+the cache-level environment value before calling Core; the legacy suffix route
+remains anonymous because it cannot enforce Core's operation/repository
+allowlist (and the anonymous rate-limit tradeoff is documented); and unexpected
+Core handler throws become a sanitized, no-store 500. Regression coverage
+exercises each runtime boundary. Final independent review and GitHub checks for
+this follow-up are pending.
 
 The Worker tests cover a normal fixed-upstream request, exact token allowlisting,
 legacy anonymous behavior, invalid operation rejection before fetch, cache

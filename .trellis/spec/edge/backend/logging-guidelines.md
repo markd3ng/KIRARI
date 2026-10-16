@@ -1,6 +1,6 @@
 # Logging
 
-The current Worker logs only unexpected upstream failures with one JSON string:
+The Worker logs unexpected upstream failures with one JSON string:
 
 ```json
 {"event":"kirari_edge_upstream_failure","route":"github","message":"..."}
@@ -13,5 +13,7 @@ query secrets, or full request headers.
 Gateway adapter configuration failures use the fixed
 `kirari_edge_gateway_configuration_failure` event and may include only the
 exception class name. Never log the exception message or environment values.
+Unexpected Gateway handler failures use `kirari_edge_gateway_failure` with the
+same sanitized fields.
 
 Expected 404, preflight, and method-rejection paths do not need logs.
