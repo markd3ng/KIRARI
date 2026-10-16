@@ -8,6 +8,12 @@ URLs, unlisted operations, methods, query keys, request bodies, and oversized
 responses before any upstream response is returned. The internal Function path
 is also constrained by the same Core contract.
 
+The entrypoint uses Vercel's supported default `{ fetch(request) }` Web
+Standard export for the Node.js runtime. Unexpected handler/configuration
+failures return a generic no-store 503 and log only the fixed
+`kirari_gateway_request_failure` event plus an error category. Raw exception
+messages, request data and secrets are not logged.
+
 ## Environment variables
 
 The adapter is off by default. Configure variables in the intended Vercel
@@ -58,6 +64,9 @@ and allowlists apply there. Runtime Cache keys include both `VERCEL_ENV` and
 `VERCEL_GIT_COMMIT_REF`, so Preview branches do not read Production entries or
 each other's records. Keep Preview secrets scoped to Preview and limit them to
 the explicitly allowed public repositories.
+When a Preview has no non-empty `VERCEL_GIT_COMMIT_REF`, the adapter cannot
+establish branch isolation and uses `CACHE_NONE` without accessing Runtime
+Cache. It never substitutes one shared Preview cache scope.
 
 The repository's checks cover route rewrite parity, method/path/query and
 upstream restrictions, secret non-leakage, cache isolation, TTLs, resource

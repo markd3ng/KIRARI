@@ -258,3 +258,63 @@ test("invalid cache-level values fail safe to CACHE_NONE", async () => {
 	assert.equal(response.headers.get("x-kirari-cache-level"), "CACHE_NONE");
 	assert.equal(response.headers.get("cache-control"), "no-store");
 });
+
+test("CACHE_EDGE never caches health responses at either supported route prefix", async () => {
+	const handler = createVercelGatewayHandler({
+		environment: environment({ KIRARI_GATEWAY_CACHE_LEVEL: "CACHE_EDGE" }),
+		fetch: async () => { throw new Error("health must not reach upstream"); },
+	});
+	for (const prefix of ["/_kirari/edge", "/api/_kirari/edge"]) {
+		for (const method of ["GET", "HEAD"]) {
+			const response = await handler(new Request(`https://kirari.example${prefix}/healthz`, { method }));
+			assert.equal(response.status, 200);
+			assert.equal(response.headers.has("vercel-cdn-cache-control"), false);
+			assert.equal(response.headers.get("x-kirari-cache-level"), "CACHE_NONE");
+		}
+	}
+});
+
+test("unexpected configuration errors log only a fixed event and safe error category", async (context) => {
+	const log = context.mock.method(console, "error", () => {});
+	const handler = createVercelGatewayHandler({
+		environment: environment({
+			KIRARI_GATEWAY_MODE: "standalone",
+			KIRARI_GATEWAY_ALLOWED_ORIGINS: "secret-do-not-log",
+		}),
+	});
+	const response = await handler(new Request(`${apiBase}${repositoryPath}`));
+	assert.equal(response.status, 503);
+	assert.equal(response.headers.get("cache-control"), "no-store");
+	assert.deepEqual(await response.json(), { error: "gateway_unavailable" });
+	assert.equal(log.mock.calls.length, 1);
+	assert.deepEqual(JSON.parse(String(log.mock.calls[0].arguments[0])), {
+		event: "kirari_gateway_request_failure",
+		errorType: "TypeError",
+	});
+});
+
+test("Preview without a Git branch identity bypasses Runtime Cache without accessing storage", async () => {
+	for (const gitRef of [undefined, "", "   "]) {
+		let cacheCalls = 0;
+		let fetchCalls = 0;
+		const handler = createVercelGatewayHandler({
+			environment: environment({
+				KIRARI_GATEWAY_CACHE_LEVEL: "CACHE_PERSISTENT",
+				VERCEL_ENV: "preview",
+				VERCEL_GIT_COMMIT_REF: gitRef,
+			}),
+			getRuntimeCache: () => {
+				cacheCalls += 1;
+				return { async get() { cacheCalls += 1; return null; }, async set() { cacheCalls += 1; } };
+			},
+			fetch: async () => { fetchCalls += 1; return repositoryResponse(); },
+		});
+		for (let request = 0; request < 2; request += 1) {
+			const response = await handler(new Request(`${apiBase}${repositoryPath}`));
+			assert.equal(response.status, 200);
+			assert.equal(response.headers.get("x-kirari-cache-level"), "CACHE_NONE");
+		}
+		assert.equal(cacheCalls, 0);
+		assert.equal(fetchCalls, 2);
+	}
+});

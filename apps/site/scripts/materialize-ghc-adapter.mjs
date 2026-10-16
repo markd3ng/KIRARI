@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { parse } from "smol-toml";
 
@@ -76,6 +76,7 @@ function resolveDeployRoot(siteRoot) {
 }
 
 function writeGeneratedFile(templatePath, targetPath) {
+	assertWithinAllowedRoot(targetPath);
 	const targetDir = path.dirname(targetPath);
 	if (existsSync(targetDir) && collectFiles(targetDir).length > 0) {
 		throw new Error(`Refusing to overwrite an existing API route: ${path.relative(rootDir, targetDir)}`);
@@ -91,19 +92,25 @@ function removeGeneratedRoute(routeDir) {
 	if (!existsSync(routeDir)) return;
 	assertWithinAllowedRoot(routeDir);
 
-	const files = collectFiles(routeDir);
-	if (files.length === 0) {
-		rmSync(routeDir, { recursive: true, force: true });
-		return;
+	for (const file of collectFiles(routeDir)) {
+		if (lstat(file).isFile() && readFileSync(file, "utf8").includes(generatedMarker)) {
+			rmSync(file);
+		}
 	}
+	removeEmptyDirectories(routeDir);
+}
 
-	const generated = files.some((file) => readFileSync(file, "utf8").includes(generatedMarker));
-	if (generated) rmSync(routeDir, { recursive: true, force: true });
+function removeEmptyDirectories(dir) {
+	for (const name of readdir(dir)) {
+		const child = path.join(dir, name);
+		if (lstat(child).isDirectory()) removeEmptyDirectories(child);
+	}
+	if (readdir(dir).length === 0) rmSync(dir, { recursive: true });
 }
 
 function removeGeneratedRoutes(baseDir) {
-	if (!existsSync(baseDir)) return;
 	assertWithinAllowedRoot(baseDir);
+	if (!existsSync(baseDir)) return;
 	for (const name of readdir(baseDir)) {
 		const routeDir = path.join(baseDir, name);
 		if (lstat(routeDir).isDirectory()) {
@@ -131,17 +138,29 @@ function readdir(dir) {
 }
 
 function lstat(file) {
-	return statCache.get(file) || statCache.set(file, statSync(file)).get(file);
+	return statCache.get(file) || statCache.set(file, lstatSync(file)).get(file);
 }
 
 function assertWithinAllowedRoot(targetPath) {
 	const resolvedTarget = path.resolve(targetPath);
 	const allowedRoots = Array.from(new Set([rootDir, deployRootDir])).map((dir) => path.resolve(dir));
-	const isAllowed = allowedRoots.some(
+	const allowedRoot = allowedRoots.sort((left, right) => right.length - left.length).find(
 		(allowedRoot) => resolvedTarget === allowedRoot || resolvedTarget.startsWith(`${allowedRoot}${path.sep}`),
 	);
-	if (!isAllowed) {
+	if (!allowedRoot) {
 		throw new Error(`Refusing to operate outside allowed roots: ${targetPath}`);
+	}
+	let current = allowedRoot;
+	for (const segment of ["", ...path.relative(allowedRoot, resolvedTarget).split(path.sep).filter(Boolean)]) {
+		if (segment) current = path.join(current, segment);
+		try {
+			if (lstatSync(current).isSymbolicLink()) {
+				throw new Error(`Refusing to operate through a symlink: ${current}`);
+			}
+		} catch (error) {
+			if (error.code === "ENOENT") break;
+			throw error;
+		}
 	}
 	return targetPath;
 }

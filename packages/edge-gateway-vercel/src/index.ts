@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { getCache } from "@vercel/functions";
 import {
 	createGatewayHandler,
+	DEFAULT_ROUTE_PREFIX,
 	type CacheEntry,
 	type CacheLevel,
 	type GatewayFetch,
@@ -63,11 +64,10 @@ export function createVercelGatewayHandler(options: VercelGatewayOptions = {}) {
 
 		let persistentCache: PersistentCache | undefined;
 		if (config.cacheLevel === "CACHE_PERSISTENT") {
-			persistentCache = createRuntimeCachePort(
-				getRuntimeCache,
-				getRuntimeCacheScope(environment),
-				now,
-			);
+			const scope = getRuntimeCacheScope(environment);
+			if (scope !== undefined) {
+				persistentCache = createRuntimeCachePort(getRuntimeCache, scope, now);
+			}
 		}
 
 		try {
@@ -85,7 +85,11 @@ export function createVercelGatewayHandler(options: VercelGatewayOptions = {}) {
 			});
 			const response = await coreHandler(normalizeFunctionRequest(request));
 			return config.cacheLevel === "CACHE_EDGE" ? applyCdnPolicy(request, response) : response;
-		} catch {
+		} catch (error) {
+			console.error(JSON.stringify({
+				event: "kirari_gateway_request_failure",
+				errorType: error instanceof TypeError ? "TypeError" : "Error",
+			}));
 			return errorResponse(503, "gateway_unavailable");
 		}
 	};
@@ -120,7 +124,7 @@ function parseCsv(value: string | undefined): string[] {
 function normalizeFunctionRequest(request: Request): Request {
 	const url = new URL(request.url);
 	if (url.pathname !== FUNCTION_PREFIX && !url.pathname.startsWith(`${FUNCTION_PREFIX}/`)) return request;
-	url.pathname = `/_kirari/edge${url.pathname.slice(FUNCTION_PREFIX.length)}`;
+	url.pathname = `${DEFAULT_ROUTE_PREFIX}${url.pathname.slice(FUNCTION_PREFIX.length)}`;
 	return new Proxy(request, {
 		get(target, property) {
 			if (property === "url") return url.href;
@@ -151,8 +155,9 @@ function createRuntimeCachePort(
 	};
 }
 
-function getRuntimeCacheScope(environment: Environment): string {
+function getRuntimeCacheScope(environment: Environment): string | undefined {
 	const vercelEnvironment = environment.VERCEL_ENV || "development";
+	if (vercelEnvironment === "preview" && !environment.VERCEL_GIT_COMMIT_REF?.trim()) return undefined;
 	const gitRef = environment.VERCEL_GIT_COMMIT_REF || vercelEnvironment;
 	return `${vercelEnvironment}:${gitRef}`;
 }
@@ -230,6 +235,7 @@ function applyCdnPolicy(request: Request, response: Response): Response {
 	if (
 		response.status !== 200 ||
 		requestPath === `${FUNCTION_PREFIX}/healthz` ||
+		requestPath === `${DEFAULT_ROUTE_PREFIX}/healthz` ||
 		request.headers.has("origin") ||
 		request.headers.has("cookie") ||
 		request.headers.has("authorization") ||

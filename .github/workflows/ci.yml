@@ -66,6 +66,8 @@ jobs:
       - run: pnpm edge:test
       - run: pnpm gateway:type-check
       - run: pnpm gateway:test
+      - run: pnpm gateway:vercel:type-check
+      - run: pnpm gateway:vercel:test
       - run: pnpm edge:deploy:dry
       - run: node apps/site/scripts/generate-vercel-config.mjs --check
       - run: pnpm build
