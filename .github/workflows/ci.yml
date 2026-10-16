@@ -64,6 +64,8 @@ jobs:
       - run: pnpm site:astro-check
       - run: pnpm edge:type-check
       - run: pnpm edge:test
+      - run: pnpm gateway:type-check
+      - run: pnpm gateway:test
       - run: pnpm edge:deploy:dry
       - run: node apps/site/scripts/generate-vercel-config.mjs --check
       - run: pnpm build
