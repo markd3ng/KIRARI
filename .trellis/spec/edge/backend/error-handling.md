@@ -10,5 +10,6 @@ Current response contract:
 - Upstream HTTP statuses: preserved, with project cache/CORS headers applied.
 
 Do not leak upstream exception text, tokens, request credentials, or binding
-values in responses. Preserve HEAD semantics by forwarding the method and
-passing through the upstream body/status contract.
+values in responses. Legacy proxy routes forward HEAD and preserve the upstream
+body/status contract. The named Gateway Core returns an empty HEAD body with
+GET-derived headers and retains its normal response bounds and timeout.

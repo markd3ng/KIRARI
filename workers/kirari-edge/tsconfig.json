@@ -6,8 +6,10 @@
     "strict": true,
     "noEmit": true,
     "outDir": "./dist",
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
     "lib": ["ESNext"],
-    "types": ["@cloudflare/workers-types"]
+    "types": ["@cloudflare/workers-types", "node"]
   },
-  "include": ["src"]
+  "include": ["src", "test"]
 }
