@@ -1,0 +1,51 @@
+{
+  "repository": "markd3ng/KIRARI",
+  "pull_request": 144,
+  "pr_head_sha": "ecf70becf6817699b17a7785939fc7562bbc483f",
+  "expected_base_sha": "1d8997d647c17d448be906108b510f75c24e0efa",
+  "merge_method": "merge",
+  "merge_commit_sha": "4a139d18dc8449e4dbaaf2136e3aeba63842b835",
+  "main_sha": "4a139d18dc8449e4dbaaf2136e3aeba63842b835",
+  "pull_request_ci": {
+    "run_id": 38706448903,
+    "conclusion": "success"
+  },
+  "advisory_ocr": {
+    "run_id": 38706448914,
+    "conclusion": "success",
+    "findings": 40,
+    "inline": 9,
+    "summary": 29,
+    "overlap": 2,
+    "blocking_high_risk_findings": 0
+  },
+  "post_merge_main_ci": {
+    "run_id": 38707600185,
+    "head_sha": "4a139d18dc8449e4dbaaf2136e3aeba63842b835",
+    "conclusion": "success"
+  },
+  "issues": {
+    "103": "closed",
+    "104": "closed",
+    "105": "closed",
+    "109": "closed",
+    "102": "open",
+    "110": "open",
+    "111": "open",
+    "112": "open"
+  },
+  "project_status": {
+    "103": "Done",
+    "104": "Done",
+    "105": "Done",
+    "109": "Done",
+    "102": "Todo",
+    "110": "Todo",
+    "111": "Todo",
+    "112": "Todo"
+  },
+  "p5_accepted": 4,
+  "p5_remaining": 4,
+  "manual_production_actions": false,
+  "production_settings_credentials_and_deployment_control_changed": false
+}

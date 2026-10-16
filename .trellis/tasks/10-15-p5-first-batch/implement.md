@@ -5,6 +5,7 @@
 - [x] Inventory active Site API consumers and write concise Gateway boundary/dependency plan; correct only obsolete future contracts.
 - [x] Run focused regressions, type/QA/build and real local browser navigation tests; independent complete-change review.
 - [x] Commit first-batch changes and open PR #144; update four Issues/Project to review after actual PR creation.
-- [ ] Verify final-head CI/advisory OCR; stop without merge or Production mutation.
+- [x] Reconcile all exact-head OCR findings by trigger and risk; merge PR #144 with a regular merge commit after passing CI and no blocking review.
+- [x] Verify post-merge main CI; close only accepted Issues #103/#104/#105/#109 and set their Project status to Done. Leave #102/#110–#112 open.
 
-The Owner request explicitly authorizes task setup, implementation, parallel agents and PR creation; no additional planning approval is needed. P5 completion counts distinguish merged/accepted work from engineering ready for review.
+The follow-up Owner request explicitly authorizes the conditional merge and remote Issue/Project reconciliation. P5 has 4 accepted issues and 4 remaining issues; Gateway work proceeds under a separate task. No production credentials, settings, deployment controls, or manual deployment commands were changed or invoked.
