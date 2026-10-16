@@ -7,7 +7,7 @@ import {
 	type PersistentCache,
 } from "@kirari/edge-gateway-core";
 
-const CACHE_KEY_ORIGIN = "https://kirari-edge-cache.invalid/v1/";
+const CACHE_KEY_PATH_PREFIX = "/_kirari_edge_cache/v1/";
 const MAX_CACHE_BODY_BYTES = 1_000_000;
 const MAX_CACHE_METADATA_BYTES = 16_384;
 const CACHE_RECORD_HEADER_BYTES = 4;
@@ -38,6 +38,8 @@ export interface CloudflareGatewayEnv {
 
 export type CloudflareGatewayRuntime = {
 	cache?: CachePort;
+	/** Exact origin from the incoming Request URL; never source this from headers. */
+	cacheKeyOrigin?: string;
 	fetch?: GatewayFetch;
 	now?: () => number;
 };
@@ -45,11 +47,18 @@ export type CloudflareGatewayRuntime = {
 const CACHE_LEVELS: readonly CacheLevel[] = ["CACHE_NONE", "CACHE_EDGE", "CACHE_PERSISTENT"];
 
 /** Adapt Cloudflare's per-datacenter Cache API to the Core's edge-cache port. */
-export function createCloudflareEdgeCache(cache: CachePort, now: () => number = Date.now): EdgeCache {
+export function createCloudflareEdgeCache(
+	cache: CachePort,
+	cacheKeyOrigin: string,
+	now: () => number = Date.now,
+): EdgeCache {
+	const origin = normalizeCacheKeyOrigin(cacheKeyOrigin);
+	if (!origin) throw new TypeError("Gateway Cache API requires an exact HTTP(S) request origin.");
+
 	return {
 		consistency: "edge-local",
 		async get(key) {
-			const cacheKey = await createCacheKey(key);
+			const cacheKey = await createCacheKey(key, origin);
 			const response = await cache.match(cacheKey);
 			if (!response) return null;
 			if (response.status !== 200) {
@@ -70,7 +79,7 @@ export function createCloudflareEdgeCache(cache: CachePort, now: () => number = 
 			assertCacheEntrySize(entry);
 			const ttlSeconds = getCacheTtlSeconds(entry.staleUntil, now());
 			if (ttlSeconds === null) throw new Error("Gateway cache entry expired before adapter write.");
-			const cacheKey = await createCacheKey(key);
+			const cacheKey = await createCacheKey(key, origin);
 			const headers = writeResponseMetadata(entry);
 			headers.set("Cache-Control", `public, max-age=${ttlSeconds}`);
 			const cacheResponse = new Response(toArrayBuffer(entry.body), { status: 200, headers });
@@ -79,8 +88,19 @@ export function createCloudflareEdgeCache(cache: CachePort, now: () => number = 
 			// Cloudflare Cache API put() resolves even when it declines to cache.
 			// Verify the local write so the Core can honestly report CACHE_NONE.
 			const stored = await cache.match(cacheKey);
-			if (!stored) throw new Error("Cloudflare Cache API did not retain the Gateway entry.");
-			void stored.body?.cancel().catch(() => undefined);
+			if (!stored || stored.status !== 200) {
+				if (stored) discardResponseBody(stored);
+				throw new Error("Cloudflare Cache API did not retain the new Gateway entry.");
+			}
+			const storedMetadata = readResponseMetadata(stored.headers);
+			if (!storedMetadata) {
+				discardResponseBody(stored);
+				throw new Error("Cloudflare Cache API did not retain the new Gateway entry.");
+			}
+			const storedBody = await readBoundedResponseBody(stored, MAX_CACHE_BODY_BYTES);
+			if (!storedBody || !cacheEntriesMatch({ ...storedMetadata, body: storedBody }, entry)) {
+				throw new Error("Cloudflare Cache API did not retain the new Gateway entry.");
+			}
 		},
 	};
 }
@@ -150,14 +170,17 @@ export function createCloudflareGatewayHandler(
 		.filter(Boolean);
 	const canUseToken = Boolean(env.KIRARI_GITHUB_TOKEN && publicRepositories.length > 0);
 	const selectedCache = runtime.cache ?? (typeof caches === "undefined" ? undefined : caches.default);
+	const cacheKeyOrigin = runtime.cacheKeyOrigin === undefined
+		? null
+		: normalizeCacheKeyOrigin(runtime.cacheKeyOrigin);
 
 	return createGatewayHandler({
 		mode: "integrated",
 		cacheLevel,
 		fetch: runtime.fetch,
 		now: runtime.now,
-		edgeCache: cacheLevel === "CACHE_EDGE" && selectedCache
-			? createCloudflareEdgeCache(selectedCache, runtime.now)
+		edgeCache: cacheLevel === "CACHE_EDGE" && selectedCache && cacheKeyOrigin
+			? createCloudflareEdgeCache(selectedCache, cacheKeyOrigin, runtime.now)
 			: undefined,
 		persistentCache: cacheLevel === "CACHE_PERSISTENT" && env.KIRARI_EDGE_KV
 			? createCloudflarePersistentCache(env.KIRARI_EDGE_KV, runtime.now)
@@ -263,6 +286,19 @@ function assertCacheEntrySize(entry: CacheEntry) {
 	}
 }
 
+function cacheEntriesMatch(actual: CacheEntry, expected: CacheEntry) {
+	if (
+		actual.status !== expected.status ||
+		actual.freshUntil !== expected.freshUntil ||
+		actual.staleUntil !== expected.staleUntil ||
+		actual.body.byteLength !== expected.body.byteLength
+	) return false;
+	for (let index = 0; index < actual.body.byteLength; index += 1) {
+		if (actual.body[index] !== expected.body[index]) return false;
+	}
+	return CACHEABLE_HEADERS.every((name) => actual.headers[name] === expected.headers[name]);
+}
+
 function maxCacheRecordBytes() {
 	return CACHE_RECORD_HEADER_BYTES + MAX_CACHE_METADATA_BYTES + MAX_CACHE_BODY_BYTES;
 }
@@ -287,8 +323,27 @@ function discardResponseBody(response: Response) {
 	void response.body?.cancel().catch(() => undefined);
 }
 
-async function createCacheKey(key: string): Promise<Request> {
-	return new Request(`${CACHE_KEY_ORIGIN}${await hashKey(key)}`);
+function normalizeCacheKeyOrigin(value: string): string | null {
+	try {
+		const url = new URL(value);
+		if (
+			(url.protocol !== "https:" && url.protocol !== "http:") ||
+			url.origin !== value ||
+			url.username ||
+			url.password ||
+			url.pathname !== "/" ||
+			url.search ||
+			url.hash
+		) return null;
+		return url.origin;
+	} catch {
+		return null;
+	}
+}
+
+async function createCacheKey(key: string, origin: string): Promise<Request> {
+	const digest = await hashKey(`${origin}\0${key}`);
+	return new Request(`${origin}${CACHE_KEY_PATH_PREFIX}${digest}`);
 }
 
 async function hashKey(key: string): Promise<string> {

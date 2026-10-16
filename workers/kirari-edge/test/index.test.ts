@@ -24,6 +24,20 @@ async function withMockFetch(
 	}
 }
 
+async function withMockCacheApi(cache: Pick<Cache, "match" | "put">, run: () => Promise<void>) {
+	const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, "caches");
+	Object.defineProperty(globalThis, "caches", {
+		configurable: true,
+		value: { default: cache } as CacheStorage,
+	});
+	try {
+		await run();
+	} finally {
+		if (originalDescriptor) Object.defineProperty(globalThis, "caches", originalDescriptor);
+		else Reflect.deleteProperty(globalThis, "caches");
+	}
+}
+
 test("returns 404 when the edge runtime is disabled", async () => {
 	const response = await worker.fetch(new Request("https://edge.example.test/api/github/repos/foo/bar"), {
 		KIRARI_EDGE_ENABLED: "false",
@@ -153,6 +167,44 @@ test("Cloudflare Gateway route delegates valid requests to the fixed Core operat
 			assert.doesNotMatch(await response.text(), /unused-secret/);
 		},
 	);
+});
+
+test("Cloudflare Gateway derives its Cache API origin from Request.url, not request headers", async () => {
+	const entries = new Map<string, Response>();
+	const cache = {
+		async match(request: RequestInfo | URL) {
+			return entries.get(new Request(request).url)?.clone();
+		},
+		async put(request: RequestInfo | URL, response: Response) {
+			entries.set(new Request(request).url, response.clone());
+		},
+	};
+
+	await withMockCacheApi(cache, async () => {
+		await withMockFetch(
+			() => Response.json({ full_name: "octo/demo", owner: { login: "octo" } }),
+			async () => {
+				const response = await worker.fetch(
+					new Request("https://site.example/_kirari/edge/github/repository/octo/demo", {
+						headers: {
+							Origin: "https://site.example",
+							Host: "attacker.example",
+							"X-Forwarded-Host": "attacker.example",
+						},
+					}),
+					{ ...enabledEnv, KIRARI_GATEWAY_CACHE_LEVEL: "CACHE_EDGE" },
+				);
+				assert.equal(response.status, 200);
+			},
+		);
+	});
+
+	assert.equal(entries.size, 1);
+	const [cacheKey] = entries.keys();
+	const keyUrl = new URL(cacheKey);
+	assert.equal(keyUrl.origin, "https://site.example");
+	assert.match(keyUrl.pathname, /^\/_kirari_edge_cache\/v1\/[a-f0-9]{64}$/);
+	assert.doesNotMatch(keyUrl.href, /attacker\.example/);
 });
 
 test("Cloudflare Gateway attaches a token only to an explicitly allowlisted public repository", async () => {

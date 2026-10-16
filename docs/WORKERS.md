@@ -20,6 +20,24 @@ capability is missing or fails, Core serves without cache and reports
 `CACHE_NONE`. The adapter keeps Core freshness timestamps even when the
 provider's minimum storage TTL retains a record longer.
 
+Cache API keys are URLs on the actual incoming `Request.url` origin, with the
+origin and Core key SHA-256 hashed under a private KIRARI path. The adapter
+never derives that origin from `Origin`, `Host`, or forwarded-host headers.
+This keeps keys on the request's routed host and isolates tenants or
+environments that use different hostnames; requests sharing the same hostname
+share this namespace. This Gateway uses the Cache API (`caches.default`), not
+the separate Workers Caching feature, which is not enabled by the current
+`wrangler.jsonc`. Cache API works when the Worker has a Cloudflare custom domain
+or Route; Pages Functions also support custom domains and `*.pages.dev`. Cache
+API operations through `workers.dev`, its Preview URLs, the Dashboard editor,
+and Playground previews do not affect the Cloudflare Cache API. Custom-domain
+Worker Previews can use their routed hostname. A Vercel Preview or other
+non-Cloudflare origin is outside the documented Cache API hosting case, so this
+adapter makes no `CACHE_EDGE` availability claim there. If Cloudflare declines
+a write or the origin is unavailable, the adapter verifies retention and Core
+downgrades to `CACHE_NONE` rather than claiming an edge hit. No real Zone was
+deployed or tested for this PR.
+
 GitHub requests remain anonymous unless both `KIRARI_GITHUB_TOKEN` and
 `KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES` are present. The latter is a
 comma-separated list of public `owner/repository` names. The Core attaches the
@@ -32,16 +50,16 @@ through the explicit repository allowlist is required.
 For local testing, use `pnpm edge:test`, `pnpm edge:type-check`, or Wrangler's
 local `dev` mode with local bindings. Unit tests use injected cache/KV doubles;
 they do not verify a live zone's cache scope. Remote bindings can reach real
-Cloudflare resources; do not use them for this no-deploy verification. Cache
-API operations in the dashboard editor, Playground, and `workers.dev`
-deployments do not affect the network cache. Verify `CACHE_EDGE` only through a
-custom domain/Worker route or a Pages Function. A Pages Function may forward the
-same-origin `Request` to the Worker with an HTTP Service Binding; preserve its
-public URL/origin. Service Bindings are optional and no Service Binding is
-configured here.
+Cloudflare resources; do not use them for this no-deploy verification. Verify
+`CACHE_EDGE` only through a custom domain/Worker route or a Pages Function. A
+Pages Function may forward the same-origin `Request` to the Worker with an HTTP
+Service Binding; preserve its public URL/origin. Service Bindings are optional
+and no Service Binding is configured here.
 
 Cloudflare references: [Cache API](https://developers.cloudflare.com/workers/runtime-apis/cache/),
+[Workers Caching](https://developers.cloudflare.com/workers/cache/),
 [Cache API example and runtime limits](https://developers.cloudflare.com/r2/examples/cache-api/),
+[Worker custom-domain Previews](https://developers.cloudflare.com/workers/previews/custom-domains/),
 [Workers KV](https://developers.cloudflare.com/kv/api/),
 [Service Bindings over HTTP](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/http/),
 and [local development](https://developers.cloudflare.com/workers/local-development/).

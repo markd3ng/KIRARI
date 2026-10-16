@@ -29,16 +29,16 @@ OCR review disposition:
 - The Core route intentionally keeps its exact same-origin CORS policy; a
   Worker-level test verifies foreign origins get 403 before upstream fetch.
 
-The independent review passed on the current code. GitHub CI and advisory OCR
-must still pass on the updated PR HEAD before #110 can be considered accepted.
+The independent review passed on the current code. The updated remote PR still
+needs its CI and advisory OCR results before it is marked ready for Owner merge.
 
 The next OCR pass reported three additional points. The Worker now validates
 the cache-level environment value before calling Core; the legacy suffix route
 remains anonymous because it cannot enforce Core's operation/repository
 allowlist (and the anonymous rate-limit tradeoff is documented); and unexpected
 Core handler throws become a sanitized, no-store 500. Regression coverage
-exercises each runtime boundary. Final independent review and GitHub checks for
-this follow-up are pending.
+exercises each runtime boundary. The independent review passed; the next pushed
+PR head must complete GitHub checks.
 
 The Worker tests cover a normal fixed-upstream request, exact token allowlisting,
 legacy anonymous behavior, invalid operation rejection before fetch, cache
@@ -70,3 +70,25 @@ construction suggestion is a non-blocking optimization without a measured regres
 Worker bindings are request-scoped and no handler cache has been introduced. The
 `workspace:*` concern is non-blocking because both packages are private workspace
 packages.
+
+## Cache API origin follow-up
+
+The next advisory comment identified that the synthetic `.invalid` Cache API key
+origin could not represent a routed Zone URL. The adapter now derives the origin
+only from the platform `Request.url`, never from `Host`, `Origin`, or
+`X-Forwarded-Host`, and hashes that origin together with the Core key into the
+fixed private path. A regression verifies host separation and forged-header
+resistance. Cache writes are read back and compared against the just-written
+bounded record so an old entry cannot make a declined replacement appear
+successful; failures continue through the Core's explicit cache downgrade.
+
+`docs/WORKERS.md` now separates the zonal Cache API (`caches.default`) from
+Workers Caching and records the supported hosting/runtime limitations. No live
+Zone, credential, or deployment was used, so actual Zone retention remains a
+runtime verification limitation rather than a code-level merge blocker.
+
+Independent review of the final cache-origin and write-verification changes:
+PASS. Full local verification passed on the final worktree: `pnpm check`,
+`pnpm site:test` (98 tests), `pnpm release:check`, `pnpm build` (112 pages),
+`pnpm edge:deploy:dry`, `pnpm trellis:check`, and `git diff --check`. Remote CI
+and advisory OCR are pending for the updated PR head.

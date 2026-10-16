@@ -89,7 +89,9 @@ export default {
 		if (isGatewayPath(url.pathname)) {
 			let gatewayHandler: ReturnType<typeof createCloudflareGatewayHandler>;
 			try {
-				gatewayHandler = createCloudflareGatewayHandler(env);
+				// Use the platform-supplied request URL, never Origin/Host forwarding headers,
+				// as the zone-owned origin for Cache API keys.
+				gatewayHandler = createCloudflareGatewayHandler(env, { cacheKeyOrigin: url.origin });
 			} catch (error) {
 				console.error(
 					JSON.stringify({

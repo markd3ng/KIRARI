@@ -21,6 +21,6 @@
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "PR #147 is open at the previous pushed head. Latest OCR follow-ups cancel invalid cache response bodies and route expired cache writes through Core’s CACHE_NONE/BYPASS downgrade; the end-to-end injected-clock regression passes. Independent review passed. Full local checks, release regression, dry-run, and 112-page build pass; GitHub CI/OCR are pending for the next pushed head. Keep #110 open until adapter acceptance; no Worker binding or Production deployment was changed.",
+  "notes": "PR #147 is open. The cache-origin review finding is fixed by deriving the key origin only from Request.url and verifying the stored record after Cache API put; the independent review passed. Full local checks, 98 Site tests, release regression, dry-run, 112-page build, and Trellis checks passed. Await GitHub CI/OCR on the updated PR head. Keep #110 open until adapter acceptance; no Worker binding or deployment was changed.",
   "meta": {}
 }

@@ -24,6 +24,13 @@ Every new route or changed method/header/cache contract needs a Node built-in
 test. Follow `withMockFetch` in `test/index.test.ts`; avoid adding a test
 framework for this package.
 
+For the Cache API adapter, derive cache-key URLs from the actual incoming
+`Request.url` origin and hash both that origin and the Core key. Never accept
+cache origins from `Origin`, `Host`, or forwarded-host headers. Cache API
+availability depends on a Cloudflare custom domain or Route; when a selected
+runtime does not retain an entry, verify the write and let Core downgrade to
+`CACHE_NONE`.
+
 For legacy proxy routes, after stripping a route prefix and resolving a suffix,
 require the URL origin to equal that route's fixed upstream origin. Reject
 authority-changing network-path or backslash forms before `fetch`. The new

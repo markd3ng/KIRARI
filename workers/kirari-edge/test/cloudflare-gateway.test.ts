@@ -55,7 +55,7 @@ function entry(overrides: Partial<CacheEntry> = {}): CacheEntry {
 
 test("Cloudflare Cache API round-trips bounded cache entries with edge-local consistency", async () => {
 	const backingCache = new MemoryCache();
-	const cache = createCloudflareEdgeCache(backingCache, () => 1_000);
+	const cache = createCloudflareEdgeCache(backingCache, "https://site.example", () => 1_000);
 	assert.equal(cache.consistency, "edge-local");
 	await cache.put("kirari-edge:test", entry());
 
@@ -67,18 +67,60 @@ test("Cloudflare Cache API round-trips bounded cache entries with edge-local con
 	assert.equal(stored.headers.get("cache-control"), "public, max-age=19");
 });
 
+test("Cloudflare Cache API keys use a trusted origin and isolate origins with SHA-256", async () => {
+	const backingCache = new MemoryCache();
+	const first = createCloudflareEdgeCache(backingCache, "https://tenant-one.example", () => 1_000);
+	const second = createCloudflareEdgeCache(backingCache, "https://tenant-two.example", () => 1_000);
+	await first.put("same-core-key", entry());
+	await second.put("same-core-key", entry());
+
+	const cacheKeys = [...backingCache.entries.keys()].map((value) => new URL(value));
+	assert.equal(cacheKeys.length, 2);
+	assert.deepEqual(cacheKeys.map((url) => url.origin).sort(), [
+		"https://tenant-one.example",
+		"https://tenant-two.example",
+	]);
+	assert.ok(cacheKeys.every((url) => /^\/_kirari_edge_cache\/v1\/[a-f0-9]{64}$/.test(url.pathname)));
+	assert.notEqual(cacheKeys[0].pathname, cacheKeys[1].pathname);
+	assert.ok(cacheKeys.every((url) => url.search === "" && url.hash === ""));
+});
+
+test("Cloudflare Cache API rejects non-origin cache key inputs", async () => {
+	const cache = new MemoryCache();
+	for (const origin of [
+		"https://site.example/path",
+		"https://user:password@site.example",
+		"file:///tmp/cache",
+		"not an origin",
+	]) {
+		assert.throws(() => createCloudflareEdgeCache(cache, origin), /exact HTTP\(S\) request origin/);
+	}
+});
+
 test("Cloudflare Cache API declines and read failures propagate for Core downgrade", async () => {
-	const decline = createCloudflareEdgeCache(new MemoryCacheWithDeclinedWrites(), () => 1_000);
-	await assert.rejects(decline.put("cache-key", entry()), /did not retain/);
+	const decline = createCloudflareEdgeCache(new MemoryCacheWithDeclinedWrites(), "https://site.example", () => 1_000);
+	await assert.rejects(decline.put("cache-key", entry()), /did not retain the new/);
 
 	const failingCache = new MemoryCache();
 	failingCache.failMatch = true;
-	await assert.rejects(createCloudflareEdgeCache(failingCache).get("cache-key"), /cache read failed/);
+	await assert.rejects(createCloudflareEdgeCache(failingCache, "https://site.example").get("cache-key"), /cache read failed/);
+});
+
+test("Cloudflare Cache API rejects a declined replacement when an old entry still exists", async () => {
+	const backingCache = new MemoryCache();
+	const cache = createCloudflareEdgeCache(backingCache, "https://site.example", () => 1_000);
+	const oldEntry = entry({ body: new Uint8Array([1]), freshUntil: 5_000, staleUntil: 10_000 });
+	await cache.put("replace-me", oldEntry);
+
+	backingCache.declineWrites = true;
+	const replacement = entry({ body: new Uint8Array([2]), freshUntil: 15_000, staleUntil: 20_000 });
+	await assert.rejects(cache.put("replace-me", replacement), /did not retain the new/);
+	assert.deepEqual(await cache.get("replace-me"), oldEntry);
 });
 
 test("Cloudflare Cache API signals an entry that expires during the write race", async () => {
 	const backingCache = new MemoryCache();
-	const cache = createCloudflareEdgeCache(backingCache, () => 25_000);
+	const cache = createCloudflareEdgeCache(backingCache, "https://site.example", () => 25_000);
 	await assert.rejects(cache.put("expired", entry()), /expired before adapter write/);
 	assert.equal(backingCache.entries.size, 0);
 	await assert.rejects(cache.put("oversized", entry({ body: new Uint8Array(1_000_001) })), /body exceeds/);
@@ -94,7 +136,7 @@ test("Cloudflare Cache API cancels bodies from invalid cached responses", async 
 		const cache = createCloudflareEdgeCache({
 			match: async () => trackedResponse,
 			put: async () => undefined,
-		});
+		}, "https://site.example");
 
 		assert.equal(await cache.get("invalid"), null);
 		assert.equal(cancelled, true);
@@ -103,7 +145,7 @@ test("Cloudflare Cache API cancels bodies from invalid cached responses", async 
 
 test("Cloudflare Cache API ignores an oversized stored record", async () => {
 	const backingCache = new MemoryCache();
-	const cache = createCloudflareEdgeCache(backingCache, () => 1_000);
+	const cache = createCloudflareEdgeCache(backingCache, "https://site.example", () => 1_000);
 	await cache.put("oversized", entry());
 	const [key, cachedResponse] = [...backingCache.entries.entries()][0];
 	const headers = new Headers(cachedResponse.headers);
@@ -114,7 +156,7 @@ test("Cloudflare Cache API ignores an oversized stored record", async () => {
 
 test("Cloudflare Cache API rejects entries with missing freshness metadata", async () => {
 	const backingCache = new MemoryCache();
-	const cache = createCloudflareEdgeCache(backingCache, () => 1_000);
+	const cache = createCloudflareEdgeCache(backingCache, "https://site.example", () => 1_000);
 	await cache.put("missing-metadata", entry());
 
 	const [key, stored] = [...backingCache.entries.entries()][0];
@@ -161,6 +203,7 @@ test("Gateway truthfully downgrades declined edge writes and unavailable KV bind
 	const noWriteCache = new MemoryCacheWithDeclinedWrites();
 	const edgeHandler = createCloudflareGatewayHandler({ KIRARI_GATEWAY_CACHE_LEVEL: "CACHE_EDGE" }, {
 		cache: noWriteCache,
+		cacheKeyOrigin: "https://site.example",
 		now: () => 1_000,
 		fetch: async () => Response.json({ ok: true }),
 	});
@@ -181,6 +224,7 @@ test("Gateway reports CACHE_NONE when an entry expires before the adapter write"
 	let nowCalls = 0;
 	const handler = createCloudflareGatewayHandler({ KIRARI_GATEWAY_CACHE_LEVEL: "CACHE_EDGE" }, {
 		cache: backingCache,
+		cacheKeyOrigin: "https://site.example",
 		now: () => ++nowCalls <= 4 ? 0 : 8 * 24 * 60 * 60 * 1_000,
 		fetch: async () => Response.json({ full_name: "octo/demo", owner: { login: "octo" } }),
 	});
@@ -189,6 +233,19 @@ test("Gateway reports CACHE_NONE when an entry expires before the adapter write"
 	assert.equal(response.status, 200);
 	assert.equal(response.headers.get("x-kirari-cache-level"), "CACHE_NONE");
 	assert.equal(response.headers.get("x-kirari-cache"), "BYPASS");
+	assert.equal(backingCache.entries.size, 0);
+});
+
+test("Gateway downgrades to CACHE_NONE when no trusted request origin is available", async () => {
+	const backingCache = new MemoryCache();
+	const handler = createCloudflareGatewayHandler({ KIRARI_GATEWAY_CACHE_LEVEL: "CACHE_EDGE" }, {
+		cache: backingCache,
+		fetch: async () => Response.json({ full_name: "octo/demo", owner: { login: "octo" } }),
+	});
+
+	const response = await handler(new Request("https://site.example/_kirari/edge/github/repository/octo/demo"));
+	assert.equal(response.status, 200);
+	assert.equal(response.headers.get("x-kirari-cache-level"), "CACHE_NONE");
 	assert.equal(backingCache.entries.size, 0);
 });
 
