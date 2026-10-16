@@ -1,1 +1,3 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/guides/repository-workflow.md", "reason": "Native Git workflow, required checks, scoped source changes and documentation sync."}
+{"file": ".trellis/spec/site/frontend/quality-guidelines.md", "reason": "Generated route ownership and marker-file cleanup contract."}
+{"file": "docs/EDGE_GATEWAY_VERCEL.md", "reason": "Vercel adapter cache, route and credential contract."}

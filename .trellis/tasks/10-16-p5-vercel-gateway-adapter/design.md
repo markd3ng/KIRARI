@@ -24,7 +24,7 @@ uncached. This short response cache does not claim Core stale-fallback or
 cross-region consistency semantics.
 
 For `CACHE_PERSISTENT`, adapt the Runtime Cache to the Core `PersistentCache`
-port. Hash the Core key together with `VERCEL_ENV` and the Preview Git ref. Store
+port. Hash the Core key together with `VERCEL_PROJECT_ID`, `VERCEL_ENV` and the Preview Git ref. Missing project identity or a missing Preview ref disables storage for that request. Store
 only validated bounded cache entries as JSON-safe base64 records, retain Core
 absolute timestamps, and set Runtime Cache TTL only through `staleUntil`. The
 adapter rejects cache values above Vercel's documented 2 MB maximum. Runtime

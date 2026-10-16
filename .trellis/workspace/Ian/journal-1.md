@@ -78,3 +78,37 @@ Completed PR-1 engineering remediation on codex/external-site-build-poc; frozen 
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: P5 roadmap reconciliation and Vercel review fixes
+
+**Date**: 2026-10-17
+**Task**: P5 roadmap reconciliation and Vercel review fixes
+**Package**: edge
+**Branch**: `codex/p5-vercel-gateway-adapter`
+
+### Summary
+
+Archived five completed/superseded tasks without changing 202 evidence files; corrected Project #110 to In Review; P5 remains 5/8 complete. Fixed PR148 mixed-route/symlink cleanup, health CDN, safe logs and project/branch cache isolation; added adapter standard CI steps; independent review PASS. PR147/148 stay open, #112 unstarted. Remote CI evidence lives on current PR checks.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4324fb3e7a09be26384f9cbdc841662e4dc9bb98` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

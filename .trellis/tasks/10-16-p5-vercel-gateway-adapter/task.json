@@ -14,13 +14,13 @@
   "completedAt": null,
   "branch": "codex/p5-vercel-gateway-adapter",
   "base_branch": "main",
-  "worktree_path": null,
-  "commit": null,
-  "pr_url": null,
+  "worktree_path": "/Users/ian/.codex/worktrees/p5-vercel-adapter/KIRARI",
+  "commit": "4324fb3e7a09be26384f9cbdc841662e4dc9bb98",
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/148",
   "subtasks": [],
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "",
+  "notes": "PR #148 remains OPEN / In Review. Code implementation commit 4324fb3e7a09be26384f9cbdc841662e4dc9bb98; independent full-diff review PASS after route ownership/symlink, health CDN, safe logging, project/environment/branch cache isolation and required CI coverage fixes. Complete frozen install passed. Adapter 20 tests, route 8 tests, Site 105 passed/1 skipped, complete local check/build/release/dry-run/config/Trellis checks passed. Latest remote HEAD and required CI are authoritative on PR #148 and its Issue #111 evidence; initial-head checks are historical. P5 is 5/8 complete; #110 is separately implemented in open PR #147 (READY_FOR_OWNER_MERGE), #112 remains Todo/unstarted. No merge or live Production setting/credential mutation performed.",
   "meta": {}
 }

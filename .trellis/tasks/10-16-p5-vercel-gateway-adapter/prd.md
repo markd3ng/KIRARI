@@ -1,5 +1,15 @@
 # P5 #111 Vercel Gateway Adapter
 
+## Owner continuation — 2026-10-16
+
+The Owner authorized the initial PR push after accepting its native Preview
+side effect, then requested progress reconciliation, synchronization and
+continued engineering. PR #148 is now OPEN / In Review. The original local-only
+push deferral below records the initial boundary; it no longer describes the
+current delivery state. Live project settings, credentials and Production
+operations remain outside this engineering task. Do not mark #111 complete or
+merge either adapter PR under this continuation.
+
 ## Goal
 
 Package the accepted `@kirari/edge-gateway-core` contract as a Vercel Node.js
