@@ -30,12 +30,15 @@ For local testing, use `pnpm edge:test`, `pnpm edge:type-check`, or Wrangler's
 local `dev` mode with local bindings. Unit tests use injected cache/KV doubles;
 they do not verify a live zone's cache scope. Remote bindings can reach real
 Cloudflare resources; do not use them for this no-deploy verification. Cache
-API calls in the Cloudflare dashboard editor and Playground do not affect the
-network cache. A Pages Function may forward the same-origin `Request` to the
-Worker with an HTTP Service Binding; preserve its public URL/origin. Service
-Bindings are optional and no Service Binding is configured here.
+API operations in the dashboard editor, Playground, and `workers.dev`
+deployments do not affect the network cache. Verify `CACHE_EDGE` only through a
+custom domain/Worker route or a Pages Function. A Pages Function may forward the
+same-origin `Request` to the Worker with an HTTP Service Binding; preserve its
+public URL/origin. Service Bindings are optional and no Service Binding is
+configured here.
 
 Cloudflare references: [Cache API](https://developers.cloudflare.com/workers/runtime-apis/cache/),
+[Cache API example and runtime limits](https://developers.cloudflare.com/r2/examples/cache-api/),
 [Workers KV](https://developers.cloudflare.com/kv/api/),
 [Service Bindings over HTTP](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/http/),
 and [local development](https://developers.cloudflare.com/workers/local-development/).

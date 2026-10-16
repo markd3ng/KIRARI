@@ -7,6 +7,8 @@ Current response contract:
 - `OPTIONS` on a matched route: `204` with CORS headers, no upstream request.
 - Non-GET/HEAD on a matched route: CORS-safe `405` with `Allow`.
 - Upstream throw: structured log plus CORS-safe JSON `502` and `no-store`.
+- Invalid Gateway adapter configuration: sanitized structured log plus JSON
+  `503` and `no-store`; do not log environment values or exception messages.
 - Upstream HTTP statuses: preserved, with project cache/CORS headers applied.
 
 Do not leak upstream exception text, tokens, request credentials, or binding

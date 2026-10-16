@@ -86,7 +86,7 @@ test("rejects unsupported methods with 405", async () => {
 	assert.equal(response.headers.get("access-control-allow-origin"), "*");
 });
 
-test("legacy GitHub proxy stays anonymous even when the Worker has a token", async () => {
+test("proxyGitHubCard legacy route stays anonymous even when the Worker has a token", async () => {
 	await withMockFetch(
 		(request) => {
 			assert.equal(request.url, "https://api.github.com/repos/foo/bar?ref=main");
@@ -179,14 +179,50 @@ test("Cloudflare Gateway rejects unapproved routes before any upstream fetch", a
 	assert.equal(fetchCalls, 0);
 });
 
-test("Cloudflare Gateway fails closed on invalid cache-level configuration", async () => {
-	const response = await worker.fetch(
-		new Request("https://site.example/_kirari/edge/github/repository/octo/demo"),
-		{ ...enabledEnv, KIRARI_GATEWAY_CACHE_LEVEL: "CACHE_REMOTE" },
+test("Cloudflare Gateway enforces the Core same-origin CORS boundary", async () => {
+	let fetchCalls = 0;
+	await withMockFetch(
+		() => {
+			fetchCalls += 1;
+			return Response.json({ unexpected: true });
+		},
+		async () => {
+			const response = await worker.fetch(
+				new Request("https://site.example/_kirari/edge/github/repository/octo/demo", {
+					headers: { Origin: "https://attacker.example" },
+				}),
+				enabledEnv,
+			);
+			assert.equal(response.status, 403);
+			assert.equal(response.headers.get("access-control-allow-origin"), null);
+		},
 	);
-	assert.equal(response.status, 503);
-	assert.deepEqual(await response.json(), { error: "gateway_configuration_error" });
-	assert.equal(response.headers.get("cache-control"), "no-store");
+	assert.equal(fetchCalls, 0);
+});
+
+test("Cloudflare Gateway fails closed on invalid cache-level configuration", async () => {
+	const originalError = console.error;
+	const logs: string[] = [];
+	console.error = (message?: unknown) => logs.push(String(message));
+	try {
+		const response = await worker.fetch(
+			new Request("https://site.example/_kirari/edge/github/repository/octo/demo"),
+			{
+				...enabledEnv,
+				KIRARI_GATEWAY_CACHE_LEVEL: "CACHE_REMOTE",
+				KIRARI_GITHUB_TOKEN: "must-not-appear-in-logs",
+			},
+		);
+		assert.equal(response.status, 503);
+		assert.deepEqual(await response.json(), { error: "gateway_configuration_error" });
+		assert.equal(response.headers.get("cache-control"), "no-store");
+	} finally {
+		console.error = originalError;
+	}
+	assert.equal(logs.length, 1);
+	assert.match(logs[0], /kirari_edge_gateway_configuration_failure/);
+	assert.match(logs[0], /TypeError/);
+	assert.doesNotMatch(logs[0], /must-not-appear-in-logs|CACHE_REMOTE/);
 });
 
 test("rejects authority-changing GitHub suffixes before sending the Worker token", async () => {

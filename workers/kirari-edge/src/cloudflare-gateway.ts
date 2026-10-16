@@ -11,8 +11,8 @@ const CACHE_KEY_ORIGIN = "https://kirari-edge-cache.invalid/v1/";
 const MAX_CACHE_BODY_BYTES = 1_000_000;
 const MAX_CACHE_METADATA_BYTES = 16_384;
 const CACHE_RECORD_HEADER_BYTES = 4;
-// KV requires a 60-second minimum expiration; Core's absolute timestamps still
-// stop serving the entry at its real staleUntil value.
+// KV requires a 60-second minimum expiration. Core's absolute timestamps still
+// stop serving the entry at its real staleUntil value; Cache API TTLs stay exact.
 const MIN_CACHE_TTL_SECONDS = 60;
 const CACHEABLE_HEADERS = [
 	"content-type",
@@ -59,7 +59,7 @@ export function createCloudflareEdgeCache(cache: CachePort, now: () => number = 
 		},
 		async put(key, entry) {
 			assertCacheEntrySize(entry);
-			const ttlSeconds = getTtlSeconds(entry.staleUntil, now());
+			const ttlSeconds = getCacheTtlSeconds(entry.staleUntil, now());
 			const cacheKey = await createCacheKey(key);
 			const headers = writeResponseMetadata(entry);
 			headers.set("Cache-Control", `public, max-age=${ttlSeconds}`);
@@ -120,7 +120,7 @@ export function createCloudflarePersistentCache(kv: KvBinding, now: () => number
 			record.set(metadata, CACHE_RECORD_HEADER_BYTES);
 			record.set(entry.body, CACHE_RECORD_HEADER_BYTES + metadata.byteLength);
 			await kv.put(await hashKey(key), record.buffer, {
-				expirationTtl: getTtlSeconds(entry.staleUntil, now()),
+				expirationTtl: getKvExpirationTtl(entry.staleUntil, now()),
 			});
 		},
 	};
@@ -157,8 +157,12 @@ export function createCloudflareGatewayHandler(
 
 function readResponseMetadata(headers: Headers): Omit<CacheEntry, "body"> | null {
 	const status = headers.get("x-kirari-cache-status");
-	const freshUntil = Number(headers.get("x-kirari-cache-fresh-until"));
-	const staleUntil = Number(headers.get("x-kirari-cache-stale-until"));
+	const freshUntilHeader = headers.get("x-kirari-cache-fresh-until");
+	const staleUntilHeader = headers.get("x-kirari-cache-stale-until");
+	if (status === null || freshUntilHeader === null || staleUntilHeader === null) return null;
+
+	const freshUntil = Number(freshUntilHeader);
+	const staleUntil = Number(staleUntilHeader);
 	if ((status !== "200" && status !== "404") || !Number.isFinite(freshUntil) || !Number.isFinite(staleUntil)) {
 		return null;
 	}
@@ -241,9 +245,17 @@ function maxCacheRecordBytes() {
 	return CACHE_RECORD_HEADER_BYTES + MAX_CACHE_METADATA_BYTES + MAX_CACHE_BODY_BYTES;
 }
 
-function getTtlSeconds(staleUntil: number, now: number) {
+function getCacheTtlSeconds(staleUntil: number, now: number) {
+	return Math.ceil(getRemainingTtlSeconds(staleUntil, now));
+}
+
+function getKvExpirationTtl(staleUntil: number, now: number) {
+	return Math.max(MIN_CACHE_TTL_SECONDS, getRemainingTtlSeconds(staleUntil, now));
+}
+
+function getRemainingTtlSeconds(staleUntil: number, now: number) {
 	if (!Number.isFinite(staleUntil) || staleUntil <= now) throw new Error("Gateway cache entry is already stale.");
-	return Math.max(MIN_CACHE_TTL_SECONDS, Math.ceil((staleUntil - now) / 1_000));
+	return Math.ceil((staleUntil - now) / 1_000);
 }
 
 async function createCacheKey(key: string): Promise<Request> {

@@ -88,12 +88,20 @@ export default {
 			let gatewayHandler: ReturnType<typeof createCloudflareGatewayHandler>;
 			try {
 				gatewayHandler = createCloudflareGatewayHandler(env);
-			} catch {
+			} catch (error) {
+				console.error(
+					JSON.stringify({
+						event: "kirari_edge_gateway_configuration_failure",
+						error_name: error instanceof Error ? error.name : "UnknownError",
+					}),
+				);
 				return Response.json(
 					{ error: "gateway_configuration_error" },
 					{ status: 503, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } },
 				);
 			}
+			// This is a same-origin Core route. Keep its exact-origin CORS decision;
+			// the legacy wildcard CORS wrapper would weaken that boundary.
 			return gatewayHandler(request);
 		}
 

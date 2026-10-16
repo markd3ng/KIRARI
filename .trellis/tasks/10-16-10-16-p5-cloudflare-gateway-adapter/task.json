@@ -16,11 +16,11 @@
   "base_branch": "main",
   "worktree_path": null,
   "commit": null,
-  "pr_url": null,
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/147",
   "subtasks": [],
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "",
+  "notes": "PR #147 is open. Current local review and full checks pass; waiting for GitHub CI/OCR on the updated head. Keep #110 open until runtime/configuration acceptance; no Worker binding or production deployment was changed.",
   "meta": {}
 }

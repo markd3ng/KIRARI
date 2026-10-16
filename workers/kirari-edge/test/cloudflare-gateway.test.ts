@@ -64,7 +64,7 @@ test("Cloudflare Cache API round-trips bounded cache entries with edge-local con
 	assert.equal(backingCache.entries.size, 1);
 	const stored = [...backingCache.entries.values()][0];
 	assert.equal(stored.status, 200);
-	assert.equal(stored.headers.get("cache-control"), "public, max-age=60");
+	assert.equal(stored.headers.get("cache-control"), "public, max-age=19");
 });
 
 test("Cloudflare Cache API declines and read failures propagate for Core downgrade", async () => {
@@ -91,6 +91,19 @@ test("Cloudflare Cache API ignores an oversized stored record", async () => {
 	headers.set("content-length", "1000001");
 	backingCache.entries.set(key, new Response(new Uint8Array(1_000_001), { headers }));
 	assert.equal(await cache.get("oversized"), null);
+});
+
+test("Cloudflare Cache API rejects entries with missing freshness metadata", async () => {
+	const backingCache = new MemoryCache();
+	const cache = createCloudflareEdgeCache(backingCache, () => 1_000);
+	await cache.put("missing-metadata", entry());
+
+	const [key, stored] = [...backingCache.entries.entries()][0];
+	const headers = new Headers(stored.headers);
+	headers.delete("x-kirari-cache-stale-until");
+	backingCache.entries.set(key, new Response(await stored.arrayBuffer(), { headers }));
+
+	assert.equal(await cache.get("missing-metadata"), null);
 });
 
 test("KV round-trips binary records, bounds the record, and declares eventual consistency", async () => {
