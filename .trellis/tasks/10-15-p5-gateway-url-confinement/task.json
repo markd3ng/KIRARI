@@ -15,12 +15,12 @@
   "branch": "codex/p5-gateway-core",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
-  "pr_url": null,
+  "commit": "45dcd1117bc21dfc547ff9656c22ef7724a13a2d",
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/145",
   "subtasks": [],
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "",
+  "notes": "Focused Worker fixed-origin token-confinement repair is under review in PR #145. Issue #102 remains OPEN; this change does not satisfy the portable Gateway Core acceptance criteria.",
   "meta": {}
 }
