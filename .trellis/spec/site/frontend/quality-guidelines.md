@@ -85,9 +85,10 @@ Card IDs, their script references, and search assets remain byte-significant.
 Review `apps/site/dist` locally; deployment remains a separate authorized workflow.
 
 `materialize-ghc-adapter.mjs` reads the materialized TOML before Astro builds.
-It first removes generated adapter route directories from site and deployment
-roots, but refuses to remove non-generated directories unless a file contains
-the `@kirari-generated-ghc-adapter` marker. Disabled adapters generate nothing.
+It removes only route directories containing the
+`@kirari-generated-ghc-adapter` marker and preserves unrelated API routes. It
+refuses to write into a non-empty directory at its selected route target.
+Disabled adapters generate nothing.
 Provider `auto` resolves from `VERCEL=1`, `CF_PAGES=1`, or `PAGES=1`; an enabled
 adapter with no hosted provider fails the build. Cloudflare output is
 `<deploy-root>/functions/<route>/[[path]].ts`; Vercel output is

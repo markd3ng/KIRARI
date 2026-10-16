@@ -76,10 +76,14 @@ function resolveDeployRoot(siteRoot) {
 }
 
 function writeGeneratedFile(templatePath, targetPath) {
+	const targetDir = path.dirname(targetPath);
+	if (existsSync(targetDir) && collectFiles(targetDir).length > 0) {
+		throw new Error(`Refusing to overwrite an existing API route: ${path.relative(rootDir, targetDir)}`);
+	}
 	const source = readFileSync(templatePath, "utf8")
 		.replaceAll("__GHC_ROUTE__", route)
 		.replaceAll("__GHC_SERVICE_BINDING__", serviceBinding);
-	mkdirSync(path.dirname(targetPath), { recursive: true });
+	mkdirSync(targetDir, { recursive: true });
 	writeFileSync(targetPath, source);
 }
 
@@ -94,11 +98,7 @@ function removeGeneratedRoute(routeDir) {
 	}
 
 	const generated = files.some((file) => readFileSync(file, "utf8").includes(generatedMarker));
-	if (!generated) {
-		throw new Error(`Refusing to remove non-generated route directory: ${path.relative(rootDir, routeDir)}`);
-	}
-
-	rmSync(routeDir, { recursive: true, force: true });
+	if (generated) rmSync(routeDir, { recursive: true, force: true });
 }
 
 function removeGeneratedRoutes(baseDir) {
