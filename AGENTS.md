@@ -18,6 +18,7 @@ Current package boundaries:
 |---|---|---|
 | `@kirari/site` | `apps/site/` | `.trellis/spec/site/frontend/` |
 | `@kirari/edge` | `workers/kirari-edge/` | `.trellis/spec/edge/backend/`, `.trellis/spec/edge/frontend/` |
+| `@kirari/edge-gateway-core` | `packages/edge-gateway-core/` | `.trellis/spec/edge-gateway-core/backend/` |
 | `@kirari/site-profile` | `packages/site-profile/` | `.trellis/spec/site-profile/frontend/` |
 
 Use this evidence priority when docs disagree:

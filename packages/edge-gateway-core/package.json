@@ -1,0 +1,17 @@
+{
+	"name": "@kirari/edge-gateway-core",
+	"private": true,
+	"type": "module",
+	"version": "0.1.0",
+	"description": "Platform-independent named-operation KIRARI Edge Gateway core",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"type-check": "tsc --noEmit",
+		"test": "node --test --experimental-strip-types test/*.test.ts"
+	},
+	"devDependencies": {
+		"typescript": "^5.9.3"
+	}
+}
