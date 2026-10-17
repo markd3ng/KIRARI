@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { buildGatewayPackage } from '../scripts/package.mjs';
@@ -34,26 +34,32 @@ test('package is a self-contained Makers route with only the expected layout', a
   assert.equal(rejected.status, 404);
 });
 
-test('packager refuses symlinked output before writing any files', async () => {
-  const fixture = await mkdtemp(join(packageRoot, '.package-test-'));
-  const outside = join(fixture, 'outside');
-  try {
-    await mkdir(join(fixture, 'scripts'));
-    await mkdir(join(fixture, 'src'));
-    await mkdir(outside);
-    await writeFile(join(fixture, 'scripts/package.mjs'), await readFile(join(packageRoot, 'scripts/package.mjs')));
-    await writeFile(join(fixture, 'src/entry.ts'), 'export const onRequest = () => new Response("ok");');
-    await writeFile(join(outside, 'sentinel'), 'keep');
-    await symlink(outside, join(fixture, 'dist'));
-    const result = spawnSync(process.execPath, [join(fixture, 'scripts/package.mjs')], { encoding: 'utf8' });
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /cannot traverse symlinks/);
-    assert.equal(await readFile(join(outside, 'sentinel'), 'utf8'), 'keep');
-    await assert.rejects(readFile(join(outside, 'edgeone.json')), { code: 'ENOENT' });
-  } finally {
-    await rm(fixture, { recursive: true, force: true });
-  }
-});
+for (const outputPath of ['dist', 'dist/edge-functions', 'dist/edge-functions/_kirari', 'dist/edge-functions/_kirari/edge']) {
+  test(`packager refuses symlinked ${outputPath} before writing any files`, async () => {
+    const fixture = await mkdtemp(join(packageRoot, '.package-test-'));
+    const outside = join(fixture, 'outside');
+    try {
+      await mkdir(join(fixture, 'scripts'));
+      await mkdir(join(fixture, 'src'));
+      await mkdir(outside);
+      await writeFile(join(fixture, 'scripts/package.mjs'), await readFile(join(packageRoot, 'scripts/package.mjs')));
+      await writeFile(join(fixture, 'src/entry.ts'), 'export const onRequest = () => new Response("ok");');
+      await writeFile(join(outside, 'sentinel'), 'keep');
+      const outputLink = join(fixture, outputPath);
+      await mkdir(dirname(outputLink), { recursive: true });
+      await symlink(outside, outputLink, 'junction');
+      const result = spawnSync(process.execPath, [join(fixture, 'scripts/package.mjs')], { encoding: 'utf8' });
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /cannot traverse symlinks/);
+      assert.equal(await readFile(join(outside, 'sentinel'), 'utf8'), 'keep');
+      await assert.rejects(readFile(join(outside, 'edgeone.json')), { code: 'ENOENT' });
+      await assert.rejects(readFile(join(outside, '[[path]].js')), { code: 'ENOENT' });
+      await assert.rejects(readFile(join(fixture, 'dist/package.json')), { code: 'ENOENT' });
+    } finally {
+      await rm(fixture, { recursive: true, force: true });
+    }
+  });
+}
 
 
 test('emitted handler works with Makers identity-only transforms and missing request signal', async () => {
