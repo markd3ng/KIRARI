@@ -22,6 +22,7 @@ are disabled by default.
 
 See:
 - [Current delivery and development handoff](HANDOFF.md)
+- [Post-deployment indexing contract](SITE_PRODUCTION.md)
 - [Quick Start](QUICK_START.md)
 - [Architecture](MONOREPO_ARCHITECTURE.md)
 - [Deployment Matrix](DEPLOYMENT_MATRIX.md)

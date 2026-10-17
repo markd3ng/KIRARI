@@ -40,8 +40,19 @@ function runPostbuild(root) {
   for (const key of Object.keys(env)) if (key.startsWith('PUBLIC_') || key === 'KIRARI_SITE_SOURCE') delete env[key];
   const result = spawnSync(process.execPath, [join(root, 'scripts/postbuild.mjs')], { cwd: root, env, encoding: 'utf8', timeout: 30_000 });
   assert.equal(result.status, 0, `${result.error || ''}\n${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /Indexing submissions skipped/);
+  assert.doesNotMatch(result.stdout, /indexing API (?:submission|notification)/i);
 }
+
+test('postbuild creates an opted-in public key file but never contacts an indexing provider', (context) => {
+  const { root, dist } = fixture(context);
+  writeFileSync(join(root, 'kirari.config.toml'), `${readFileSync(join(root, 'kirari.config.toml'), 'utf8')}\n[seo]\nindexNow = true\nindexNowKey = "public-key-123"\n[seo.google]\nindexingApi = true\n`);
+  const block = fileURLToPath(new URL('./block-indexing-fetch.mjs', import.meta.url));
+  const env = { ...process.env, NODE_ENV: 'production', KIRARI_ALLOW_INDEXING_SUBMISSIONS: 'true', KIRARI_INDEXNOW_ENABLED: 'true', PUBLIC_INDEXNOW_ENABLE: 'true', PUBLIC_INDEXNOW_KEY: 'public-key-123', NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --import=${block}`.trim() };
+  const result = spawnSync(process.execPath, [join(root, 'scripts/postbuild.mjs')], { cwd: root, env, encoding: 'utf8', timeout: 30_000 });
+  assert.equal(result.status, 0, `${result.error || ''}\n${result.stdout}\n${result.stderr}`);
+  assert.equal(readFileSync(join(dist, 'public-key-123.txt'), 'utf8'), 'public-key-123');
+  assert.doesNotMatch(`${result.stdout}\n${result.stderr}`, /Test blocked indexing request/);
+});
 
 test('postbuild retires the condensed output while retaining full and locale indexes with base-aware URLs', (context) => {
   const { root, dist, page } = fixture(context, { base: '/docs/' });

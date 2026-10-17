@@ -25,6 +25,7 @@ import type { AlternateLink } from "../utils/i18n-utils";
 import { getLangHomeUrl, getLanguageConfig, normalizeLangCode, toHreflang } from "../utils/i18n-utils";
 import { resolveSearchProvider } from "../utils/search-provider.mjs";
 import { pathsEqual, url } from "../utils/url-utils";
+import { resolveBuildCommit } from "../utils/build-commit";
 
 interface Props {
 	title?: string;
@@ -144,6 +145,7 @@ const bannerOffset = selectedBannerOffset.desktop;
 const bannerOffsetMobile = selectedBannerOffset.mobile;
 
 const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
+const buildCommit = resolveBuildCommit();
 ---
 
 
@@ -157,6 +159,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 		<title>{pageTitle}</title>
 
 		<meta charset="UTF-8" />
+		<meta name="kirari:build-commit" content={buildCommit.full} />
 		<meta name="title" content={pageTitle} />
 		<meta name="description" content={description || pageTitle}>
 		<meta name="author" content={profileConfig.name}>

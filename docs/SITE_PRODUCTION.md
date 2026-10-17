@@ -51,12 +51,15 @@ for routes, content, assets, canonical metadata, robots/sitemap and relevant net
 and security behavior. Include observation time and sanitized source links.
 
 A local build, green main CI or READY Preview does not prove public Production
-serving. P4 remains open until actual native deployment and browser acceptance
-are satisfied. Indexing remains opt-in and disabled by default; RM-06/#100 must
-verify project/environment/commit/domain/deployment identity before any notification.
-This correction does not implement that feature. Until its deployment-signal gate
-exists, keep `KIRARI_ALLOW_INDEXING_SUBMISSIONS` unset or false in native builds;
-the existing explicit postbuild opt-in is not deployment verification.
+serving; P4 was accepted only after actual native deployment and browser
+acceptance. Indexing remains opt-in and disabled by default. The #100
+post-deploy workflow accepts the authenticated Vercel bot and approved project
+ID, Production environment, `main` ref, commit and canonical alias, then confirms
+the canonical HTML serves that commit before reading its sitemap. Vercel's
+documented event omits Team ID; the workflow pins the already approved project
+ID and adds no Vercel credential. IndexNow also requires Site config and a
+GitHub Actions variable. Google remains disabled pending eligible content
+approval. Builds and Preview never submit indexing requests.
 
 ### Read-Only Browser Checks
 
