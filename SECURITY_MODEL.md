@@ -151,6 +151,16 @@ App trust root or atomic merge admission system.
 Build, tests, typechecks, QA, safe secret handling and native-deployment configuration
 checks remain strict. Subsequent development uses ordinary reviewed PRs and native Git deployment.
 
+## Portable Gateway Makers Adapter
+
+`packages/edge-gateway-edgeone` exposes only the accepted Core named operations.
+It always supplies `CACHE_NONE` and no token getter; project env, KV and cache
+bindings are never read. Calls remain anonymous even if runtime credentials exist.
+Public build-time origin policy is bundled source and must never contain secrets.
+CORS is a browser restriction, not API authentication. Packaging writes a separate
+local directory and never deploys or modifies the current Site settings. See the
+[adapter contract and capability limits](./packages/edge-gateway-edgeone/README.md).
+
 ## Edge Proxy Trust Boundary
 
 The optional KIRARI Edge runtime (`workers/kirari-edge`) is an opt-in

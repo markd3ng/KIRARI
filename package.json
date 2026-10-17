@@ -25,8 +25,6 @@
     "edge:deploy": "\"$npm_execpath\" --filter @kirari/edge deploy",
     "gateway:type-check": "\"$npm_execpath\" --filter @kirari/edge-gateway-core type-check",
     "gateway:test": "\"$npm_execpath\" --filter @kirari/edge-gateway-core test",
-    "gateway:vercel:type-check": "\"$npm_execpath\" --filter @kirari/edge-gateway-vercel type-check",
-    "gateway:vercel:test": "\"$npm_execpath\" --filter @kirari/edge-gateway-vercel test",
     "deploy:config:check": "node apps/site/scripts/generate-vercel-config.mjs --check",
     "profile:check": "node scripts/check-profile-materialization.mjs",
     "site:profile:check": "node apps/site/scripts/check-site-profile.mjs",
@@ -38,9 +36,14 @@
     "trellis:check": "node scripts/check-trellis-adapter-sync.mjs",
     "release:check": "node scripts/release-regression-check.mjs",
     "release:version-check": "node scripts/release-version-check.mjs",
-    "check": "\"$npm_execpath\" site:type-check && \"$npm_execpath\" site:astro-check && \"$npm_execpath\" edge:type-check && \"$npm_execpath\" edge:test && \"$npm_execpath\" gateway:type-check && \"$npm_execpath\" gateway:test && \"$npm_execpath\" gateway:vercel:type-check && \"$npm_execpath\" gateway:vercel:test && \"$npm_execpath\" profile:check && \"$npm_execpath\" trellis:check",
+    "check": "\"$npm_execpath\" site:type-check && \"$npm_execpath\" site:astro-check && \"$npm_execpath\" edge:type-check && \"$npm_execpath\" edge:test && \"$npm_execpath\" gateway:type-check && \"$npm_execpath\" gateway:test && \"$npm_execpath\" gateway:vercel:type-check && \"$npm_execpath\" gateway:vercel:test && \"$npm_execpath\" gateway:edgeone:type-check && \"$npm_execpath\" gateway:edgeone:test && \"$npm_execpath\" profile:check && \"$npm_execpath\" trellis:check",
     "build": "\"$npm_execpath\" site:build",
-    "audit": "\"$npm_execpath\" --filter @kirari/site audit"
+    "audit": "\"$npm_execpath\" --filter @kirari/site audit",
+    "gateway:edgeone:type-check": "\"$npm_execpath\" --filter @kirari/edge-gateway-edgeone type-check",
+    "gateway:edgeone:test": "\"$npm_execpath\" --filter @kirari/edge-gateway-edgeone test",
+    "gateway:edgeone:package": "\"$npm_execpath\" --filter @kirari/edge-gateway-edgeone package",
+    "gateway:vercel:type-check": "\"$npm_execpath\" --filter @kirari/edge-gateway-vercel type-check",
+    "gateway:vercel:test": "\"$npm_execpath\" --filter @kirari/edge-gateway-vercel test"
   },
   "packageManager": "pnpm@9.14.4",
   "pnpm": {

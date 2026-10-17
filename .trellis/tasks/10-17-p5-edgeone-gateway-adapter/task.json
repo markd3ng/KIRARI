@@ -1,0 +1,34 @@
+{
+  "id": "p5-edgeone-gateway-adapter",
+  "name": "p5-edgeone-gateway-adapter",
+  "title": "P5 EdgeOne Makers Gateway Adapter",
+  "description": "",
+  "status": "in_progress",
+  "dev_type": "backend",
+  "scope": null,
+  "package": "edge",
+  "priority": "P1",
+  "creator": "codex",
+  "assignee": "codex",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "codex/p5-edgeone-gateway-adapter",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": "7eaf327782dfc41953249ac3259e8fb3cdeb3af7",
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/149",
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "packages/edge-gateway-edgeone"
+  ],
+  "notes": "PR149 OPEN / In Review. Anonymous CACHE_NONE implementation, 19 regressions, full local verification and independent code/security review PASS. Exact final-head CI results are maintained on PR149 and Issue112. Not merged; Issue112 not completed. No Makers deployment, provider configuration, credential, or Site changes. Historical main Trellis reconciliation remains pending in PR148.",
+  "meta": {
+    "delivery_status": "IN_REVIEW",
+    "issue": 112,
+    "runtime_verification": "UNVERIFIED_LIVE_MAKERS",
+    "cache": "CACHE_NONE",
+    "token_support": "DISABLED"
+  }
+}
