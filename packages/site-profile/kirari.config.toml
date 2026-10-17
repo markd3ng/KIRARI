@@ -1032,8 +1032,11 @@ enabled = false
 # works in hosted platform builds with VERCEL=1 or CF_PAGES=1.
 # 注意: 生产建议显式设置为 "cloudflare" 或 "vercel"。"auto" 只在平台构建环境中检测。
 # Token placement:
-# - Cloudflare provider: optional KIRARI_GITHUB_TOKEN belongs to the
-#   workers/kirari-edge Worker Secret, not this file.
+# - Cloudflare Core Gateway: KIRARI_GITHUB_TOKEN belongs to the Worker Secret
+#   and is used only with KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES, a
+#   comma-separated public owner/repository allowlist. Neither belongs here.
+# - The current Cloudflare /ghc Site adapter is a legacy path and stays
+#   anonymous until the Site integration is updated.
 # - Vercel provider: optional GITHUB_TOKEN belongs to Vercel Project
 #   Environment Variables, not this file.
 # - Never commit real tokens to kirari.config.toml.
@@ -1041,8 +1044,10 @@ enabled = false
 #   exact origins allowed for CORS. Empty means no browser Origin is granted
 #   ACAO; no-Origin requests still work without ACAO.
 # Token 配置位置:
-# - Cloudflare provider: 可选 KIRARI_GITHUB_TOKEN 配在 workers/kirari-edge
-#   Worker Secret，不写在这里。
+# - Cloudflare Core Gateway: KIRARI_GITHUB_TOKEN 配在 Worker Secret，并且只有
+#   同时配置 KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES（逗号分隔的公开仓库白名单）
+#   时才会使用。两者都不写在这里。
+# - 当前 Cloudflare /ghc Site 适配器仍是旧路径，在 Site 集成更新前保持匿名。
 # - Vercel provider: 可选 GITHUB_TOKEN 配在 Vercel Project Environment
 #   Variables，不写在这里。
 # - 不要把真实 token 提交到 kirari.config.toml。

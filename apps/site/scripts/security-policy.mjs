@@ -139,6 +139,7 @@ export function createVercelConfig(config) {
 		outputDirectory: "apps/site/dist",
 		framework: "astro",
 		rewrites: [
+			{ source: "/_kirari/edge/:path*", destination: "/api/_kirari/edge/:path*" },
 			{ source: "/search", destination: "/search/" },
 			{ source: "/:lang/search", destination: "/:lang/search/" },
 		],

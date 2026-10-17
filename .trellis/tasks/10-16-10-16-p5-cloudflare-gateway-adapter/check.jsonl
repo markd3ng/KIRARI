@@ -1,0 +1,7 @@
+{"file":".trellis/spec/edge/backend/index.md","reason":"Check adapter implementation against Core ownership"}
+{"file":".trellis/spec/edge/backend/directory-structure.md","reason":"Check changed files remain in package boundaries"}
+{"file":".trellis/spec/edge/backend/database-guidelines.md","reason":"Check cache implementations preserve provider consistency limits"}
+{"file":".trellis/spec/edge/backend/error-handling.md","reason":"Check error and HEAD behavior"}
+{"file":".trellis/spec/edge/backend/quality-guidelines.md","reason":"Check path and credential security requirements"}
+{"file":".trellis/spec/edge/backend/logging-guidelines.md","reason":"Check sanitized Gateway configuration and runtime failure logging"}
+{"file":".trellis/spec/guides/index.md","reason":"Check shared workflow and verification requirements"}

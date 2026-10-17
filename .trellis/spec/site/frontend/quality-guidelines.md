@@ -85,9 +85,14 @@ Card IDs, their script references, and search assets remain byte-significant.
 Review `apps/site/dist` locally; deployment remains a separate authorized workflow.
 
 `materialize-ghc-adapter.mjs` reads the materialized TOML before Astro builds.
-It first removes generated adapter route directories from site and deployment
-roots, but refuses to remove non-generated directories unless a file contains
-the `@kirari-generated-ghc-adapter` marker. Disabled adapters generate nothing.
+It removes only regular files containing the
+`@kirari-generated-ghc-adapter` marker, prunes empty directories, and preserves
+unmarked sibling routes and symlinks without traversing them. Repeated builds
+regenerate marker-owned files; a non-empty selected route target containing
+owner files or symlinks is rejected rather than overwritten.
+Reject symlinked `api`/`functions` roots and any symlink component in a generated
+write target before cleanup or writing; nested unowned symlinks are preserved.
+Disabled adapters generate nothing.
 Provider `auto` resolves from `VERCEL=1`, `CF_PAGES=1`, or `PAGES=1`; an enabled
 adapter with no hosted provider fails the build. Cloudflare output is
 `<deploy-root>/functions/<route>/[[path]].ts`; Vercel output is
@@ -176,7 +181,8 @@ Repository-wide commit, release, and documentation rules live in
   Site hosting and P4 acceptance. P5/P6/P8 do not inherit retired admission gates.
 - Indexing stays opt-in/default-off; #100 requires verified native Production
   project/environment/commit/domain/deployment identity, never generic main CI.
-- Current architecture cutover awaits a separate Owner merge/deployment decision.
+- P4 native architecture cutover was accepted under #99. Optional Gateway
+  adapter PRs retain their own open review/merge state and do not reopen P4.
   Native rollback can disable automatic domain assignment until undone; follow
   [Site Production](../../../../docs/SITE_PRODUCTION.md) and current provider docs.
 
@@ -206,3 +212,5 @@ CSP writers. Preserve the disabled policy baseline, gate additions on configured
 providers, cover default/custom scripts and collectors, and use intercepted vendor
 requests for browser CSP tests. Consent and actual provider event semantics are
 separate acceptance conditions in #106.
+
+GHCard cleanup owns only its direct `[...path].ts` / `[[path]].ts` files with the exact generated first-line header. Quoting the marker elsewhere, using another filename or nesting a file does not transfer ownership. Preserve owner files during cleanup and refuse collisions during generation.

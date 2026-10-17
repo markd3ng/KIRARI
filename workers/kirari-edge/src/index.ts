@@ -1,3 +1,6 @@
+import { DEFAULT_ROUTE_PREFIX } from "@kirari/edge-gateway-core";
+import { createCloudflareGatewayHandler, type CloudflareGatewayEnv } from "./cloudflare-gateway.ts";
+
 /**
  * KIRARI Edge worker entry point.
  *
@@ -5,13 +8,12 @@
  * All features default to disabled — the worker is inert until explicitly enabled.
  */
 
-export interface Env {
+export interface Env extends CloudflareGatewayEnv {
 	KIRARI_EDGE_ENABLED?: string;
 	KIRARI_GHCARD_ENABLED?: string;
 	KIRARI_AVATAR_PROXY_ENABLED?: string;
 	KIRARI_BANGUMI_API_PROXY_ENABLED?: string;
 	KIRARI_BANGUMI_IMAGE_PROXY_ENABLED?: string;
-	KIRARI_GITHUB_TOKEN?: string;
 }
 
 const ALLOWED_METHODS = "GET, HEAD, OPTIONS";
@@ -37,7 +39,7 @@ type ProxyRouteConfig = {
 	prefix: string;
 	origin: string;
 	cacheControl: string;
-	configureHeaders?: (headers: Headers, request: Request, env: Env) => void;
+	configureHeaders?: (headers: Headers, request: Request) => void;
 };
 
 const PROXY_ROUTES: ProxyRouteConfig[] = [
@@ -47,12 +49,11 @@ const PROXY_ROUTES: ProxyRouteConfig[] = [
 		prefix: "/api/github",
 		origin: "https://api.github.com",
 		cacheControl: "public, max-age=300, stale-while-revalidate=3600",
-		configureHeaders(headers, request, env) {
+		configureHeaders(headers, request) {
+			// This legacy suffix proxy stays anonymous; only named Gateway
+			// operations can attach a token under the public-repository allowlist.
 			headers.set("Accept", request.headers.get("accept") || "application/vnd.github+json");
 			headers.set("X-GitHub-Api-Version", "2022-11-28");
-			if (env.KIRARI_GITHUB_TOKEN) {
-				headers.set("Authorization", `Bearer ${env.KIRARI_GITHUB_TOKEN}`);
-			}
 		},
 	},
 	{
@@ -85,6 +86,42 @@ export default {
 		}
 
 		const url = new URL(request.url);
+		if (isGatewayPath(url.pathname)) {
+			let gatewayHandler: ReturnType<typeof createCloudflareGatewayHandler>;
+			try {
+				// Use the platform-supplied request URL, never Origin/Host forwarding headers,
+				// as the zone-owned origin for Cache API keys.
+				gatewayHandler = createCloudflareGatewayHandler(env, { cacheKeyOrigin: url.origin });
+			} catch (error) {
+				console.error(
+					JSON.stringify({
+						event: "kirari_edge_gateway_configuration_failure",
+						error_name: error instanceof Error ? error.name : "UnknownError",
+					}),
+				);
+				return Response.json(
+					{ error: "gateway_configuration_error" },
+					{ status: 503, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } },
+				);
+			}
+			// This is a same-origin Core route. Keep its exact-origin CORS decision;
+			// the legacy wildcard CORS wrapper would weaken that boundary.
+			try {
+				return await gatewayHandler(request);
+			} catch (error) {
+				console.error(
+					JSON.stringify({
+						event: "kirari_edge_gateway_failure",
+						error_name: error instanceof Error ? error.name : "UnknownError",
+					}),
+				);
+				return Response.json(
+					{ error: "gateway_internal_error" },
+					{ status: 500, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } },
+				);
+			}
+		}
+
 		const route = resolveRoute(url.pathname, env);
 		if (!route) {
 			return withCors(new Response("Not found", { status: 404 }));
@@ -103,7 +140,7 @@ export default {
 		}
 
 		try {
-			return await proxyRoute(route, request, url, env);
+			return await proxyRoute(route, request, url);
 		} catch (error) {
 			console.error(
 				JSON.stringify({
@@ -122,6 +159,10 @@ export default {
 	},
 };
 
+function isGatewayPath(pathname: string) {
+	return pathname === DEFAULT_ROUTE_PREFIX || pathname.startsWith(`${DEFAULT_ROUTE_PREFIX}/`);
+}
+
 function resolveRoute(pathname: string, env: Env): ProxyRouteConfig | null {
 	return PROXY_ROUTES.find((route) => env[route.flag] === "true" && matchesPrefix(pathname, route.prefix)) || null;
 }
@@ -134,7 +175,6 @@ async function proxyRoute(
 	route: ProxyRouteConfig,
 	request: Request,
 	url: URL,
-	env: Env,
 ): Promise<Response> {
 	const upstreamUrl = createUpstreamUrl(url, route.prefix, route.origin);
 	if (!upstreamUrl) {
@@ -146,7 +186,7 @@ async function proxyRoute(
 		);
 	}
 	const headers = createUpstreamHeaders(request);
-	route.configureHeaders?.(headers, request, env);
+	route.configureHeaders?.(headers, request);
 	return proxyRequest(
 		request,
 		upstreamUrl,

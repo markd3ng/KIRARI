@@ -66,6 +66,8 @@ jobs:
       - run: pnpm edge:test
       - run: pnpm gateway:type-check
       - run: pnpm gateway:test
+      - run: pnpm gateway:vercel:type-check
+      - run: pnpm gateway:vercel:test
       - run: pnpm gateway:edgeone:type-check
       - run: pnpm gateway:edgeone:test
       - run: pnpm gateway:edgeone:package

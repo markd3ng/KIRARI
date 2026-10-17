@@ -11,7 +11,7 @@
   "creator": "Ian",
   "assignee": "Ian",
   "createdAt": "2026-10-15",
-  "completedAt": "2026-10-15",
+  "completedAt": "2026-10-16",
   "branch": "codex/p5-first-batch",
   "base_branch": "main",
   "worktree_path": "/Users/ian/.codex/worktrees/p5-hardening/KIRARI",
@@ -25,7 +25,7 @@
     "research/gateway-later-roadmap.md",
     "evidence/local-verification.md"
   ],
-  "notes": "PR #144 exact head ecf70becf6817699b17a7785939fc7562bbc483f merged by regular merge commit 4a139d18dc8449e4dbaaf2136e3aeba63842b835. PR CI 38706448903, OCR 38706448914, and post-merge main CI 38707600185 all SUCCESS. OCR's 40 exact-head findings were triaged by trigger/severity; no blocking high-risk item remained. Issues #103/#104/#105/#109 CLOSED and Project Done; #102/#110/#111/#112 remain OPEN/Todo. P5 acceptance is 4/8. No manual Production, credential, or project-configuration operation was performed.",
+  "notes": "PR #144 exact head ecf70becf6817699b17a7785939fc7562bbc483f merged by regular merge commit 4a139d18dc8449e4dbaaf2136e3aeba63842b835. PR CI 38706448903, OCR 38706448914, and post-merge main CI 38707600185 all SUCCESS. OCR's 40 exact-head findings were triaged by trigger/severity; no blocking high-risk item remained. Issues #103/#104/#105/#109 CLOSED and Project Done; #102/#110/#111/#112 remain OPEN/Todo. P5 acceptance is 4/8. No manual Production, credential, or project-configuration operation was performed.\n\nP5 first batch complete: PR #144 merged; #103/#104/#105/#109 closed / Project Done. Archive preserves implementation and acceptance evidence.",
   "meta": {},
   "baseline_main_sha": "1d8997d647c17d448be906108b510f75c24e0efa"
 }

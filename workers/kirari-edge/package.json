@@ -4,6 +4,9 @@
   "type": "module",
   "version": "0.1.0",
   "description": "KIRARI Edge runtime — proxy, cache, and API enhancement features for Cloudflare Workers",
+  "dependencies": {
+    "@kirari/edge-gateway-core": "workspace:*"
+  },
   "scripts": {
     "type-check": "tsc --noEmit",
     "test": "node --test --experimental-strip-types test/*.test.ts",

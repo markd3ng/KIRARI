@@ -3,15 +3,15 @@
   "name": "p4-authorized-production",
   "title": "Historical P4 custom release plan — superseded by native Git correction",
   "description": "",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": "deployment",
-  "scope": "Retired implementation plan only; do not execute. Current P4 remains in progress in 10-07-p4-r3-trusted-base-bootstrap / Issue #99.",
+  "scope": "Retired historical custom release plan; do not execute. Superseded by completed native Git P4 / Issue #99.",
   "package": null,
   "priority": "P1",
   "creator": "Ian",
   "assignee": "Ian",
   "createdAt": "2026-10-04",
-  "completedAt": null,
+  "completedAt": "2026-10-16",
   "branch": "codex/p4-c1-hobby",
   "base_branch": "main",
   "worktree_path": "/Users/ian/.codex/worktrees/p4-c1-hobby/KIRARI",
@@ -21,10 +21,15 @@
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "PR133 exact engineering merge is complete at mainc2231c8572fb9e0961bbd296e3678acdc86a407f with main CI38195793414 SUCCESS. Current Owner engineering authorization replaces impossible C1 paid RBAC assumptions on the verified Hobby target. No implementation merge, actual credential/Environment setup or Production operation is authorized. See evidence/c1-hobby-20261012.",
+  "notes": "PR133 exact engineering merge is complete at mainc2231c8572fb9e0961bbd296e3678acdc86a407f with main CI38195793414 SUCCESS. Current Owner engineering authorization replaces impossible C1 paid RBAC assumptions on the verified Hobby target. No implementation merge, actual credential/Environment setup or Production operation is authorized. See evidence/c1-hobby-20261012.\n\nAdministrative retirement: this custom C1/Trusted Sources release plan is superseded by the native Git architecture delivered in PR #143. Archive means retired/superseded, not acceptance or reauthorization of the old controller. P4 completion is recorded in #99 and PR #143.",
   "meta": {
-    "engineering_merge_gate": "HOBBY_C1_ENGINEERING_IMPLEMENTATION_IN_PROGRESS_NEW_EXACT_OWNER_MERGE_DECISION_REQUIRED",
-    "production_readiness": "HOBBY_C1_SETUP_MANIFEST_NEW_OWNER_DECISION_AND_SEPARATE_PRODUCTION_AUTHORIZATION_REQUIRED"
+    "engineering_merge_gate": "RETIRED_SUPERSEDED_BY_NATIVE_GIT_PR143",
+    "production_readiness": "NOT_APPLICABLE_RETIRED_CONTROLLER",
+    "reconciliation_disposition": "SUPERSEDED_RETIRED_NOT_CONTROLLER_ACCEPTANCE",
+    "historical_gate_snapshot": {
+      "engineering_merge_gate": "HOBBY_C1_ENGINEERING_IMPLEMENTATION_IN_PROGRESS_NEW_EXACT_OWNER_MERGE_DECISION_REQUIRED",
+      "production_readiness": "HOBBY_C1_SETUP_MANIFEST_NEW_OWNER_DECISION_AND_SEPARATE_PRODUCTION_AUTHORIZATION_REQUIRED"
+    }
   },
   "evidence": {
     "ownerResume20261010": {

@@ -4,6 +4,10 @@
   "framework": "astro",
   "rewrites": [
     {
+      "source": "/_kirari/edge/:path*",
+      "destination": "/api/_kirari/edge/:path*"
+    },
+    {
       "source": "/search",
       "destination": "/search/"
     },
