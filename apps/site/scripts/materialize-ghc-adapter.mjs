@@ -93,7 +93,11 @@ function removeGeneratedRoute(routeDir) {
 	assertWithinAllowedRoot(routeDir);
 
 	for (const file of collectFiles(routeDir)) {
-		if (lstat(file).isFile() && readFileSync(file, "utf8").includes(generatedMarker)) {
+		const generatedName = ["[...path].ts", "[[path]].ts"].includes(path.basename(file));
+		if (
+			path.dirname(file) === routeDir && generatedName && lstat(file).isFile() &&
+			readFileSync(file, "utf8").split(/\r?\n/, 1)[0] === `// ${generatedMarker}`
+		) {
 			rmSync(file);
 		}
 	}

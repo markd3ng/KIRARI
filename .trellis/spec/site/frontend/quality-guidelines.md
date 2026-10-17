@@ -212,3 +212,5 @@ CSP writers. Preserve the disabled policy baseline, gate additions on configured
 providers, cover default/custom scripts and collectors, and use intercepted vendor
 requests for browser CSP tests. Consent and actual provider event semantics are
 separate acceptance conditions in #106.
+
+GHCard cleanup owns only its direct `[...path].ts` / `[[path]].ts` files with the exact generated first-line header. Quoting the marker elsewhere, using another filename or nesting a file does not transfer ownership. Preserve owner files during cleanup and refuse collisions during generation.

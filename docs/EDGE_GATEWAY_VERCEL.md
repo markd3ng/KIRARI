@@ -89,3 +89,5 @@ Official references: [Node.js Functions](https://vercel.com/docs/functions/runti
 [Runtime Cache](https://vercel.com/docs/caching/runtime-cache),
 [CDN cache headers](https://vercel.com/docs/caching/cdn-cache), and
 [Vercel Functions package](https://vercel.com/docs/functions/functions-api-reference/vercel-functions-package).
+
+GHCard route cleanup requires both a known generated filename directly under its route directory and the exact generated first-line header. Owner documentation/examples merely quoting the marker are preserved.

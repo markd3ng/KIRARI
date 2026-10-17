@@ -34,8 +34,8 @@ test("GHCard cleanup preserves unrelated Gateway API routes and removes only its
 	const fixture = mkdtempSync(join(tmpdir(), "kirari-vercel-route-"));
 	try {
 		const siteRoot = join(fixture, "apps/site");
-		const generatedSiteRoute = join(siteRoot, "api/ghc/route.ts");
-		const generatedRootRoute = join(fixture, "api/ghc/route.ts");
+		const generatedSiteRoute = join(siteRoot, "api/ghc/[...path].ts");
+		const generatedRootRoute = join(fixture, "api/ghc/[...path].ts");
 		const gatewaySiteRoute = join(siteRoot, "api/_kirari/edge/[...path].ts");
 		const gatewayRootRoute = join(fixture, "api/_kirari/edge/[...path].ts");
 		mkdirSync(join(siteRoot, "api/ghc"), { recursive: true });
@@ -89,15 +89,19 @@ test("GHCard cleanup preserves owner files beside generated files and never foll
 		mkdirSync(routeDir, { recursive: true });
 		mkdirSync(outsideDir);
 		writeFileSync(join(siteRoot, "kirari.config.toml"), "[githubCard.adapter]\nenabled = false\n");
-		writeFileSync(join(routeDir, "generated.ts"), "// @kirari-generated-ghc-adapter\n");
+		writeFileSync(join(routeDir, "[...path].ts"), "// @kirari-generated-ghc-adapter\n");
 		writeFileSync(join(routeDir, "owner-route.ts"), "// owner route\n");
+		writeFileSync(join(routeDir, "example.ts"), "// @kirari-generated-ghc-adapter\n// owner example\n");
+		writeFileSync(join(routeDir, "[[path]].ts"), "// owner route quoting marker\n// @kirari-generated-ghc-adapter\n");
 		writeFileSync(join(outsideDir, "generated.ts"), "// @kirari-generated-ghc-adapter\n");
 		symlinkSync(outsideDir, join(routeDir, "linked-directory"), "dir");
 
 		const result = spawnSync(process.execPath, [materializerPath], { cwd: siteRoot, encoding: "utf8" });
 		assert.equal(result.status, 0, result.stderr);
-		assert.equal(existsSync(join(routeDir, "generated.ts")), false);
+		assert.equal(existsSync(join(routeDir, "[...path].ts")), false);
 		assert.equal(readFileSync(join(routeDir, "owner-route.ts"), "utf8"), "// owner route\n");
+		assert.equal(readFileSync(join(routeDir, "example.ts"), "utf8"), "// @kirari-generated-ghc-adapter\n// owner example\n");
+		assert.equal(readFileSync(join(routeDir, "[[path]].ts"), "utf8"), "// owner route quoting marker\n// @kirari-generated-ghc-adapter\n");
 		assert.equal(readFileSync(join(outsideDir, "generated.ts"), "utf8"), "// @kirari-generated-ghc-adapter\n");
 		assert.equal(existsSync(join(routeDir, "linked-directory")), true);
 	} finally {
