@@ -45,10 +45,8 @@ export default defineConfig({
 	site: Config.site.url,
 	base: Config.site.base,
 	trailingSlash: "always",
-	cacheDir:
-		process.env.KIRARI_DETERMINISTIC_BUILD_CLOCK === "true"
-			? "./.astro"
-			: undefined,
+	// External stages share dependencies, never mutable content/asset caches.
+	cacheDir: "./.astro",
 	build: {
 		inlineStylesheets: "auto",
 	},
@@ -153,15 +151,12 @@ export default defineConfig({
 		mdx(),
 
 		sitemap({
+			filter: (page) => !new URL(page).pathname.endsWith("/index.md"),
 			customPages:
 				Config.llms.enable && Config.llms.sitemap
 					? [
 						// Use site + base + path, removing any double slashes from the middle
 						`${Config.site.url}${Config.site.base}llms.txt`.replace(
-							/([^:]\/)\/+/g,
-							"$1",
-						),
-						`${Config.site.url}${Config.site.base}llms-small.txt`.replace(
 							/([^:]\/)\/+/g,
 							"$1",
 						),

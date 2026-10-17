@@ -73,3 +73,35 @@ Authorized ordered squash merges accepted with post-main CI and native Productio
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: Implement P6 source Markdown views and isolate concurrent Site caches
+
+**Date**: 2026-10-17
+**Task**: Implement P6 source Markdown views and isolate concurrent Site caches
+**Package**: site
+**Branch**: `codex/p6-llms-v2`
+
+### Summary
+
+Expanded PR151 through source AST views, canonical discovery, locale indexes, draft/unsafe URL protection and retained full aggregation. Actual build and browser regressions found and fixed pnpm CLI shim portability and shared Astro content-cache contamination; independent review PASS. Full Site suite rerun 127 pass, one optional browser skip. No provider settings, secrets or manual deployment changed. PR151 stays unmerged awaiting exact-head CI and separate Owner merge authorization.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

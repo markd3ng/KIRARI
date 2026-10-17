@@ -4,7 +4,7 @@ import "../styles/fonts.css";
 import { ClientRouter } from "astro:transitions";
 import Analytics from "@components/Analytics.astro";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
-import { analyticsConfig, fontsConfig, headConfig, ogConfig, profileConfig, searchConfig, siteConfig } from "@/config";
+import { analyticsConfig, fontsConfig, headConfig, llmsConfig, ogConfig, profileConfig, searchConfig, siteConfig } from "@/config";
 import {
 	AUTO_MODE,
 	BANNER_HEIGHT,
@@ -42,6 +42,7 @@ interface Props {
 	articleTags?: string[];
 	alternates?: AlternateLink[];
 	canonicalUrl?: string;
+	markdownUrl?: string;
 }
 
 let { 
@@ -55,6 +56,7 @@ let {
 	articleTags,
 	alternates = [],
 	canonicalUrl,
+	markdownUrl,
 } = Astro.props;
 
 // Resolve OG image URL
@@ -111,6 +113,7 @@ const siteDirection = languageConfig.direction === "auto" ? undefined : language
 const searchLang = toHreflang(pageLang);
 const absoluteUrl = (path: string) => new URL(path, Astro.site || Astro.url.origin).href;
 const canonicalHref = canonicalUrl ? absoluteUrl(canonicalUrl) : Astro.url.href;
+const llmsHref = absoluteUrl(`${llmsConfig.i18n ? getLangHomeUrl(pageLang) : url("/")}llms.txt`);
 const rssHref = absoluteUrl(getLangHomeUrl(pageLang).replace(/\/$/, "/rss.xml"));
 const xDefaultHref = absoluteUrl(getLangHomeUrl(Config.i18n.defaultLang));
 const activeSearchProvider = resolveSearchProvider(searchConfig);
@@ -163,6 +166,8 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 			<meta name={`docsearch:${key}`} content={value} />
 		))}
 		<link rel="canonical" href={canonicalHref} />
+			{llmsConfig.enable && <link rel="describedby" type="text/plain" href={llmsHref} />}
+			{llmsConfig.enable && markdownUrl && <link rel="alternate" type="text/markdown" href={absoluteUrl(markdownUrl)} />}
 		{alternates.map((alternate) => (
 			<link rel="alternate" hreflang={alternate.hreflang} href={absoluteUrl(alternate.url)} />
 		))}

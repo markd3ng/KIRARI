@@ -511,7 +511,11 @@ IndexNow 覆盖 Bing、Yandex、Naver、Seznam.cz、Yep 等参与方。Google �
 
 ### LLMs.txt
 
-postbuild 生成 `llms.txt`、`llms-full.txt`。`llms.i18n = true` 时额外生成按语言分类文件（`llms-en-US.txt`、`llms-zh-CN.txt`）。`llms-full.txt` 是公开的页面文本聚合文件，每页上限 20,000 字符；postbuild 会在 `robots.txt` 加入 `Disallow: /llms-full.txt`，并在部署 headers 中为它设置 `Cache-Control: no-store`。这些是缓解措施，不是访问控制。
+`llms.txt` 索引遵循 llmstxt.org 社区提案。已发布文章及选定的关于、友链、项目页面在其 HTML 路由下提供规范 `index.md` 视图。HTML 用 `alternate`（`text/markdown`）指向视图，用 `describedby`（`text/plain`）指向覆盖当前页面的索引。源码 AST 处理保留链接、代码、数学、表格、脚注及图表围栏；支持的 MDX 嵌入和指令转换成静态文字或链接，导入、表达式及未知动态组件以明确的省略提示替代。相对图片引用实际构建资源，源码文档链接映射至已发布的规范路由；不支持的本地附件会明确报构建错误，不生成猜测的失效链接。草稿和未选定的源码条目不会导出。
+
+`llms.i18n = true` 时，带语言前缀的路由提供 `<语言>/llms.txt` 覆盖索引；根目录 `llms-<locale>.txt` 保留为便捷索引。视图与发现链接遵循 base、自定义嵌套文章路径及默认语言子目录设置。`llms.enable = false` 同时关闭索引、视图及发现链接。URL include/exclude 模式用于整理索引，不构成隐私控制。
+
+按 Owner 决定保留 `llms-full.txt`：它仍是独立的 HTML 文本公开聚合，每页上限 20,000 字符。postbuild 为它生成遵循 base 路径的 robots 排除和 `Cache-Control: no-store` headers；这些是爬取和缓存缓解措施，不是访问控制。Markdown 视图不进入 HTML sitemap；可选的 LLM sitemap 条目保留主索引和全文聚合。
 
 ```toml
 [llms]

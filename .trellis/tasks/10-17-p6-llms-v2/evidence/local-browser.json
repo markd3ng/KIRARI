@@ -1,0 +1,24 @@
+{
+  "post": {
+    "canonical": "https://kirari-main.vercel.app/posts/mapping-test/",
+    "markdown": "https://kirari-main.vercel.app/posts/mapping-test/index.md",
+    "index": "https://kirari-main.vercel.app/llms.txt"
+  },
+  "markdownStatus": 200,
+  "markdownType": "text/markdown",
+  "indexStatus": 200,
+  "advertisesView": true,
+  "spec": {
+    "url": "https://kirari-main.vercel.app/about/index.md",
+    "status": 200
+  },
+  "localized": {
+    "canonical": "https://kirari-main.vercel.app/zh-CN/posts/mermaid-test/",
+    "markdown": "https://kirari-main.vercel.app/zh-CN/posts/mermaid-test/index.md",
+    "index": "https://kirari-main.vercel.app/zh-CN/llms.txt",
+    "viewStatus": 200,
+    "indexStatus": 200
+  },
+  "result": "PASS",
+  "server": "local Astro preview; static Markdown media type observed, provider HTTP headers not claimed"
+}

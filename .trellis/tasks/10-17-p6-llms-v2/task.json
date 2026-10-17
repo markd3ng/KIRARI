@@ -2,7 +2,7 @@
   "id": "p6-llms-v2",
   "name": "p6-llms-v2",
   "title": "P6 LLMs v2 indexes and Markdown views",
-  "description": "Issue101 kickoff after accepted P5; retain full aggregation; first batch retires obsolete condensed output.",
+  "description": "Issue101 source-backed Markdown views, covering language/path indexes and discovery; retain full aggregation after accepted P5.",
   "status": "in_progress",
   "dev_type": "frontend",
   "scope": null,
@@ -16,14 +16,18 @@
   "base_branch": "main",
   "worktree_path": null,
   "commit": null,
-  "pr_url": null,
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/151",
   "subtasks": [],
   "children": [],
   "parent": null,
   "relatedFiles": [
+    "apps/site/src/utils/llm-content.ts",
+    "apps/site/src/utils/llm-markdown.mjs",
+    "apps/site/src/utils/llm-url-utils.mjs",
+    "apps/site/src/pages/[...path]/index.md.ts",
     "apps/site/scripts/postbuild.mjs",
-    "apps/site/scripts/tests/llms-output.test.mjs"
+    "apps/site/scripts/tests/llms-build.test.mjs"
   ],
-  "notes": "Owner retention decision resolved; full Markdown view/discovery acceptance remains open.",
+  "notes": "P5 accepted 8/8. Owner continuation expands PR151 through remaining P6 code acceptance; full retained. No merge authorization for PR150/151.",
   "meta": {}
 }

@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { getPostLlmViewPath } from "@utils/llm-content";
 import { render } from "astro:content";
 import { Icon } from "astro-icon/components";
 import License from "@components/misc/License.astro";
@@ -86,6 +87,7 @@ const jsonLd = {
 	lang={lang}
 	alternates={alternates}
 	canonicalUrl={canonicalUrl}
+	markdownUrl={getPostLlmViewPath(entry, lang)}
 	setOGTypeArticle={true}
 	headings={headings}
 	ogImage={ogImageUrl}

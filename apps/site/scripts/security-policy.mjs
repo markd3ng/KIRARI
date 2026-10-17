@@ -129,6 +129,8 @@ export function buildContentSecurityPolicy(config = {}) {
 }
 
 export function createVercelConfig(config) {
+	const configuredBase = stringValue(asRecord(config.site).base) || "/";
+	const fullPath = `/${[...configuredBase.split("/").filter(Boolean), "llms-full.txt"].join("/")}`;
 	const securityHeaders = [
 		{ key: "Content-Security-Policy", value: buildContentSecurityPolicy(config) },
 		...SECURITY_HEADERS.map(([key, value]) => ({ key, value })),
@@ -157,7 +159,7 @@ export function createVercelConfig(config) {
 				headers: [{ key: "Cache-Control", value: "public, max-age=86400" }],
 			},
 			{
-				source: "/llms-full.txt",
+				source: fullPath,
 				headers: [{ key: "Cache-Control", value: "no-store" }],
 			},
 			{ source: "/(.*)", headers: securityHeaders },

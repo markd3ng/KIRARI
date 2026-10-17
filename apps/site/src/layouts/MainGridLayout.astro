@@ -37,6 +37,7 @@ interface Props {
 	articleTags?: string[];
 	alternates?: AlternateLink[];
 	canonicalUrl?: string;
+	markdownUrl?: string;
 	toc?: boolean;
 }
 
@@ -53,6 +54,7 @@ const {
 	articleTags,
 	alternates,
 	canonicalUrl,
+	markdownUrl,
 	toc = true,
 } = Astro.props;
 const pageLang = normalizeLangCode(lang || siteConfig.lang);
@@ -81,6 +83,7 @@ const mainPanelTop = siteConfig.banner.enable
 	articleTags={articleTags}
 	alternates={alternates}
 	canonicalUrl={canonicalUrl}
+	markdownUrl={markdownUrl}
 >
 
 <!-- Navbar -->

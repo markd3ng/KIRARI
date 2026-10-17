@@ -15,3 +15,6 @@ Remove legacy condensed generation/link/config/documentation references and stal
 
 ## Boundaries
 Normal source PR/CI/review and native Git hosting. No provider configuration, credentials, manual deployment, indexing submissions or retired deployment controller. P5 local Windows packager compatibility follow-up is a separate small PR, not a new phase gate.
+
+## Continued implementation — Owner continuation
+After first-batch PR151 passed CI, Owner requested continued development without routine pauses. Implement the remaining source-backed Markdown, canonical language/path indexes and discovery within the same scoped P6 branch/PR; retain full aggregation. #101 stays open until complete verified acceptance and merge. No automatic PR merge is authorized by this continuation.
