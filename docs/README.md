@@ -21,6 +21,7 @@ A fresh fork runs in Pages-only mode. No Worker required. All edge features
 are disabled by default.
 
 See:
+- [Current delivery and development handoff](HANDOFF.md)
 - [Quick Start](QUICK_START.md)
 - [Architecture](MONOREPO_ARCHITECTURE.md)
 - [Deployment Matrix](DEPLOYMENT_MATRIX.md)

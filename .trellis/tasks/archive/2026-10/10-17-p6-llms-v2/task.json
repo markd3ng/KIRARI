@@ -1,0 +1,38 @@
+{
+  "id": "p6-llms-v2",
+  "name": "p6-llms-v2",
+  "title": "P6 LLMs v2 indexes and Markdown views",
+  "description": "Issue101 source-backed Markdown views, covering language/path indexes and discovery; retain full aggregation after accepted P5.",
+  "status": "completed",
+  "dev_type": "frontend",
+  "scope": null,
+  "package": "site",
+  "priority": "P2",
+  "creator": "codex",
+  "assignee": "codex",
+  "createdAt": "2026-10-17",
+  "completedAt": "2026-10-18",
+  "branch": "codex/p6-llms-v2",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": "219bd26fa6024876fc8a1ba9b334936d04b844e3",
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/151",
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "apps/site/src/utils/llm-content.ts",
+    "apps/site/src/utils/llm-markdown.mjs",
+    "apps/site/src/utils/llm-url-utils.mjs",
+    "apps/site/src/pages/[...path]/index.md.ts",
+    "apps/site/scripts/postbuild.mjs",
+    "apps/site/scripts/tests/llms-build.test.mjs"
+  ],
+  "notes": "ACCEPTED: Owner explicitly approved sequential Squash Merge PR150/151 and all final GitHub commits/handoff. PR150 squash2bc7736552b61f15a883c12985221d161f189b3e/mainCI39018393304 PASS; PR151 squash219bd26fa6024876fc8a1ba9b334936d04b844e3/mainCI39018555825 PASS. Integrated tree exactly153c16d56463bfa2180e6337cb6416052c428700. Native Production READY on exact code merge, canonical alias bound; fresh browser English/localized/spec Markdown/discovery/search/assets/robots/canonical/security/full no-store/retired404/sitemap PASS. Retain full aggregation. P6 completed; next P7 Issue100 remains unstarted. No provider settings/credentials/manual deploy changed.",
+  "meta": {
+    "delivery_status": "ACCEPTED",
+    "issue": 101,
+    "acceptance_ci": 39018555825,
+    "production_deployment": "dpl_94C71SsSMFinNfAUr2hYnxxcdBgU"
+  }
+}

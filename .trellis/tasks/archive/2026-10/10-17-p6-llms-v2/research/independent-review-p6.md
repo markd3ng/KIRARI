@@ -88,3 +88,9 @@ rerun after this cache fix.
 ## Final review follow-up
 
 Independent review of the final five-file correction PASS: plain description text cannot forge Markdown links; unused reference definitions cause no URL resolution; referenced definitions preserve first-definition and identifier behavior; shared root URL and contextual errors preserve export behavior. Cache/CLI allegations do not match the supported staged-build path; missing referenced attachments deliberately fail closed. Root ran all 25 current LLM tests, including four actual build scenarios, with no failures after these corrections. The earlier complete standard CI passed at 2512adb; a new exact-head CI is required for the final commit.
+
+## Frozen candidate and accepted integration
+
+Independent review bound PASS at exact final HEAD `f72d50b93c45d5f7cc435b81d472cf7215a6fed5`. Working tree clean; the five code/test blobs exactly match the reviewed correction. The remaining commit files are sanitized evidence and triage records. No actionable finding. All 25 current LLM tests PASS, including four actual staged/concurrent builds; TypeScript PASS. Full standard CI39016121224 and OCR39016121203 are running at this exact HEAD. Earlier CI39015742639 PASS is parent evidence only. All earlier OCR threads have reasoned classifications/replies and are resolved.
+
+Subsequent exact-source CI39016121224 and OCR39016121203 passed. The independent integration review verified all 914 entries in merged tree153c16d56463bfa2180e6337cb6416052c428700 match the approved union of PR150/151, with no additional source/security findings. All 22 Makers tests passed in that integration. Main CI39018555825 and native Production/browser acceptance are recorded in evidence/merge-acceptance.json.

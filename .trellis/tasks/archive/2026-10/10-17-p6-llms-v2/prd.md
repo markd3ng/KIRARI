@@ -18,3 +18,6 @@ Normal source PR/CI/review and native Git hosting. No provider configuration, cr
 
 ## Continued implementation — Owner continuation
 After first-batch PR151 passed CI, Owner requested continued development without routine pauses. Implement the remaining source-backed Markdown, canonical language/path indexes and discovery within the same scoped P6 branch/PR; retain full aggregation. #101 stays open until complete verified acceptance and merge. No automatic PR merge is authorized by this continuation.
+
+## Owner-approved completion
+Owner approved sequential Squash Merge #150 then #151 and committing final evidence/handoff to GitHub. Both merges, exact-main CI, native Production identity/READY/alias and fresh browser/source/discovery/policy acceptance PASS. P6 is accepted at code SHA219bd26fa6024876fc8a1ba9b334936d04b844e3. The earlier no-merge continuation boundary is historical and superseded by this explicit Owner decision. P7 implementation is not part of this handoff closeout.

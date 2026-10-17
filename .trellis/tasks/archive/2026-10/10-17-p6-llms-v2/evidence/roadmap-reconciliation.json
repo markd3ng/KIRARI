@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-10-18 Asia/Shanghai",
+  "project": "markd3ng/1",
+  "itemsBefore": 33,
+  "itemsAfter": 33,
+  "identitiesUnchanged": true,
+  "changes": [
+    {
+      "before": {
+        "issue": 100,
+        "state": "OPEN",
+        "Status": "Todo",
+        "Roadmap Status": "Future Roadmap",
+        "Priority": "P2",
+        "Phase": "Phase 7"
+      },
+      "after": {
+        "issue": 100,
+        "state": "OPEN",
+        "Status": "Todo",
+        "Roadmap Status": "Next Executable Phase",
+        "Priority": "P2",
+        "Phase": "Phase 7"
+      }
+    },
+    {
+      "before": {
+        "issue": 101,
+        "state": "OPEN",
+        "Status": "In Review",
+        "Priority": "P2",
+        "Roadmap Status": "Next Executable Phase",
+        "Phase": "Phase 6"
+      },
+      "after": {
+        "issue": 101,
+        "state": "CLOSED",
+        "Status": "Done",
+        "Priority": "P2",
+        "Roadmap Status": "Completed Phase",
+        "Phase": "Phase 6"
+      }
+    }
+  ],
+  "p5Completed": 8,
+  "p6": "COMPLETED",
+  "p7": "TODO_NEXT_EXECUTABLE",
+  "p8": "TODO_BACKLOG",
+  "unrelatedFieldsUnchanged": true
+}

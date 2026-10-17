@@ -105,3 +105,38 @@ Expanded PR151 through source AST views, canonical discovery, locale indexes, dr
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: Merge and accept PR150/151; P6 complete; handoff to P7
+
+**Date**: 2026-10-18
+**Task**: Merge and accept PR150/151; P6 complete; handoff to P7
+**Package**: site
+**Branch**: `codex/p6-handoff`
+
+### Summary
+
+Owner-authorized ordered Squash Merges, exact-main CI, exact native Production READY/alias and fresh real-browser acceptance pass. P5 8/8 done; P6 Issue101 accepted with full aggregation retained. Archive completed P6 task and publish docs/HANDOFF.md; P7 Issue100 remains unstarted/next. Provider cache/live Windows checks are operational limitations, not code merge blockers. No settings/secrets/manual deploy changes.
+
+### Main Changes
+
+Published docs/HANDOFF.md and sanitized merge/Production/browser acceptance; archived P6 and synchronized #101, #112 and Project #1.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `2bc7736552b61f15a883c12985221d161f189b3e` | (see git log) |
+| `219bd26fa6024876fc8a1ba9b334936d04b844e3` | (see git log) |
+
+### Testing
+
+- [OK] Both exact-main standard CI runs; integrated Makers 22/22; fresh real browser search/discovery/views/assets/robots/sitemap and provider READY/alias readback.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- P7 #100: disabled-by-default post-deploy indexing, following current Issue acceptance; provider enablement requires Owner decisions.
