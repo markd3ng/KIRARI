@@ -1,5 +1,5 @@
 import { ANALYTICS_BUILD_MODE, resolveBuildAnalytics } from "./build-analytics-settings.mjs";
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { parse } from "smol-toml";
 import sanitizeHtml from "sanitize-html";
@@ -102,6 +102,14 @@ function htmlFiles() {
 	return walk(distDir).filter((file) => file.endsWith(".html"));
 }
 
+function linkedResource(html, rel, type) {
+	for (const tag of html.match(/<link\b[^>]*>/gi) || []) {
+		const attributes = Object.fromEntries([...tag.matchAll(/([\w:-]+)=["']([^"']*)["']/g)].map((match) => [match[1].toLowerCase(), match[2]]));
+		if (attributes.rel?.split(/\s+/).includes(rel) && (!type || attributes.type === type)) return attributes.href || "";
+	}
+	return "";
+}
+
 function pageInfo(file) {
 	const html = readFileSync(file, "utf8");
 	const title = html.match(/<title>(.*?)<\/title>/i)?.[1] || "";
@@ -114,6 +122,8 @@ function pageInfo(file) {
 		title,
 		description,
 		canonical,
+		markdown: linkedResource(html, "alternate", "text/markdown"),
+		coveringIndex: linkedResource(html, "describedby", "text/plain"),
 		lang,
 		text: stripTags(html),
 	};
@@ -145,22 +155,32 @@ function matchesAny(value, patterns) {
 	return patterns.some((pattern) => globToRegExp(pattern).test(value));
 }
 
+function scopedPagePath(page) {
+	const path = pagePath(page);
+	const base = basePath();
+	return path.startsWith(base) ? path.slice(base.length) : "";
+}
+
 function isArticlePage(page) {
-	return /\/posts\/[^/]+\/$/.test(pagePath(page));
+	return /^(?:[^/]+\/)?posts\/.+\/$/.test(scopedPagePath(page));
 }
 
 function isNavigationPage(page) {
-	return /^\/(?:[a-z]{2}(?:-[A-Z]{2})?\/)?(?:|blog\/|archive\/|categories\/|tags\/|projects\/|about\/|friends\/)$/.test(pagePath(page));
+	return /^(?:[^/]+\/)?(?:|blog\/|archive\/|categories\/|tags\/|projects\/|about\/|friends\/)$/.test(scopedPagePath(page));
 }
 
 function sortByCanonical(a, b) {
 	return a.canonical.localeCompare(b.canonical);
 }
 
+function llmsText(value) {
+	return value.replace(/[\r\n]+/g, " ").replace(/([\\`*_[\]<>])/g, "\\$1");
+}
+
 function llmsLine(page, title = siteTitle(), includeDescription = true) {
-	const label = cleanPageTitle(page, title);
-	const description = includeDescription && page.description ? `: ${page.description}` : "";
-	return `- [${label}](${page.canonical})${description}`;
+	const label = llmsText(cleanPageTitle(page, title));
+	const description = includeDescription && page.description ? `: ${llmsText(page.description)}` : "";
+	return `- [${label}](${page.markdown || page.canonical})${description}`;
 }
 
 function llmsFileUrl(pages, filename) {
@@ -172,7 +192,7 @@ function llmsFileUrl(pages, filename) {
 	}
 }
 
-function buildLlmsIndex({ title, description, pages, lang, small = false }) {
+function buildLlmsIndex({ title, description, pages, lang, subIndexes = [] }) {
 	const includePatterns = getTomlStringArray("llms", "includePatterns", ["*"]);
 	const excludePatterns = getTomlStringArray("llms", "excludePatterns", [
 		"*/categories/*",
@@ -186,7 +206,6 @@ function buildLlmsIndex({ title, description, pages, lang, small = false }) {
 		.filter((page) => !matchesAny(page.canonical, excludePatterns) || isNavigationPage(page));
 	const articles = scopedPages.filter(isArticlePage).sort(sortByCanonical);
 	const navigation = scopedPages.filter(isNavigationPage).sort(sortByCanonical);
-	const articleLimit = small ? 30 : articles.length;
 	const lines = [
 		`# ${lang ? `${title} (${lang})` : title}`,
 		"",
@@ -198,13 +217,19 @@ function buildLlmsIndex({ title, description, pages, lang, small = false }) {
 
 	if (articles.length > 0) {
 		lines.push("## Articles", "");
-		for (const page of articles.slice(0, articleLimit)) lines.push(llmsLine(page, title));
+		for (const page of articles) lines.push(llmsLine(page, title));
 		lines.push("");
 	}
 
-	if (navigation.length > 0 && !small) {
+	if (navigation.length > 0) {
 		lines.push("## Navigation", "");
 		for (const page of navigation) lines.push(llmsLine(page, title));
+		lines.push("");
+	}
+
+	if (subIndexes.length) {
+		lines.push("## Language indexes", "");
+		for (const href of subIndexes) lines.push(`- [${new URL(href).pathname}](${href}): Scoped language index.`);
 		lines.push("");
 	}
 
@@ -212,7 +237,6 @@ function buildLlmsIndex({ title, description, pages, lang, small = false }) {
 		"## Optional",
 		"",
 		`- [Full extracted content](${llmsFileUrl(pages, "llms-full.txt")}): Full text aggregation generated from built HTML pages.`,
-		`- [Condensed entry point](${llmsFileUrl(pages, "llms-small.txt")}): Shorter version of this LLM entry point.`,
 	);
 
 	return lines.join("\n").replace(/\n{3,}/g, "\n\n");
@@ -301,7 +325,7 @@ function generateHeadersAndRedirects() {
 		"/favicon/*",
 		"  Cache-Control: public, max-age=86400",
 		"",
-		"/llms-full.txt",
+		`${basePath()}llms-full.txt`,
 		"  Cache-Control: no-store",
 		"",
 	]
@@ -320,7 +344,7 @@ function generateHeadersAndRedirects() {
 
 function generateRobots() {
 	const sitemapUrl = `${siteUrl()}${basePath()}sitemap-index.xml`.replace(/([^:]\/)\/+/g, "$1");
-	writeFileSync(join(distDir, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /llms-full.txt\n\nSitemap: ${sitemapUrl}\n`);
+	writeFileSync(join(distDir, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: ${basePath()}llms-full.txt\n\nSitemap: ${sitemapUrl}\n`);
 }
 
 function obfuscateMailtoLinks() {
@@ -337,13 +361,43 @@ async function generatePagefind() {
 }
 
 function generateLlms() {
+	// Retired output must not survive a repeated postbuild, including disabled mode.
+	rmSync(join(distDir, "llms-small.txt"), { force: true });
 	if (!getTomlBool("llms", "enable", true)) return;
+	// Keep the retained full aggregation behavior; indexes alone deduplicate aliases.
 	const pages = htmlFiles().map(pageInfo).filter((page) => page.canonical);
+	const canonicalPages = new Map();
+	for (const page of pages) {
+		const previous = canonicalPages.get(page.canonical);
+		const actualPath = `${basePath()}${relative(distDir, page.file).split(sep).join("/").replace(/index\.html$/, "")}`;
+		if (!previous || pagePath(page) === actualPath) canonicalPages.set(page.canonical, page);
+	}
+	const indexedPages = [...canonicalPages.values()];
 	const title = getTomlString("llms", "title", siteTitle());
 	const description = getTomlString("llms", "description", `Documentation for ${title}`);
 
-	writeFileSync(join(distDir, "llms.txt"), `${buildLlmsIndex({ title, description, pages })}\n`);
-	writeFileSync(join(distDir, "llms-small.txt"), `${buildLlmsIndex({ title, description, pages, small: true })}\n`);
+	const subIndexes = new Map();
+	if (getTomlBool("llms", "i18n", true)) {
+		for (const page of indexedPages) {
+			if (!page.coveringIndex) continue;
+			try {
+				const href = new URL(page.coveringIndex);
+				const canonical = new URL(page.canonical);
+				const path = href.pathname;
+				const scoped = path.startsWith(basePath()) ? path.slice(basePath().length) : "";
+				// Only the known direct locale scope can own a postbuild index file.
+				if (href.origin !== canonical.origin || href.search || href.hash || !/^[A-Za-z]{2}(?:-[A-Za-z0-9]+)*\/llms\.txt$/.test(scoped)) continue;
+				subIndexes.set(href.href, [...(subIndexes.get(href.href) || []), page]);
+			} catch { /* Malformed discovery does not authorize a filesystem path. */ }
+		}
+	}
+	for (const [href, scopedPages] of subIndexes) {
+		const relativePath = new URL(href).pathname.slice(basePath().length);
+		const directory = join(distDir, relativePath.split("/")[0]);
+		mkdirSync(directory, { recursive: true });
+		writeFileSync(join(directory, "llms.txt"), `${buildLlmsIndex({ title, description, pages: scopedPages })}\n`);
+	}
+	writeFileSync(join(distDir, "llms.txt"), `${buildLlmsIndex({ title, description, pages: indexedPages, subIndexes: [...subIndexes.keys()].sort() })}\n`);
 
 	const full = [`# ${title}`, "", `> ${description}`, ""];
 	for (const page of pages) {
@@ -358,7 +412,7 @@ function generateLlms() {
 			groups.set(lang, [...(groups.get(lang) || []), page]);
 		}
 		for (const lang of groups.keys()) {
-			writeFileSync(join(distDir, `llms-${lang}.txt`), `${buildLlmsIndex({ title, description, pages, lang })}\n`);
+			writeFileSync(join(distDir, `llms-${lang}.txt`), `${buildLlmsIndex({ title, description, pages: indexedPages, lang })}\n`);
 		}
 	}
 }

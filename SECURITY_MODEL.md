@@ -130,7 +130,9 @@ requests receive no ACAO. Disallowed preflight requests return 403.
 `llms-full.txt` is a public aggregation of page text intended for AI/LLM
 consumption. It is not an access-controlled archive. Postbuild mitigates broad
 crawling and caching by adding `Disallow: /llms-full.txt` to `robots.txt` and
-`Cache-Control: no-store` for that file in generated deployment headers.
+`Cache-Control: no-store` for that file in generated deployment headers. Both paths include the configured Site base. These mitigations do not prevent direct retrieval.
+
+Source-backed `index.md` views are also public. They reuse published HTML content selection, exclude drafts and do not enumerate arbitrary source files or aliases. AST conversion preserves static meaning without exporting executable MDX imports/expressions. Source-relative document links resolve only through the published inventory; omitted targets become text. Index include/exclude patterns organize discovery and do not make published content private. The existing content model defines no private/unlisted field; adding one requires consistent HTML and export behavior.
 
 ## Dependency Governance
 

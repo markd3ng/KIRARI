@@ -1,5 +1,6 @@
 ---
 import { render } from "astro:content";
+import { getLlmViewPath } from "@utils/llm-content";
 import FriendLinksPanel from "@components/friends/FriendLinksPanel.astro";
 import Markdown from "@components/misc/Markdown.astro";
 import I18nKey from "@i18n/i18nKey";
@@ -16,7 +17,7 @@ const { Content } = await render(friendsPage);
 const items = friendsItems;
 ---
 
-<MainGridLayout title={i18n(I18nKey.friends, lang)} description={i18n(I18nKey.friends, lang)} lang={lang} alternates={alternates} canonicalUrl={currentUrl}>
+<MainGridLayout title={i18n(I18nKey.friends, lang)} description={i18n(I18nKey.friends, lang)} lang={lang} alternates={alternates} canonicalUrl={currentUrl} markdownUrl={getLlmViewPath(currentUrl)}>
 	<FriendLinksPanel items={items} lang={lang} />
 	<div class="card-base mt-6 px-6 py-6 sm:px-9">
 		<Markdown class="">

@@ -527,7 +527,11 @@ IndexNow covers participating engines such as Bing, Yandex, Naver, Seznam.cz, an
 
 ### LLMs.txt
 
-Postbuild generates `llms.txt`, `llms-small.txt`, `llms-full.txt`. With `llms.i18n = true`, per-language files (`llms-en.txt`, `llms-zh.txt`) are also emitted. `llms-full.txt` is a public aggregation of page text with a 20,000-character cap per page; postbuild adds `Disallow: /llms-full.txt` to `robots.txt` and `Cache-Control: no-store` to deployment headers as mitigation, not access control.
+The `llms.txt` index follows the llmstxt.org community proposal. Published posts and selected About/Friends/Projects content have canonical `index.md` views next to their HTML routes. HTML advertises these with `alternate` (`text/markdown`) and the covering index with `describedby` (`text/plain`). Source AST processing preserves links, code, math, tables, footnotes and diagram fences. Supported MDX embeds/directives become static text or links; executable imports, expressions and unknown dynamic components are omitted with a visible fallback. Relative images use emitted assets, source-document links use published canonical routes, and unsupported local attachments fail the build rather than advertise missing files. Drafts and unselected source entries are not exported.
+
+With `llms.i18n = true`, prefixed language routes have covering `<language>/llms.txt` indexes; root `llms-<locale>.txt` files remain convenience indexes. Canonical base paths, nested post slugs and default-language subdirectory choices apply to the views and discovery. `llms.enable = false` disables view generation and discovery as well as the indexes. URL include/exclude patterns curate indexes; they are not a privacy control.
+
+Owner retains `llms-full.txt`, a public HTML-text aggregation with a 20,000-character cap per page. It remains separate from source-backed views. Postbuild adds a base-aware robots exclusion and `Cache-Control: no-store` to generated headers for it; these mitigate crawling/caching and provide no access control. Markdown views are excluded from the HTML sitemap, while the optional LLM sitemap entries retain the main index and full aggregation.
 
 ```toml
 [llms]

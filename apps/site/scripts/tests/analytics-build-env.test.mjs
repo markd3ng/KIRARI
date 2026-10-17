@@ -81,7 +81,7 @@ test("both real policy writers resolve the build environment before creating pol
 		assert.match(source, /config\.analytics = resolveBuildAnalytics\(config\.analytics, \{ mode: ANALYTICS_BUILD_MODE \}\)/);
 	}
 	const packageJson = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
-	assert.match(packageJson.scripts.build, /astro build --mode production/);
+	assert.match(packageJson.scripts.build, /astro(?:\/bin\/astro\.mjs)? build --mode production/);
 	assert.equal(ANALYTICS_BUILD_MODE, "production");
 });
 

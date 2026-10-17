@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-17",
+  "main": "1ae7b7efdd632db2b16c9daa07cd087576312484",
+  "browser": "ego-browser",
+  "home": "PASS",
+  "homeCanonical": "PASS",
+  "assets": {
+    "checked": 3,
+    "status": 200
+  },
+  "robots": "200 and canonical sitemap",
+  "securityHeaders": [
+    "CSP",
+    "nosniff",
+    "Referrer-Policy",
+    "HSTS"
+  ],
+  "navigation": [
+    "/",
+    "/blog/",
+    "/posts/mapping-test/",
+    "/search?q=Mermaid"
+  ],
+  "observed": {
+    "url": "https://kirari-main.vercel.app/search?q=Mermaid",
+    "canonical": "https://kirari-main.vercel.app/search/",
+    "commitLink": "https://github.com/markd3ng/KIRARI/commit/1ae7b7efdd632db2b16c9daa07cd087576312484",
+    "searchResult": true
+  },
+  "result": "PASS"
+}

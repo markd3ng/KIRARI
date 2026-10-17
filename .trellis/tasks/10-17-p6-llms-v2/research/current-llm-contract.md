@@ -1,0 +1,82 @@
+# Current LLM contract and remaining #101 work
+
+Researched 2026-10-17 against the active `codex/p6-llms-v2` checkout, whose HEAD is accepted main `1ae7b7efdd632db2b16c9daa07cd087576312484`. The first implementation batch was being edited concurrently. References below describe current source, including the observed condensed-output removal in `postbuild.mjs`; they are not a final-head test or completion claim.
+
+## Authority and scope
+
+Read `implement.jsonl` / `check.jsonl`, then this task's `prd.md`, `design.md`, and `implement.md`, package indexes, applicable site guidelines, and shared guides. Codegraph was attempted with this exact worktree's `projectPath`; it reports no `.codegraph/` index, so the findings use direct current-source inspection.
+
+`KIRARI_NEXT_SPEC.md` is absent at the repository root, and the current file inventory contains no replacement with that name. Do not reconstruct its contents from historical plans. The current requirement is [open Issue #101, “Deliver LLMs v2 indexes and Markdown views”](https://github.com/markd3ng/KIRARI/issues/101), mirrored by the active task PRD/design. Its `SOURCE_ROADMAP` pointer to the missing file is historical provenance, not an additional readable contract. Current README sections describe shipped behavior, while `.trellis/spec/site/frontend/quality-guidelines.md` explicitly leaves source views/discovery open.
+
+Owner retention is resolved: preserve `llms-full.txt`, its current aggregation behavior and robots/no-store mitigations. No new retention decision, provider configuration, indexing submission, deployment, or shim is needed. The first condensed-output retirement batch is independently owned by the root agent and is not duplicated here.
+
+## Current official proposal
+
+The [official proposal](https://llmstxt.org/) currently labels itself v2, modified 2026-08-10. It remains a community proposal, not a ratified web standard. In order: optional BOM; required project/site H1; optional summary blockquote; optional non-heading details; optional H2 file-list sections. Each list item requires a Markdown hyperlink and may append `: notes`. An `Optional` section is a secondary-information convention. The proposal gives no numeric byte/token budget or required `llms-full.txt` aggregation format. Keep indexes concise; put detail behind useful Markdown links.
+
+The [official v2 changes](https://llmstxt.org/changes.html) describe subpath coverage and most-specific-index selection; Markdown URLs may append `.md` or replace the page extension. Discovery uses `alternate` with `type="text/markdown"`, and `describedby` for the covering `llms.txt`, through HTML links or HTTP `Link` headers. For directory URLs the proposal permits `index.md` or `index.html.md`. Locale filenames and full aggregation are KIRARI conventions, not additional mandatory standard files.
+
+## Current producer/consumer map
+
+Paths are repository-relative; line references identify inspected source, not generated output.
+
+| Boundary | Current evidence and behavior |
+|---|---|
+| Profile/config ownership | `apps/site/scripts/profile-manifest.mjs:35` maps profile TOML and `content/posts` / `content/spec` into the app. `packages/site-profile/kirari.config.toml:927`, `apps/site/src/types/config.ts:289`, and `apps/site/src/utils/config-loader.ts:713,1725` own enable/sitemap/title/description/include/exclude/i18n. Do not edit materialized content/config as source. |
+| Build order | `apps/site/package.json` build materializes profile and adapter, runs Astro, then postbuild. Current manifest pins Astro 7.3.5; older spec prose naming Astro 6 is not evidence of the installed version. |
+| HTML inventory | `apps/site/scripts/postbuild.mjs:101-119` recursively scans every built HTML file, extracts metadata by regex, and strips the entire HTML document into one whitespace-collapsed string. `generateLlms` around line 337 keeps every page with a canonical URL. It does not use content collections or an AST. |
+| Index shape/selection | `postbuild.mjs:175-216` already emits H1, summary, descriptive prose, Articles/Navigation H2 file lists, and an Optional full-aggregation link. Include/exclude globs match the complete canonical URL; recognized navigation pages bypass exclusion. Links point to HTML canonicals, not Markdown views. |
+| Article/path classification | `postbuild.mjs:148` recognizes only one path segment after `/posts/`. `isNavigationPage` at line 152 is anchored at origin root with one optional locale segment; it does not strip the configured base. |
+| Base/origin handling | `postbuild.mjs:74-80,166-172` reads URL/base overrides and generates aggregation links using the first canonical origin plus base, falling back to site URL. This is separate from Astro's shared route helpers. |
+| Locale output | `postbuild.mjs:353-360` groups rendered `kirari:language` / HTML language metadata into root files `llms-<lang>.txt`. `Layout.astro:107-114,160-169` emits language metadata using `toHreflang`. There is no `<locale>/llms.txt` scoped route today, and the main index has no locale-index discovery list. |
+| Retained full output | `postbuild.mjs:347-351` aggregates **all** canonical HTML pages, independently of include/exclude index filters, taking at most 20,000 characters per page. It includes layout text and may repeat canonical pages; this is the retained existing behavior, not source Markdown export. |
+| Existing mitigations | `postbuild.mjs:302-303,319-321` writes `/llms-full.txt` no-store and robots exclusion. `scripts/security-policy.mjs:159-161` owns the corresponding generated Vercel header. These path literals are origin-root paths; do not silently claim they cover a hosted `/docs/llms-full.txt`. Preserve them and verify actual served behavior separately. |
+| Public discovery | `src/components/Footer.astro:25-26` links to base-aware root `llms.txt` when enabled. `src/layouts/Layout.astro:165-169` has canonical and language alternates only. No Markdown alternate or describedby is present. `astro.config.mjs:155` handles optional sitemap custom LLM URLs. |
+
+## Source, routes, language and visibility
+
+`src/content.config.ts:7-15` loads Markdown and MDX posts and normalizes `draft`; `spec` has an empty schema at line 69. `src/utils/content-utils.ts:51-60` filters drafts in production, applies route slugs, and checks duplicate language/slug pairs. `getSortedPosts(lang)` at line 156 additionally filters language. HTML post routes use those helpers: `src/pages/posts/[...slug].astro:31-37,61` and `src/pages/[lang]/posts/[...slug].astro:31-45,68`. New exports should start from the same selected entries, not a new recursive source-directory read.
+
+`src/utils/post-route-utils.ts:17-59` owns explicit slug, stored slug, crc32/file strategy, nested paths, post URLs, and source asset bases. `src/utils/i18n-utils.ts:54-100,107-158` owns enabled languages, default-language prefix decisions, base-aware paths, source-language inference, and translation identity. `src/utils/page-route-utils.ts:12-33` owns equivalent page route contexts. `Layout.astro:112-114` resolves canonical paths against the Astro site URL. Reuse these boundaries for index and view identity; do not create a second regex locale system.
+
+Site Contract v2 is an **input conversion boundary**, not a replacement runtime route table: `scripts/site-contract-v2.mjs:81` maps `en` / `zh-Hans` / `zh-Hant` / `ja` into current Core identities; lines 188-190 convert `content/pages` to `content/spec`; lines 505-525 adapt language config; lines 559-560 adapt frontmatter `locale` to `lang`. Its `routeInventory` at lines 451-455 is validation output and has no draft/public flag; it is not safe as an unfiltered export list. `route-aliases.json` must not create duplicate canonical Markdown identities.
+
+No `visibility`, `private`, or `unlisted` field is defined by the current post schema or Site Contract v2 allowed fields (`site-contract-v2.mjs:82-88`). There is no existing hidden-content policy to claim implemented. For #101, share the real public route selection and explicitly exclude drafts; do not export arbitrary spec entries, disabled-language entries, unselected source files, snippets, or aliases. If adding a visibility field later, it must be a coherent schema/route/export contract, not a Markdown-only filter that leaves private HTML published. No new Owner product decision is required for following the current published-content boundary.
+
+About/friends/projects are source-backed pages, selected through `src/utils/spec-content.ts:5-26`, including localized-to-default fallback. Example: `src/pages/about.astro:10-16` and `[lang]/about.astro:13-19`. Export the exact entry used by each published page, and label fallback content accurately. Home/archive/taxonomy/search/devices/guestbook are not interchangeable raw Markdown files; any future view for them needs an explicit useful content representation rather than a dump of the page shell.
+
+## Preservation gaps
+
+The current full extractor removes hyperlink destinations, heading/list/code boundaries, image targets, and mathematical syntax. It captures the whole layout, not only article content. This is acceptable only as the documented retained legacy aggregation; it cannot satisfy Markdown-view acceptance.
+
+The existing source is available: `src/pages/rss.xml.ts:32-35` and `[lang]/rss.xml.ts:38-41` already use collection `post.body`. Current [Astro collection documentation](https://github.com/withastro/docs/blob/main/src/content/docs/en/guides/markdown-content.mdx), queried through Context7, confirms that `body` is raw uncompiled content. [Astro endpoint documentation](https://github.com/withastro/docs/blob/main/src/content/docs/en/guides/endpoints.mdx) supports static GET Response endpoints and dynamic `getStaticPaths`, matching the existing RSS pattern. These are suitable extension points; an HTML-to-Markdown dependency is unnecessary for source-backed content.
+
+Capture/serialize before destructive presentation transforms: the current plugin order is in `astro.config.mjs:182-235`; `remark-plantuml.js:33-41` replaces UML source with an image; `rehype-mermaid-pre.mjs:13-35` changes Mermaid wrappers; KaTeX/Expressive Code similarly produce presentation DOM. Preserve code fences and language/meta, inline/block math, Mermaid/PlantUML source, lists/tables/footnotes, and meaningful links. Existing examples include `content/posts/markdown.md` (links/math), `markdown-extended.md` (directives/UML), `mermaid-test.md`, and `video.mdx` (component imports/embeds). An MDX source dump containing executable imports/JSX does not by itself provide a clean meaningful Markdown view; supported embed/directive forms need explicit textual/link fallbacks.
+
+Relative URLs require source-aware rewriting. A post's output URL can differ from its source directory through explicit or crc32 slugs. `getPostAssetBasePath` and `components/misc/ImageWrapper.astro:43-68,93-95` show the distinction between source-local imports, root public paths, and external URLs. Reuse emitted asset resolution; do not point Markdown at `src/content/...` or assume `cover.jpeg` exists beside the published post. Resolve internal article links through the same content-to-canonical map, retain query/fragment, and preserve code literals containing Markdown-looking text.
+
+## Smallest next real implementation
+
+After the separately owned retirement PR, implement one source-backed post-view/discovery slice:
+
+1. Build a shared selected-post/view descriptor from existing public post, locale, slug and URL helpers. Preserve source content and explicitly supported MDX/directive fallbacks; perform needed link/asset rewrites using source/AST information. Keep the source/AST logic testable without a full site build.
+2. Emit canonical directory views as `/posts/<slug>/index.md` and localized/base equivalents. Candidate static endpoint files are `src/pages/posts/[...slug]/index.md.ts` and `[lang]/posts/[...slug]/index.md.ts`; confirm Astro route expansion in the fixture build. One shared helper should feed both endpoints and discovery URLs. Emit only views corresponding to actual canonical public routes; test default language in a subdirectory to avoid duplicate aliases. Gate views consistently with the documented LLM enable contract.
+3. Add an optional Markdown view URL through `MainGridLayout` to `Layout`, or use the existing forwarded head slot in both post routes. Emit the Markdown alternate only when its file exists. Emit describedby to the actual covering root `llms.txt`; do not advertise a nonexistent locale-scoped file. Keep normal hreflang alternates intact. HTML metadata is enough for the first slice; no provider settings are required.
+4. Point article index links at those same emitted views, fixing nested-slug coverage and base-relative navigation classification from shared identity rather than adding more path guesses. Keep the current full aggregation, root locale convenience files, sitemap policy, and mitigations stable unless the scoped change explicitly documents otherwise.
+
+Then add true path/language indexes at `<locale>/llms.txt` where applicable, with links from the covering root index, correct default-language-in-subdir scope, deduplicated canonicals, and source-backed spec page views. Existing root `llms-<lang>.txt` files can remain compatibility conveniences; they do not independently establish subpath coverage. Do not claim the first post slice completes these remaining requirements or all of #101.
+
+## Required fixtures and documentation
+
+| Fixture | Assertions that matter |
+|---|---|
+| Root/base + canonical origin | Test `/` and `/docs/`, nondefault site origin, trailing slashes, nested/explicit/crc32 slugs. Every advertised Markdown URL resolves to one file and correct canonical content; navigation does not disappear under the base. |
+| Locale selection | Default at root and in subdirectory; enabled/disabled language; differing language-map locale vs Core code; missing translation; v2 locale conversion and legacy route alias. No foreign-language leakage or alias duplication; describedby scope actually covers the page. |
+| Public boundary | Production drafts and sources with no public route never appear in views, discovery, indexes, or new export manifests. Verify configured include/exclude semantics separately from privacy; current full filtering is intentionally unchanged in the first batch. |
+| Meaningful source | Escaped Markdown link labels, inline/reference links, nested parentheses, query/fragment, relative sibling article and image links, public and remote assets, code containing fake links, math, both diagrams, tables/footnotes, admonitions/GitHub cards, and MDX embeds. Preserve meaning and emitted asset reachability. |
+| Discovery/output | Parse built HTML links, verify exactly one relevant Markdown alternate and covering describedby, fetch the target from a static server, inspect Markdown response media type where hosting supports it, and verify feature-disabled behavior. No browser rendering of SVG/diagram/KaTeX is required to read source views. |
+| Retention/lifecycle | Preserve existing actual-postbuild tests for enabled/disabled, locale grouping, obsolete artifact cleanup, full content, robots and no-store. Add deterministic repeated-build/stale-view cases when new view/index ownership exists. |
+
+`scripts/tests/llms-output.test.mjs` currently exercises the real postbuild in isolated **HTML-only** fixtures (three tests); it does not prove source fidelity, draft/schema selection, discovery, nested slugs, or base-aware navigation. `scripts/tests/external-site-build.test.mjs:68-86` snapshots HTML route metadata and owned assets, not Markdown/discovery; extend the output checks or add a focused external build fixture instead of relying on its current PASS. Site Contract v2 tests validate locale inventory/alias separation but do not prove LLM publication.
+
+Sync the eventual public output contract in README/README_CN LLM sections, owning profile TOML bilingual comments, site quality guidance and affected state/type guidance; update `SECURITY_MODEL.md` only for an actual changed export/security contract. Record format/scope/URL rules and supported source constructs as executable expectations. The current quality guide correctly states the first batch leaves Markdown/discovery open. Normal repository checks and independent review remain required; this research ran no mutating build/tests and provides no deployment evidence.
