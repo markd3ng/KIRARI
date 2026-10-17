@@ -135,6 +135,34 @@ test("reference identifiers retain their original escapes and punctuation", asyn
 	assert.deepEqual(definitions.map(({ url }) => url), ["https://example.test/one.md", "https://example.test/two.md", "https://example.test/three.md"]);
 });
 
+test("unused definitions never resolve or export destinations and referenced definitions keep the first target", async () => {
+	const body = String.raw`[Guide][A_B] and ![Cover][a\_b].
+
+[unused-image]: ./missing.png
+[unused-page]: ./missing.md
+[a_b]: ./guide.md
+[A_B]: ./shadowed-missing.png
+[a\_b]: ./cover.png`;
+	const calls = [];
+	const result = await render(body, { rewriteUrl: async (url) => {
+		calls.push(url);
+		assert.ok(!url.includes("missing"), "unconsumed reference definitions must not resolve missing assets");
+		return `https://example.test/${url.slice(2)}`;
+	} });
+	assert.deepEqual(calls, ["./guide.md", "./cover.png"]);
+	assert.doesNotMatch(result, /unused-image|unused-page|missing/);
+	const references = nodesOfType(result, "linkReference").concat(nodesOfType(result, "imageReference"));
+	assert.deepEqual(references.map(({ identifier }) => identifier), ["a_b", String.raw`a\_b`]);
+	const definitions = nodesOfType(result, "definition");
+	assert.equal(definitions.find(({ identifier }) => identifier === "a_b").url, "https://example.test/guide.md");
+	assert.equal(definitions.find(({ identifier }) => identifier === String.raw`a\_b`).url, "https://example.test/cover.png");
+	const unusedOnly = await render("Visible body.\n\n[unused]: ./missing.png", {
+		rewriteUrl: async () => { throw new Error("An unused definition must not invoke the URL resolver"); },
+	});
+	assert.match(unusedOnly, /Visible body\./);
+	assert.doesNotMatch(unusedOnly, /unused|missing/);
+});
+
 test("renders supported directives as Markdown links and readable admonitions", async () => {
 	const body = `::github{repo="owner/repo"}
 
@@ -232,6 +260,30 @@ Inline <script>PRIVATE_INLINE_SCRIPT()</script> and <style>PRIVATE_INLINE_STYLE<
 	assert.doesNotMatch(result, /PRIVATE_|<a |<img |<iframe|<script>|onclick|onerror/);
 	assert.ok(urls.includes("./guide.md?view=full&mode=1#section"));
 	assert.ok(!urls.some((url) => url.includes("script:")));
+});
+
+test("HTML span boundaries survive leading whitespace, comments and nested matching tags", async () => {
+	const cases = [
+		{
+			name: "leading whitespace and newlines",
+			body: "Before   <a href=\"./guide.md\">the **guide**</a> after.\n\n  <div>Block <a href=\"./block.md\">guide</a></div>\n\nTail.",
+			expected: "Before   [the **guide**](<https://example.test/guide.md>) after.\n\n  Block [guide](<https://example.test/block.md>)\n\nTail.",
+		},
+		{
+			name: "comment before element",
+			body: "Before <!-- comment --> <a href=\"./guide.md\">the **guide**</a> after.\n\n<!-- block comment -->\n<div>Block <a href=\"./block.md\">guide</a></div>\n\nTail.",
+			expected: "Before  [the **guide**](<https://example.test/guide.md>) after.\n\n\nBlock [guide](<https://example.test/block.md>)\n\nTail.",
+		},
+		{
+			name: "nested matching tags",
+			body: "Before <span>outer <span>inner</span> outer</span> after.\n\n<div>Block <div>nested</div> after</div>\n\nBefore <template>PRIVATE_OUTER<template>PRIVATE_INNER</template>PRIVATE_AFTER</template> after.\n\nTail.",
+			expected: "Before outer inner outer after.\n\nBlock nested after\n\nBefore [Dynamic content omitted from Markdown view.] after.\n\nTail.",
+		},
+	];
+	for (const { name, body, expected } of cases) {
+		const result = await render(body, { rewriteUrl: async (url) => `https://example.test/${url.slice(2)}` });
+		assert.ok(result.endsWith(`${expected}\n`), name);
+	}
 });
 
 test("MDX math braces and diagram fences remain source-backed", async () => {

@@ -173,9 +173,13 @@ function sortByCanonical(a, b) {
 	return a.canonical.localeCompare(b.canonical);
 }
 
+function llmsText(value) {
+	return value.replace(/[\r\n]+/g, " ").replace(/([\\`*_[\]<>])/g, "\\$1");
+}
+
 function llmsLine(page, title = siteTitle(), includeDescription = true) {
-	const label = cleanPageTitle(page, title).replace(/[\r\n]+/g, " ").replace(/([\\[\]])/g, "\\$1");
-	const description = includeDescription && page.description ? `: ${page.description.replace(/[\r\n]+/g, " ")}` : "";
+	const label = llmsText(cleanPageTitle(page, title));
+	const description = includeDescription && page.description ? `: ${llmsText(page.description)}` : "";
 	return `- [${label}](${page.markdown || page.canonical})${description}`;
 }
 

@@ -84,3 +84,7 @@ This supplements the observed failing full-suite case without mutating the root
 configuration back to the broken setting. The original three fixture scenarios
 now await the same asynchronous builder helper; the root owns their full-suite
 rerun after this cache fix.
+
+## Final review follow-up
+
+Independent review of the final five-file correction PASS: plain description text cannot forge Markdown links; unused reference definitions cause no URL resolution; referenced definitions preserve first-definition and identifier behavior; shared root URL and contextual errors preserve export behavior. Cache/CLI allegations do not match the supported staged-build path; missing referenced attachments deliberately fail closed. Root ran all 25 current LLM tests, including four actual build scenarios, with no failures after these corrections. The earlier complete standard CI passed at 2512adb; a new exact-head CI is required for the final commit.

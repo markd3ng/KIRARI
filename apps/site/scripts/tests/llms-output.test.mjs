@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { createVercelConfig } from '../security-policy.mjs';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
 
 const site = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -115,4 +117,20 @@ test('retained full aggregation no-store path follows the configured deployment 
     const policy = createVercelConfig({ site: { base } }).headers.find((entry) => entry.source === expected);
     assert.deepEqual(policy?.headers, [{ key: 'Cache-Control', value: 'no-store' }]);
   }
+});
+
+
+test('plain frontmatter descriptions cannot inject Markdown links or formatting into an index', (context) => {
+  const { root, dist } = fixture(context);
+  const html = join(dist, 'posts/english/index.html');
+  writeFileSync(html, readFileSync(html, 'utf8').replace('Fixture description', '[injected](https://evil.example/) `code` \\ slash ](https://evil.example/)'));
+  runPostbuild(root);
+  const index = readFileSync(join(dist, 'llms.txt'), 'utf8');
+  const tree = unified().use(remarkParse).parse(index);
+  const links = [];
+  const texts = [];
+  const visit = (node) => { if (node.type === 'link') links.push(node.url); if (node.type === 'text') texts.push(node.value); for (const child of node.children || []) visit(child); };
+  visit(tree);
+  assert.equal(links.some((href) => href.includes('evil.example')), false);
+  assert.ok(texts.some((text) => text.includes('[injected](https://evil.example/) `code` \\ slash')));
 });

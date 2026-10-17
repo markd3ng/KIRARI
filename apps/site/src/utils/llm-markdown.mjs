@@ -37,8 +37,16 @@ export async function renderLlmMarkdown({ body, title, canonicalUrl, sourcePath,
 		const result = await rewriteUrl(value);
 		return result && !isExecutableUrl(result) ? result : null;
 	};
+	const referencedIdentifiers = new Set();
+	const collectReferences = (node) => {
+		if (node.type === "linkReference" || node.type === "imageReference") {
+			referencedIdentifiers.add(node.identifier);
+		}
+		for (const child of node.children ?? []) collectReferences(child);
+	};
+	collectReferences(tree);
 	const collectDefinitions = async (node) => {
-		if (node.type === "definition" && !definitions.has(node.identifier)) {
+		if (node.type === "definition" && referencedIdentifiers.has(node.identifier) && !definitions.has(node.identifier)) {
 			definitions.set(node.identifier, await safeUrl(node.url));
 		}
 		for (const child of node.children ?? []) await collectDefinitions(child);

@@ -64,9 +64,9 @@
   "site_contract_tests": 7,
   "standard_source_artifact_contracts": 58,
   "llm_regressions": {
-    "renderer": 9,
+    "renderer": 11,
     "url": 4,
-    "postbuild_and_policy": 5,
+    "postbuild_and_policy": 6,
     "actual_staged_builds": 4
   },
   "browser": "PASS: English/Chinese/spec discovery, views200 and text/markdown on local Astro preview",
@@ -80,5 +80,20 @@
     "new_transitive_packages": 0
   },
   "fixed_failure": "First full suite exposed shared dependency-relative Astro cache mixing concurrent Site entries; project-local cache and explicit content/asset race regression fix verified by complete passing rerun.",
-  "remote_ci": "Required on final PR head; recorded in GitHub"
+  "remote_ci": "Required on final PR head; recorded in GitHub",
+  "full_suite_snapshot": "2512adb6ab44b4e45b085269b6d04e98aa4a4048 (all standard local checks and exact-head CI39015742639 PASS)",
+  "review_follow_up": {
+    "changes": [
+      "escape plain description text",
+      "resolve only referenced definitions",
+      "shared non-i18n URL and canonical error context",
+      "HTML offset regression table"
+    ],
+    "independent_review": "PASS",
+    "targeted_tests": 25,
+    "pass": 25,
+    "includes_actual_staged_builds": 4,
+    "type_check": "PASS",
+    "remote_ci": "New final-head standard CI required; prior-head success is not final proof"
+  }
 }

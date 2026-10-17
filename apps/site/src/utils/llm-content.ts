@@ -8,6 +8,7 @@ import { getSortedPosts } from "./content-utils";
 import { getEnabledLanguages, getLangHomeUrl, withLangPrefix } from "./i18n-utils";
 import { getPostUrl } from "./post-route-utils";
 import { getLocalizedSpecEntry } from "./spec-content";
+import { url } from "./url-utils";
 import { renderLlmMarkdown } from "./llm-markdown.mjs";
 import { llmMarkdownPath, rewriteLlmUrl } from "./llm-url-utils.mjs";
 
@@ -100,11 +101,13 @@ export async function serveLlmMarkdown(context: APIContext): Promise<Response> {
 				return (await getImage({ src: await load() })).src;
 			},
 		}),
+	}).catch((cause: unknown) => {
+		throw new Error(`Failed to generate LLM Markdown for ${content.canonicalPath}`, { cause });
 	});
 	return new Response(markdown, {
 		headers: {
 			"Content-Type": "text/markdown; charset=utf-8",
-			"Link": `<${absoluteUrl(`${Config.llms.i18n ? getLangHomeUrl(content.lang) : import.meta.env.BASE_URL}llms.txt`)}>; rel="describedby"; type="text/plain"`,
+			"Link": `<${absoluteUrl(`${Config.llms.i18n ? getLangHomeUrl(content.lang) : url("/")}llms.txt`)}>; rel="describedby"; type="text/plain"`,
 		},
 	});
 }
