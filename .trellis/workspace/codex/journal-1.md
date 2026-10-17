@@ -16,7 +16,7 @@
 
 ### Summary
 
-Implemented anonymous CACHE_NONE Makers package for #112; official capability evidence, missing-signal/deadline bridge, 17 tests and independent review PASS. Full repository checks and build PASS. PR #149 OPEN / In Review; final-head CI tracked on PR and Issue #112; no merge, deployment, credential or Site settings changes.
+Implemented anonymous CACHE_NONE Makers package for #112; official capability evidence, missing-signal/deadline bridge, 19 tests and independent review PASS. Full repository checks and build PASS. PR #149 OPEN / In Review; final-head CI tracked on PR and Issue #112; no merge, deployment, credential or Site settings changes.
 
 ### Main Changes
 

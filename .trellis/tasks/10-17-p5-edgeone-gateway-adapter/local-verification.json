@@ -63,12 +63,12 @@
     "fail": 0
   },
   "adapter_final_tests": {
-    "pass": 17,
+    "pass": 19,
     "skip": 0,
     "fail": 0
   },
   "adapter_type_check": "PASS after final runtime changes",
-  "adapter_package": "PASS; 30579 bytes per function, five files",
+  "adapter_package": "PASS; 30960 bytes per function, five files",
   "independent_review": "research/independent-review.md; PASS",
   "audit_informational": {
     "vulnerabilities": {
@@ -85,5 +85,5 @@
   },
   "live_makers_deployment_performed": false,
   "production_configuration_changed": false,
-  "note": "Full repository checks completed before final adapter stream compatibility adjustments; adapter type-check, full adapter regressions, package, Trellis and diff checks repeated afterward. Final CI must verify exact committed HEAD. No claims of live provider acceptance."
+  "note": "Full repository checks completed before final adapter compatibility adjustments; final identity-only TransformStream, string abort and string/ArrayBuffer/view normalization passed all 19 regressions, type-check, package and independent re-review. Exact-head standard CI remains authoritative on PR149 and Issue112."
 }

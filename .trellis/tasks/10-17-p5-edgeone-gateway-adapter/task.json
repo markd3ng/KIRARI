@@ -23,7 +23,7 @@
   "relatedFiles": [
     "packages/edge-gateway-edgeone"
   ],
-  "notes": "PR149 OPEN / In Review. Anonymous CACHE_NONE implementation, 17 regressions, full local verification and independent code/security review PASS. Exact final-head CI results are maintained on PR149 and Issue112. Not merged; Issue112 not completed. No Makers deployment, provider configuration, credential, or Site changes. Historical main Trellis reconciliation remains pending in PR148.",
+  "notes": "PR149 OPEN / In Review. Anonymous CACHE_NONE implementation, 19 regressions, full local verification and independent code/security review PASS. Exact final-head CI results are maintained on PR149 and Issue112. Not merged; Issue112 not completed. No Makers deployment, provider configuration, credential, or Site changes. Historical main Trellis reconciliation remains pending in PR148.",
   "meta": {
     "delivery_status": "IN_REVIEW",
     "issue": 112,

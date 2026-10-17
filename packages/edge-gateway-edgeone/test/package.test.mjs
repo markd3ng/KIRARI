@@ -54,3 +54,61 @@ test('packager refuses symlinked output before writing any files', async () => {
     await rm(fixture, { recursive: true, force: true });
   }
 });
+
+
+test('emitted handler works with Makers identity-only transforms and missing request signal', async () => {
+  const files = await buildGatewayPackage();
+  const code = files.get('edge-functions/_kirari/edge/[[path]].js');
+  const NativeTransform = globalThis.TransformStream;
+  const nativeFetch = globalThis.fetch;
+  const request = new Proxy(new Request('https://gateway.example/_kirari/edge/github/contents/owner/repo/README.md'), {
+    get(target, key) { return key === 'signal' ? undefined : Reflect.get(target, key, target); },
+  });
+  let fetchCalls = 0;
+  try {
+    globalThis.TransformStream = class extends NativeTransform {
+      constructor(...args) {
+        assert.equal(args.length, 0, 'Makers ignores custom transformer callbacks');
+        super();
+      }
+    };
+    globalThis.fetch = async (input, init) => {
+      fetchCalls++;
+      assert.equal(String(input), 'https://api.github.com/repos/owner/repo/contents/README.md');
+      assert.equal(new Headers(init.headers).get('authorization'), null);
+      return Response.json({ content: 'ok' });
+    };
+    const source = new TextDecoder().decode(code) + '\n// Makers identity simulation';
+    const module = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+    const response = await module.default({ request, get env() { throw new Error('must not read'); } });
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { content: 'ok' });
+    assert.equal(fetchCalls, 1);
+    assert.equal(response.headers.get('x-kirari-cache-level'), 'CACHE_NONE');
+  } finally {
+    globalThis.TransformStream = NativeTransform;
+    globalThis.fetch = nativeFetch;
+  }
+});
+
+test('Makers string, ArrayBuffer and view chunks normalize to bounded Core bytes', async () => {
+  const { createMakersGateway } = await import('../src/index.ts');
+  const bytes = new TextEncoder().encode('{"ok":true}');
+  const padded = new Uint8Array(bytes.length + 4);
+  padded.set(bytes, 2);
+  const chunks = ['{"ok":true}', bytes.buffer, new DataView(padded.buffer, 2, bytes.length)];
+  for (const chunk of chunks) {
+    const handler = createMakersGateway({ fetch: async () => new Response(new ReadableStream({
+      start(controller) { controller.enqueue(chunk); controller.close(); },
+    }), { headers: { 'content-type': 'application/json' } }) });
+    const response = await handler({ request: new Request('https://gateway.example/_kirari/edge/github/contents/owner/repo/README.md') });
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { ok: true });
+  }
+  const handler = createMakersGateway({ fetch: async () => new Response(new ReadableStream({
+    start(controller) { controller.enqueue({ private: 'do not leak' }); controller.close(); },
+  }), { headers: { 'content-type': 'application/json' } }) });
+  const response = await handler({ request: new Request('https://gateway.example/_kirari/edge/github/contents/owner/repo/README.md') });
+  assert.equal(response.status, 502);
+  assert.doesNotMatch(await response.text(), /private|do not leak|Unsupported/);
+});

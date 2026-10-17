@@ -20,6 +20,7 @@ export function createMakersGateway(options: MakersGatewayOptions = {}) {
 	return function onRequest(context: MakersRequestContext): Promise<Response> {
 		const request = context.request;
 		// Makers documents AbortController, but not an inbound Request.signal.
+		// This fallback cannot detect client disconnects; Core still owns its timeout.
 		// Keep the original URL/method/body/header accessors without reconstructing it.
 		const fallback = request.signal ? undefined : new AbortController().signal;
 		const compatible = fallback
@@ -39,7 +40,7 @@ function abortAwareFetch(fetcher: GatewayFetch): GatewayFetch {
 		const signal = init?.signal;
 		let aborted = false;
 		let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
-		let stream: TransformStreamDefaultController<Uint8Array> | undefined;
+		let writer: WritableStreamDefaultWriter<Uint8Array> | undefined;
 		const cleanup = () => signal?.removeEventListener("abort", abort);
 		const cancel = () => { void reader?.cancel().catch(() => undefined); };
 		const abort = () => {
@@ -47,8 +48,8 @@ function abortAwareFetch(fetcher: GatewayFetch): GatewayFetch {
 			cleanup();
 			// No provider exception, URL, header or binding value enters this error.
 			const error = new Error("Gateway upstream aborted.");
-			if (stream) stream.error(error);
-			else reject(error);
+			void writer?.abort("Gateway upstream aborted.").catch(() => undefined);
+			reject(error);
 			cancel();
 		};
 		if (signal?.aborted) { abort(); return; }
@@ -65,27 +66,27 @@ function abortAwareFetch(fetcher: GatewayFetch): GatewayFetch {
 			const responseReader = response.body.getReader();
 			reader = responseReader;
 			// Makers supports TransformStream construction, but not new ReadableStream.
-			const body = new TransformStream<Uint8Array, Uint8Array>({
-				start(controller) { stream = controller; },
-			});
-			const writer = body.writable.getWriter();
+			// Custom transformers are ignored in Makers; use the identity stream.
+			const body = new TransformStream<Uint8Array, Uint8Array>();
+			const responseWriter = body.writable.getWriter();
+			writer = responseWriter;
 			// Core may reject a status/header without reading its body. Cancellation
 			// must release the source even while its first read is still pending.
-			void writer.closed.catch(() => { cleanup(); cancel(); });
+			void responseWriter.closed.catch(() => { cleanup(); cancel(); });
 			void (async () => {
 				try {
 					while (true) {
 						const chunk = await responseReader.read();
 						if (aborted) return;
-						if (chunk.done) { await writer.close(); cleanup(); return; }
-						await writer.write(chunk.value);
+						if (chunk.done) { await responseWriter.close(); cleanup(); return; }
+						await responseWriter.write(toBytes(chunk.value));
 					}
 				} catch {
 					cleanup();
 					cancel();
-					if (!aborted) stream?.error(new Error("Gateway upstream read failed."));
+					if (!aborted) void responseWriter.abort("Gateway upstream read failed.").catch(() => undefined);
 				} finally {
-					writer.releaseLock();
+					responseWriter.releaseLock();
 				}
 			})();
 			resolve(new Response(body.readable, { status: response.status, statusText: response.statusText, headers: response.headers }));
@@ -95,4 +96,13 @@ function abortAwareFetch(fetcher: GatewayFetch): GatewayFetch {
 			reject(new Error("Gateway upstream unavailable."));
 		});
 	});
+}
+
+// Makers documents string, ArrayBuffer and ArrayBufferView stream chunks.
+// Core receives bytes consistently, rather than relying on Node's narrower type.
+function toBytes(value: unknown): Uint8Array {
+	if (typeof value === "string") return new TextEncoder().encode(value);
+	if (value instanceof ArrayBuffer) return new Uint8Array(value);
+	if (ArrayBuffer.isView(value)) return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+	throw new TypeError("Unsupported upstream chunk.");
 }
