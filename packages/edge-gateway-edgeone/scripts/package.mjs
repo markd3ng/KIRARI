@@ -1,6 +1,6 @@
 import { build } from 'esbuild';
 import { lstat, mkdir, writeFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const packageRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -36,9 +36,8 @@ export async function buildGatewayPackage() {
 }
 
 async function rejectSymlinks(target) {
-  const relative = target.slice(packageRoot.length);
   let current = packageRoot;
-  for (const part of relative.split('/').filter(Boolean)) {
+  for (const part of relative(packageRoot, target).split(sep).filter(Boolean)) {
     current = join(current, part);
     try {
       if ((await lstat(current)).isSymbolicLink()) throw new Error('Package output cannot traverse symlinks.');
@@ -57,7 +56,7 @@ export async function packageGateway() {
     await mkdir(dirname(destination), { recursive: true });
     await writeFile(destination, content);
   }
-  return { files: [...files.keys()], bundleBytes: files.values().next().value.byteLength };
+  return { files: [...files.keys()], bundleBytes: files.get('edge-functions/_kirari/edge/[[path]].js').byteLength };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
