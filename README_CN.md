@@ -493,7 +493,7 @@ route = "/ghc"
 serviceBinding = "GHCARD_CACHE"
 ```
 
-- **Cloudflare Pages**：部署 monorepo 内的 `workers/kirari-edge` Edge Worker，可选将 GitHub token 设为 `KIRARI_GITHUB_TOKEN` Worker Secret。`serviceBinding` 设为 binding 名称。
+- **Cloudflare Pages**：可选 Worker 提供命名操作路由 `/_kirari/edge/*`。现有 `/ghc` Site 适配器在 #98 的 Site 集成更新前仍是旧兼容路径，且不会收到 Worker token。Core 只有在同时提供 `KIRARI_GITHUB_TOKEN` Worker Secret 和逗号分隔的 `KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES` 公共仓库白名单时才会使用 token。路由和缓存说明见 [Worker 文档](docs/WORKERS.md)。
 - **Vercel**：在 Project Environment Variables 中设置 `GITHUB_TOKEN`。将 `GHC_ALLOWED_ORIGINS` 设为允许调用适配器的精确 origin 列表（逗号分隔）。留空时不会给浏览器 Origin 请求授予 CORS；同源/no-Origin 服务端请求仍可工作，但不返回 `Access-Control-Allow-Origin`。
 
 ### SEO

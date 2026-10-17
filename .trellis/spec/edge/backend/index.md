@@ -1,9 +1,10 @@
 # `@kirari/edge` Backend Guidelines
 
-`workers/kirari-edge` is currently one stateless Cloudflare Worker module. It
-provides opt-in GET/HEAD proxy routes for GitHub, avatars, Bangumi API, and
-Bangumi images. It has no database, KV namespace, Durable Object, router
-framework, or persistence layer.
+`workers/kirari-edge` provides opt-in legacy proxy routes plus the
+`/_kirari/edge/*` Cloudflare adapter for `@kirari/edge-gateway-core`. The Core
+owns named operation and upstream semantics. Cloudflare Cache API and optional
+KV adapter ports are implemented, but no cache or KV binding is configured by
+default.
 
 ## Guides
 

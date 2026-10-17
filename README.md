@@ -509,7 +509,7 @@ route = "/ghc"
 serviceBinding = "GHCARD_CACHE"
 ```
 
-- **Cloudflare Pages**: Deploy the monorepo Edge Worker in `workers/kirari-edge` with `KIRARI_GITHUB_TOKEN` as an optional Worker Secret. Set `serviceBinding` to the binding name.
+- **Cloudflare Pages**: The optional Worker exposes the named `/_kirari/edge/*` Gateway. The existing `/ghc` Site adapter remains a legacy compatibility path until the Site integration in #98 is updated, and it no longer receives the Worker token. Core token use requires both the `KIRARI_GITHUB_TOKEN` Worker Secret and a comma-separated `KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES` allowlist of public repositories. See [Worker routing and cache setup](docs/WORKERS.md).
 - **Vercel**: Set `GITHUB_TOKEN` in Project Environment Variables. Set `GHC_ALLOWED_ORIGINS` to a comma-separated list of exact origins allowed to call the adapter. When empty, browser Origin requests are not granted CORS; same-origin/no-Origin server requests still work without `Access-Control-Allow-Origin`.
 
 ### SEO

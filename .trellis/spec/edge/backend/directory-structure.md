@@ -1,14 +1,18 @@
 # Directory Structure
 
-- `src/index.ts`: `Env`, feature routing, proxy helpers, CORS, cache headers,
-  and the default Worker `fetch` handler.
-- `test/index.test.ts`: Node built-in tests with a mocked `globalThis.fetch`.
+- `src/index.ts`: feature routing, legacy proxy helpers, and the default Worker
+  `fetch` handler. It delegates `/_kirari/edge/*` to the portable Core.
+- `src/cloudflare-gateway.ts`: Cloudflare Cache API and optional KV adapters
+  for the Core's injected ports.
+- `test/index.test.ts` and `test/cloudflare-gateway.test.ts`: Node built-in
+  tests with mocked fetch, cache, and KV bindings.
 - `wrangler.jsonc`: Worker name, entrypoint, compatibility date.
 - `package.json`: type-check, test, dry deploy, and deploy scripts.
 
-Keep this single-file implementation while the feature set remains four small
-proxies. Do not introduce a router, service classes, or storage abstractions for
-future possibilities.
+Keep the legacy proxy helpers small. Gateway operation parsing and cache policy
+belong to `@kirari/edge-gateway-core`; Cloudflare binding adaptation belongs in
+`src/cloudflare-gateway.ts`. Do not add router frameworks or unconfigured
+storage bindings.
 
 The site-facing `[edge]` TOML section and Worker environment variables are
 separate current mechanisms. No code in this package reads TOML directly and

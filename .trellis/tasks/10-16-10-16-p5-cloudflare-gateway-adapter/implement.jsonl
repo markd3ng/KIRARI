@@ -1,0 +1,6 @@
+{"file":".trellis/spec/edge/backend/index.md","reason":"Core and Cloudflare adapter ownership boundaries"}
+{"file":".trellis/spec/edge/backend/directory-structure.md","reason":"Edge package layout and adapter placement"}
+{"file":".trellis/spec/edge/backend/database-guidelines.md","reason":"Optional cache binding scope and persistence semantics"}
+{"file":".trellis/spec/edge/backend/error-handling.md","reason":"Worker error and HEAD response contracts"}
+{"file":".trellis/spec/edge/backend/quality-guidelines.md","reason":"Route, credential, and test boundaries"}
+{"file":".trellis/spec/guides/index.md","reason":"Shared Trellis repository guidance"}

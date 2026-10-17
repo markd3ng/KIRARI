@@ -250,6 +250,10 @@ importers:
   packages/site-profile: {}
 
   workers/kirari-edge:
+    dependencies:
+      '@kirari/edge-gateway-core':
+        specifier: workspace:*
+        version: link:../../packages/edge-gateway-core
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20260617.1
