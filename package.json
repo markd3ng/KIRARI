@@ -36,9 +36,12 @@
     "trellis:check": "node scripts/check-trellis-adapter-sync.mjs",
     "release:check": "node scripts/release-regression-check.mjs",
     "release:version-check": "node scripts/release-version-check.mjs",
-    "check": "\"$npm_execpath\" site:type-check && \"$npm_execpath\" site:astro-check && \"$npm_execpath\" edge:type-check && \"$npm_execpath\" edge:test && \"$npm_execpath\" gateway:type-check && \"$npm_execpath\" gateway:test && \"$npm_execpath\" profile:check && \"$npm_execpath\" trellis:check",
+    "check": "\"$npm_execpath\" site:type-check && \"$npm_execpath\" site:astro-check && \"$npm_execpath\" edge:type-check && \"$npm_execpath\" edge:test && \"$npm_execpath\" gateway:type-check && \"$npm_execpath\" gateway:test && \"$npm_execpath\" gateway:edgeone:type-check && \"$npm_execpath\" gateway:edgeone:test && \"$npm_execpath\" profile:check && \"$npm_execpath\" trellis:check",
     "build": "\"$npm_execpath\" site:build",
-    "audit": "\"$npm_execpath\" --filter @kirari/site audit"
+    "audit": "\"$npm_execpath\" --filter @kirari/site audit",
+    "gateway:edgeone:type-check": "\"$npm_execpath\" --filter @kirari/edge-gateway-edgeone type-check",
+    "gateway:edgeone:test": "\"$npm_execpath\" --filter @kirari/edge-gateway-edgeone test",
+    "gateway:edgeone:package": "\"$npm_execpath\" --filter @kirari/edge-gateway-edgeone package"
   },
   "packageManager": "pnpm@9.14.4",
   "pnpm": {

@@ -1,0 +1,28 @@
+{
+  "id": "p5-edgeone-gateway-adapter",
+  "name": "p5-edgeone-gateway-adapter",
+  "title": "P5 EdgeOne Makers Gateway Adapter",
+  "description": "",
+  "status": "in_progress",
+  "dev_type": "backend",
+  "scope": null,
+  "package": "edge",
+  "priority": "P1",
+  "creator": "codex",
+  "assignee": "codex",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "codex/p5-edgeone-gateway-adapter",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "packages/edge-gateway-edgeone"
+  ],
+  "notes": "Implementation and independent review PASS. Preparing PR and exact-head standard CI; no merges/deployments. GitHub #112 remains open. Main historical task metadata is pending reconciliation in PR148; do not rearchive here.",
+  "meta": {}
+}

@@ -1,0 +1,3 @@
+{"file": "packages/edge-gateway-core/README.md", "reason": "accepted public contract"}
+{"file": ".trellis/spec/edge/backend/quality-guidelines.md", "reason": "security regressions"}
+{"file": ".trellis/spec/guides/repository-workflow.md", "reason": "verification and native deployment"}

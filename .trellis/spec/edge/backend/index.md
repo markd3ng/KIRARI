@@ -19,3 +19,7 @@ framework, or persistence layer.
 
 Read all five guides before changing `src/index.ts`, bindings, routes, or tests,
 then read `.trellis/spec/guides/index.md`.
+
+## Portable Gateway packages
+
+The legacy Worker rules above describe `workers/kirari-edge` only. New named-operation Gateway work lives in `packages/edge-gateway-core`; platform packaging remains separate. Read [Gateway Adapter Boundaries](./gateway-adapters.md) before changing an adapter.
