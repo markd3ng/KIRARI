@@ -1,0 +1,23 @@
+{
+  "id": "p4-r3-trusted-base-bootstrap",
+  "name": "p4-r3-trusted-base-bootstrap",
+  "title": "P4 / RM-05 — Restore native Git deployment and reconcile roadmap",
+  "status": "completed",
+  "priority": "P1",
+  "creator": "Ian",
+  "assignee": "Ian",
+  "createdAt": "2026-10-07",
+  "completedAt": "2026-10-16",
+  "branch": "codex/native-git-deployment-correction",
+  "base_branch": "main",
+  "worktree_path": "/Users/ian/.codex/worktrees/p4-c1-hobby/KIRARI",
+  "baseline_main_sha": "c6db5da47d1b5d853a38032e1b676fb0cf2c013a",
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/143",
+  "scope": "Completed native Git cutover accepted under #99 after authorized PR #143 merge and Production browser acceptance. No remaining execution scope; previous authorization limits are historical.",
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "Continues existing P4 task. Previously merged deployment orchestration is historical and will be retired, not represented as completed native Production infrastructure. Root task evidence retains previous history. Engineering PR143 opened; frozen source independently reviewed, exact initial-head CI38668940112 and advisory OCR38668940211 succeeded. Native Preview matches initial head; Production remains unchanged. Two OCR-confirmed test coverage improvements are prepared for final-head revalidation.\n\nP4 complete: PR #143 merged at 1d8997d647c17d448be906108b510f75c24e0efa; Owner-confirmed native Production browser acceptance completed and #99/#129-#132 are closed / Project Done. Previous setup/approval blockers in this task are historical and retired.",
+  "commit": "1d8997d647c17d448be906108b510f75c24e0efa"
+}

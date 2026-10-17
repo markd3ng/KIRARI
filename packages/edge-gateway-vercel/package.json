@@ -1,0 +1,22 @@
+{
+	"name": "@kirari/edge-gateway-vercel",
+	"private": true,
+	"type": "module",
+	"version": "0.1.0",
+	"description": "Vercel Node.js Functions adapter for the KIRARI Edge Gateway Core",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"type-check": "tsc --noEmit",
+		"test": "node --test --experimental-strip-types test/*.test.ts"
+	},
+	"dependencies": {
+		"@kirari/edge-gateway-core": "workspace:*",
+		"@vercel/functions": "2.2.12"
+	},
+	"devDependencies": {
+		"@types/node": "24.12.4",
+		"typescript": "5.9.3"
+	}
+}
