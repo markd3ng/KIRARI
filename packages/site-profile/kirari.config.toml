@@ -978,16 +978,17 @@ url = "https://github.com/saicaca/fuwari"
 # Enable IndexNow integration for instant search engine indexing
 # 启用 IndexNow 集成实现即时搜索引擎索引
 # Type: boolean / 类型: 布尔值
-# Note: IndexNow sends requests to search engines on every build
-# 注意: IndexNow 在每次构建时向搜索引擎发送请求
-# Warning: Keep disabled if you don't need instant indexing
-# 警告: 如不需要即时索引功能，建议保持关闭
+# Note: This publishes the verification key during build; requests run only
+# after verified native Production when explicitly enabled in GitHub Actions.
+# 注意: 构建时发布验证 key；仅在原生 Production 验证后、且 Actions 显式开启时发送请求。
+# Keep disabled until the IndexNow provider is approved.
+# Owner 批准启用 IndexNow 前保持关闭。
 # indexNow = false
 
-# IndexNow API key / IndexNow API 密钥
+# Public IndexNow verification key / 公开 IndexNow 验证 key
 # Type: string / 类型: 字符串
-# Note: The key file is served at /{key}.txt for verification
-# 注意: 密钥文件部署在 /{key}.txt 供搜索引擎验证
+# Note: The key file is published at /{key}.txt for verification.
+# 注意: 该 key 文件发布在 /{key}.txt 供搜索引擎验证。
 # This is a public verification key only; do not reuse private secrets.
 # 这只是公开验证 key；不要复用私密 secret。
 # Get your key at https://www.indexnow.org

@@ -66,7 +66,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 |---|---|
 | materialize | `functions/ghc/` 或 `api/ghc/`（仅 `githubCard.adapter.enabled` 时；Cloudflare 产物会写入部署根目录，兼容 `apps/site` monorepo） |
 | astro build | `dist/`（SSG） |
-| postbuild | `_headers`、`_redirects`、`robots.txt`、Pagefind 索引、LLM 文件、可选的 IndexNow/Google 收录提交（仅显式授权时） |
+| postbuild | `_headers`、`_redirects`、`robots.txt`、Pagefind 索引、LLM 文件、可选的 IndexNow 公开验证文件；不发送收录通知 |
 
 **性能保证**：
 
@@ -504,10 +504,10 @@ serviceBinding = "GHCARD_CACHE"
 | Robots.txt | postbuild 阶段从 `site.url` 生成 |
 | Canonical + hreflang | 每页自动推导 |
 | 搜索验证 | `head.verification.{google,bing,yandex,naver}` |
-| IndexNow | `seo.indexNow = true` → 每次构建提交到参与协议的搜索引擎 |
-| Google 索引 | `seo.google.indexingApi = true` → 可选高级 Google Indexing API 提交 |
+| IndexNow | 默认关闭；`seo.indexNow` 仅发布验证文件；还需 GitHub Actions 变量 `KIRARI_INDEXNOW_ENABLED=true` 且原生 Production 验证通过才会通知 |
+| Google 索引 | 保持关闭；Owner 决定适用内容前不发送通知 |
 
-IndexNow 覆盖 Bing、Yandex、Naver、Seznam.cz、Yep 等参与方。Google 不支持 IndexNow；Google 仍依赖 sitemap/Search Console，或针对适用内容使用可选 Google Indexing API。IndexNow key 是部署到 `/{key}.txt` 的公开验证 key；不要复用密码、token 或其他私密 secret。Google Indexing API 主要面向 JobPosting 和 BroadcastEvent URL，普通博客页面不保证受益。
+IndexNow 覆盖 Bing、Yandex、Naver、Seznam.cz、Yep 等参与方。Google 不支持 IndexNow。IndexNow key 是部署到 `/{key}.txt` 的公开验证 key；不要复用密码、token 或其他私密 secret。当前部署后流程只使用 IndexNow。Google Indexing API 保持关闭，等待 Owner 确认适用内容；Google 文档限定为包含 `JobPosting` 或嵌套在 `VideoObject` 中的 `BroadcastEvent` 页面，普通博客页面不提交。
 
 ### LLMs.txt
 

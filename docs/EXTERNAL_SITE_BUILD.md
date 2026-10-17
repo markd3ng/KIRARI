@@ -182,13 +182,14 @@ the canonical destination, so recovery removes only that destination's stale
 workspaces and cannot clean another active target's workspace.
 
 The child build receives `KIRARI_SITE_SOURCE` and
-`KIRARI_BUILD_ONLY=true`. IndexNow and Google Indexing API submissions require
-`KIRARI_ALLOW_INDEXING_SUBMISSIONS=true`, and are vetoed by either
-`KIRARI_BUILD_ONLY=true` or `NODE_ENV=test`. The external builder always sets
-build-only mode and does not forward `KIRARI_ALLOW_INDEXING_SUBMISSIONS` to the
-child. It filters inherited environment variables to selected build settings
-and `PUBLIC_*` values. Provenance fingerprints those selected values without
-copying them; `PUBLIC_*` remains public and must never contain secrets.
+`KIRARI_BUILD_ONLY=true`. Postbuild and external-Site builds never submit
+indexing notifications, regardless of legacy flags. IndexNow can run only in
+the separate GitHub workflow after verified native Production and explicit
+Site/GitHub opt-in. Google remains disabled until eligible content is approved.
+The external builder always sets build-only mode and filters inherited
+environment variables to selected build settings and `PUBLIC_*` values.
+Provenance fingerprints those selected values without copying them; `PUBLIC_*`
+remains public and must never contain secrets.
 
 ## Trust boundary
 

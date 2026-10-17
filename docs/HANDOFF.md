@@ -1,7 +1,9 @@
 # KIRARI handoff — 2026-10-18 (Asia/Shanghai)
 
 P0–P6 are complete. P5 is **8/8 accepted**; P6 #101 is accepted with
-`llms-full.txt` retained. Next development is **P7 #100**, which has not started.
+`llms-full.txt` retained. **P7 #100 is in progress** on
+`codex/p7-post-deploy-indexing`; its code remains default-off and is not yet
+accepted or merged.
 GitHub Issues contain acceptance criteria; [Project #1](https://github.com/users/markd3ng/projects/1)
 holds current progress. Read those and fresh main before continuing.
 
@@ -64,11 +66,12 @@ concurrent distinct Sites sharing dependencies. Astro caches remain project-loca
 
 ## Next: P7 #100
 
-Implement [#100](https://github.com/markd3ng/KIRARI/issues/100) using the current
-native Git deployment architecture. Start with existing
-`apps/site/scripts/indexing.mjs`, postbuild and their tests. Builds, Preview,
-external-Site CI and local/test runs must make zero indexing requests regardless
-of submission flags. Notifications remain opt-in and disabled by default.
+Continue [#100](https://github.com/markd3ng/KIRARI/issues/100), now In Progress
+in the `codex/p7-post-deploy-indexing` branch, using the current native Git
+deployment architecture. Postbuild now only publishes an optional public key;
+the post-deployment handler checks the exact Production build marker, applies
+the opt-in gates and refuses build, Preview, external-Site, test and local
+runtimes. No provider request is enabled by this code change.
 
 Evaluate the documented native deployment-success signal and its actual sender
 authentication. Verify authoritative team/project/repository/main/commit,
@@ -77,10 +80,12 @@ before any submission. Use bounded provider failures and retries. Ordinary
 BlogPosting URLs must not be sent to an ineligible Google Indexing API.
 
 Code and fixture development can proceed without enabling external services.
-Owner decisions are required before provider enablement/credentials: whether to
-retain IndexNow and whether eligible Google content exists. Do not provision
-credentials or enable a provider as part of this handoff. P8 #106/#107 remain
-Todo / Backlog; Analytics and Ads remain disabled by default.
+Owner decisions are required before provider enablement: whether to retain
+IndexNow and whether eligible Google content exists. Vercel's documented
+dispatch payload has no Team ID, and the unauthenticated deployment read API
+returns 403; the implementation pins the already approved global project ID
+and does not add a Vercel credential. P8 #106/#107 remain Todo / Backlog;
+Analytics and Ads remain disabled by default.
 
 ## Working conventions and limits
 

@@ -111,7 +111,7 @@ async function buildFixture({ site, dist }) {
 	});
 	assert.equal(result.error, undefined, result.error?.message);
 	assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-	assert.match(result.stdout, /Indexing submissions skipped/);
+	assert.doesNotMatch(result.stdout, /indexing API (?:submission|notification)/i);
 }
 
 function walk(directory) {

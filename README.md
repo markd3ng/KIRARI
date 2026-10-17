@@ -67,7 +67,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 |---|---|
 | materialize | `functions/ghc/` or `api/ghc/` (only when `githubCard.adapter.enabled`; Cloudflare output is written to the deployment root, including `apps/site` monorepos) |
 | astro build | `dist/` (SSG) |
-| postbuild | `_headers`, `_redirects`, `robots.txt`, Pagefind index, LLM files, optional IndexNow/Google indexing submissions (explicit opt-in only) |
+| postbuild | `_headers`, `_redirects`, `robots.txt`, Pagefind index, LLM files, optional public IndexNow verification file; no indexing submissions |
 
 **Performance invariants**:
 
@@ -520,10 +520,10 @@ serviceBinding = "GHCARD_CACHE"
 | Robots.txt | Generated in postbuild from `site.url` |
 | Canonical + hreflang | Per-page, auto-derived |
 | Search verification | `head.verification.{google,bing,yandex,naver}` |
-| IndexNow | `seo.indexNow = true` → submits to participating engines on every build |
-| Google indexing | `seo.google.indexingApi = true` → optional advanced Google Indexing API submit |
+| IndexNow | Disabled by default; `seo.indexNow` publishes the verification file; notifications also require GitHub Actions variable `KIRARI_INDEXNOW_ENABLED=true` and verified native Production |
+| Google indexing | Disabled; no notifications are sent until eligible content and an Owner decision are established |
 
-IndexNow covers participating engines such as Bing, Yandex, Naver, Seznam.cz, and Yep. Google does not support IndexNow; use sitemap/Search Console, or the optional Google Indexing API for eligible content. The IndexNow key is a public verification key served at `/{key}.txt`; do not reuse passwords, tokens, or other private secrets as the key. Google Indexing API is mainly intended for JobPosting and BroadcastEvent URLs, so ordinary blog pages are not guaranteed to benefit.
+IndexNow covers participating engines such as Bing, Yandex, Naver, Seznam.cz, and Yep. Google does not support IndexNow. The IndexNow key is public and served at `/{key}.txt`; do not reuse passwords, tokens, or other private secrets as the key. The current post-deploy flow uses only IndexNow. Google submissions remain off until the Owner approves eligible content; Google documents the Indexing API for pages with `JobPosting` or `BroadcastEvent` embedded in `VideoObject`, so ordinary blog pages are excluded.
 
 ### LLMs.txt
 

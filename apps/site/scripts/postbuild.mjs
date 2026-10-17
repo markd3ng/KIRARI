@@ -5,7 +5,7 @@ import { parse } from "smol-toml";
 import sanitizeHtml from "sanitize-html";
 import { buildPagefindIndex } from "./pagefind-index.mjs";
 import { buildContentSecurityPolicy, SECURITY_HEADERS } from "./security-policy.mjs";
-import { submitIndexingNotifications } from "./indexing.mjs";
+import { prepareIndexNowVerificationFile } from "./indexing.mjs";
 import { resolveSearchProvider } from "../src/utils/search-provider.mjs";
 
 const distDir = new URL("../dist", import.meta.url).pathname;
@@ -422,12 +422,4 @@ generateRobots();
 obfuscateMailtoLinks();
 await generatePagefind();
 generateLlms();
-const indexingSubmissionsAuthorized = await submitIndexingNotifications({
-	config,
-	distDir,
-	siteUrl: siteUrl(),
-	basePath: basePath(),
-});
-if (!indexingSubmissionsAuthorized) {
-	console.log("[postbuild] Indexing submissions skipped by the fail-closed authorization policy.");
-}
+prepareIndexNowVerificationFile({ config, distDir });
