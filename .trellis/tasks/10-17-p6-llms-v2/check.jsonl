@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/site/frontend/quality-guidelines.md", "reason": "postbuild and static behavior"}
+{"file": ".trellis/spec/site/frontend/type-safety.md", "reason": "config and content boundary"}
+{"file": ".trellis/spec/guides/repository-workflow.md", "reason": "required checks and native deployment"}
+{"file": "apps/site/scripts/postbuild.mjs", "reason": "current LLM owner"}

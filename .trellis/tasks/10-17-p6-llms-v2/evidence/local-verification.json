@@ -1,0 +1,76 @@
+{
+  "base": "1ae7b7efdd632db2b16c9daa07cd087576312484",
+  "node": "22.23.3",
+  "pnpm": "9.14.4",
+  "commands": [
+    {
+      "command": "corepack pnpm check",
+      "exit": 0,
+      "seconds": 44.36
+    },
+    {
+      "command": "corepack pnpm site:test",
+      "exit": 0,
+      "seconds": 81.32
+    },
+    {
+      "command": "corepack pnpm site:contract:test",
+      "exit": 0,
+      "seconds": 2.43
+    },
+    {
+      "command": "node apps/site/scripts/qa-regression-check.mjs",
+      "exit": 0,
+      "seconds": 0.1
+    },
+    {
+      "command": "corepack pnpm edge:deploy:dry",
+      "exit": 0,
+      "seconds": 8.43
+    },
+    {
+      "command": "corepack pnpm deploy:config:check",
+      "exit": 0,
+      "seconds": 0.47
+    },
+    {
+      "command": "corepack pnpm build",
+      "exit": 0,
+      "seconds": 14.53
+    },
+    {
+      "command": "corepack pnpm release:check",
+      "exit": 0,
+      "seconds": 0.48
+    },
+    {
+      "command": "corepack pnpm release:version-check",
+      "exit": 0,
+      "seconds": 0.36
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0,
+      "seconds": 0.02
+    }
+  ],
+  "targeted_postbuild": {
+    "before": {
+      "pass": 1,
+      "fail": 2
+    },
+    "after": {
+      "pass": 3,
+      "fail": 0
+    }
+  },
+  "site_tests": {
+    "tests": 109,
+    "pass": 108,
+    "fail": 0,
+    "skip": 1
+  },
+  "site_contract_tests": 7,
+  "independent_review": "PASS",
+  "remote_ci": "Required on final PR head; recorded in GitHub"
+}

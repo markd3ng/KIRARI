@@ -1,5 +1,5 @@
 import { ANALYTICS_BUILD_MODE, resolveBuildAnalytics } from "./build-analytics-settings.mjs";
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { parse } from "smol-toml";
 import sanitizeHtml from "sanitize-html";
@@ -172,7 +172,7 @@ function llmsFileUrl(pages, filename) {
 	}
 }
 
-function buildLlmsIndex({ title, description, pages, lang, small = false }) {
+function buildLlmsIndex({ title, description, pages, lang }) {
 	const includePatterns = getTomlStringArray("llms", "includePatterns", ["*"]);
 	const excludePatterns = getTomlStringArray("llms", "excludePatterns", [
 		"*/categories/*",
@@ -186,7 +186,6 @@ function buildLlmsIndex({ title, description, pages, lang, small = false }) {
 		.filter((page) => !matchesAny(page.canonical, excludePatterns) || isNavigationPage(page));
 	const articles = scopedPages.filter(isArticlePage).sort(sortByCanonical);
 	const navigation = scopedPages.filter(isNavigationPage).sort(sortByCanonical);
-	const articleLimit = small ? 30 : articles.length;
 	const lines = [
 		`# ${lang ? `${title} (${lang})` : title}`,
 		"",
@@ -198,11 +197,11 @@ function buildLlmsIndex({ title, description, pages, lang, small = false }) {
 
 	if (articles.length > 0) {
 		lines.push("## Articles", "");
-		for (const page of articles.slice(0, articleLimit)) lines.push(llmsLine(page, title));
+		for (const page of articles) lines.push(llmsLine(page, title));
 		lines.push("");
 	}
 
-	if (navigation.length > 0 && !small) {
+	if (navigation.length > 0) {
 		lines.push("## Navigation", "");
 		for (const page of navigation) lines.push(llmsLine(page, title));
 		lines.push("");
@@ -212,7 +211,6 @@ function buildLlmsIndex({ title, description, pages, lang, small = false }) {
 		"## Optional",
 		"",
 		`- [Full extracted content](${llmsFileUrl(pages, "llms-full.txt")}): Full text aggregation generated from built HTML pages.`,
-		`- [Condensed entry point](${llmsFileUrl(pages, "llms-small.txt")}): Shorter version of this LLM entry point.`,
 	);
 
 	return lines.join("\n").replace(/\n{3,}/g, "\n\n");
@@ -337,13 +335,14 @@ async function generatePagefind() {
 }
 
 function generateLlms() {
+	// Retired output must not survive a repeated postbuild, including disabled mode.
+	rmSync(join(distDir, "llms-small.txt"), { force: true });
 	if (!getTomlBool("llms", "enable", true)) return;
 	const pages = htmlFiles().map(pageInfo).filter((page) => page.canonical);
 	const title = getTomlString("llms", "title", siteTitle());
 	const description = getTomlString("llms", "description", `Documentation for ${title}`);
 
 	writeFileSync(join(distDir, "llms.txt"), `${buildLlmsIndex({ title, description, pages })}\n`);
-	writeFileSync(join(distDir, "llms-small.txt"), `${buildLlmsIndex({ title, description, pages, small: true })}\n`);
 
 	const full = [`# ${title}`, "", `> ${description}`, ""];
 	for (const page of pages) {

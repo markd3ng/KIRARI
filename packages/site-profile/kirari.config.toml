@@ -918,8 +918,7 @@ url = "https://github.com/saicaca/fuwari"
 # Generated files / 生成的文件:
 #   - llms.txt: Main index (Markdown summary for LLMs)
 #   - llms-full.txt: Complete content in one file
-#   - llms-small.txt: Condensed version
-#   - llms-en.txt, llms-zh.txt: Language-specific files (when i18n: true)
+#   - llms-en-US.txt, llms-zh-CN.txt: Language-specific files (when i18n: true)
 # Note: llms-full.txt is public aggregation. Postbuild adds robots Disallow
 # and no-store headers as mitigation, not access control.
 # 注意: llms-full.txt 是公开聚合文件。postbuild 会添加 robots Disallow

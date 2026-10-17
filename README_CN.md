@@ -511,7 +511,7 @@ IndexNow 覆盖 Bing、Yandex、Naver、Seznam.cz、Yep 等参与方。Google �
 
 ### LLMs.txt
 
-postbuild 生成 `llms.txt`、`llms-small.txt`、`llms-full.txt`。`llms.i18n = true` 时额外生成按语言分类文件（`llms-en.txt`、`llms-zh.txt`）。`llms-full.txt` 是公开的页面文本聚合文件，每页上限 20,000 字符；postbuild 会在 `robots.txt` 加入 `Disallow: /llms-full.txt`，并在部署 headers 中为它设置 `Cache-Control: no-store`。这些是缓解措施，不是访问控制。
+postbuild 生成 `llms.txt`、`llms-full.txt`。`llms.i18n = true` 时额外生成按语言分类文件（`llms-en-US.txt`、`llms-zh-CN.txt`）。`llms-full.txt` 是公开的页面文本聚合文件，每页上限 20,000 字符；postbuild 会在 `robots.txt` 加入 `Disallow: /llms-full.txt`，并在部署 headers 中为它设置 `Cache-Control: no-store`。这些是缓解措施，不是访问控制。
 
 ```toml
 [llms]

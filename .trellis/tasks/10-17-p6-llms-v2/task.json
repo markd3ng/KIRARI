@@ -1,0 +1,29 @@
+{
+  "id": "p6-llms-v2",
+  "name": "p6-llms-v2",
+  "title": "P6 LLMs v2 indexes and Markdown views",
+  "description": "Issue101 kickoff after accepted P5; retain full aggregation; first batch retires obsolete condensed output.",
+  "status": "in_progress",
+  "dev_type": "frontend",
+  "scope": null,
+  "package": "site",
+  "priority": "P2",
+  "creator": "codex",
+  "assignee": "codex",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "codex/p6-llms-v2",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "apps/site/scripts/postbuild.mjs",
+    "apps/site/scripts/tests/llms-output.test.mjs"
+  ],
+  "notes": "Owner retention decision resolved; full Markdown view/discovery acceptance remains open.",
+  "meta": {}
+}

@@ -214,3 +214,7 @@ requests for browser CSP tests. Consent and actual provider event semantics are
 separate acceptance conditions in #106.
 
 GHCard cleanup owns only its direct `[...path].ts` / `[[path]].ts` files with the exact generated first-line header. Quoting the marker elsewhere, using another filename or nesting a file does not transfer ownership. Preserve owner files during cleanup and refuse collisions during generation.
+
+### P6 LLM output lifecycle
+
+Owner retains `llms-full.txt`. Keep full aggregation and existing no-store/robots mitigations; these are not access control. Postbuild emits the main index, optional full-locale indexes and full aggregation. The retired condensed artifact is removed before the enabled check so incremental disabled runs cannot retain it; emit no redirect or discovery link. Run the actual-postbuild fixtures in `scripts/tests/llms-output.test.mjs`. Source/AST Markdown views and HTML discovery are still separate #101 acceptance work; do not call this first batch full LLM v2 completion.

@@ -527,7 +527,7 @@ IndexNow covers participating engines such as Bing, Yandex, Naver, Seznam.cz, an
 
 ### LLMs.txt
 
-Postbuild generates `llms.txt`, `llms-small.txt`, `llms-full.txt`. With `llms.i18n = true`, per-language files (`llms-en.txt`, `llms-zh.txt`) are also emitted. `llms-full.txt` is a public aggregation of page text with a 20,000-character cap per page; postbuild adds `Disallow: /llms-full.txt` to `robots.txt` and `Cache-Control: no-store` to deployment headers as mitigation, not access control.
+Postbuild generates `llms.txt` and `llms-full.txt`. With `llms.i18n = true`, per-language files (`llms-en-US.txt`, `llms-zh-CN.txt`) are also emitted. `llms-full.txt` is a public aggregation of page text with a 20,000-character cap per page; postbuild adds `Disallow: /llms-full.txt` to `robots.txt` and `Cache-Control: no-store` to deployment headers as mitigation, not access control.
 
 ```toml
 [llms]
