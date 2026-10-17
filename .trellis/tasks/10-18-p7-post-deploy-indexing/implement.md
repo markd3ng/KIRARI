@@ -7,4 +7,4 @@
 - [x] Add regression tests for no-network build, event rejection, canonical commit checks, sitemap boundaries, provider errors and replay limits.
 - [x] Run focused tests, `pnpm check`, site build, release checks, diff checks and full standard CI on the candidate tree; exact-commit CI remains required after push.
 - [x] Independent code review and repair confirmed findings; prepare a scoped PR. Do not enable providers or change Production configuration.
-- [ ] Push candidate and open scoped PR; keep Issue #100 open pending exact-commit CI and the documented live Team ID/provider validation boundary.
+- [x] Push candidate and open scoped PR #152; keep Issue #100 open pending exact-commit CI and the documented live Team ID/provider validation boundary.
