@@ -1,6 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
-import { navBarConfig, searchConfig, siteConfig } from "../config";
+import { adsConfig, navBarConfig, searchConfig, siteConfig } from "../config";
 import { getLinkPreset } from "../constants/link-presets";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
@@ -74,6 +74,7 @@ const searchPageUrl = lang ? withLangPrefix("/search", lang) : url("/search");
 const themeLabel = `${i18n(I18nKey.lightMode, lang)} / ${i18n(I18nKey.darkMode, lang)}`;
 const displaySettingsLabel = i18n(I18nKey.themeColor, lang);
 const searchProvider: SearchProvider = resolveSearchProvider(searchConfig);
+const searchAdsEnabled = import.meta.env.PROD && process.env.VERCEL_ENV === "production" && adsConfig.enable && searchConfig.google.adsense;
 const searchProviderConfig = {
 	provider: searchProvider,
 	docsearch: {
@@ -85,7 +86,7 @@ const searchProviderConfig = {
 	},
 	google: {
 		cx: searchConfig.google.cx,
-		adsense: searchConfig.google.adsense,
+		adsense: searchAdsEnabled,
 		resultSetSize: searchConfig.google.resultSetSize,
 		safeSearch: searchConfig.google.safeSearch,
 	},
@@ -94,7 +95,7 @@ const searchUsesOwnModal = searchProvider === "docsearch";
 const searchInputReadonly = searchUsesOwnModal ? true : undefined;
 const searchInputAriaHaspopup = searchUsesOwnModal ? "dialog" : undefined;
 const searchInputAriaExpanded = searchUsesOwnModal ? "false" : undefined;
-const searchInputInputMode = searchProvider === "google" && searchConfig.google.adsense ? "search" : undefined;
+const searchInputInputMode = searchProvider === "google" && searchAdsEnabled ? "search" : undefined;
 ---
 <div id="navbar" class="z-50 onload-animation">
     <div class:list={[

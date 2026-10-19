@@ -52,4 +52,11 @@ export const zhCN: Translation = {
 	[Key.publishedAt]: "发布于",
 	[Key.lastUpdatedAt]: "最后更新于",
 	[Key.license]: "许可协议",
+	[Key.privacySettings]: "隐私设置",
+	[Key.privacySettingsDescription]: "站点所有者启用相应功能后，统计和广告默认允许加载。你可以在这里分别关闭；选择会保存在此浏览器中。",
+	[Key.analytics]: "访问统计",
+	[Key.advertising]: "广告",
+	[Key.privacySave]: "保存设置",
+	[Key.privacyCancel]: "取消",
+	[Key.privacySaveError]: "无法保存你的选择。请允许本网站使用本地存储后重试。",
 };

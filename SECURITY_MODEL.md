@@ -99,6 +99,25 @@ must not be hidden, rewritten, covered, or styled in a way that obscures ads or
 Google labels. The ad inventory and final display are controlled by Google and
 AdSense.
 
+## Visitor Privacy And Ads
+
+Analytics and advertising have separate visitor switches in the footer's
+Privacy settings dialog. A missing choice allows a category by default, matching
+the site's configured default-load behavior; saved choices remain in the browser
+until changed. An unavailable or malformed preference store fails closed for
+third-party Analytics and AdSense scripts. Site-owner master switches still
+control whether a category is configured at all. Turning a category off saves
+the choice and reloads the page; provider data already sent before that choice is
+not recalled.
+
+AdSense is disabled by default and is rendered only when explicitly configured
+for a Vercel Production build. Local and Preview builds do not render content ad
+slots or enable search-ad mode. Google documents strict nonce-based CSP as the
+supported integration because its ad domains change over time; this static site
+cannot issue per-response nonces, so its bounded host allowlist may need review
+if AdSense changes its requests. Do not enable real inventory until Production
+browser checks confirm the current policy permits the configured account.
+
 ## IndexNow
 
 `seo.indexNowKey` is a public verification key that is served at `/{key}.txt`

@@ -63,6 +63,16 @@ test("documented environment settings resolve identically for app and policy", (
   assert.ok(sources(buildContentSecurityPolicy({}), "connect-src").includes("https://env.example"));
  } finally { process.env = original; }
 });
+test("AdSense sources are added only when Ads is enabled with a configured slot or search ads", () => {
+ const config = { ads: { enable: true, publisherId: "ca-pub-1234567890123456", slots: { articleBottom: "9876543210" } } };
+	 assert.equal(buildContentSecurityPolicy({ ...config, ads: { ...config.ads, enable: false } }), baseline);
+	 const enabled = buildContentSecurityPolicy(config);
+	 assert.ok(sources(enabled, "script-src").includes("https://pagead2.googlesyndication.com"));
+	 assert.ok(sources(enabled, "connect-src").includes("https://googleads.g.doubleclick.net"));
+	 assert.ok(sources(enabled, "frame-src").includes("https://tpc.googlesyndication.com"));
+	 assert.equal(buildContentSecurityPolicy({ ads: { enable: true } }), baseline);
+	 assert.ok(buildContentSecurityPolicy({ ads: { enable: true }, search: { google: { adsense: true } } }).includes("https://pagead2.googlesyndication.com"));
+});
 test("both static policy writers share the resolver; disabled checked-in config unchanged", () => {
  const postbuild = readFileSync(new URL("../postbuild.mjs", import.meta.url), "utf8");
  assert.match(postbuild, /const contentSecurityPolicy = buildContentSecurityPolicy\(config\)/);

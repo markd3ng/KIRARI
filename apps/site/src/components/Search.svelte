@@ -7,6 +7,7 @@ import "@utils/preload-icons";
 import { getLangHomeUrl, toHreflang } from "@utils/i18n-utils";
 import { resolveSearchProvider } from "@utils/search-provider.mjs";
 import { url } from "@utils/url-utils.ts";
+import { readPrivacySettings } from "@utils/privacy-settings.mjs";
 import { onMount } from "svelte";
 import type { GoogleSearchResult, SearchResult } from "@/global";
 
@@ -57,7 +58,8 @@ const docsearchEnabled = $derived(
 const googleEnabled = $derived(
 	Boolean(searchProvider === "google" && googleSearch?.cx),
 );
-const googleAdsenseMode = $derived(Boolean(googleEnabled && googleSearch?.adsense));
+let visitorAllowsAds = $state(false);
+const googleAdsenseMode = $derived(Boolean(googleEnabled && googleSearch?.adsense && visitorAllowsAds));
 
 let keywordDesktop = $state("");
 let keywordMobile = $state("");
@@ -342,6 +344,7 @@ const runGoogleSearch = async (keyword: string): Promise<void> => {
 
 onMount(() => {
 	let mounted = true;
+	visitorAllowsAds = readPrivacySettings().ads;
 	let pagefindFallbackTimer: ReturnType<typeof setTimeout> | undefined;
 
 	const initializeDocSearch = async () => {

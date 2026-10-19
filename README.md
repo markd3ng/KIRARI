@@ -461,7 +461,7 @@ Mermaid renders only when both `[mermaid].enable` and the post frontmatter `merm
 
 ### Analytics
 
-Master switch: `analytics.enable`. Scripts load only when `true && PROD`.
+Master switch: `analytics.enable`. Provider scripts load in a production build only when this switch is enabled and the visitor's Analytics setting allows them. A visitor's first visit allows configured categories by default; the footer's **Privacy settings** control saves independent Analytics and Advertising choices in that browser. Turning a category off saves the choice and reloads the page so its scripts are not initialized again.
 
 | Provider | Config key | ENV override |
 |---|---|---|
@@ -477,7 +477,22 @@ Master switch: `analytics.enable`. Scripts load only when `true && PROD`.
 Umami, Plausible, Matomo support optional `integrity` (SRI) for pinned scripts.
 The renderer and static CSP generators resolve the same `PUBLIC_*` analytics overrides.
 When changing provider settings, regenerate `vercel.json` with `node apps/site/scripts/generate-vercel-config.mjs` using the same build environment; Pages `_headers` is generated during postbuild. Disabled analytics adds no provider origins beyond the existing baseline. See the [provider origin matrix](./SECURITY_MODEL.md#analytics-provider-sources).
-Consent and provider SPA event semantics are tracked separately in #106; CSP compatibility does not establish consent.
+KIRARI tracks SPA page views deliberately for GA4, Matomo, and Amplitude; Umami, Plausible, Clarity, Fathom, and Simple Analytics use their documented browser behavior. For GA4, disable Enhanced Measurement's browser-history page views in the Analytics property to avoid duplicate SPA events; this property-level setting must be verified separately.
+
+### Advertising
+
+Advertising is off by default. Set `[ads].enable = true` only after filling in a valid AdSense publisher ID and named slot ID. Content ads render at the bottom of articles. Google Programmable Search ads additionally require `[search.google].adsense = true`. Both forms require the visitor's Advertising setting and a Vercel Production build (`VERCEL_ENV=production`); local and Preview builds do not render AdSense slots or enable AdSense search mode.
+
+```toml
+[ads]
+enable = false
+publisherId = "ca-pub-1234567890123456"
+
+[ads.slots]
+articleBottom = "1234567890"
+```
+
+Equivalent build-time overrides are `PUBLIC_ADS_ENABLE`, `PUBLIC_ADS_PUBLISHER_ID`, and `PUBLIC_ADS_SLOT_ARTICLE_BOTTOM`. The publisher and slot IDs are public identifiers, not secrets. AdSense's supported CSP setup uses a per-response nonce; KIRARI's static-host policy uses a bounded host allowlist, so verify ad delivery against the actual Production policy before enabling paid inventory. See [security notes](./SECURITY_MODEL.md#visitor-privacy-and-ads).
 
 ### Landing Page
 

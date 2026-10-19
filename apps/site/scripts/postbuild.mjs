@@ -1,4 +1,4 @@
-import { ANALYTICS_BUILD_MODE, resolveBuildAnalytics } from "./build-analytics-settings.mjs";
+import { ANALYTICS_BUILD_MODE, resolveBuildAds, resolveBuildAnalytics } from "./build-analytics-settings.mjs";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { parse } from "smol-toml";
@@ -20,6 +20,7 @@ function readConfigText() {
 const configText = readConfigText();
 const config = configText ? parse(configText) : {};
 config.analytics = resolveBuildAnalytics(config.analytics, { mode: ANALYTICS_BUILD_MODE });
+config.ads = resolveBuildAds(config.ads, { mode: ANALYTICS_BUILD_MODE });
 const siteDefaults = JSON.parse(readFileSync(defaultsPath, "utf8"));
 const contentSecurityPolicy = buildContentSecurityPolicy(config);
 

@@ -463,6 +463,10 @@ Mermaid 仅在全局 `[mermaid].enable` 与文章 frontmatter `mermaid: true` �
 Umami、Plausible、Matomo 支持可选 `integrity`（SRI），用于固定版本脚本。
 统计组件与静态 CSP 生成器使用相同的 `PUBLIC_*` 配置覆盖，包括 Astro 的 `.env.production`。更换提供商配置时，在相同构建环境中运行 `node apps/site/scripts/generate-vercel-config.mjs` 更新 `vercel.json`；Pages 的 `_headers` 在 postbuild 生成。禁用统计不会在现有基线之外增加提供商来源，详见 [来源矩阵](./SECURITY_MODEL.md#analytics-provider-sources)。Consent 与 SPA 事件语义属于 #106，CSP 兼容不代表已取得同意。
 
+站点所有者启用并配置统计后，访客首次访问默认允许加载；页脚的「隐私设置」可单独关闭统计或广告，选择会保存在当前浏览器中，直到访客更改。关闭后页面会重新加载，以免再次初始化对应脚本；此前已发送给服务商的数据无法撤回。站点所有者的总开关仍决定该功能是否启用。
+
+广告默认关闭。填写 `[ads]` 的 AdSense 发布商 ID 和命名广告位，并设置 `enable = true` 后，文章广告只在 Vercel Production 展示；本地及 Preview 不加载广告，也不启用 Google 搜索广告模式。环境变量覆盖为 `PUBLIC_ADS_ENABLE`、`PUBLIC_ADS_PUBLISHER_ID` 和 `PUBLIC_ADS_SLOT_ARTICLE_BOTTOM`。静态站点使用有界的 CSP 来源列表，而 AdSense 推荐按每次响应生成 nonce；在真实 Production 浏览器检查通过前，不要启用实际广告库存。若使用 GA4，请在 Analytics 属性中关闭基于浏览器历史记录的增强型衡量页面浏览，避免与 KIRARI 的 SPA 页面浏览重复；该属性设置需另行核实。
+
 ### Landing Page
 
 PRD 风格 Hero + 特性卡片 + 最新文章。启用后，`/blog/` 仍可访问经典文章列表。

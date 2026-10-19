@@ -183,6 +183,18 @@ adsense = false
 resultSetSize = "filtered_cse"
 safeSearch = "active"
 
+# Advertising is disabled until a Production AdSense account and named slots are configured.
+# 广告默认关闭；仅在配置 Production AdSense 账号和命名广告位后启用。
+[ads]
+# Master switch / 总开关
+# enable = false
+# Public AdSense publisher ID, never a secret / AdSense 公开发布商 ID，不是密钥
+# publisherId = "ca-pub-0000000000000000"
+
+[ads.slots]
+# Article bottom slot ID / 文章底部广告位 ID
+# articleBottom = "0000000000"
+
 # -----------------------------------------------------------------------------
 # Landing Page / 首页 Landing Page
 # -----------------------------------------------------------------------------

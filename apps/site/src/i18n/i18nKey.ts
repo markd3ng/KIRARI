@@ -50,6 +50,13 @@ enum I18nKey {
 	lastUpdatedAt = "lastUpdatedAt",
 
 	license = "license",
+	privacySettings = "privacySettings",
+	privacySettingsDescription = "privacySettingsDescription",
+	analytics = "analytics",
+	advertising = "advertising",
+	privacySave = "privacySave",
+	privacyCancel = "privacyCancel",
+	privacySaveError = "privacySaveError",
 }
 
 export default I18nKey;

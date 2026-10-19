@@ -19,7 +19,7 @@ function fixture(context, { enabled = true, i18n = true, base = '/' } = {}) {
   for (const file of ['postbuild.mjs', 'build-analytics-settings.mjs', 'security-policy.mjs', 'pagefind-index.mjs', 'indexing.mjs']) {
     cpSync(join(site, 'scripts', file), join(root, 'scripts', file));
   }
-  for (const file of ['analytics-settings.mjs', 'search-provider.mjs']) {
+  for (const file of ['analytics-settings.mjs', 'ads-settings.mjs', 'search-provider.mjs']) {
     cpSync(join(site, 'src/utils', file), join(root, 'src/utils', file));
   }
   cpSync(join(site, 'site-defaults.json'), join(root, 'site-defaults.json'));

@@ -52,4 +52,11 @@ export const en: Translation = {
 	[Key.publishedAt]: "Published at",
 	[Key.lastUpdatedAt]: "Last updated at",
 	[Key.license]: "License",
+	[Key.privacySettings]: "Privacy settings",
+	[Key.privacySettingsDescription]: "When enabled by the site owner, Analytics and Advertising are allowed by default. You can turn either off here; your choices are saved in this browser.",
+	[Key.analytics]: "Analytics",
+	[Key.advertising]: "Advertising",
+	[Key.privacySave]: "Save settings",
+	[Key.privacyCancel]: "Cancel",
+	[Key.privacySaveError]: "Your choice could not be saved. Allow this site to use local storage, then try again.",
 };

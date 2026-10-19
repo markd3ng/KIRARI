@@ -1,0 +1,17 @@
+---
+import type { AdsConfig } from "../types/config";
+
+interface Props {
+	config: AdsConfig;
+}
+
+const { config } = Astro.props;
+---
+
+<div id="kirari-ads-config" data-config={JSON.stringify(config)} hidden></div>
+
+<script>
+	import { initializeAds } from "../utils/ads-client";
+
+	initializeAds();
+</script>

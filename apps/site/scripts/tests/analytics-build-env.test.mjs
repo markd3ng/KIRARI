@@ -4,12 +4,12 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
-import { ANALYTICS_BUILD_MODE, resolveBuildAnalytics } from "../build-analytics-settings.mjs";
+import { ANALYTICS_BUILD_MODE, resolveBuildAds, resolveBuildAnalytics } from "../build-analytics-settings.mjs";
 import { buildContentSecurityPolicy, createVercelConfig } from "../security-policy.mjs";
 import { parseEnvBoolean, resolveAnalyticsSettings } from "../../src/utils/analytics-settings.mjs";
 
 const site = fileURLToPath(new URL("../../", import.meta.url));
-const keys = ["PUBLIC_ANALYTICS_ENABLE", "PUBLIC_UMAMI_ID", "PUBLIC_UMAMI_SRC"];
+const keys = ["PUBLIC_ANALYTICS_ENABLE", "PUBLIC_UMAMI_ID", "PUBLIC_UMAMI_SRC", "PUBLIC_ADS_ENABLE", "PUBLIC_ADS_PUBLISHER_ID", "PUBLIC_ADS_SLOT_ARTICLE_BOTTOM"];
 const raw = { enable: false, umami: { id: "toml-id", src: "https://toml.invalid/script.js" } };
 
 function fixture(context) {
@@ -26,7 +26,7 @@ function fixture(context) {
 	mkdirSync(join(root, "src/pages"), { recursive: true });
 	writeFileSync(join(root, "astro.config.mjs"), `export default {root:${JSON.stringify(root)}};`);
 	writeFileSync(join(root, ".env"), "PUBLIC_UMAMI_SRC=https://base-env.invalid/script.js\n");
-	writeFileSync(join(root, ".env.production"), "PUBLIC_ANALYTICS_ENABLE=true\nPUBLIC_UMAMI_ID=dotenv-id\nPUBLIC_UMAMI_SRC=https://dotenv-only.invalid/script.js\n");
+ writeFileSync(join(root, ".env.production"), "PUBLIC_ANALYTICS_ENABLE=true\nPUBLIC_UMAMI_ID=dotenv-id\nPUBLIC_UMAMI_SRC=https://dotenv-only.invalid/script.js\nPUBLIC_ADS_ENABLE=true\nPUBLIC_ADS_PUBLISHER_ID=ca-pub-1234567890123456\nPUBLIC_ADS_SLOT_ARTICLE_BOTTOM=9876543210\n");
 	writeFileSync(join(root, "src/pages/index.astro"), `---
 import Analytics from ${JSON.stringify(join(site, "src/components/Analytics.astro"))};
 import {resolveAnalyticsSettings} from ${JSON.stringify(join(site, "src/utils/analytics-settings.mjs"))};
@@ -55,8 +55,10 @@ for (const processOverride of [false, true]) {
 		assert.equal(settings.enable, true);
 		assert.equal(settings.umami.src, `${expectedOrigin}/script.js`);
 		const html = build(root);
-		assert.ok(html.includes(`src="${settings.umami.src}"`));
-		assert.ok(html.includes(`data-website-id="${settings.umami.id}"`));
+		assert.ok(html.includes('id="kirari-analytics-config"'));
+		assert.ok(html.includes(settings.umami.src));
+		assert.ok(html.includes(settings.umami.id));
+		assert.ok(!html.includes(`src="${settings.umami.src}"`), "provider scripts must stay gated in the client until the visitor preference is read");
 		const csp = buildContentSecurityPolicy({ analytics: settings });
 		assert.ok(csp.split("; ").find((part) => part.startsWith("script-src ")).includes(expectedOrigin));
 		assert.ok(csp.split("; ").find((part) => part.startsWith("connect-src ")).includes(expectedOrigin));
@@ -97,4 +99,19 @@ test("rendered and build-time analytics share every supported boolean spelling",
 		assert.equal(resolveAnalyticsSettings({}, readString, readBoolean).enable, expected);
 	}
 	assert.equal(parseEnvBoolean("unknown", true), true);
+});
+
+test("AdSense config uses the same Vite environment precedence and validation", (context) => {
+	const root = fixture(context);
+	const settings = resolveBuildAds({ enable: false }, { envDir: root });
+	assert.deepEqual(settings, { enable: true, publisherId: "ca-pub-1234567890123456", slots: { articleBottom: "9876543210" } });
+	process.env.PUBLIC_ADS_PUBLISHER_ID = "invalid";
+	assert.equal(resolveBuildAds({ enable: false }, { envDir: root }).publisherId, "");
+});
+
+test("both static policy writers resolve Ads overrides before creating policy", () => {
+	for (const name of ["postbuild.mjs", "generate-vercel-config.mjs"]) {
+		const source = readFileSync(new URL(`../${name}`, import.meta.url), "utf8");
+		assert.match(source, /config\.ads = resolveBuildAds\(config\.ads, \{ mode: ANALYTICS_BUILD_MODE \}\)/);
+	}
 });

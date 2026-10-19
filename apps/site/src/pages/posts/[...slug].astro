@@ -27,6 +27,7 @@ import PostSponsor from "../../components/sponsor/PostSponsor.astro";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
 import Comments from "../../components/comments/Comments.astro";
+import AdSlot from "../../components/AdSlot.astro";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
 
 export async function getStaticPaths() {
@@ -152,6 +153,7 @@ const jsonLd = {
 					<Content />
 				</Markdown>
 			</div>
+			<AdSlot />
 
 			{licenseConfig.enable && <License title={entry.data.title} pubDate={entry.data.published} lastUpdated={entry.data.updated} lang={lang} notByAi={entry.data.notbyai} class="mb-6 rounded-xl license-container onload-animation"></License>}
 				{sponsorConfig.enabled && sponsorConfig.showButtonInPost && <PostSponsor lang={lang} post={{ title: entry.data.title, url: fullPostUrl }} />}

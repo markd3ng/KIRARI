@@ -1,0 +1,20 @@
+---
+import { adsConfig } from "../config";
+
+const isVercelProduction = import.meta.env.PROD && process.env.VERCEL_ENV === "production";
+const slotId = adsConfig.slots.articleBottom;
+const shouldRender = isVercelProduction && adsConfig.enable && adsConfig.publisherId && slotId;
+---
+
+{shouldRender && (
+	<div data-kirari-ad-slot class="my-6 min-h-[280px]">
+		<ins
+			class="adsbygoogle block min-h-[280px]"
+			style="display:block;min-height:280px"
+			data-ad-client={adsConfig.publisherId}
+			data-ad-slot={slotId}
+			data-ad-format="auto"
+			data-full-width-responsive="true"
+		></ins>
+	</div>
+)}
