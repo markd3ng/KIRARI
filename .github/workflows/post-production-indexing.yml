@@ -9,7 +9,7 @@ permissions:
   statuses: write
 
 concurrency:
-  group: kirari-post-production-indexing
+  group: kirari-post-production-indexing-${{ github.event.client_payload.id || github.run_id }}
   cancel-in-progress: false
 
 jobs:
