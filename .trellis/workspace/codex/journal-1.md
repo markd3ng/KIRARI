@@ -140,3 +140,39 @@ Published docs/HANDOFF.md and sanitized merge/Production/browser acceptance; arc
 ### Next Steps
 
 - P7 #100: disabled-by-default post-deploy indexing, following current Issue acceptance; provider enablement requires Owner decisions.
+
+
+## Session 5: Complete P7 post-deployment indexing acceptance
+
+**Date**: 2026-10-19
+**Task**: Complete P7 post-deployment indexing acceptance
+**Branch**: `codex/p7-production-acceptance`
+
+### Summary
+
+Enabled Owner-approved IndexNow with the default KIRARI profile and Actions gate. Fixed the production-discovered global dispatch concurrency race, then verified the READY native Production deployment, exact canonical SHA and public key file. Authenticated workflow submitted 114 sitemap URLs; IndexNow returned HTTP 202. Closed #100 and marked Project #1 Done; P8 #106/#107 remain pending Owner product choices.
+
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7863ec7277b829e9be1bf9d48c91bf710010a1fe` | (see git log) |
+| `74eb4ca54e5e53493a197d0a0b2764a8483e0ddb` | (see git log) |
+| `693afe6ece32bae9f268a9b897cfa8dec98391da` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
