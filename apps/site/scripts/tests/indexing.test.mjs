@@ -116,6 +116,7 @@ test("post-deployment workflow installs pinned pnpm before invoking package comm
 	const workflow = readFileSync(new URL("../../../../.github/workflows/post-production-indexing.yml", import.meta.url), "utf8");
 	assert.match(workflow, /pnpm\/action-setup@0c17529a66aca453f9227af23103ed11469b1e47[\s\S]*?version: 9\.14\.4/);
 	assert.match(workflow, /types: \[vercel\.deployment\.success\]/);
+	assert.match(workflow, /group:.*github\.event\.client_payload\.id.*github\.run_id/);
 });
 
 test("Production sitemap URLs are same-origin, XML-decoded and de-duplicated", async () => {
