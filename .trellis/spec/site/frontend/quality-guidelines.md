@@ -9,11 +9,13 @@
 3. `astro build`
 4. `postbuild.mjs`
 
-Postbuild runs seven ordered actions: generate headers/redirects, generate
-robots metadata, obfuscate mailto links, conditionally build Pagefind, generate
-LLM files, optionally submit IndexNow, and optionally submit Google Indexing
-API notifications. Read the script before changing the list; old docs contain
-shortened summaries.
+Postbuild generates headers/redirects, robots metadata, mailto links, Pagefind,
+LLM files and (when configured) the public IndexNow verification key file. It
+never sends indexing notifications. The separate GitHub post-deployment
+workflow may submit IndexNow only after an authenticated Vercel Production
+event and matching canonical commit readback; config and a GitHub Actions
+variable must both opt in. Google Indexing API remains disabled until eligible
+content is approved.
 
 Pagefind uses its installed Node API and ingests HTML in sorted dist-relative
 path order; its filesystem walker otherwise assigns unstable search page numbers.
@@ -39,7 +41,7 @@ Card IDs, their script references, and search assets remain byte-significant.
 - The authoritative source-to-target map is `apps/site/scripts/profile-manifest.mjs` (`PROFILE_MAPPINGS`).
 - Required: `kirari.config.toml`; `content/spec/{about,friends,projects}.md`; `data/friends.json` (array of objects with string `siteTitle`, `siteDesc`, `siteUrl`, `siteIcon`); `assets/images/{demo-avatar,demo-banner}.png`; eight `assets/favicon/favicon-{light,dark}-{32,128,180,192}.png`; `assets/og/default.png`.
 - Optional: `content/posts/`, `data/devices.json`, `assets/images/devices/`, `snippets/`, `ads.txt`. Absent optional directories become empty; absent optional files are removed from generated output.
-- `KIRARI_SITE_SOURCE` selects the profile during the copied app build. Indexing submissions require `KIRARI_ALLOW_INDEXING_SUBMISSIONS=true`; `KIRARI_BUILD_ONLY=true` and `NODE_ENV=test` each veto both postbuild submission paths. The external builder sets build-only mode and does not pass the authorization variable to the child.
+- `KIRARI_SITE_SOURCE` selects the profile during the copied app build. Postbuild and external-Site builds never submit indexing notifications, regardless of legacy flags. Only the separate GitHub workflow can submit IndexNow after verified native Production; it is off unless both the Site config and `KIRARI_INDEXNOW_ENABLED` GitHub variable enable it. Google Indexing API remains disabled.
 - The input root must resolve to a directory disjoint from `apps/site`; mapped inputs must be regular files/directories with no symlinks or special files. Materialization validates and stages the input without using the original Site Source as a write target. Successful external build replaces only `apps/site/dist`, with rollback on replacement failure.
 - This is not an OS sandbox or enforced read-only source. MDX and other build-time code can execute with the invoking user's filesystem and network permissions. Snippets are loaded as raw text and emitted as browser-executable HTML/JavaScript; they are trusted owner code, but current code does not run snippet JavaScript in the Node build process. Environment filtering does not isolate filesystem access.
 - This is a local static build. It does not fetch Git refs, mutate Git, deploy, or package `functions/` alongside `dist`.

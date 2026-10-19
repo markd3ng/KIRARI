@@ -58,11 +58,14 @@ still public and must not contain secrets. The manual composition CI workflow
 uses read-only repository permissions, publishes only a downloadable static
 artifact, and does not package Pages Functions or deploy.
 
-Postbuild indexing submissions require
-`KIRARI_ALLOW_INDEXING_SUBMISSIONS=true`; `KIRARI_BUILD_ONLY=true` and
-`NODE_ENV=test` each veto both IndexNow and Google Indexing API submissions.
-The external builder always sets build-only mode and does not forward the
-authorization variable to its child process.
+Postbuild never submits indexing notifications, even when legacy authorization
+variables are present. IndexNow runs only from the post-deployment GitHub
+workflow after an authenticated Vercel Production event, a matching canonical
+commit readback, `seo.indexNow = true`, a valid public verification key, and
+`KIRARI_INDEXNOW_ENABLED=true` in the repository's GitHub `repository_dispatch`
+workflow. Build, Preview, test, external-Site and local handler invocations do
+not submit. Google Indexing API stays disabled pending an Owner decision and
+proof of eligible content.
 
 The complete mapping, composition identity, and verification contract is
 documented in [`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md).
@@ -98,8 +101,19 @@ AdSense.
 
 ## IndexNow
 
-`seo.indexNowKey` can be supplied by `PUBLIC_INDEXNOW_KEY`. It is a public
-verification key that is served at `/{key}.txt` during postbuild. Do not reuse
+`seo.indexNowKey` is a public verification key that is served at `/{key}.txt`
+during postbuild. Notifications happen only after matching native Production
+commit and alias verification, with separate config and GitHub Actions opt-ins.
+The deployment workflow validates the GitHub Vercel bot, repository, project
+ID, Production environment, `main` ref, commit, alias and live canonical page;
+it reads the deployed sitemap from the canonical host and bounds response size,
+URL count and outbound origin. A successful commit status suppresses duplicate
+notifications; failures are recorded without automatic retry. Vercel's dispatch
+payload does not include Team ID, so the workflow pins the approved global
+project ID and relies on that binding. Successful commits and fresh pending
+attempts suppress replays; up to three total attempts are allowed per commit,
+with bounded status-history pagination. Do not add a Vercel API credential to CI.
+Do not reuse
 passwords, write-capable tokens, service-account material, or other private
 secrets as the IndexNow key.
 
@@ -108,11 +122,12 @@ and Yep. Google does not support IndexNow.
 
 ## Google Indexing API
 
-Google Indexing API is optional, advanced, and disabled by default. It mainly
-targets JobPosting and BroadcastEvent URLs; ordinary blog pages are not
-guaranteed to benefit. Service account JSON must be read from the env var named
-by `seo.google.serviceAccountJsonEnv`. Never put service account JSON in TOML,
-snippets, `PUBLIC_*`, or committed files.
+Google Indexing API remains disabled and the post-deployment workflow sends no
+Google requests. An Owner decision and verified eligible content are required
+before implementing that path. Google documents eligible pages as those with
+`JobPosting` or `BroadcastEvent` embedded in `VideoObject`; ordinary blog pages
+must not be submitted. Never put service account JSON in TOML, snippets,
+`PUBLIC_*`, or committed files.
 
 ## GitHub Card Adapter
 

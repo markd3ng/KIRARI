@@ -1,108 +1,152 @@
 import assert from "node:assert/strict";
-import { generateKeyPairSync } from "node:crypto";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { after, test } from "node:test";
-import { submitIndexingNotifications } from "../indexing.mjs";
+import {
+	getProductionSitemapUrls,
+	getGithubCommitStatuses,
+	hasCanonicalCommit,
+	hasPendingOrCompletedNotification,
+	isIndexNowEnabled,
+	MAX_INDEXNOW_ATTEMPTS,
+	MAX_GITHUB_STATUS_PAGES,
+	MAX_SITEMAP_BYTES,
+	prepareIndexNowVerificationFile,
+	submitIndexNow,
+	verifyVercelSuccessEvent,
+} from "../indexing.mjs";
 
-const tempRoots = [];
-const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
-const dummyCredentials = JSON.stringify({
-	client_email: "indexer@example.test",
-	private_key: privateKey.export({ type: "pkcs8", format: "pem" }),
-});
-const config = {
-	seo: {
-		indexNow: true,
-		indexNowKey: "dummy-indexnow-key",
-		google: {
-			indexingApi: true,
-			serviceAccountJsonEnv: "GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON",
-		},
-	},
+const roots = [];
+const commit = "a".repeat(40);
+const payload = {
+	id: "dpl_1234567890abcdefghijklmnopqrstuvwxyz",
+	environment: "production",
+	project: { id: "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk", name: "kirari-main" },
+	git: { ref: "main", sha: commit, shortSha: commit.slice(0, 7) },
+	state: { type: "success" },
+	alias: ["kirari-main.vercel.app"],
+	url: "https://kirari-main-deployabc-martyjstogner-projects.vercel.app",
 };
 
-after(() => {
-	for (const root of tempRoots) rmSync(root, { recursive: true, force: true });
-});
+after(() => roots.forEach((root) => rmSync(root, { recursive: true, force: true })));
 
-function makeDist() {
-	const root = mkdtempSync(join(tmpdir(), "kirari-indexing-test-"));
-	tempRoots.push(root);
-	mkdirSync(join(root, "sitemaps"));
-	writeFileSync(
-		join(root, "sitemaps", "sitemap-0.xml"),
-		"<urlset><url><loc>https://example.test/post/</loc></url></urlset>",
-	);
-	return root;
-}
-
-function stubIndexingFetch() {
-	const originalFetch = globalThis.fetch;
-	const attemptedUrls = [];
-	globalThis.fetch = async (input) => {
-		const url = new URL(input instanceof Request ? input.url : String(input));
-		attemptedUrls.push(url.href);
-		if (url.hostname === "oauth2.googleapis.com") {
-			return new Response(JSON.stringify({ access_token: "dummy-access-token" }), {
-				status: 200,
-				headers: { "content-type": "application/json" },
-			});
-		}
-		if (["api.indexnow.org", "indexing.googleapis.com"].includes(url.hostname)) {
-			return new Response(null, { status: 200 });
-		}
-		throw new Error(`Test blocked unexpected network request: ${url.href}`);
-	};
-	return { attemptedUrls, restore: () => { globalThis.fetch = originalFetch; } };
-}
-
-async function attempt(env) {
-	const distDir = makeDist();
-	const fetchStub = stubIndexingFetch();
-	try {
-		const authorized = await submitIndexingNotifications({
-			config,
-			distDir,
-			siteUrl: "https://example.test",
-			basePath: "/",
-			env: { ...env, GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON: dummyCredentials },
-		});
-		return { authorized, attemptedUrls: fetchStub.attemptedUrls, distDir };
-	} finally {
-		fetchStub.restore();
-	}
-}
-
-test("build-only and test environments veto both indexing integrations before side effects", async (t) => {
-	for (const [name, env] of [
-		["external Site source", { KIRARI_SITE_SOURCE: "/tmp/external-site", NODE_ENV: "production", KIRARI_ALLOW_INDEXING_SUBMISSIONS: "true" }],
-		["build-only", { KIRARI_BUILD_ONLY: "true", NODE_ENV: "production", KIRARI_ALLOW_INDEXING_SUBMISSIONS: "true" }],
-		["test", { NODE_ENV: "test", KIRARI_ALLOW_INDEXING_SUBMISSIONS: "true" }],
+test("only the authenticated Vercel success event for the approved Production contract is accepted", () => {
+	const event = { action: "vercel.deployment.success", repository: { full_name: "markd3ng/KIRARI" }, sender: { login: "vercel[bot]" }, client_payload: payload };
+	assert.deepEqual(verifyVercelSuccessEvent({ event, repository: event.repository, sender: event.sender }), { accepted: true, deployment: { id: payload.id, sha: commit } });
+	for (const [key, value] of [
+		["action", "vercel.deployment.ready"],
+		["sender", { login: "someone-else" }],
+		["repository", { full_name: "fork/KIRARI" }],
+		["environment", "preview"],
+		["project", { id: "prj_other", name: "kirari-main" }],
+		["git", { ref: "feature", sha: commit, shortSha: commit.slice(0, 7) }],
+		["git", { ref: "main", sha: "invalid", shortSha: "invalid" }],
+		["state", { type: "error" }],
+		["alias", ["preview.vercel.app"]],
+		["url", "https://attacker.example/"],
 	]) {
-		await t.test(name, async () => {
-			const result = await attempt(env);
-			assert.equal(result.authorized, false);
-			assert.deepEqual(result.attemptedUrls, []);
-			assert.equal(existsSync(join(result.distDir, "dummy-indexnow-key.txt")), false);
-		});
+		const candidate = structuredClone(event);
+		if (["action", "sender", "repository"].includes(key)) candidate[key] = value;
+		else candidate.client_payload[key] = value;
+		const result = verifyVercelSuccessEvent({ event: candidate, repository: candidate.repository, sender: candidate.sender });
+		assert.equal(result.accepted, false, key);
 	}
 });
 
-test("normal builds require explicit authorization before either submitter runs", async () => {
-	const result = await attempt({ NODE_ENV: "production" });
-	assert.equal(result.authorized, false);
-	assert.deepEqual(result.attemptedUrls, []);
+test("IndexNow needs both explicit owner gates and only publishes a valid public verification key", () => {
+	const root = mkdtempSync(join(tmpdir(), "kirari-indexnow-key-"));
+	roots.push(root);
+	const config = { seo: { indexNow: true, indexNowKey: "public-key-123" } };
+	const productionAction = { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "repository_dispatch", GITHUB_REPOSITORY: "markd3ng/KIRARI", KIRARI_INDEXNOW_ENABLED: "true" };
+	assert.equal(isIndexNowEnabled({ config, env: productionAction }), true);
+	assert.equal(isIndexNowEnabled({ config, env: {} }), false);
+	for (const veto of [
+		{ NODE_ENV: "test" },
+		{ KIRARI_BUILD_ONLY: "true" },
+		{ KIRARI_SITE_SOURCE: "external-site" },
+		{ VERCEL_ENV: "preview" },
+		{ GITHUB_REPOSITORY: "fork/KIRARI" },
+		{ GITHUB_EVENT_NAME: "push" },
+	]) assert.equal(isIndexNowEnabled({ config, env: { ...productionAction, ...veto } }), false);
+	assert.equal(prepareIndexNowVerificationFile({ config: { seo: { indexNow: false } }, distDir: root }), false);
+	assert.equal(prepareIndexNowVerificationFile({ config, distDir: root }), true);
+	assert.equal(readFileSync(join(root, "public-key-123.txt"), "utf8"), "public-key-123");
+	assert.throws(() => prepareIndexNowVerificationFile({ config: { seo: { indexNow: true, indexNowKey: "../../escape" } }, distDir: root }), /valid public/);
+	assert.throws(() => prepareIndexNowVerificationFile({ config: { seo: { indexNow: true, indexNowKey: "public_key_123" } }, distDir: root }), /valid public/);
+	assert.equal(isIndexNowEnabled({ config: { seo: { indexNow: true, indexNowKey: "public_key_123" } }, env: productionAction }), false);
 });
 
-test("explicitly authorized production submissions use only the stubbed fetch", async () => {
-	const result = await attempt({ NODE_ENV: "production", KIRARI_ALLOW_INDEXING_SUBMISSIONS: "true" });
-	assert.equal(result.authorized, true);
-	assert.deepEqual(result.attemptedUrls, [
-		"https://api.indexnow.org/indexnow",
-		"https://oauth2.googleapis.com/token",
-		"https://indexing.googleapis.com/v3/urlNotifications:publish",
-	]);
-	assert.equal(readFileSync(join(result.distDir, "dummy-indexnow-key.txt"), "utf8"), "dummy-indexnow-key");
+test("canonical Production response must serve the exact commit in canonical HTML", async () => {
+	let requested;
+	const html = `<!doctype html><head><meta name="kirari:build-commit" content="${commit}"><link rel="canonical" href="https://kirari-main.vercel.app/"></head><body><a href="https://github.com/markd3ng/KIRARI/commit/${commit}">commit</a></body>`;
+	const ok = await hasCanonicalCommit({ sha: commit, fetchImpl: async (url, options) => { requested = { url, options }; return new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } }); } });
+	assert.equal(ok, true);
+	assert.equal(requested.url, "https://kirari-main.vercel.app/");
+	assert.equal(requested.options.redirect, "manual");
+	assert.equal(await hasCanonicalCommit({ sha: "b".repeat(40), fetchImpl: async () => new Response(html, { headers: { "content-type": "text/html" } }) }), false);
+	const staleBodyLink = html.replace(`content="${commit}"`, `content="${"b".repeat(40)}"`);
+	assert.equal(await hasCanonicalCommit({ sha: commit, fetchImpl: async () => new Response(staleBodyLink, { headers: { "content-type": "text/html" } }) }), false);
+	assert.equal(await hasCanonicalCommit({ sha: commit, fetchImpl: async () => new Response(html, { status: 302, headers: { location: "https://attacker.example" } }) }), false);
+});
+
+test("replay protection reads complete bounded GitHub status history", async () => {
+	const calls = [];
+	const statuses = await getGithubCommitStatuses({
+		url: "https://api.github.com/repos/markd3ng/KIRARI/commits/abc/statuses",
+		token: "test-token",
+		fetchImpl: async (url) => {
+			const page = Number(new URL(url).searchParams.get("page"));
+			calls.push(page);
+			return new Response(JSON.stringify(page === 1 ? Array.from({ length: 100 }, () => ({ state: "failure" })) : [{ context: "kirari/indexnow-production", state: "success" }]), { headers: { "content-type": "application/json" } });
+		},
+	});
+	assert.equal(statuses.length, 101);
+	assert.deepEqual(calls, [1, 2]);
+	let pages = 0;
+	await assert.rejects(getGithubCommitStatuses({
+		url: "https://api.github.com/repos/markd3ng/KIRARI/commits/abc/statuses",
+		token: "test-token",
+		fetchImpl: async () => { pages++; return new Response(JSON.stringify(Array.from({ length: 100 }, () => ({}))), { headers: { "content-type": "application/json" } }); },
+	}), /safe replay-check limit/);
+	assert.equal(pages, MAX_GITHUB_STATUS_PAGES);
+});
+
+test("post-deployment workflow installs pinned pnpm before invoking package commands", () => {
+	const workflow = readFileSync(new URL("../../../../.github/workflows/post-production-indexing.yml", import.meta.url), "utf8");
+	assert.match(workflow, /pnpm\/action-setup@0c17529a66aca453f9227af23103ed11469b1e47[\s\S]*?version: 9\.14\.4/);
+	assert.match(workflow, /types: \[vercel\.deployment\.success\]/);
+});
+
+test("Production sitemap URLs are same-origin, XML-decoded and de-duplicated", async () => {
+	const calls = [];
+	const fetchImpl = async (url) => {
+		calls.push(url);
+		if (url.endsWith("/sitemap-index.xml")) return new Response("<sitemapindex><sitemap><loc>https://kirari-main.vercel.app/sitemap-0.xml</loc></sitemap></sitemapindex>", { headers: { "content-type": "application/xml" } });
+		return new Response("<urlset><url><loc>https://kirari-main.vercel.app/posts/a/?q=1&amp;v=2</loc></url><url><loc>https://kirari-main.vercel.app/posts/a/?q=1&amp;v=2</loc></url></urlset>", { headers: { "content-type": "application/xml" } });
+	};
+	assert.deepEqual(await getProductionSitemapUrls({ fetchImpl }), ["https://kirari-main.vercel.app/posts/a/?q=1&v=2"]);
+	assert.equal(calls.length, 2);
+	await assert.rejects(getProductionSitemapUrls({ fetchImpl: async () => new Response("<sitemapindex><loc>https://attacker.example/sitemap.xml</loc></sitemapindex>", { headers: { "content-type": "application/xml" } }) }), /unsafe or off-origin/);
+	await assert.rejects(getProductionSitemapUrls({ fetchImpl: async () => new Response("x".repeat(MAX_SITEMAP_BYTES + 1), { headers: { "content-type": "application/xml" } }) }), /size limit/);
+});
+
+test("IndexNow makes one fixed-host request and rejects off-origin sitemap content", async () => {
+	let request;
+	const result = await submitIndexNow({ urls: ["https://kirari-main.vercel.app/posts/"], key: "public-key-123", fetchImpl: async (url, options) => { request = { url, options }; return new Response(null, { status: 202 }); } });
+	assert.equal(result, 202);
+	assert.equal(request.url, "https://api.indexnow.org/indexnow");
+	assert.equal(JSON.parse(request.options.body).host, "kirari-main.vercel.app");
+	assert.equal(request.options.redirect, "error");
+	await assert.rejects(submitIndexNow({ urls: ["https://attacker.example/"], key: "public-key-123", fetchImpl: async () => { throw new Error("must not fetch"); } }), /canonical Production origin/);
+	await assert.rejects(submitIndexNow({ urls: ["https://kirari-main.vercel.app/posts/"], key: "public-key-123", fetchImpl: async () => new Response(null, { status: 429 }) }), /HTTP 429/);
+});
+
+test("successful and pending commit statuses suppress duplicate notifications; failures can be retried", () => {
+	assert.equal(hasPendingOrCompletedNotification([{ context: "other", state: "success" }]), false);
+	assert.equal(hasPendingOrCompletedNotification([{ context: "kirari/indexnow-production", state: "success" }]), true);
+	assert.equal(hasPendingOrCompletedNotification([{ context: "kirari/indexnow-production", state: "pending" }], Date.parse("2026-10-18T00:00:00Z")), true);
+	assert.equal(hasPendingOrCompletedNotification([{ context: "kirari/indexnow-production", state: "pending", created_at: "2026-10-17T23:00:00Z" }], Date.parse("2026-10-18T00:00:00Z")), false);
+	assert.equal(hasPendingOrCompletedNotification([{ context: "kirari/indexnow-production", state: "failure" }]), false);
+	assert.equal(hasPendingOrCompletedNotification(Array.from({ length: MAX_INDEXNOW_ATTEMPTS }, () => ({ context: "kirari/indexnow-production", state: "pending", created_at: "2026-10-17T23:00:00Z" }))), true);
 });
