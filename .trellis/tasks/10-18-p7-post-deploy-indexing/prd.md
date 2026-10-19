@@ -19,4 +19,4 @@ Only send explicitly enabled IndexNow notifications after the exact KIRARI nativ
 
 Use Vercel's GitHub `repository_dispatch` event `vercel.deployment.success`; validate its sender and payload plus live canonical serving. The event payload contains project ID/name, environment, Git ref/SHA, deployment ID/state, URL and optional aliases; it does not expose Team ID. Pin the already approved globally unique project ID and confirm the canonical served SHA. Do not add a Vercel API credential to CI to fill this field.
 
-IndexNow and eligible Google content have not been approved for provider enablement. Implement both provider paths default-off; retain Google off until an Owner decision and eligibility proof. The delivery can be code-ready with live submissions still disabled.
+On 2026-10-19, the Owner approved enabling IndexNow for the default KIRARI profile and a real post-deployment validation. Google Indexing API remains disabled because no eligible content has been approved or demonstrated.

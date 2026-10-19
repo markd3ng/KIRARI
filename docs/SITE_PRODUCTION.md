@@ -52,9 +52,11 @@ and security behavior. Include observation time and sanitized source links.
 
 A local build, green main CI or READY Preview does not prove public Production
 serving; P4 was accepted only after actual native deployment and browser
-acceptance. Indexing remains opt-in and disabled by default. The #100
-post-deploy workflow accepts the authenticated Vercel bot and approved project
-ID, Production environment, `main` ref, commit and canonical alias, then confirms
+acceptance. Indexing remains opt-in. The Owner has enabled IndexNow for the
+default KIRARI profile; the #100 post-deploy workflow also requires the
+repository variable before any submission. It accepts the authenticated Vercel
+bot and approved project ID, Production environment, `main` ref, commit and
+canonical alias, then confirms
 the canonical HTML serves that commit before reading its sitemap. Vercel's
 documented event omits Team ID; the workflow pins the already approved project
 ID and adds no Vercel credential. IndexNow also requires Site config and a

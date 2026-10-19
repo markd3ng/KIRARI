@@ -520,7 +520,7 @@ serviceBinding = "GHCARD_CACHE"
 | Robots.txt | Generated in postbuild from `site.url` |
 | Canonical + hreflang | Per-page, auto-derived |
 | Search verification | `head.verification.{google,bing,yandex,naver}` |
-| IndexNow | Disabled by default; `seo.indexNow` publishes the verification file; notifications also require GitHub Actions variable `KIRARI_INDEXNOW_ENABLED=true` and verified native Production |
+| IndexNow | Enabled for the Owner-approved KIRARI profile; notifications also require GitHub Actions variable `KIRARI_INDEXNOW_ENABLED=true` and verified native Production |
 | Google indexing | Disabled; no notifications are sent until eligible content and an Owner decision are established |
 
 IndexNow covers participating engines such as Bing, Yandex, Naver, Seznam.cz, and Yep. Google does not support IndexNow. The IndexNow key is public and served at `/{key}.txt`; do not reuse passwords, tokens, or other private secrets as the key. The current post-deploy flow uses only IndexNow. Google submissions remain off until the Owner approves eligible content; Google documents the Indexing API for pages with `JobPosting` or `BroadcastEvent` embedded in `VideoObject`, so ordinary blog pages are excluded.

@@ -9,3 +9,4 @@
 - [x] Independent code review and repair confirmed findings; prepare a scoped PR. Do not enable providers or change Production configuration.
 - [x] Push candidate and open scoped PR #152; keep Issue #100 open pending Owner decision on IndexNow enablement and live provider validation.
 - [x] Re-run exact-head CI after this evidence-only update; GitHub CI run `39051786484` passed on `9796006ff369973cf009610eb14563c02d8b0951`. Do not enable providers or change Production configuration.
+- [ ] Apply the 2026-10-19 Owner approval for IndexNow, verify the native Production deployment and provider result, then reconcile Issue #100 and Project #1.

@@ -981,9 +981,9 @@ url = "https://github.com/saicaca/fuwari"
 # Note: This publishes the verification key during build; requests run only
 # after verified native Production when explicitly enabled in GitHub Actions.
 # 注意: 构建时发布验证 key；仅在原生 Production 验证后、且 Actions 显式开启时发送请求。
-# Keep disabled until the IndexNow provider is approved.
-# Owner 批准启用 IndexNow 前保持关闭。
-# indexNow = false
+# Enabled in the default KIRARI profile by the Owner's 2026-10-19 decision.
+# 根据 Owner 于 2026-10-19 的决定，在 KIRARI 默认配置中启用。
+indexNow = true
 
 # Public IndexNow verification key / 公开 IndexNow 验证 key
 # Type: string / 类型: 字符串
@@ -991,9 +991,7 @@ url = "https://github.com/saicaca/fuwari"
 # 注意: 该 key 文件发布在 /{key}.txt 供搜索引擎验证。
 # This is a public verification key only; do not reuse private secrets.
 # 这只是公开验证 key；不要复用私密 secret。
-# Get your key at https://www.indexnow.org
-# 在 https://www.indexnow.org 获取你的密钥
-# indexNowKey = ""
+indexNowKey = "0a95417319a3db1c47f52c43610922e20e087900c249836fb386e4c639bf1a70"
 
 [seo.google]
 # Optional Google Indexing API integration. Advanced and disabled by default.
