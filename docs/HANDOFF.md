@@ -64,28 +64,41 @@ robots and `no-store` do **not** create access control or a new privacy policy.
 Actual staged builds cover nested/base/language paths, disabled cleanup and
 concurrent distinct Sites sharing dependencies. Astro caches remain project-local.
 
-## Next: P7 #100
+## P7 #100 — accepted
 
-Continue [#100](https://github.com/markd3ng/KIRARI/issues/100), now In Progress
-in the `codex/p7-post-deploy-indexing` branch, using the current native Git
-deployment architecture. Postbuild now only publishes an optional public key;
-the post-deployment handler checks the exact Production build marker, applies
-the opt-in gates and refuses build, Preview, external-Site, test and local
-runtimes. No provider request is enabled by this code change.
+P7 is complete on 2026-10-19. The Owner approved IndexNow and a real
+post-deployment validation. PR #152 enabled it in the default KIRARI profile
+and set `KIRARI_INDEXNOW_ENABLED=true`; Google Indexing API remains disabled.
 
-Evaluate the documented native deployment-success signal and its actual sender
-authentication. Verify authoritative team/project/repository/main/commit,
-Production READY, canonical serving, freshness and replay/idempotency boundaries
-before any submission. Use bounded provider failures and retries. Ordinary
-BlogPosting URLs must not be sent to an ineligible Google Indexing API.
+PR #152 merged as `7863ec7277b829e9be1bf9d48c91bf710010a1fe`; PR #153 fixed a
+runtime-discovered concurrency race and merged as
+`74eb4ca54e5e53493a197d0a0b2764a8483e0ddb`. Both exact-head and post-merge
+standard CI passed. PR #153's native Vercel Production deployment
+`dpl_7GaJoMPxtd1nPWYHb9uFXJXoN5th` reached READY for `kirari-main`, team
+`team_NsBZHGUVnyygP7veiROKLuUx`, repository `markd3ng/KIRARI`, branch `main`,
+exact commit `74eb4ca...`, and alias `kirari-main.vercel.app`. Direct live
+checks confirmed the canonical HTML serves that SHA and the public IndexNow
+key file matches the configured value.
 
-Code and fixture development can proceed without enabling external services.
-Owner decisions are required before provider enablement: whether to retain
-IndexNow and whether eligible Google content exists. Vercel's documented
-dispatch payload has no Team ID, and the unauthenticated deployment read API
-returns 403; the implementation pins the already approved global project ID
-and does not add a Vercel credential. P8 #106/#107 remain Todo / Backlog;
-Analytics and Ads remain disabled by default.
+The authenticated post-deployment workflow run `39213450721` independently
+verified the exact canonical commit and submitted 114 Production sitemap URLs.
+IndexNow returned HTTP 202 and the GitHub status is successful. Per the
+[IndexNow protocol](https://www.indexnow.org/zh_cn/documentation), 202 means
+the request was accepted while key validation is pending; it does not prove
+search-engine crawling or indexing. No Google request, Vercel credential
+change, project-setting change, or manual deployment occurred. Full evidence
+is archived under `.trellis/tasks/archive/2026-10/10-18-p7-post-deploy-indexing/`.
+Issue #100 is closed and Project #1 marks P7 Done / Completed Phase.
+
+## Next: P8 #106 / #107
+
+Issues [#106](https://github.com/markd3ng/KIRARI/issues/106) and
+[#107](https://github.com/markd3ng/KIRARI/issues/107) remain Todo / Backlog.
+Before implementation, the Owner must choose the analytics consent basis,
+persistence/revocation behavior and provider coverage for #106, and the ad
+providers, slot/account model and Preview policy for #107. Analytics and Ads
+remain disabled by default; no new third-party request should run before
+explicit enablement.
 
 ## Working conventions and limits
 

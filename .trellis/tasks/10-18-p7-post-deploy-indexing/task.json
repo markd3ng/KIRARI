@@ -21,6 +21,6 @@
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "",
+  "notes": "Implementation PRs: #152 (IndexNow opt-in) and #153 (dispatch concurrency); final evidence/handoff PR #154.",
   "meta": {}
 }

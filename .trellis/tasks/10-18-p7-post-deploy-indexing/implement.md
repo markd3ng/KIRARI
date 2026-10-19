@@ -10,4 +10,6 @@
 - [x] Push candidate and open scoped PR #152; keep Issue #100 open pending Owner decision on IndexNow enablement and live provider validation.
 - [x] Re-run exact-head CI after this evidence-only update; GitHub CI run `39051786484` passed on `9796006ff369973cf009610eb14563c02d8b0951`. Do not enable providers or change Production configuration.
 - [x] Apply the 2026-10-19 Owner approval, enable IndexNow for the default Site profile and repository gate, then merge PR #152 as a squash commit after exact-head CI and Vercel Preview checks passed.
-- [ ] Isolate post-deployment dispatch concurrency by Vercel deployment ID after production evidence showed concurrent project events could cancel pending runs; obtain a successful authenticated Production verification and provider result, then reconcile Issue #100 and Project #1.
+- [x] Isolate post-deployment dispatch concurrency by Vercel deployment ID after production evidence showed concurrent project events could cancel pending runs; merge PR #153 after exact-head CI/Preview passed and verify all subsequent project events completed independently.
+- [x] Verify native Production deployment identity, canonical served commit, public key file, and successful authorized IndexNow request; record exact CI, deployment and workflow evidence.
+- [x] Reconcile Issue #100 and Project #1 after committing the final acceptance record.
