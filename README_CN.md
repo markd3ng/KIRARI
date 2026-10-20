@@ -465,7 +465,11 @@ Umami、Plausible、Matomo 支持可选 `integrity`（SRI），用于固定版�
 
 站点所有者启用并配置统计后，访客首次访问默认允许加载；页脚的「隐私设置」可单独关闭统计或广告，选择会保存在当前浏览器中，直到访客更改。关闭后页面会重新加载，以免再次初始化对应脚本；此前已发送给服务商的数据无法撤回。站点所有者的总开关仍决定该功能是否启用。
 
+没有真实 GA4 衡量 ID 前，请保持 `analytics.googleAnalyticsId` 未设置。`G-REPLACE_WITH_REAL_MEASUREMENT_ID` 仅为文档占位符，启用统计前必须替换。
+
 广告默认关闭。填写 `[ads]` 的 AdSense 发布商 ID 和命名广告位，并设置 `enable = true` 后，文章广告只在 Vercel Production 展示；本地及 Preview 不加载广告，也不启用 Google 搜索广告模式。环境变量覆盖为 `PUBLIC_ADS_ENABLE`、`PUBLIC_ADS_PUBLISHER_ID` 和 `PUBLIC_ADS_SLOT_ARTICLE_BOTTOM`。静态站点使用有界的 CSP 来源列表，而 AdSense 推荐按每次响应生成 nonce；在真实 Production 浏览器检查通过前，不要启用实际广告库存。若使用 GA4，请在 Analytics 属性中关闭基于浏览器历史记录的增强型衡量页面浏览，避免与 KIRARI 的 SPA 页面浏览重复；该属性设置需另行核实。
+
+没有真实 AdSense 发布商与广告位 ID 前，请保持 `[ads].enable = false`。`ca-pub-REPLACE_WITH_REAL_PUBLISHER_ID` 和 `REPLACE_WITH_REAL_SLOT_ID` 仅为文档占位符，启用广告前必须替换。
 
 ### Landing Page
 
