@@ -5,9 +5,11 @@ import { getBuildDate } from "../utils/build-clock.mjs";
 import { resolveBuildCommit } from "../utils/build-commit";
 import { getLangHomeUrl } from "../utils/i18n-utils";
 import { url } from "../utils/url-utils";
+import PrivacySettings from "./PrivacySettings.svelte";
 
 const currentYear = getBuildDate().getFullYear();
 const lang = Astro.props.lang;
+const privacyId = Astro.props.privacyId || "footer";
 const rssUrl = lang ? getLangHomeUrl(lang).replace(/\/$/, "/rss.xml") : url("rss.xml");
 const buildCommit = resolveBuildCommit();
 const kirariCommit = buildCommit.short;
@@ -22,6 +24,7 @@ const kirariCommitUrl = buildCommit.full
         &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. All Rights Reserved. /
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={rssUrl}>RSS</a> /
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={url('sitemap-index.xml')}>Sitemap</a>
+        / <PrivacySettings lang={lang} idPrefix={privacyId} client:load />
         {llmsConfig.enable && (
             <> / <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={url('llms.txt')}>LLMs</a></>
         )}

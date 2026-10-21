@@ -3,8 +3,9 @@ import "../styles/fonts.css";
 
 import { ClientRouter } from "astro:transitions";
 import Analytics from "@components/Analytics.astro";
+import Ads from "@components/Ads.astro";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
-import { analyticsConfig, fontsConfig, headConfig, llmsConfig, ogConfig, profileConfig, searchConfig, siteConfig } from "@/config";
+import { adsConfig, analyticsConfig, fontsConfig, headConfig, llmsConfig, ogConfig, profileConfig, searchConfig, siteConfig } from "@/config";
 import {
 	AUTO_MODE,
 	BANNER_HEIGHT,
@@ -145,6 +146,7 @@ const bannerOffset = selectedBannerOffset.desktop;
 const bannerOffsetMobile = selectedBannerOffset.mobile;
 
 const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
+const shouldLoadAds = import.meta.env.PROD && process.env.VERCEL_ENV === "production" && adsConfig.enable;
 const buildCommit = resolveBuildCommit();
 ---
 
@@ -355,6 +357,7 @@ const buildCommit = resolveBuildCommit();
 		)}
 		{/* Analytics - only loaded in production when enable is true */}
 		{shouldLoadAnalytics && <Analytics config={analyticsConfig} />}
+		{shouldLoadAds && <Ads config={adsConfig} />}
 
 
 		<link rel="alternate" type="application/rss+xml" title={`${profileConfig.name} (${siteLang})`} href={rssHref}/>

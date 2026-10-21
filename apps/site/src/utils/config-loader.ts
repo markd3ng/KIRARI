@@ -1,4 +1,5 @@
 import { resolveAnalyticsSettings } from "./analytics-settings.mjs";
+import { resolveAdsSettings } from "./ads-settings.mjs";
 import { parse } from "smol-toml";
 import siteDefaults from "../../site-defaults.json";
 import { getEnvBoolean, getEnvString, getEnvStringFromKeys } from "./env";
@@ -317,6 +318,13 @@ type TomlConfig = {
 			src?: unknown;
 			/** Optional SRI hash / 可选 SRI 哈希 */
 			integrity?: unknown;
+		};
+	};
+	ads?: {
+		enable?: unknown;
+		publisherId?: unknown;
+		slots?: {
+			articleBottom?: unknown;
 		};
 	};
 	/** LLMs.txt configuration / LLMs.txt 配置 */
@@ -709,6 +717,11 @@ const DEFAULT_CONFIG: Config = {
 		simpleAnalyticsDomain: "",
 		matomo: undefined,
 		amplitudeApiKey: "",
+	},
+	ads: {
+		enable: false,
+		publisherId: "",
+		slots: { articleBottom: "" },
 	},
 	llms: {
 		enable: true,
@@ -1294,6 +1307,7 @@ export const loadConfig = (): Config => {
 	const head = toml.head;
 	const footer = toml.footer;
 	const analytics = toml.analytics;
+	const ads = toml.ads;
 	const llms = toml.llms;
 	const sidebar = toml.sidebar;
 	const widgets = toml.widgets;
@@ -1722,6 +1736,7 @@ export const loadConfig = (): Config => {
 			customScriptFile: footerCustomScriptFile,
 		},
 		analytics: resolveAnalyticsSettings(analytics, getEnvString, getEnvBoolean),
+		ads: resolveAdsSettings(ads, getEnvString, getEnvBoolean),
 		llms: {
 			enable: getBoolean(llms?.enable, DEFAULT_CONFIG.llms.enable),
 			sitemap: getBoolean(llms?.sitemap, DEFAULT_CONFIG.llms.sitemap || false),

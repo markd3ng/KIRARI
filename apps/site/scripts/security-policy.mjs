@@ -104,6 +104,18 @@ export function buildContentSecurityPolicy(config = {}) {
 		// to the preserved baseline above; do not widen them per enabled flag.
 	}
 
+	const ads = asRecord(config.ads);
+	const searchAds = asRecord(asRecord(config.search).google).adsense === true;
+	const slots = asRecord(ads.slots);
+	const hasArticleSlot = /^ca-pub-\d{16}$/.test(stringValue(ads.publisherId)) && /^\d{1,20}$/.test(stringValue(slots.articleBottom));
+	if (ads.enable === true && (hasArticleSlot || searchAds)) {
+		scriptSources.add("https://pagead2.googlesyndication.com");
+		connectSources.add("https://pagead2.googlesyndication.com");
+		connectSources.add("https://googleads.g.doubleclick.net");
+		frameSources.add("https://googleads.g.doubleclick.net");
+		frameSources.add("https://tpc.googlesyndication.com");
+	}
+
 	const fonts = asRecord(config.fonts);
 	if (fonts.enabled === true && Array.isArray(fonts.links)) {
 		for (const link of fonts.links) {
