@@ -38,7 +38,7 @@ async function renderSlots(config: AdsConfig): Promise<void> {
 		return;
 	}
 	const ads = (window as AdsWindow).adsbygoogle || ((window as AdsWindow).adsbygoogle = []);
-	for (const slot of slots) {
+	for (const slot of document.querySelectorAll<HTMLElement>("[data-kirari-ad-slot] .adsbygoogle:not([data-kirari-ad-initialized])")) {
 		slot.dataset.kirariAdInitialized = "true";
 		try {
 			ads.push({});

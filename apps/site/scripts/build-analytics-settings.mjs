@@ -17,9 +17,10 @@ export function resolveBuildAnalytics(raw, { mode = ANALYTICS_BUILD_MODE, envDir
 	return resolveAnalyticsSettings(raw, string, boolean);
 }
 
-export function resolveBuildAds(raw, { mode = ANALYTICS_BUILD_MODE, envDir = fileURLToPath(new URL("../", import.meta.url)) } = {}) {
+export function resolveBuildAds(raw, { mode = ANALYTICS_BUILD_MODE, envDir = fileURLToPath(new URL("../", import.meta.url)), vercelEnv = process.env.VERCEL_ENV } = {}) {
 	const env = loadEnv(mode, envDir, "PUBLIC_");
 	const string = (key, fallback = "") => (process.env[key] ?? env[key])?.trim() || fallback;
 	const boolean = (key, fallback) => parseEnvBoolean(string(key), fallback);
-	return resolveAdsSettings(raw, string, boolean);
+	const settings = resolveAdsSettings(raw, string, boolean);
+	return vercelEnv === "production" ? settings : { ...settings, enable: false };
 }

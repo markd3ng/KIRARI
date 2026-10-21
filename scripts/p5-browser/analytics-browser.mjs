@@ -64,20 +64,36 @@ try {
  };
  const expectedScriptHosts = [...Object.keys(collectors), "pagead2.googlesyndication.com"];
  const expectedCollectors = Object.values(collectors);
- await page.route("**/*", async (route) => {
+ const interceptProviderRequest = async (route, delayAdsScript = false) => {
   const request = route.request(), url = new URL(request.url());
   if (url.hostname === "127.0.0.1") return route.continue();
   seen.push({ type: request.resourceType(), url: request.url() });
   if (request.resourceType() === "script") {
-   if (url.hostname === "pagead2.googlesyndication.com") return route.fulfill({ contentType: "application/javascript", body: "window.adsbygoogle=window.adsbygoogle||[];" });
+   if (url.hostname === "pagead2.googlesyndication.com") {
+    if (delayAdsScript) await new Promise((resolve) => { releaseAdsScript = resolve; });
+    return route.fulfill({ contentType: "application/javascript", body: "window.adsbygoogle=window.adsbygoogle||[];" });
+   }
    const collector = collectors[url.hostname];
    if (!collector) unexpectedScripts.push(request.url());
    const instrumentation = url.hostname === "cdn.amplitude.com" ? "window.amplitude={init:function(){},track:function(...args){(window.__amplitudeEvents=window.__amplitudeEvents||[]).push(args)}};" : "";
    return route.fulfill({ contentType: "application/javascript", body: collector ? `${instrumentation}fetch(${JSON.stringify(collector)}, {method:'POST', body:'fixture'}).catch(()=>{});` : "" });
   }
   return route.fulfill({ status: 200, contentType: "text/plain", headers: { "access-control-allow-origin": "*" }, body: "ok" });
- });
- await page.goto(`http://127.0.0.1:${server.address().port}/`);
+ };
+ let releaseAdsScript;
+ const adsScriptRequest = page.waitForRequest((request) => new URL(request.url()).hostname === "pagead2.googlesyndication.com");
+ await page.route("**/*", (route) => interceptProviderRequest(route, true));
+ await page.goto(`http://127.0.0.1:${server.address().port}/`, { waitUntil: "domcontentloaded" });
+	await adsScriptRequest;
+	await page.evaluate(() => {
+		const slot = document.createElement("div");
+		slot.dataset.kirariAdSlot = "";
+		slot.innerHTML = '<ins class="adsbygoogle" data-ad-client="ca-pub-1234567890123456" data-ad-slot="9876543210"></ins>';
+		document.body.append(slot);
+		document.dispatchEvent(new Event("astro:after-swap"));
+		document.dispatchEvent(new Event("astro:after-swap"));
+	});
+	releaseAdsScript();
 	try {
 	await page.waitForFunction(({ scriptHosts, collectorUrls }) => {
   const resources = performance.getEntriesByType("resource");
@@ -99,7 +115,7 @@ try {
 		console.error(JSON.stringify({ seen, violations, unexpectedScripts, pageErrors, consoleMessages, runtime }));
 		throw error;
 	}
- await page.waitForFunction(() => document.querySelector(".adsbygoogle")?.dataset.kirariAdInitialized === "true", { timeout: WAIT_TIMEOUT });
+ await page.waitForFunction(() => document.querySelectorAll(".adsbygoogle[data-kirari-ad-initialized='true']").length === 2, { timeout: WAIT_TIMEOUT });
  await page.waitForFunction(() => window.__transitionReady && window.__amplitudeEvents?.length === 1, { timeout: WAIT_TIMEOUT });
  await page.evaluate(() => {
 	 history.pushState({}, "", "/next");
@@ -110,10 +126,10 @@ try {
 	 document.body.append(slot);
 	 document.dispatchEvent(new Event("astro:after-swap"));
  });
- await page.waitForFunction(() => window.__amplitudeEvents?.length === 2 && document.querySelectorAll(".adsbygoogle[data-kirari-ad-initialized='true']").length === 2, { timeout: WAIT_TIMEOUT });
+ await page.waitForFunction(() => window.__amplitudeEvents?.length === 2 && document.querySelectorAll(".adsbygoogle[data-kirari-ad-initialized='true']").length === 3, { timeout: WAIT_TIMEOUT });
  await page.evaluate(() => document.dispatchEvent(new Event("astro:after-swap")));
  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 0)));
- assert.equal(await page.evaluate(() => window.adsbygoogle?.length), 2, "Astro swaps must not initialize an existing ad slot twice");
+	 assert.equal(await page.evaluate(() => window.adsbygoogle?.length), 3, "concurrent Astro swaps must initialize each ad slot only once");
  await page.evaluate(() => {
 	 history.pushState({}, "", "/second");
 	 document.title = "Second page";
@@ -157,6 +173,20 @@ try {
   }), `collector was not observed: ${expected}`);
  }
  assert.deepEqual(violations, []);
+	const beforeAdsOptOut = seen.length;
+	const adsOptedOutPage = await browser.newPage();
+	adsOptedOutPage.setDefaultTimeout(WAIT_TIMEOUT);
+	await adsOptedOutPage.route("**/*", (route) => interceptProviderRequest(route));
+	await adsOptedOutPage.addInitScript(() => localStorage.setItem("kirari:privacy-settings:v1", JSON.stringify({ version: 1, analytics: true, ads: false })));
+	await adsOptedOutPage.goto(`http://127.0.0.1:${server.address().port}/`);
+	await adsOptedOutPage.waitForFunction(() => {
+		const consent = window.clarity?.q?.find(([command]) => command === "consentv2")?.[1];
+		return consent?.ad_Storage === "denied" && consent?.analytics_Storage === "granted" && document.querySelector("[data-kirari-ad-slot]")?.hidden === true;
+	}, { timeout: WAIT_TIMEOUT });
+	await adsOptedOutPage.waitForTimeout(300);
+	assert.ok(seen.slice(beforeAdsOptOut).some((entry) => new URL(entry.url).hostname === "www.clarity.ms"), "Analytics remains enabled after the visitor turns Ads off");
+	assert.ok(!seen.slice(beforeAdsOptOut).some((entry) => new URL(entry.url).hostname === "pagead2.googlesyndication.com"), "Ads opt-out prevents AdSense requests");
+	await adsOptedOutPage.close();
  const beforeOptOut = seen.length;
  const optedOutPage = await browser.newPage();
  optedOutPage.setDefaultTimeout(WAIT_TIMEOUT);
@@ -173,6 +203,7 @@ try {
   controlledCollectors: actualCollectors.size,
   cspViolations: violations.length,
   providerRequestsIntercepted: beforeOptOut,
+  adsOptOutRequests: seen.slice(beforeAdsOptOut, beforeOptOut).length,
   optOutRequests: seen.length - beforeOptOut,
  }));
 } finally {

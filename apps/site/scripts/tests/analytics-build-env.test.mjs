@@ -26,7 +26,7 @@ function fixture(context) {
 	mkdirSync(join(root, "src/pages"), { recursive: true });
 	writeFileSync(join(root, "astro.config.mjs"), `export default {root:${JSON.stringify(root)}};`);
 	writeFileSync(join(root, ".env"), "PUBLIC_UMAMI_SRC=https://base-env.invalid/script.js\n");
- writeFileSync(join(root, ".env.production"), "PUBLIC_ANALYTICS_ENABLE=true\nPUBLIC_UMAMI_ID=dotenv-id\nPUBLIC_UMAMI_SRC=https://dotenv-only.invalid/script.js\nPUBLIC_ADS_ENABLE=true\nPUBLIC_ADS_PUBLISHER_ID=ca-pub-1234567890123456\nPUBLIC_ADS_SLOT_ARTICLE_BOTTOM=9876543210\n");
+	writeFileSync(join(root, ".env.production"), "PUBLIC_ANALYTICS_ENABLE=true\nPUBLIC_UMAMI_ID=dotenv-id\nPUBLIC_UMAMI_SRC=https://dotenv-only.invalid/script.js\nPUBLIC_ADS_ENABLE=true\nPUBLIC_ADS_PUBLISHER_ID=ca-pub-1234567890123456\nPUBLIC_ADS_SLOT_ARTICLE_BOTTOM=9876543210\n");
 	writeFileSync(join(root, "src/pages/index.astro"), `---
 import Analytics from ${JSON.stringify(join(site, "src/components/Analytics.astro"))};
 import {resolveAnalyticsSettings} from ${JSON.stringify(join(site, "src/utils/analytics-settings.mjs"))};
@@ -103,10 +103,16 @@ test("rendered and build-time analytics share every supported boolean spelling",
 
 test("AdSense config uses the same Vite environment precedence and validation", (context) => {
 	const root = fixture(context);
-	const settings = resolveBuildAds({ enable: false }, { envDir: root });
+	const settings = resolveBuildAds({ enable: false }, { envDir: root, vercelEnv: "production" });
 	assert.deepEqual(settings, { enable: true, publisherId: "ca-pub-1234567890123456", slots: { articleBottom: "9876543210" } });
 	process.env.PUBLIC_ADS_PUBLISHER_ID = "invalid";
-	assert.equal(resolveBuildAds({ enable: false }, { envDir: root }).publisherId, "");
+	assert.equal(resolveBuildAds({ enable: false }, { envDir: root, vercelEnv: "production" }).publisherId, "");
+	process.env.PUBLIC_ADS_PUBLISHER_ID = "ca-pub-1234567890123456";
+	const preview = resolveBuildAds({ enable: false }, { envDir: root, vercelEnv: "preview" });
+	assert.equal(preview.enable, false);
+	assert.equal(buildContentSecurityPolicy({ ads: preview }), buildContentSecurityPolicy({ ads: { ...settings, enable: false } }));
+	assert.ok(!buildContentSecurityPolicy({ ads: preview }).includes("pagead2.googlesyndication.com"));
+	assert.equal(resolveBuildAds({ enable: false }, { envDir: root, vercelEnv: undefined }).enable, false);
 });
 
 test("both static policy writers resolve Ads overrides before creating policy", () => {

@@ -30,12 +30,13 @@ export function initializeAnalytics(): void {
 	} catch {
 		return;
 	}
-	if (!config.enable || !readPrivacySettings().analytics) return;
+	const privacySettings = readPrivacySettings();
+	if (!config.enable || !privacySettings.analytics) return;
 
 	initializeGoogleAnalytics(config.googleAnalyticsId);
 	initializeUmami(config.umami);
 	initializePlausible(config.plausible);
-	initializeClarity(config.clarityProjectId);
+	initializeClarity(config.clarityProjectId, privacySettings.ads);
 	initializeFathom(config.fathomSiteId);
 	initializeSimpleAnalytics(config.simpleAnalyticsDomain);
 	initializeMatomo(config.matomo);
@@ -70,14 +71,14 @@ function initializePlausible(config?: AnalyticsConfig["plausible"]): void {
 	}, config.integrity);
 }
 
-function initializeClarity(projectId?: string): void {
+function initializeClarity(projectId: string | undefined, adsAllowed: boolean): void {
 	if (!projectId) return;
 	const target = window as AnalyticsWindow;
 	const clarity = target.clarity || Object.assign((...args: unknown[]) => {
 		clarity.q?.push(args);
 	}, { q: [] as unknown[][] });
 	target.clarity = clarity;
-	clarity("consentv2", { ad_Storage: "granted", analytics_Storage: "granted" });
+	clarity("consentv2", { ad_Storage: adsAllowed ? "granted" : "denied", analytics_Storage: "granted" });
 	loadScript(`https://www.clarity.ms/tag/${encodeURIComponent(projectId)}`);
 }
 
