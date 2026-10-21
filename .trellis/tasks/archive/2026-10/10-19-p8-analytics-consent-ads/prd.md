@@ -38,19 +38,19 @@ slots.
 
 ## Acceptance criteria
 
-- [ ] Default Analytics and Ads configuration makes zero third-party requests.
-- [ ] With the relevant Site feature enabled in Production, each category loads
+- [x] Default Analytics and Ads configuration makes zero third-party requests.
+- [x] With the relevant Site feature enabled in Production, each category loads
       by default and its visitor opt-out prevents requests on subsequent loads.
-- [ ] Visitor choices persist across refresh, direct navigation, Astro client
+- [x] Visitor choices persist across refresh, direct navigation, Astro client
       navigation, back/forward, and browser restart; settings can restore them.
-- [ ] All eight Analytics providers have an evidence-backed initialization and
+- [x] All eight Analytics providers have an evidence-backed initialization and
       SPA page-view/CSP matrix; route changes do not create duplicate events.
-- [ ] AdSense renders only configured named slots in Production, reserves space,
+- [x] AdSense renders only configured named slots in Production, reserves space,
       and initializes each slot once. Local, Preview, missing-config, and
       visitor-opted-out fixtures make no ad-network requests.
-- [ ] Google Search AdSense mode is suppressed locally, in Preview, and after
+- [x] Google Search AdSense mode is suppressed locally, in Preview, and after
       the visitor opts out of Ads; ordinary configured search remains usable.
-- [ ] Focused browser/network tests, Site type checks, Astro checks, build, QA,
+- [x] Focused browser/network tests, Site type checks, Astro checks, build, QA,
       generated Vercel config parity, release checks, Edge checks, and diff
       checks pass.
 
@@ -65,3 +65,19 @@ slots.
 - Google Analytics history-based page views are controlled partly in the GA4
   property. Document the required setting when using KIRARI's manual SPA page
   view integration; do not claim the account setting was changed or verified.
+
+## Final delivery
+
+PR #155 merged to `main` as `3f134c71e01c7731f35d6f637ff2e1fccfca74db`.
+Post-merge CI run `39567098603` passed. Native Vercel Production deployment
+`dpl_5c1Bg97cCzqjiKcR7yXGG3Q9sAch` is READY for the same commit. A real browser
+smoke confirmed the build SHA, route/navigation and static assets, Pagefind
+search, canonical URLs, `robots.txt`, and CSP/security headers. No Analytics or
+AdSense provider requests were made because the public profile has placeholder
+provider identifiers and owner-level switches remain disabled.
+
+No real GA4 property or AdSense publisher/slot IDs were supplied. Production
+`/ads.txt` returns 404; the optional publisher-owned file mapping is preserved
+and fixture-tested, and no fake publisher row was published. GA4 property-side
+Enhanced Measurement and valid publisher-owned `ads.txt` remain owner setup
+items for any future provider activation, not code-merge blockers.
