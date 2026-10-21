@@ -112,3 +112,39 @@ Archived five completed/superseded tasks without changing 202 evidence files; co
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: P8 analytics consent and ads production acceptance
+
+**Date**: 2026-10-21
+**Task**: P8 analytics consent and ads production acceptance
+**Branch**: `codex/p8-analytics-consent-ads`
+
+### Summary
+
+Merged PR #155 as 3f134c71e01c7731f35d6f637ff2e1fccfca74db. Main CI run 39567098603 passed; native kirari-main Production deployment dpl_5c1Bg97cCzqjiKcR7yXGG3Q9sAch is READY and real-browser smoke passed routes, assets, Pagefind, robots, canonical and security headers. Issues #106/#107 closed and Project #1 set Done. Provider IDs remain placeholders; no GA4/AdSense traffic was observed; /ads.txt remains absent until real publisher records exist.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `6d430272a77d4fa1d6a25482e2038b25eb5ca2b2` | (see git log) |
+| `a16bbaa5cd9c1aa1bfc0d9436c477f8345344e73` | (see git log) |
+| `2c03204d1dc6c5b77bfb4f2d6d2fa8846f3a5e7e` | (see git log) |
+| `2f14e7487c54c42afb1463a00f34fa045e428d64` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
