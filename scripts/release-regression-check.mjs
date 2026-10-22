@@ -5,7 +5,6 @@ import { fileURLToPath } from "node:url";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const siteRoot = join(repoRoot, "apps/site");
 const distRoot = join(siteRoot, "dist");
-const targetVersion = process.env.KIRARI_RELEASE_VERSION || "0.4.1";
 const checks = [];
 
 function read(path) {
@@ -31,6 +30,7 @@ function walk(directory) {
 const rootPackage = readJson("package.json");
 const sitePackage = readJson("apps/site/package.json");
 const changelog = read("CHANGELOG.md");
+const targetVersion = process.env.KIRARI_RELEASE_VERSION || rootPackage.version;
 const edgeSource = read("workers/kirari-edge/src/index.ts");
 const edgeTests = read("workers/kirari-edge/test/index.test.ts");
 const tagPage = read("apps/site/src/pages/tags/[tag].astro");
