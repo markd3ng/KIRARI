@@ -23,15 +23,25 @@
    - `node apps/site/scripts/qa-regression-check.mjs`
    - `node apps/site/scripts/generate-vercel-config.mjs --check`
    - `git diff --check`
-- [ ] Push a focused branch and open one PR to `main`; verify standard CI and
+- [x] Push a focused branch and open one PR to `main`; verify standard CI and
    independent review on the exact HEAD, then merge using repository convention.
-- [ ] Verify post-merge main CI, native Production identity/status, and a real
+- [x] Verify post-merge main CI, native Production identity/status, and a real
    browser smoke of Iconify, routes, assets, search, canonical/robots and
    security headers. Do not tag if any required check fails.
-- [ ] Create and push annotated tag `v0.5.0` on the verified main commit. Confirm
+- [x] Create and push annotated tag `v0.5.0` on the verified main commit. Confirm
    local and remote tag object/target, wait for the tag-triggered standard CI,
    and leave Issue #122 open in Backlog. The tag event does not match the
    composition job's dispatch/config trigger conditions.
+
+Post-merge evidence: PR #161 was squash-merged as `b55ec2e1fde8c69d0a1534b7cb97a8704978dd98`.
+Main CI run 39743396723 passed. Vercel `kirari-main` Production deployment
+`dpl_9SL8xkdPKQbTvi8HB1dk8SzhMttp` is READY for that exact repository, `main`
+branch, and commit; `kirari-main.vercel.app` is its alias. The live browser
+smoke verified homepage, blog, article, Pagefind search, robots, canonical,
+security headers including HSTS, allowed Iconify CSP origins, and zero browser
+errors or failed assets. Annotated tag `v0.5.0` (remote tag object
+`cb74d1338e6f493fbf170d5089a46035124e9f7e`) peels to the release commit.
+Tag-triggered CI run 39744139965 passed; composition was skipped by design.
 
 Local validation note: `pnpm check` reaches all type, Astro, Edge and Gateway
 checks, then the profile sync subcheck sees the ignored local Finder metadata
