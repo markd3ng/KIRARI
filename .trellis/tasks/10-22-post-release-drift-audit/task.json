@@ -15,12 +15,12 @@
   "branch": "codex/v0.5.0-post-release-audit",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
-  "pr_url": null,
+  "commit": "6c3e3d00691be1a4fc9c0df78747c4a993d3a281",
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/163",
   "subtasks": [],
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "",
+  "notes": "PR #163 is open against main; exact-head CI and read-only Project README checkpoint update are the remaining closeout steps. D-03 stays an explicit evidence gap.",
   "meta": {}
 }

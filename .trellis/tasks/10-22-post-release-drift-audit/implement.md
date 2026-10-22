@@ -26,8 +26,10 @@
 - [x] Run `pnpm site:test`, `pnpm release:check`, `pnpm site:type-check`,
   `pnpm site:astro-check`, `pnpm build`, and `git diff --check`; use exact-head
   GitHub CI as the full standard validation.
-- [ ] Review the complete diff, create a short-lived branch, push, open one PR
-  to `main`, and verify its final HEAD and actual standard CI. Leave it open.
+- [x] Review the complete diff, create a short-lived branch, push, and open
+  PR #163 against `main`.
+- [ ] Verify PR #163 final HEAD and actual standard CI after all audit metadata
+  updates. Leave it open.
 
 ## Risk / rollback
 
