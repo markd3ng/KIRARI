@@ -26,6 +26,6 @@
     "pnpm-lock.yaml",
     ".trellis/tasks/10-22-dependency-security-remediation/research/security-dependencies.md"
   ],
-  "notes": "Baseline 3f86df5. The follow-up candidate additionally pins postcss-selector-parser@7.1.6 and katex@0.18.7; all 143 site tests, type checks, Astro check, build and release checks pass. Updated GitHub audit is pending. http-cache-semantics@4.2.0 has no vendor patch and no demonstrated KIRARI request-time path. PR must remain unmerged until separate Production cutover authorization because merging main triggers native Vercel Production.",
+  "notes": "Baseline 3f86df5. The branch pins postcss-selector-parser@7.1.6 and katex@0.18.7, and refreshes Astro's http-cache-semantics lock entry to 4.3.0. Previous full tests, type checks, Astro check, build and release checks passed before that final lock refresh; final-head CI is pending. The advisory's own patched-version field still says none, though Astro's triage reports npm audit clears at 4.3.0; runtime behavior remains disputed, and KIRARI has no demonstrated inbound request path to the affected API. PR must remain unmerged until separate Production cutover authorization because merging main triggers native Vercel Production.",
   "meta": {}
 }

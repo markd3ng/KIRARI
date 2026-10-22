@@ -8,7 +8,7 @@ Baseline: `main` `3f86df5fe5a320373aa51aa58a29ff494e9354b4`; fresh pnpm audit: 0
 | `markdown-it` | 14.3.2 | High and low advisories; fixed from 14.3.3 | Patch update within 14.x. |
 | `sanitize-html` | 2.17.7 | Moderate and low advisories; fixed from 2.18.0 | Patch update within 2.x; exercise existing sanitization tests/build. |
 | `dompurify` | 3.4.13 | Two low advisories; fixed from 3.4.16 | Update existing override to a patched 3.4.x release. |
-| `http-cache-semantics` | 4.2.0 | GHSA-ch52-4w7c-c8xp says affected `<=4.2.0`, patched versions none. Upstream maintainer disputes the report and closed its report as not planned. | Do not call a version bump a confirmed fix. Inspect actual source and Astro usage; retain as a documented advisory unless a safe, verifiable workaround exists. |
+| `http-cache-semantics` | 4.2.0 → 4.3.0 | GHSA-ch52-4w7c-c8xp still lists no patched version; upstream maintainer disputes the report. Astro's October 4 triage says 4.3.0 is published and clears npm audit, but the package's 4.3.0 code still honors `max-stale` on a zero-age shared Set-Cookie entry. | Refresh the lock to 4.3.0, verify the actual KIRARI call path, and keep the advisory discrepancy explicit rather than claiming the behavior is fixed. |
 | `postcss-selector-parser` | 6.1.4, 6.0.10 | Moderate; advisory's patched range begins at 7.1.6 | Assess major-version override compatibility and exploitability; only apply with build/test evidence. |
 | `katex` | 0.17.0, 0.16.47 | Low; patched from 0.18.2 | Test whether the site and Mermaid's declared dependency range permit a safe update; do not force an unsupported range silently. |
 
@@ -22,9 +22,9 @@ The branch additionally overrides `postcss-selector-parser` to `7.1.6` and `kate
 
 This resolves the two moderate PostCSS parser findings and both low KaTeX findings in the dependency graph. The PostCSS consumers process repository-controlled CSS during the build. KaTeX rendering is static from repository-controlled content; the Mermaid and rehype-katex integrations were exercised by the site tests and production build.
 
-`http-cache-semantics@4.2.0` remains unresolved. The GHSA lists no patched version, and the package maintainer disputes the report. Astro 7.3.5 declares it directly; a search of the installed Astro package and workspace found only the manifest/lockfile reference, not an import or call site. KIRARI's Astro build emits static files and has no Astro request server. Do not claim this as patched or silently suppress the high audit finding; no safe upstream update is available.
+`http-cache-semantics` now resolves to `4.3.0` through Astro's existing `^4.2.0` range. The GHSA page still says no patched version, while Astro's October 4 triage says npm audit clears at 4.3.0; the upstream maintainer disputes the advisory. A direct behavioral probe confirms 4.3.0 still returns a cache hit when a shared `Set-Cookie` response with zero max-age is requested with `max-stale`. Astro's actual call site is its static remote-image build cache, which uses only `storable()` and `timeToLive()`; no KIRARI request handler or user-controlled request reaches `satisfiesWithoutRevalidation()`. So the lockfile can move to the latest release and KIRARI has no demonstrated runtime exposure, but this report does not claim the disputed library behavior itself was changed. Keep the advisory discrepancy visible until upstream/GHSA records converge.
 
-The local npm audit endpoint timed out during recheck. Final advisory counts are pending the GitHub dependency-audit artifact for the updated PR HEAD. The prior HEAD's audit artifact reported 0 critical, 1 high, 2 moderate, and 2 low; this is historical evidence only for that prior SHA.
+The GitHub full JSON inventory for candidate HEAD `94f792d8b9bc9c4765e9989388fde50320e6da14` reported 0 critical, 1 high, 0 moderate, and 0 low advisories; its sole entry was `http-cache-semantics@4.2.0`. This follow-up changes only that lock entry to 4.3.0. A local `pnpm audit` request timed out against the npm audit endpoint; wait for the new-head GitHub dependency-audit artifact before recording its advisory count.
 
 ## Verification on the follow-up candidate
 
@@ -33,4 +33,5 @@ The local npm audit endpoint timed out during recheck. Final advisory counts are
 - `pnpm site:type-check`, `pnpm site:astro-check`: pass, 0 Astro errors/warnings/hints
 - `pnpm build`: pass, 112 static pages generated
 - `pnpm release:check`, `pnpm release:version-check`, and `git diff --check`: pass
-- Browser tests include Mermaid render/lifecycle coverage; the GitHub browser fixture and complete CI will run after push
+- Independent review verified Mermaid math rendering with KaTeX 0.18.7 in Chromium (default MathML and legacy mode), direct rehype-katex inline/display math, and PostCSS nesting fixtures against the overridden parser.
+- The dependency-audit and browser validation jobs must be read from CI for the final pushed HEAD; earlier jobs correspond to `94f792d8b9bc9c4765e9989388fde50320e6da14` and are not final evidence.
