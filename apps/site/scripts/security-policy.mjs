@@ -17,6 +17,9 @@ const BASE_SCRIPT_SOURCES = [
 
 const BASE_CONNECT_SOURCES = [
 	"'self'",
+	"https://api.iconify.design",
+	"https://api.simplesvg.com",
+	"https://api.unisvg.com",
 	"https://api.github.com",
 	"https://github.com",
 	"https://www.google-analytics.com",

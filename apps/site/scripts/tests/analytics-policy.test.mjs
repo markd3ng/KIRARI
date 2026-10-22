@@ -36,6 +36,16 @@ test("unconfigured providers and orphan script URLs add no origins", () => {
  assert.equal(policy({ enable: true, umami: { src: "https://orphan.example/script.js" }, plausible: { src: "https://orphan.example/script.js" } }), baseline);
  assert.ok(!policy({ enable: true, matomo: { siteId: "1", src: "javascript:alert(1)" } }).includes("javascript:"));
 });
+test("Iconify fetch origins are fixed connect sources only", () => {
+ const generated = policy({ enable: false });
+ const iconifyOrigins = ["https://api.iconify.design", "https://api.simplesvg.com", "https://api.unisvg.com"];
+ for (const origin of iconifyOrigins) {
+  assert.ok(sources(generated, "connect-src").includes(origin));
+  assert.ok(!sources(generated, "script-src").includes(origin));
+ }
+ assert.ok(!generated.includes("https://*.iconify.design"));
+ assert.equal(createVercelConfig({}).headers.at(-1).headers[0].value, generated);
+});
 test("Simple Analytics accepts a host or HTTPS origin and omits malformed host input consistently", () => {
  for (const [input, expected] of [["stats.example", "stats.example"], ["https://stats.example", "stats.example"]]) {
   const settings = resolveAnalyticsSettings({ enable: true, simpleAnalyticsDomain: input }, (key, fallback = "") => key === "PUBLIC_SIMPLE_ANALYTICS_DOMAIN" ? input : fallback, (_key, fallback) => fallback);

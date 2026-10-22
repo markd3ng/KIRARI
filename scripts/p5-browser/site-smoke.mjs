@@ -4,7 +4,6 @@ import { resolve, extname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "node:http";
 import { chromium } from "../p3-browser/node_modules/playwright/index.mjs";
-import { findUnexpectedCspViolations, isExpectedBaselineIconifyBlock } from "./csp-violations.mjs";
 
 const WAIT_TIMEOUT = 30_000;
 const dist = resolve(fileURLToPath(new URL("../../apps/site/dist/", import.meta.url)));
@@ -124,8 +123,7 @@ try {
 			phase = "verify tracking and CSP behavior";
 			assert.deepEqual(tracking, [], "default configuration makes no analytics requests");
 			assert.deepEqual(errors, [], "browser reports no uncaught page errors");
-			const unexpected = findUnexpectedCspViolations(violations);
-			assert.deepEqual(unexpected, [], "only known baseline Iconify connect blocks are permitted");
+			assert.deepEqual(violations, [], "browser must report no CSP violations");
 			results.push({
 				width,
 				diagrams,
@@ -133,8 +131,7 @@ try {
 				placement,
 				defaultAnalyticsRequests: tracking.length,
 				pageErrors: errors.length,
-				unexpectedCspViolations: unexpected.length,
-				baselineIconifyCspBlocks: violations.filter(isExpectedBaselineIconifyBlock).length,
+				cspViolations: violations.length,
 			});
 		} catch (error) {
 			const pageState = await page.evaluate(() => ({

@@ -3,7 +3,7 @@
   "name": "dependency-security-remediation",
   "title": "Dependency Security Remediation",
   "description": "Apply compatible dependency security patches on main and document residual upstream findings.",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": "dependency-manifest-and-lockfile",
   "package": null,
@@ -11,11 +11,11 @@
   "creator": "Ian",
   "assignee": "Ian",
   "createdAt": "2026-10-22",
-  "completedAt": null,
+  "completedAt": "2026-10-22",
   "branch": "codex/dependency-security-remediation",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
+  "commit": "5d9303c708e3d61acf11920d6c8252cae589b8a9",
   "pr_url": "https://github.com/markd3ng/KIRARI/pull/160",
   "subtasks": [],
   "children": [],
@@ -26,6 +26,6 @@
     "pnpm-lock.yaml",
     ".trellis/tasks/10-22-dependency-security-remediation/research/security-dependencies.md"
   ],
-  "notes": "Baseline 3f86df5. The branch pins postcss-selector-parser@7.1.6 and katex@0.18.7, and refreshes Astro's http-cache-semantics lock entry to 4.3.0. The full 143-test site suite and 112-page production build pass with that lock. The GHSA still lists no patched version; 4.3.0 still returns a hit for the disputed max-stale case, but KIRARI's static image build only calls storable/timeToLive and has no demonstrated inbound request path to it. CI run 39714987373 passed verify and both browser jobs on code HEAD fa1ef2b. The subsequent successful audit on docs-only HEAD d790cf2 reported zero findings. PR must remain unmerged until separate Production cutover authorization because merging main triggers native Vercel Production.",
+  "notes": "Completed in PR #160, merged to main as 5d9303c708e3d61acf11920d6c8252cae589b8a9. Available compatible patches were applied; http-cache-semantics is refreshed to 4.3.0 but the disputed max-stale behavior is not claimed fixed and remains tracked by Issue #122. Exact-main CI run 39717053085 passed. Native Git integration triggered the Production deployment after the Owner-authorized merge; no manual deployment or credential/configuration change was made.",
   "meta": {}
 }

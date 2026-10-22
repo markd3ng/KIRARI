@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-10-22
+
+### Added
+
+- Added a portable Edge Gateway Core with Cloudflare Workers, Vercel, and
+  EdgeOne Makers adapters.
+- Added canonical source-backed Markdown views and language indexes, while
+  retaining the `llms-full.txt` aggregate.
+- Added post-deployment IndexNow notifications after verifying the native
+  Production deployment.
+- Added visitor analytics controls and configurable AdSense placements.
+
+### Changed
+
+- Made GitHub-to-Vercel native Git deployment the release path for `main`.
+- Updated compatible dependencies with available security fixes. The disputed
+  `http-cache-semantics` behavior remains tracked separately in Issue #122.
+
+### Fixed
+
+- Allowed Iconify's three fixed HTTPS API origins in `connect-src`, so
+  configured icons load without widening script execution sources.
+
 ## [0.4.1] - 2026-06-18
 
 ### Added
