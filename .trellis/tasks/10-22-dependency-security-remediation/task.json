@@ -26,6 +26,6 @@
     "pnpm-lock.yaml",
     ".trellis/tasks/10-22-dependency-security-remediation/research/security-dependencies.md"
   ],
-  "notes": "Baseline 3f86df5. The branch pins postcss-selector-parser@7.1.6 and katex@0.18.7, and refreshes Astro's http-cache-semantics lock entry to 4.3.0. The full 143-test site suite and 112-page production build pass with that lock. The GHSA still lists no patched version; 4.3.0 still returns a hit for the disputed max-stale case, but KIRARI's static image build only calls storable/timeToLive and has no demonstrated inbound request path to it. Final-head CI is pending. PR must remain unmerged until separate Production cutover authorization because merging main triggers native Vercel Production.",
+  "notes": "Baseline 3f86df5. The branch pins postcss-selector-parser@7.1.6 and katex@0.18.7, and refreshes Astro's http-cache-semantics lock entry to 4.3.0. The full 143-test site suite and 112-page production build pass with that lock. The GHSA still lists no patched version; 4.3.0 still returns a hit for the disputed max-stale case, but KIRARI's static image build only calls storable/timeToLive and has no demonstrated inbound request path to it. CI run 39714987373 passed verify and both browser jobs on code HEAD fa1ef2b; audit calls timed out at registry.npmjs.org, so the current advisory count is unverified. PR must remain unmerged until separate Production cutover authorization because merging main triggers native Vercel Production.",
   "meta": {}
 }
