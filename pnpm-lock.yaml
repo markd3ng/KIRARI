@@ -148,8 +148,8 @@ importers:
         specifier: ^2.18.1
         version: 2.18.1
       satori:
-        specifier: ^0.62.0
-        version: 0.62.0
+        specifier: ^0.63.0
+        version: 0.63.0
       sharp:
         specifier: ^0.35.5
         version: 0.35.5(@types/node@25.9.9)
@@ -3245,8 +3245,8 @@ packages:
     engines: {node: '>=14.0.0'}
     hasBin: true
 
-  satori@0.62.0:
-    resolution: {integrity: sha512-6w3G54svVX9B3RY3S7XgZ3i9ZNtvO7Z8AWWUPcHM3HMhgvmYAZOl5TkWBqE8moxRxHW0i2XPbjI1mUsUmWGriA==}
+  satori@0.63.0:
+    resolution: {integrity: sha512-dXoVy8SvYK+4ON+uoum/fVTy7ZglKbocdHct7sch/rLKZIUyt7nG3CdH647q8AEo75WezXetsZLcb7mYyDqKgg==}
     engines: {node: '>=16'}
 
   sax@1.4.4:
@@ -7579,7 +7579,7 @@ snapshots:
       source-map-js: 1.2.2
     optional: true
 
-  satori@0.62.0:
+  satori@0.63.0:
     dependencies:
       '@shuding/opentype.js': 1.4.0-beta.0
       css-background-parser: 0.1.0
