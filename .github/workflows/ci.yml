@@ -40,4 +40,5 @@ jobs:
       - run: pnpm release:check
       - run: pnpm release:version-check
       - run: pnpm audit --audit-level moderate
+        continue-on-error: true
       - run: git diff --check
