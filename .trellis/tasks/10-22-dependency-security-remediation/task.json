@@ -1,0 +1,31 @@
+{
+  "id": "dependency-security-remediation",
+  "name": "dependency-security-remediation",
+  "title": "Dependency Security Remediation",
+  "description": "Apply compatible dependency security patches on main and document residual upstream findings.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "dependency-manifest-and-lockfile",
+  "package": null,
+  "priority": "P2",
+  "creator": "Ian",
+  "assignee": "Ian",
+  "createdAt": "2026-10-22",
+  "completedAt": null,
+  "branch": "codex/dependency-security-remediation",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "package.json",
+    "apps/site/package.json",
+    "pnpm-lock.yaml",
+    ".trellis/tasks/10-22-dependency-security-remediation/research/security-dependencies.md"
+  ],
+  "notes": "Baseline 3f86df5. Audit reduced from 17 findings to 5; remaining high http-cache-semantics finding has no vendor patch and no demonstrated KIRARI runtime path. PR must remain unmerged until separate Production cutover authorization because merging main triggers native Vercel Production.",
+  "meta": {}
+}
