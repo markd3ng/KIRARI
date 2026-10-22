@@ -11,7 +11,7 @@
 
 # KIRARI
 
-Static blog theme — Astro 6.4.8 + Svelte 5 + Tailwind CSS v4. Single TOML config file. Targets Cloudflare Pages, Vercel, Netlify, EdgeOne Pages.
+Static blog theme — Astro 7.3.5 + Svelte 5 + Tailwind CSS v4. Single TOML config file. Targets Cloudflare Pages, Vercel, Netlify, EdgeOne Pages.
 
 ## Architecture
 
@@ -28,7 +28,7 @@ for normal site settings; builds materialize it into `apps/site/kirari.config.to
 Environment variables are reserved for secrets, deployment overrides, and provider
 credentials that should not be committed.
 
-**Islands**: Only 3 Svelte components hydrate on the client — Search (`client:idle`), Theme Toggle (`client:idle`), Display Settings (`client:only="svelte"`). Everything else is static `.astro`.
+**Client islands (6)**: `Search` (`client:idle`, Navbar when search is enabled), `LightDarkSwitch` (`client:idle`), `DisplaySettings` (`client:only="svelte"`), `PrivacySettings` (`client:load`, Footer), `DevicesFilter` (`client:load`, `/devices/` and `/{lang}/devices/`), and `SharePoster` (`client:load`, post pages with a share URL). Other `.astro` components are static.
 
 **Transitions**: `TransitionManager` singleton (see `src/utils/transition-manager.ts`) wraps a dual-path strategy:
 
@@ -84,22 +84,22 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 
 | Category | Package | Version |
 |---|---|---|
-| Framework | astro | 6.4.8 |
-| Islands | svelte | ^5.56.3 |
-| CSS | tailwindcss, @tailwindcss/vite, stylus | ^4.3.0, ^0.64.0 |
-| Search | pagefind (default), @docsearch/js (Algolia) | ^1.5.2, ^4.6.3 |
-| Code highlight | astro-expressive-code + 4 plugins | ^0.43.1 |
-| Math | remark-math, rehype-katex, katex | ^0.16.47 |
-| Diagrams | mermaid (client-side) | ^11.15.0 |
-| Icons | astro-icon, @iconify/svelte | — |
-| Transitions | Astro ClientRouter / swup fallback | ^4.9.0 |
-| Image viewer | photoswipe | ^5.4.4 |
-| Image processing | sharp | ^0.34.5 |
-| Scrollbar | overlayscrollbars | ^2.16.0 |
-| Content | @astrojs/mdx + remark/rehype chain | ^6.0.3 |
-| Feeds | @astrojs/rss, @astrojs/sitemap | — |
-| OG images | satori | ^0.26.0 |
-| Config | smol-toml | ^1.6.1 |
+| Framework | `astro` | `7.3.5` |
+| Islands | `svelte` | `^5.56.3` |
+| CSS | `tailwindcss`, `@tailwindcss/vite`, `stylus` | `^4.3.1`, `^4.3.1`, `^0.64.0` |
+| Search | `pagefind` (default), `@docsearch/js` (Algolia) | `^1.5.2`, `^4.6.3` |
+| Code highlight | `astro-expressive-code`, `@expressive-code/core`, `@expressive-code/plugin-collapsible-sections`, `@expressive-code/plugin-line-numbers` | `^0.44.1`, `^0.44.1`, `^0.44.1`, `^0.44.1` |
+| Math | `remark-math`, `rehype-katex`, `katex` | `^6.0.0`, `^7.0.1`, `^0.18.7` |
+| Diagrams | `mermaid` (client-side) | `^11.16.1` |
+| Icons | `astro-icon`, `@iconify/svelte` | `^1.2.0`, `^5.2.1` |
+| Transitions | Astro ClientRouter / `swup` fallback | `^4.9.0` |
+| Image viewer | `photoswipe` | `^5.4.4` |
+| Image processing | `sharp` | `^0.35.5` |
+| Scrollbar | `overlayscrollbars` | `^2.16.0` |
+| Content | `@astrojs/mdx` + remark/rehype chain | `^8.0.2` |
+| Feeds | `@astrojs/rss`, `@astrojs/sitemap` | `4.0.19`, `^3.7.3` |
+| OG images | `satori` | `^0.26.0` |
+| Config | `smol-toml` | `^1.9.0` |
 
 ## Deployment
 
