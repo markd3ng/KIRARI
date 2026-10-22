@@ -42,7 +42,7 @@
     "astro-expressive-code": "^0.44.1",
     "astro-icon": "^1.2.0",
     "hastscript": "^9.0.1",
-    "katex": "^0.17.0",
+    "katex": "^0.18.7",
     "markdown-it": "^14.3.3",
     "mdast-util-to-string": "^4.0.0",
     "mermaid": "^11.16.1",

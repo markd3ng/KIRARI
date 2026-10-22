@@ -16,14 +16,21 @@ Astro is a static site and this dependency tree is used in build/tooling paths; 
 
 Sources: [Vite advisory](https://github.com/advisories/GHSA-587h-7wmj-h5pm), [markdown-it advisory](https://github.com/advisories/GHSA-gfr2-rv44-r23c), [postcss-selector-parser advisory](https://github.com/advisories/GHSA-rj75-hqrm-r3gf), [http-cache-semantics advisory](https://github.com/advisories/GHSA-ch52-4w7c-c8xp), [upstream http-cache-semantics issue](https://github.com/kornelski/http-cache-semantics/issues/56), [KaTeX 0.18.2 release](https://github.com/KaTeX/KaTeX/releases/tag/v0.18.2).
 
-## Implemented and verified
+## Follow-up remediation of the prior residuals
 
-The compatible fixes applied on this branch are `vite@8.3.5`, `markdown-it@14.3.3`, `sanitize-html@2.18.1`, and `dompurify@3.4.17`. A new full workspace audit reports 0 critical, 1 high, 2 moderate, and 2 low advisories (down from 17 total to 5). The Vite, markdown-it, sanitize-html, and DOMPurify advisories are gone.
+The branch additionally overrides `postcss-selector-parser` to `7.1.6` and `katex` to `0.18.7`. The direct KaTeX range now accepts `^0.18.7`; the overrides also replace the older transitive versions requested by `postcss-nested@6.2.0`, `@tailwindcss/typography@0.5.20`, `mermaid@11.17.2`, and `rehype-katex@7.0.1`. These overrides cross the consumers' declared major-version ranges, so they were kept only after the existing Mermaid browser test, all 143 site tests, type checks, Astro check, full static build, and release checks passed. The lockfile now contains only `postcss-selector-parser@7.1.6` and `katex@0.18.7`.
 
-The remaining five findings are not being concealed:
+This resolves the two moderate PostCSS parser findings and both low KaTeX findings in the dependency graph. The PostCSS consumers process repository-controlled CSS during the build. KaTeX rendering is static from repository-controlled content; the Mermaid and rehype-katex integrations were exercised by the site tests and production build.
 
-- `http-cache-semantics@4.2.0` remains a high audit finding because the advisory lists no patched release. The npm `4.3.0` source was inspected and retains the same `max-stale` acceptance branch; it does not remediate the disputed behavior. Astro 7.3.5 declares it as a dependency, but a source search of the installed Astro package and workspace found no imports or calls outside the package itself. KIRARI publishes static output, not an Astro request server. Treat this as an upstream supply-chain advisory with no demonstrated reachable KIRARI path, not as fixed.
-- `postcss-selector-parser` 6.1.4 and 6.0.10 remain moderate because the fixed version is 7.1.6, outside the v6 ranges declared by Expressive Code and Tailwind Typography. Those consumers run during the trusted local/CI CSS build; KIRARI has no request-time untrusted selector parser. No unsupported major override was introduced.
-- `katex` 0.17.0 and 0.16.47 remain low. The direct dependency and `rehype-katex`, `remark-math`, and Mermaid consumers resolve distinct versions; forcing 0.18.2 would violate Mermaid's `^0.16.47` and rehype-katex's `^0.16.0` dependency ranges. Current rendering is static and source-controlled, so the trust-policy bypass has no untrusted request-time content path. No forced override or framework-major upgrade was introduced.
+`http-cache-semantics@4.2.0` remains unresolved. The GHSA lists no patched version, and the package maintainer disputes the report. Astro 7.3.5 declares it directly; a search of the installed Astro package and workspace found only the manifest/lockfile reference, not an import or call site. KIRARI's Astro build emits static files and has no Astro request server. Do not claim this as patched or silently suppress the high audit finding; no safe upstream update is available.
 
-Verification on the final candidate: frozen pnpm install; the full blocking CI `verify` job; site tests (142 pass, one browser test skipped before installing Playwright); full Chromium site/Mermaid tests and TOC/analytics/CSP browser checks (all pass); production build; release checks; and `git diff --check`. The independent CI browser-harness `npm audit` reports zero vulnerabilities. The informational workspace audit exits nonzero only for the five residual advisories above; CI's dependency-audit job is explicitly non-blocking.
+The local npm audit endpoint timed out during recheck. Final advisory counts are pending the GitHub dependency-audit artifact for the updated PR HEAD. The prior HEAD's audit artifact reported 0 critical, 1 high, 2 moderate, and 2 low; this is historical evidence only for that prior SHA.
+
+## Verification on the follow-up candidate
+
+- `fnm exec --using=22.23.2 -- corepack pnpm install --frozen-lockfile`
+- `pnpm site:test`: 143 passed, 0 failed
+- `pnpm site:type-check`, `pnpm site:astro-check`: pass, 0 Astro errors/warnings/hints
+- `pnpm build`: pass, 112 static pages generated
+- `pnpm release:check`, `pnpm release:version-check`, and `git diff --check`: pass
+- Browser tests include Mermaid render/lifecycle coverage; the GitHub browser fixture and complete CI will run after push
