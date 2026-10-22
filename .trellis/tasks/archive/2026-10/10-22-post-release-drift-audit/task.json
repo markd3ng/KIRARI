@@ -21,6 +21,6 @@
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "PR #163 is OPEN and unmerged. The audit PR’s final-head CI passed on its submitted commit; Advisory OCR failed without review findings and is non-blocking. Project README was read back; all 34 items, 16 fields, and historical text are unchanged. D-03 remains an explicit release evidence gap.",
+  "notes": "PR #163 is OPEN and unmerged. Standard CI run 39758357596 passed at SHA 898718d9f1701360dacbb096128467048bd9b300; a follow-up wording clarification now distinguishes automatic Vercel Preview builds from Production deployment, so CI will rerun on the updated documentation-only head. Advisory OCR failed without review findings and is non-blocking. Project README readback preserved all 34 items, 16 fields, and historical text. D-03 remains an explicit release evidence gap.",
   "meta": {}
 }

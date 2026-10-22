@@ -96,7 +96,7 @@ Every row below is present as a GitHub Issue and currently `CLOSED / Done / Comp
 - Live Cloudflare Cache and EdgeOne Makers runtime behavior was not exercised; adapter code/package acceptance is independently test-backed and does not require live deployment.
 - `dev` remains unreconciled and is not a safe base for current feature work; the three unique commits were inspected and contain no missing application behavior.
 - Local `pnpm build` emitted the existing optional `astro-icon` warning that `apps/site/src/icons` is absent, then built all 112 pages successfully. This audit did not change or suppress the warning.
-- This audit does not change Production configuration, credentials, project settings, deployment state, tag, release, or Issue #122.
+- Opening PR #163 triggered the repository’s normal Vercel Preview builds; its Preview checks passed. No manual Production deployment, Production configuration, credentials, tag, or release action was performed. Issue #122 remains open.
 
 ## Verification and verdict
 
