@@ -1,6 +1,6 @@
 # `@kirari/site` Guidelines
 
-`apps/site` is the Astro 6 static-site program. It owns application source,
+`apps/site` is the Astro 7 static-site program. It owns application source,
 routes, rendering, client islands, Markdown processing, and the build pipeline.
 Profile-owned config/content/assets are copied into it before development,
 checks, and builds.

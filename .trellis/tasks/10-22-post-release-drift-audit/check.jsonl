@@ -1,0 +1,4 @@
+{"file":".trellis/spec/site/frontend/quality-guidelines.md","reason":"Validate report/documentation changes against current Site build, test, and deployment acceptance rules."}
+{"file":".trellis/spec/guides/repository-workflow.md","reason":"Use the repository's required pre-merge validation and document consistency expectations."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Check that shared package versions and generated docs stay consistent."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Review source-to-CI-to-deployment trace claims across package boundaries."}

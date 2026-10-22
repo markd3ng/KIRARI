@@ -11,7 +11,7 @@
 
 # KIRARI
 
-静态博客主题 — Astro 6.4.8 + Svelte 5 + Tailwind CSS v4。单一 TOML 配置驱动。支持 Cloudflare Pages、Vercel、Netlify、EdgeOne Pages 部署。
+静态博客主题 — Astro 7.3.5 + Svelte 5 + Tailwind CSS v4。单一 TOML 配置驱动。支持 Cloudflare Pages、Vercel、Netlify、EdgeOne Pages 部署。
 
 ## 架构
 
@@ -27,7 +27,7 @@ kirari.config.toml  ──→  smol-toml 解析  ──→  config-loader.ts（�
 `packages/site-profile/kirari.config.toml`，构建时会 materialize 到
 `apps/site/kirari.config.toml`。环境变量只用于密钥、部署差异，以及不适合提交到仓库的服务凭据。
 
-**Islands**：仅 3 个 Svelte 组件在客户端水合 — 搜索（`client:idle`）、主题切换（`client:idle`）、显示设置（`client:only="svelte"`）。其余全部为静态 `.astro`。
+**客户端 Islands（6）**：`Search`（`client:idle`，启用搜索时显示在导航栏）、`LightDarkSwitch`（`client:idle`）、`DisplaySettings`（`client:only="svelte"`）、`PrivacySettings`（`client:load`，页脚）、`DevicesFilter`（`client:load`，`/devices/` 和 `/{lang}/devices/`）以及 `SharePoster`（`client:load`，文章有分享链接时显示）。其他 `.astro` 组件均为静态渲染。
 
 **页面过渡**：`TransitionManager` 单例（`src/utils/transition-manager.ts`）封装双路径策略：
 
@@ -83,22 +83,22 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 
 | 类别 | 包 | 版本 |
 |---|---|---|
-| 框架 | astro | 6.4.8 |
-| Islands | svelte | ^5.56.3 |
-| CSS | tailwindcss、@tailwindcss/vite、stylus | ^4.3.0、^0.64.0 |
-| 搜索 | pagefind（默认）、@docsearch/js（Algolia） | ^1.5.2、^4.6.3 |
-| 代码高亮 | astro-expressive-code + 4 插件 | ^0.43.1 |
-| 公式 | remark-math、rehype-katex、katex | ^0.16.47 |
-| 图表 | mermaid（仅客户端） | ^11.15.0 |
-| 图标 | astro-icon、@iconify/svelte | — |
-| 过渡 | Astro ClientRouter / swup 降级 | ^4.9.0 |
-| 图片灯箱 | photoswipe | ^5.4.4 |
-| 图片处理 | sharp | ^0.34.5 |
-| 滚动条 | overlayscrollbars | ^2.16.0 |
-| 内容 | @astrojs/mdx + remark/rehype 链 | ^6.0.3 |
-| 订阅 | @astrojs/rss、@astrojs/sitemap | — |
-| OG 图片 | satori | ^0.26.0 |
-| 配置 | smol-toml | ^1.6.1 |
+| 框架 | `astro` | `7.3.5` |
+| Islands | `svelte` | `^5.56.3` |
+| CSS | `tailwindcss`、`@tailwindcss/vite`、`stylus` | `^4.3.1`、`^4.3.1`、`^0.64.0` |
+| 搜索 | `pagefind`（默认）、`@docsearch/js`（Algolia） | `^1.5.2`、`^4.6.3` |
+| 代码高亮 | `astro-expressive-code`、`@expressive-code/core`、`@expressive-code/plugin-collapsible-sections`、`@expressive-code/plugin-line-numbers` | `^0.44.1`、`^0.44.1`、`^0.44.1`、`^0.44.1` |
+| 公式 | `remark-math`、`rehype-katex`、`katex` | `^6.0.0`、`^7.0.1`、`^0.18.7` |
+| 图表 | `mermaid`（仅客户端） | `^11.16.1` |
+| 图标 | `astro-icon`、`@iconify/svelte` | `^1.2.0`、`^5.2.1` |
+| 过渡 | Astro ClientRouter / `swup` 降级 | `^4.9.0` |
+| 图片灯箱 | `photoswipe` | `^5.4.4` |
+| 图片处理 | `sharp` | `^0.35.5` |
+| 滚动条 | `overlayscrollbars` | `^2.16.0` |
+| 内容 | `@astrojs/mdx` + remark/rehype 链 | `^8.0.2` |
+| 订阅 | `@astrojs/rss`、`@astrojs/sitemap` | `4.0.19`、`^3.7.3` |
+| OG 图片 | `satori` | `^0.26.0` |
+| 配置 | `smol-toml` | `^1.9.0` |
 
 ## 部署
 
