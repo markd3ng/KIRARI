@@ -31,17 +31,17 @@ merging it.
 
 ## Acceptance Criteria
 
-- [ ] The audit records the exact current main SHA, annotated `v0.5.0` target,
+- [x] The audit records the exact current main SHA, annotated `v0.5.0` target,
   current exact-SHA Production deployment, canonical alias, and main CI result.
-- [ ] All 33 roadmap items and the #122 follow-up have evidence-backed status;
+- [x] All 33 roadmap items and the #122 follow-up have evidence-backed status;
   all current Project fields/dependencies are checked and any unavailable
   evidence is explicitly `NOT_VERIFIED`.
-- [ ] D-01 to D-05 and all requested P0–P8 architecture areas are classified;
+- [x] D-01 to D-05 and all requested P0–P8 architecture areas are classified;
   historical superseded deployment controls are not reintroduced as gates.
-- [ ] README and Chinese README list current declared package versions and the
+- [x] README and Chinese README list current declared package versions and the
   complete Astro client-island inventory, including routes and hydration mode.
-- [ ] The documentation consistency regression test passes with the normal
+- [x] The documentation consistency regression test passes with the normal
   Site test command.
-- [ ] Focused local checks, build, and the PR's actual standard CI pass at the
+- [x] Focused local checks, build, and the PR's actual standard CI pass at the
   same final head; no production or version-tag mutation occurs.
-- [ ] One audit PR is open against `main` and is not merged.
+- [x] One audit PR is open against `main` and is not merged.

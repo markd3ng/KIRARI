@@ -21,6 +21,6 @@
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "PR #163 is open against main; exact-head CI and read-only Project README checkpoint update are the remaining closeout steps. D-03 stays an explicit evidence gap.",
+  "notes": "PR #163 is OPEN and unmerged. The audit PR’s final-head CI passed on its submitted commit; Advisory OCR failed without review findings and is non-blocking. Project README was read back; all 34 items, 16 fields, and historical text are unchanged. D-03 remains an explicit release evidence gap.",
   "meta": {}
 }

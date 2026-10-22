@@ -17,7 +17,7 @@
   manifest; guard the documented Astro major with a regression test.
 - [x] Add a compact `node:test` regression under `apps/site/scripts/tests/` and
   rely on the existing `pnpm site:test` glob.
-- [ ] Correct the current Project #1 README checkpoint using the verified main,
+- [x] Correct the current Project #1 README checkpoint using the verified main,
   Production, tag, and #122 state; read back and verify the saved text.
 - [x] Write `docs/audits/KIRARI-v0.5.0-drift-audit.md` with baseline, 33-row
   matrix, field/dependency results, findings, accepted deviations, evidence
@@ -28,7 +28,7 @@
   GitHub CI as the full standard validation.
 - [x] Review the complete diff, create a short-lived branch, push, and open
   PR #163 against `main`.
-- [ ] Verify PR #163 final HEAD and actual standard CI after all audit metadata
+- [x] Verify PR #163 final HEAD and actual standard CI after all audit metadata
   updates. Leave it open.
 
 ## Risk / rollback
