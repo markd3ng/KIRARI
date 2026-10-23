@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/site/frontend/quality-guidelines.md", "reason": "postbuild and static behavior"}
+{"file": ".trellis/spec/site/frontend/type-safety.md", "reason": "config and content boundary"}
+{"file": ".trellis/spec/guides/repository-workflow.md", "reason": "required checks and native deployment"}
+{"file": "apps/site/scripts/postbuild.mjs", "reason": "current LLM owner"}
+{"file": "apps/site/src/utils/llm-content.ts", "reason": "canonical publication descriptor and endpoint"}
+{"file": "apps/site/src/utils/llm-markdown.mjs", "reason": "source AST fidelity and static fallbacks"}
+{"file": "apps/site/src/utils/llm-url-utils.mjs", "reason": "published URL and emitted asset boundary"}
+{"file": "apps/site/scripts/tests/llms-build.test.mjs", "reason": "actual scoped Astro output and discovery fixtures"}

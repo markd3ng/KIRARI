@@ -1,6 +1,12 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 
 const checks = [];
+
+if (process.env.KIRARI_SITE_SOURCE) {
+	console.error("The regression QA script targets packages/site-profile and refuses an external Site source.");
+	process.exit(2);
+}
 
 function readOptional(path) {
 	try {
@@ -12,6 +18,15 @@ function readOptional(path) {
 
 function addCheck(name, passed, detail) {
 	checks.push({ name, passed, detail });
+}
+
+function ensureMaterializedProfile() {
+	const configUrl = new URL("../kirari.config.toml", import.meta.url);
+	if (existsSync(configUrl)) return;
+	execFileSync("node", [new URL("./materialize-profile.mjs", import.meta.url).pathname], {
+		cwd: new URL("..", import.meta.url).pathname,
+		stdio: "inherit",
+	});
 }
 
 function collectAstroFiles(dirUrl) {
@@ -68,6 +83,7 @@ function dynamicScopedStyleLeaks() {
 
 const configLoader = readFileSync(new URL("../src/utils/config-loader.ts", import.meta.url), "utf8");
 const configTypes = readFileSync(new URL("../src/types/config.ts", import.meta.url), "utf8");
+ensureMaterializedProfile();
 const kirariConfig = readFileSync(new URL("../kirari.config.toml", import.meta.url), "utf8");
 const markdownCss = readFileSync(new URL("../src/styles/markdown.css", import.meta.url), "utf8");
 const layout = readFileSync(new URL("../src/layouts/Layout.astro", import.meta.url), "utf8");
@@ -87,6 +103,7 @@ const searchPage = readOptional("../src/pages/search.astro");
 const localizedSearchPage = readOptional("../src/pages/[lang]/search.astro");
 const postbuildScript = readOptional("../scripts/postbuild.mjs");
 const vercelJson = readOptional("../../../vercel.json");
+const vercelConfig = JSON.parse(vercelJson || "{}");
 const guestbookPage = readOptional("../src/pages/guestbook.astro");
 const sponsorPage = readOptional("../src/pages/sponsor.astro");
 const bangumiPage = readOptional("../src/pages/bangumi.astro");
@@ -606,6 +623,12 @@ addCheck(
 		/"source": "\/:lang\/search"/.test(vercelJson) &&
 		/"destination": "\/:lang\/search\/"/.test(vercelJson),
 	"Vercel and static _redirects output must rewrite /search?q=... to the generated trailing-slash search page without changing the visible URL",
+);
+const deploymentEnabled = vercelConfig.git?.deploymentEnabled;
+addCheck(
+	"Vercel native Git deployments remain enabled for production and previews",
+	deploymentEnabled === undefined || deploymentEnabled === true,
+	"Use Vercel's default Git deployments for main and feature branches; do not disable them for a custom release controller",
 );
 addCheck(
 	"search results render untrusted content as text",

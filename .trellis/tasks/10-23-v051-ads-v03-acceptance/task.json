@@ -1,0 +1,30 @@
+{
+  "id": "v051-ads-v03-acceptance",
+  "name": "v051-ads-v03-acceptance",
+  "title": "KIRARI v0.5.1 ADS v0.3 acceptance pilot",
+  "description": "",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "Ian",
+  "assignee": "Ian",
+  "createdAt": "2026-10-23",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "10-23-baseline-ads-browser-branch-audit",
+    "10-23-layout-fix-dev-reconciliation",
+    "10-23-v051-release-production-acceptance"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

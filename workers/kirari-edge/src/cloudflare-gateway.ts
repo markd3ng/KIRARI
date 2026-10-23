@@ -1,0 +1,358 @@
+import {
+	createGatewayHandler,
+	type CacheEntry,
+	type CacheLevel,
+	type EdgeCache,
+	type GatewayFetch,
+	type PersistentCache,
+} from "@kirari/edge-gateway-core";
+
+const CACHE_KEY_PATH_PREFIX = "/_kirari_edge_cache/v1/";
+const MAX_CACHE_BODY_BYTES = 1_000_000;
+const MAX_CACHE_METADATA_BYTES = 16_384;
+const CACHE_RECORD_HEADER_BYTES = 4;
+// KV requires a 60-second minimum expiration. Core's absolute timestamps still
+// stop serving the entry at its real staleUntil value; Cache API TTLs stay exact.
+const MIN_CACHE_TTL_SECONDS = 60;
+const CACHEABLE_HEADERS = [
+	"content-type",
+	"etag",
+	"last-modified",
+	"x-upstream-ratelimit-limit",
+	"x-upstream-ratelimit-remaining",
+	"x-upstream-ratelimit-reset",
+] as const;
+
+type CachePort = Pick<Cache, "match" | "put">;
+type KvBinding = {
+	get(key: string, type: "arrayBuffer"): Promise<ArrayBuffer | null>;
+	put(key: string, value: ArrayBuffer, options?: { expirationTtl?: number }): Promise<void>;
+};
+
+export interface CloudflareGatewayEnv {
+	KIRARI_GATEWAY_CACHE_LEVEL?: string;
+	KIRARI_EDGE_KV?: KvBinding;
+	KIRARI_GITHUB_TOKEN?: string;
+	KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES?: string;
+}
+
+export type CloudflareGatewayRuntime = {
+	cache?: CachePort;
+	/** Exact origin from the incoming Request URL; never source this from headers. */
+	cacheKeyOrigin?: string;
+	fetch?: GatewayFetch;
+	now?: () => number;
+};
+
+const CACHE_LEVELS: readonly CacheLevel[] = ["CACHE_NONE", "CACHE_EDGE", "CACHE_PERSISTENT"];
+
+/** Adapt Cloudflare's per-datacenter Cache API to the Core's edge-cache port. */
+export function createCloudflareEdgeCache(
+	cache: CachePort,
+	cacheKeyOrigin: string,
+	now: () => number = Date.now,
+): EdgeCache {
+	const origin = normalizeCacheKeyOrigin(cacheKeyOrigin);
+	if (!origin) throw new TypeError("Gateway Cache API requires an exact HTTP(S) request origin.");
+
+	return {
+		consistency: "edge-local",
+		async get(key) {
+			const cacheKey = await createCacheKey(key, origin);
+			const response = await cache.match(cacheKey);
+			if (!response) return null;
+			if (response.status !== 200) {
+				discardResponseBody(response);
+				return null;
+			}
+
+			const metadata = readResponseMetadata(response.headers);
+			if (!metadata) {
+				discardResponseBody(response);
+				return null;
+			}
+			const body = await readBoundedResponseBody(response, MAX_CACHE_BODY_BYTES);
+			if (!body) return null;
+			return { ...metadata, body };
+		},
+		async put(key, entry) {
+			assertCacheEntrySize(entry);
+			const ttlSeconds = getCacheTtlSeconds(entry.staleUntil, now());
+			if (ttlSeconds === null) throw new Error("Gateway cache entry expired before adapter write.");
+			const cacheKey = await createCacheKey(key, origin);
+			const headers = writeResponseMetadata(entry);
+			headers.set("Cache-Control", `public, max-age=${ttlSeconds}`);
+			const cacheResponse = new Response(toArrayBuffer(entry.body), { status: 200, headers });
+
+			await cache.put(cacheKey, cacheResponse);
+			// Cloudflare Cache API put() resolves even when it declines to cache.
+			// Verify the local write so the Core can honestly report CACHE_NONE.
+			const stored = await cache.match(cacheKey);
+			if (!stored || stored.status !== 200) {
+				if (stored) discardResponseBody(stored);
+				throw new Error("Cloudflare Cache API did not retain the new Gateway entry.");
+			}
+			const storedMetadata = readResponseMetadata(stored.headers);
+			if (!storedMetadata) {
+				discardResponseBody(stored);
+				throw new Error("Cloudflare Cache API did not retain the new Gateway entry.");
+			}
+			const storedBody = await readBoundedResponseBody(stored, MAX_CACHE_BODY_BYTES);
+			if (!storedBody || !cacheEntriesMatch({ ...storedMetadata, body: storedBody }, entry)) {
+				throw new Error("Cloudflare Cache API did not retain the new Gateway entry.");
+			}
+		},
+	};
+}
+
+/** Adapt an optional Workers KV binding to the Core's persistent-cache port. */
+export function createCloudflarePersistentCache(kv: KvBinding, now: () => number = Date.now): PersistentCache {
+	return {
+		consistency: "eventual",
+		async get(key) {
+			const record = await kv.get(await hashKey(key), "arrayBuffer");
+			if (!record || record.byteLength < CACHE_RECORD_HEADER_BYTES || record.byteLength > maxCacheRecordBytes()) {
+				return null;
+			}
+
+			const view = new DataView(record);
+			const metadataLength = view.getUint32(0);
+			const bodyOffset = CACHE_RECORD_HEADER_BYTES + metadataLength;
+			if (metadataLength === 0 || metadataLength > MAX_CACHE_METADATA_BYTES || bodyOffset > record.byteLength) {
+				return null;
+			}
+
+			let metadata: unknown;
+			try {
+				metadata = JSON.parse(new TextDecoder().decode(new Uint8Array(record, CACHE_RECORD_HEADER_BYTES, metadataLength)));
+			} catch {
+				return null;
+			}
+			if (!isCacheMetadata(metadata)) return null;
+			const body = new Uint8Array(record.slice(bodyOffset));
+			if (body.byteLength > MAX_CACHE_BODY_BYTES) return null;
+			return { ...metadata, body };
+		},
+		async put(key, entry) {
+			assertCacheEntrySize(entry);
+			const expirationTtl = getKvExpirationTtl(entry.staleUntil, now());
+			if (expirationTtl === null) throw new Error("Gateway cache entry expired before adapter write.");
+			const metadata = new TextEncoder().encode(JSON.stringify({
+				status: entry.status,
+				headers: entry.headers,
+				freshUntil: entry.freshUntil,
+				staleUntil: entry.staleUntil,
+			}));
+			if (metadata.byteLength > MAX_CACHE_METADATA_BYTES) {
+				throw new Error("Gateway cache metadata exceeds the KV record bound.");
+			}
+
+			const record = new Uint8Array(CACHE_RECORD_HEADER_BYTES + metadata.byteLength + entry.body.byteLength);
+			new DataView(record.buffer).setUint32(0, metadata.byteLength);
+			record.set(metadata, CACHE_RECORD_HEADER_BYTES);
+			record.set(entry.body, CACHE_RECORD_HEADER_BYTES + metadata.byteLength);
+			await kv.put(await hashKey(key), record.buffer, {
+				expirationTtl,
+			});
+		},
+	};
+}
+
+/** Build a Core handler from Worker bindings and optional runtime capabilities. */
+export function createCloudflareGatewayHandler(
+	env: CloudflareGatewayEnv,
+	runtime: CloudflareGatewayRuntime = {},
+) {
+	const cacheLevel = parseCacheLevel(env.KIRARI_GATEWAY_CACHE_LEVEL);
+	const publicRepositories = (env.KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES ?? "")
+		.split(",")
+		.map((repository) => repository.trim())
+		.filter(Boolean);
+	const canUseToken = Boolean(env.KIRARI_GITHUB_TOKEN && publicRepositories.length > 0);
+	const selectedCache = runtime.cache ?? (typeof caches === "undefined" ? undefined : caches.default);
+	const cacheKeyOrigin = runtime.cacheKeyOrigin === undefined
+		? null
+		: normalizeCacheKeyOrigin(runtime.cacheKeyOrigin);
+
+	return createGatewayHandler({
+		mode: "integrated",
+		cacheLevel,
+		fetch: runtime.fetch,
+		now: runtime.now,
+		edgeCache: cacheLevel === "CACHE_EDGE" && selectedCache && cacheKeyOrigin
+			? createCloudflareEdgeCache(selectedCache, cacheKeyOrigin, runtime.now)
+			: undefined,
+		persistentCache: cacheLevel === "CACHE_PERSISTENT" && env.KIRARI_EDGE_KV
+			? createCloudflarePersistentCache(env.KIRARI_EDGE_KV, runtime.now)
+			: undefined,
+		getGitHubToken: canUseToken ? () => env.KIRARI_GITHUB_TOKEN : undefined,
+		githubTokenPublicRepositories: publicRepositories,
+	});
+}
+
+function parseCacheLevel(value: string | undefined): CacheLevel | undefined {
+	if (value === undefined) return undefined;
+	if (isCacheLevel(value)) return value;
+	throw new TypeError("KIRARI_GATEWAY_CACHE_LEVEL must be CACHE_NONE, CACHE_EDGE, or CACHE_PERSISTENT.");
+}
+
+function isCacheLevel(value: string): value is CacheLevel {
+	return CACHE_LEVELS.some((level) => level === value);
+}
+
+function readResponseMetadata(headers: Headers): Omit<CacheEntry, "body"> | null {
+	const status = headers.get("x-kirari-cache-status");
+	const freshUntilHeader = headers.get("x-kirari-cache-fresh-until");
+	const staleUntilHeader = headers.get("x-kirari-cache-stale-until");
+	if (status === null || freshUntilHeader === null || staleUntilHeader === null) return null;
+
+	const freshUntil = Number(freshUntilHeader);
+	const staleUntil = Number(staleUntilHeader);
+	if ((status !== "200" && status !== "404") || !Number.isFinite(freshUntil) || !Number.isFinite(staleUntil)) {
+		return null;
+	}
+
+	const safeHeaders: Record<string, string> = {};
+	for (const name of CACHEABLE_HEADERS) {
+		const value = headers.get(`x-kirari-cache-header-${name}`);
+		if (value !== null) safeHeaders[name] = value;
+	}
+	return { status: Number(status) as CacheEntry["status"], headers: safeHeaders, freshUntil, staleUntil };
+}
+
+function writeResponseMetadata(entry: CacheEntry): Headers {
+	const headers = new Headers({
+		"x-kirari-cache-status": String(entry.status),
+		"x-kirari-cache-fresh-until": String(entry.freshUntil),
+		"x-kirari-cache-stale-until": String(entry.staleUntil),
+	});
+	for (const name of CACHEABLE_HEADERS) {
+		const value = entry.headers[name];
+		if (value !== undefined) headers.set(`x-kirari-cache-header-${name}`, value);
+	}
+	return headers;
+}
+
+async function readBoundedResponseBody(response: Response, maximumBytes: number): Promise<Uint8Array | null> {
+	const contentLength = response.headers.get("content-length");
+	if (contentLength && /^\d+$/.test(contentLength) && Number(contentLength) > maximumBytes) {
+		void response.body?.cancel().catch(() => undefined);
+		return null;
+	}
+	if (!response.body) return new Uint8Array();
+
+	const reader = response.body.getReader();
+	const chunks: Uint8Array[] = [];
+	let byteLength = 0;
+	try {
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			byteLength += value.byteLength;
+			if (byteLength > maximumBytes) {
+				void reader.cancel().catch(() => undefined);
+				return null;
+			}
+			chunks.push(value);
+		}
+	} finally {
+		reader.releaseLock();
+	}
+
+	const body = new Uint8Array(byteLength);
+	let offset = 0;
+	for (const chunk of chunks) {
+		body.set(chunk, offset);
+		offset += chunk.byteLength;
+	}
+	return body;
+}
+
+function isCacheMetadata(value: unknown): value is Omit<CacheEntry, "body"> {
+	if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+	const metadata = value as Record<string, unknown>;
+	if (!(
+		(metadata.status === 200 || metadata.status === 404) &&
+		typeof metadata.headers === "object" && metadata.headers !== null && !Array.isArray(metadata.headers) &&
+		typeof metadata.freshUntil === "number" && Number.isFinite(metadata.freshUntil) &&
+		typeof metadata.staleUntil === "number" && Number.isFinite(metadata.staleUntil)
+	)) return false;
+	return Object.values(metadata.headers as Record<string, unknown>).every((header) => typeof header === "string");
+}
+
+function assertCacheEntrySize(entry: CacheEntry) {
+	if (!(entry.body instanceof Uint8Array) || entry.body.byteLength > MAX_CACHE_BODY_BYTES) {
+		throw new Error("Gateway cache body exceeds the adapter bound.");
+	}
+}
+
+function cacheEntriesMatch(actual: CacheEntry, expected: CacheEntry) {
+	if (
+		actual.status !== expected.status ||
+		actual.freshUntil !== expected.freshUntil ||
+		actual.staleUntil !== expected.staleUntil ||
+		actual.body.byteLength !== expected.body.byteLength
+	) return false;
+	for (let index = 0; index < actual.body.byteLength; index += 1) {
+		if (actual.body[index] !== expected.body[index]) return false;
+	}
+	return CACHEABLE_HEADERS.every((name) => actual.headers[name] === expected.headers[name]);
+}
+
+function maxCacheRecordBytes() {
+	return CACHE_RECORD_HEADER_BYTES + MAX_CACHE_METADATA_BYTES + MAX_CACHE_BODY_BYTES;
+}
+
+function getCacheTtlSeconds(staleUntil: number, now: number) {
+	const remainingTtl = getRemainingTtlSeconds(staleUntil, now);
+	return remainingTtl === null ? null : Math.ceil(remainingTtl);
+}
+
+function getKvExpirationTtl(staleUntil: number, now: number) {
+	const remainingTtl = getRemainingTtlSeconds(staleUntil, now);
+	return remainingTtl === null ? null : Math.max(MIN_CACHE_TTL_SECONDS, remainingTtl);
+}
+
+function getRemainingTtlSeconds(staleUntil: number, now: number) {
+	// A just-expired entry is a normal write-time race; skip caching the response.
+	if (!Number.isFinite(staleUntil) || staleUntil <= now) return null;
+	return Math.ceil((staleUntil - now) / 1_000);
+}
+
+function discardResponseBody(response: Response) {
+	void response.body?.cancel().catch(() => undefined);
+}
+
+function normalizeCacheKeyOrigin(value: string): string | null {
+	try {
+		const url = new URL(value);
+		if (
+			(url.protocol !== "https:" && url.protocol !== "http:") ||
+			url.origin !== value ||
+			url.username ||
+			url.password ||
+			url.pathname !== "/" ||
+			url.search ||
+			url.hash
+		) return null;
+		return url.origin;
+	} catch {
+		return null;
+	}
+}
+
+async function createCacheKey(key: string, origin: string): Promise<Request> {
+	const digest = await hashKey(`${origin}\0${key}`);
+	return new Request(`${origin}${CACHE_KEY_PATH_PREFIX}${digest}`);
+}
+
+async function hashKey(key: string): Promise<string> {
+	const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
+	return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+	const copy = new Uint8Array(bytes.byteLength);
+	copy.set(bytes);
+	return copy.buffer;
+}

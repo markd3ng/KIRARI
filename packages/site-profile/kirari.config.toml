@@ -183,6 +183,18 @@ adsense = false
 resultSetSize = "filtered_cse"
 safeSearch = "active"
 
+# Advertising is disabled until a Production AdSense account and named slots are configured.
+# 广告默认关闭；仅在配置 Production AdSense 账号和命名广告位后启用。
+[ads]
+# Master switch / 总开关
+# enable = false
+# Public AdSense publisher ID, never a secret / AdSense 公开发布商 ID，不是密钥
+# publisherId = "ca-pub-0000000000000000"
+
+[ads.slots]
+# Article bottom slot ID / 文章底部广告位 ID
+# articleBottom = "0000000000"
+
 # -----------------------------------------------------------------------------
 # Landing Page / 首页 Landing Page
 # -----------------------------------------------------------------------------
@@ -918,15 +930,17 @@ url = "https://github.com/saicaca/fuwari"
 # Generated files / 生成的文件:
 #   - llms.txt: Main index (Markdown summary for LLMs)
 #   - llms-full.txt: Complete content in one file
-#   - llms-small.txt: Condensed version
-#   - llms-en.txt, llms-zh.txt: Language-specific files (when i18n: true)
+#   - <language>/llms.txt: Covering indexes for prefixed language routes
+#   - llms-en-US.txt, llms-zh-CN.txt: Language convenience indexes (i18n: true)
+#   - <canonical-page>/index.md: Published source-backed Markdown views
+# 语言前缀提供覆盖索引；已发布文章及选定页面提供源码 Markdown 视图。
 # Note: llms-full.txt is public aggregation. Postbuild adds robots Disallow
 # and no-store headers as mitigation, not access control.
 # 注意: llms-full.txt 是公开聚合文件。postbuild 会添加 robots Disallow
 # 和 no-store headers 作为缓解措施，不是访问控制。
 
 [llms]
-# Enable llms.txt generation / 启用 llms.txt 生成
+# Enable indexes, Markdown views and discovery / 启用索引、Markdown 视图及发现链接
 # Type: boolean / 类型: 布尔值
 # enable = true
 
@@ -976,21 +990,20 @@ url = "https://github.com/saicaca/fuwari"
 # Enable IndexNow integration for instant search engine indexing
 # 启用 IndexNow 集成实现即时搜索引擎索引
 # Type: boolean / 类型: 布尔值
-# Note: IndexNow sends requests to search engines on every build
-# 注意: IndexNow 在每次构建时向搜索引擎发送请求
-# Warning: Keep disabled if you don't need instant indexing
-# 警告: 如不需要即时索引功能，建议保持关闭
-# indexNow = false
+# Note: This publishes the verification key during build; requests run only
+# after verified native Production when explicitly enabled in GitHub Actions.
+# 注意: 构建时发布验证 key；仅在原生 Production 验证后、且 Actions 显式开启时发送请求。
+# Enabled in the default KIRARI profile by the Owner's 2026-10-19 decision.
+# 根据 Owner 于 2026-10-19 的决定，在 KIRARI 默认配置中启用。
+indexNow = true
 
-# IndexNow API key / IndexNow API 密钥
+# Public IndexNow verification key / 公开 IndexNow 验证 key
 # Type: string / 类型: 字符串
-# Note: The key file is served at /{key}.txt for verification
-# 注意: 密钥文件部署在 /{key}.txt 供搜索引擎验证
+# Note: The key file is published at /{key}.txt for verification.
+# 注意: 该 key 文件发布在 /{key}.txt 供搜索引擎验证。
 # This is a public verification key only; do not reuse private secrets.
 # 这只是公开验证 key；不要复用私密 secret。
-# Get your key at https://www.indexnow.org
-# 在 https://www.indexnow.org 获取你的密钥
-# indexNowKey = ""
+indexNowKey = "0a95417319a3db1c47f52c43610922e20e087900c249836fb386e4c639bf1a70"
 
 [seo.google]
 # Optional Google Indexing API integration. Advanced and disabled by default.
@@ -1032,8 +1045,11 @@ enabled = false
 # works in hosted platform builds with VERCEL=1 or CF_PAGES=1.
 # 注意: 生产建议显式设置为 "cloudflare" 或 "vercel"。"auto" 只在平台构建环境中检测。
 # Token placement:
-# - Cloudflare provider: optional KIRARI_GITHUB_TOKEN belongs to the
-#   workers/kirari-edge Worker Secret, not this file.
+# - Cloudflare Core Gateway: KIRARI_GITHUB_TOKEN belongs to the Worker Secret
+#   and is used only with KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES, a
+#   comma-separated public owner/repository allowlist. Neither belongs here.
+# - The current Cloudflare /ghc Site adapter is a legacy path and stays
+#   anonymous until the Site integration is updated.
 # - Vercel provider: optional GITHUB_TOKEN belongs to Vercel Project
 #   Environment Variables, not this file.
 # - Never commit real tokens to kirari.config.toml.
@@ -1041,8 +1057,10 @@ enabled = false
 #   exact origins allowed for CORS. Empty means no browser Origin is granted
 #   ACAO; no-Origin requests still work without ACAO.
 # Token 配置位置:
-# - Cloudflare provider: 可选 KIRARI_GITHUB_TOKEN 配在 workers/kirari-edge
-#   Worker Secret，不写在这里。
+# - Cloudflare Core Gateway: KIRARI_GITHUB_TOKEN 配在 Worker Secret，并且只有
+#   同时配置 KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES（逗号分隔的公开仓库白名单）
+#   时才会使用。两者都不写在这里。
+# - 当前 Cloudflare /ghc Site 适配器仍是旧路径，在 Site 集成更新前保持匿名。
 # - Vercel provider: 可选 GITHUB_TOKEN 配在 Vercel Project Environment
 #   Variables，不写在这里。
 # - 不要把真实 token 提交到 kirari.config.toml。

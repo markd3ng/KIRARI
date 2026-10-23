@@ -2,6 +2,7 @@ import { Config } from "./constants";
 import type {
 	OGConfig,
 	AnalyticsConfig,
+	AdsConfig,
 	CommentsConfig,
 	CoverImageConfig,
 	DevicesConfig,
@@ -74,6 +75,8 @@ export const footerConfig: FooterConfig = Config.footer as FooterConfig;
 
 export const analyticsConfig: AnalyticsConfig =
 	Config.analytics as AnalyticsConfig;
+
+export const adsConfig: AdsConfig = Config.ads as AdsConfig;
 
 export const llmsConfig: LLMsConfig = Config.llms as LLMsConfig;
 

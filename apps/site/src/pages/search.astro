@@ -1,14 +1,16 @@
 ---
 import MainGridLayout from "../layouts/MainGridLayout.astro";
-import { searchConfig, siteConfig } from "../config";
+import { searchConfig } from "../config";
 import I18nKey from "../i18n/i18nKey";
 import { i18n } from "../i18n/translation";
+import { getDefaultRouteContext } from "../utils/page-route-utils";
+import { resolveSearchProvider } from "../utils/search-provider.mjs";
 import { url } from "../utils/url-utils";
 
-const lang = siteConfig.lang;
+const { lang } = getDefaultRouteContext("/search/");
 const searchParams = Astro.url.searchParams;
 const initialQuery = searchParams.get("q") || "";
-const provider = searchConfig.provider;
+const provider = resolveSearchProvider(searchConfig);
 const pageTitle = i18n(I18nKey.search, lang);
 const searchPageUrl = url("/search");
 const scriptUrl = url("/pagefind/pagefind.js");

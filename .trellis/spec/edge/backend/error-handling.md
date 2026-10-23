@@ -7,8 +7,13 @@ Current response contract:
 - `OPTIONS` on a matched route: `204` with CORS headers, no upstream request.
 - Non-GET/HEAD on a matched route: CORS-safe `405` with `Allow`.
 - Upstream throw: structured log plus CORS-safe JSON `502` and `no-store`.
+- Invalid Gateway adapter configuration: sanitized structured log plus JSON
+  `503` and `no-store`; do not log environment values or exception messages.
+- Unexpected Gateway handler throw: sanitized structured log plus generic JSON
+  `500` and `no-store`.
 - Upstream HTTP statuses: preserved, with project cache/CORS headers applied.
 
 Do not leak upstream exception text, tokens, request credentials, or binding
-values in responses. Preserve HEAD semantics by forwarding the method and
-passing through the upstream body/status contract.
+values in responses. Legacy proxy routes forward HEAD and preserve the upstream
+body/status contract. The named Gateway Core returns an empty HEAD body with
+GET-derived headers and retains its normal response bounds and timeout.

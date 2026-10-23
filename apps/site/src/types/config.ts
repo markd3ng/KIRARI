@@ -420,6 +420,14 @@ export type AnalyticsConfig = {
 	amplitudeApiKey?: string;
 };
 
+export type AdsConfig = {
+	enable: boolean;
+	publisherId: string;
+	slots: {
+		articleBottom: string;
+	};
+};
+
 export type LandingPageConfig = {
 	/** Show the PRD-style landing page on home routes instead of the classic post list. */
 	enable: boolean;
@@ -483,6 +491,7 @@ export type Config = {
 	head: HeadConfig;
 	footer: FooterConfig;
 	analytics: AnalyticsConfig;
+	ads: AdsConfig;
 	llms: LLMsConfig;
 	i18n: I18nConfig;
 	og: OGConfig;

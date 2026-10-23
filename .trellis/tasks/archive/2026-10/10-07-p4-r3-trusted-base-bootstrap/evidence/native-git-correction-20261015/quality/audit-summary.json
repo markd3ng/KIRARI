@@ -1,0 +1,58 @@
+{
+  "captured_at": "2026-10-15T02:00:00.091786+00:00",
+  "workspace_audit_informational": true,
+  "workspace_audit_exit": 1,
+  "browser_tooling_audit_exit": 0,
+  "workspace_lock_unchanged_from_baseline": true,
+  "vulnerabilities": {
+    "info": 0,
+    "low": 4,
+    "moderate": 2,
+    "high": 1,
+    "critical": 0
+  },
+  "advisories": [
+    {
+      "module_name": "dompurify",
+      "severity": "low",
+      "github_advisory_id": "GHSA-p98j-92pf-mc4p",
+      "url": "https://github.com/advisories/GHSA-p98j-92pf-mc4p",
+      "vulnerable_versions": ">=3.4.13 <=3.4.15",
+      "patched_versions": ">=3.4.16"
+    },
+    {
+      "module_name": "http-cache-semantics",
+      "severity": "high",
+      "github_advisory_id": "GHSA-ch52-4w7c-c8xp",
+      "url": "https://github.com/advisories/GHSA-ch52-4w7c-c8xp",
+      "vulnerable_versions": "<=4.2.0",
+      "patched_versions": "<0.0.0"
+    },
+    {
+      "module_name": "dompurify",
+      "severity": "low",
+      "github_advisory_id": "GHSA-6688-9rhm-gjv2",
+      "url": "https://github.com/advisories/GHSA-6688-9rhm-gjv2",
+      "vulnerable_versions": "<=3.4.15",
+      "patched_versions": ">=3.4.16"
+    },
+    {
+      "module_name": "katex",
+      "severity": "low",
+      "github_advisory_id": "GHSA-238p-pmpm-9mq7",
+      "url": "https://github.com/advisories/GHSA-238p-pmpm-9mq7",
+      "vulnerable_versions": ">=0.11.0 <0.18.2",
+      "patched_versions": ">=0.18.2"
+    },
+    {
+      "module_name": "postcss-selector-parser",
+      "severity": "moderate",
+      "github_advisory_id": "GHSA-rj75-hqrm-r3gf",
+      "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+      "vulnerable_versions": "<7.1.6",
+      "patched_versions": ">=7.1.6"
+    }
+  ],
+  "suppression_added": false,
+  "tracking_issue": 122
+}

@@ -1,0 +1,16 @@
+{
+  "scope": "read-only existing P3 Preview deployment",
+  "deployment_id": "dpl_EJkMY9vooF39TZDXYQQtYSQrjTE6",
+  "team_id": "team_NsBZHGUVnyygP7veiROKLuUx",
+  "file_tree_root": "single src directory",
+  "config_path": "src/.vercel/output/config.json",
+  "config_uid": "8a456316e19ea660d83ea24ec985eb69636e7bf0",
+  "config_uid_matches_original_site_package": true,
+  "file_contents_api": "GET /v8/deployments/{id}/files/{fileId}",
+  "file_contents_response_shape": "data: base64 string",
+  "full_inventory_verification": "UNVERIFIED; connector truncates deep static tree",
+  "actual_approved_static_files": 315,
+  "actual_en_us_static_files": 0,
+  "actual_public_static_file_paths_shadowed_by_configured_redirects": 0,
+  "production_mutation_performed": false
+}

@@ -1,0 +1,37 @@
+{
+  "target": {
+    "team_id": "team_NsBZHGUVnyygP7veiROKLuUx",
+    "project_id": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+    "project": "kirari-main"
+  },
+  "status": "INERT_EXPECTED_POLICY_NOT_APPLIED_NOT_PROVIDER_EVIDENCE",
+  "trustedSources": {
+    "enableVercelCiSameRepository": false,
+    "projects": {},
+    "oidcProviders": {
+      "https://token.actions.githubusercontent.com": [
+        {
+          "claims": {
+            "aud": [
+              "https://github.com/markd3ng"
+            ],
+            "repository": [
+              "markd3ng/KIRARI"
+            ],
+            "ref": [
+              "refs/heads/main"
+            ],
+            "workflow_ref": [
+              "markd3ng/KIRARI/.github/workflows/site-production.yml@refs/heads/main"
+            ]
+          },
+          "to": {
+            "slugs": [
+              "production"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

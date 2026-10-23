@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-05",
+  "task": "10-04-p4-authorized-production",
+  "status": "blocked",
+  "decision": "Retain the pinned official Vercel CLI 59.16.0 deployment path and lock. Do not suppress audit findings or replace the supported prebuilt deployment path with raw REST calls.",
+  "scope": "Read-only npm registry install/audit and local CLI help/version/source inspection. No Vercel deployment, alias, project setting, secret, or rollback operation was run.",
+  "officialCli": {
+    "package": "vercel",
+    "version": "59.16.0",
+    "tarball": "https://registry.npmjs.org/vercel/-/vercel-59.16.0.tgz",
+    "integrity": "sha512-D+9Tl8/qjV+wPtrMn0vrHoR+uZOeC6ZbftnniphZNUkPsshkC8LqCm+e3tcla69gQkuEUstVRg2BFJ4/nEVsiQ==",
+    "lockfileVersion": 3,
+    "lockedPackagesIncludingRoot": 388,
+    "resolvedRegistryHosts": [
+      "registry.npmjs.org"
+    ],
+    "nodeVersion": "22.12.0",
+    "npmVersion": "10.9.0",
+    "frozenInstall": {
+      "command": "fnm exec --using 22.12.0 npm ci --registry=https://registry.npmjs.org",
+      "exitCode": 0,
+      "result": "292 packages added; npm reported 293 packages audited and 34 vulnerabilities"
+    }
+  },
+  "cliVerification": {
+    "versionCommand": {
+      "command": "env -u VERCEL_TOKEN XDG_CACHE_HOME=/tmp/kirari-p4-vercel-cli-59-cache VERCEL_TELEMETRY_DISABLED=1 VERCEL_GUIDANCE_DISABLED=1 CI=1 fnm exec --using 22.12.0 ./node_modules/.bin/vercel --global-config /tmp/kirari-p4-vercel-cli-59-global --version",
+      "exitCode": 0,
+      "stdout": "Vercel CLI 59.16.0 (Node.js 22.12.0)\n59.16.0"
+    },
+    "deployHelp": {
+      "command": "env -u VERCEL_TOKEN XDG_CACHE_HOME=/tmp/kirari-p4-vercel-cli-59-cache VERCEL_TELEMETRY_DISABLED=1 VERCEL_GUIDANCE_DISABLED=1 CI=1 fnm exec --using 22.12.0 ./node_modules/.bin/vercel --global-config /tmp/kirari-p4-vercel-cli-59-global deploy --help",
+      "exitCode": 2,
+      "printedHelp": true,
+      "verifiedOptions": [
+        "--prebuilt uses an existing build",
+        "--prod targets production",
+        "--skip-domain disables automatic production aliasing",
+        "--meta/-m accepts repeated KEY=VALUE entries"
+      ]
+    },
+    "pinnedPackageSourceChecks": [
+      "dist/commands/deploy/index.js: normal deploy flow maps --prebuilt to the prebuilt option, maps --skip-domain to autoAssignCustomDomains=false, and passes target and metadata into createArgs.",
+      "dist/chunks/chunk-RN2EWPUH.js: client create path passes prebuilt and autoAssignCustomDomains into deployment processing.",
+      "dist/index.js: VERCEL_TOKEN is read from the environment; token auth config is assigned with skipWrite=true.",
+      "dist/index.js and dist/chunks/chunk-57GHYR4Y.js: VERCEL_TELEMETRY_DISABLED disables CLI telemetry."
+    ],
+    "invocationIsolation": {
+      "vercelTokenPresent": false,
+      "telemetryDisabled": true,
+      "globalConfigPath": "/tmp/kirari-p4-vercel-cli-59-global",
+      "cachePath": "/tmp/kirari-p4-vercel-cli-59-cache"
+    }
+  },
+  "cliAudit": {
+    "command": "npm audit --audit-level=moderate --json --registry=https://registry.npmjs.org",
+    "exitCode": 1,
+    "auditReportVersion": 2,
+    "dependencyCounts": {
+      "production": 286,
+      "development": 0,
+      "optional": 102,
+      "peer": 3,
+      "total": 387
+    },
+    "vulnerabilityCounts": {
+      "info": 0,
+      "low": 1,
+      "moderate": 7,
+      "high": 25,
+      "critical": 1,
+      "total": 34
+    },
+    "result": "Fails the required moderate audit threshold."
+  },
+  "registryCandidateAudits": [
+    {
+      "package": "vercel",
+      "version": "59.16.0",
+      "low": 1,
+      "moderate": 7,
+      "high": 25,
+      "critical": 1,
+      "total": 34,
+      "source": "Fresh audit of the tracked lock after npm ci."
+    },
+    {
+      "package": "vercel",
+      "version": "54.17.3",
+      "low": 1,
+      "moderate": 2,
+      "high": 36,
+      "critical": 1,
+      "total": 40,
+      "source": "Earlier isolated npm registry candidate audit."
+    },
+    {
+      "package": "vercel",
+      "version": "50.41.0",
+      "low": 1,
+      "moderate": 3,
+      "high": 36,
+      "critical": 1,
+      "total": 41,
+      "source": "Earlier isolated npm registry candidate audit; official CLI source/help also inspected."
+    },
+    {
+      "package": "vercel",
+      "version": "62.2.0",
+      "low": 0,
+      "moderate": 8,
+      "high": 24,
+      "critical": 1,
+      "total": 33,
+      "source": "Earlier isolated npm registry candidate audit."
+    }
+  ],
+  "officialClientAlternative": {
+    "package": "@vercel/client",
+    "version": "18.6.2",
+    "tarball": "https://registry.npmjs.org/@vercel/client/-/client-18.6.2.tgz",
+    "integrity": "sha512-DnrjxtH9RvcIT7ssSMt9ogOO8tSdrt5lTNF7OIiv+Uf8yL5oltXYq2yrxlY6Exkcu1V0Y+4Ni5YAeeCbCeCRIg==",
+    "lockfileVersion": 3,
+    "lockedPackagesIncludingRoot": 120,
+    "supports": [
+      "VercelClientOptions.prebuilt",
+      "DeploymentOptions.target",
+      "DeploymentOptions.autoAssignCustomDomains"
+    ],
+    "sourceChecks": [
+      "Published dist/types.d.ts declares prebuilt, target, and autoAssignCustomDomains.",
+      "Published dist/create-deployment.js collects the local path and uploads its files; it does not run a project build when called with prebuilt=true.",
+      "Published dist/utils/query-string.js sends prebuilt=1, and dist/deploy.js posts the deployment options and file references to /v13/deployments."
+    ],
+    "audit": {
+      "command": "npm audit --audit-level=moderate --json --registry=https://registry.npmjs.org",
+      "exitCode": 1,
+      "dependencyCounts": {
+        "production": 115,
+        "development": 0,
+        "optional": 5,
+        "peer": 0,
+        "total": 119
+      },
+      "vulnerabilityCounts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 9,
+        "critical": 0,
+        "total": 9
+      },
+      "flaggedPackageNodes": [
+        "@vercel/client",
+        "@vercel/microfrontends",
+        "@vercel/routing-utils",
+        "braces",
+        "fast-glob",
+        "micromatch",
+        "minimatch",
+        "path-to-regexp",
+        "tar-fs"
+      ]
+    },
+    "decision": "Not adopted: the official client exposes the needed semantics and has a smaller tree, but its audit still fails with nine high findings."
+  },
+  "restApiBoundary": {
+    "documentedRestApi": "POST /v13/deployments supports file references, project, target=production, and deployment metadata.",
+    "publicRestReferenceDoesNotDocument": [
+      "the prebuilt=1 query parameter used by the CLI/client upload path",
+      "autoAssignCustomDomains=false used to detach production aliases"
+    ],
+    "decision": "Do not replace the official client/CLI with a hand-built REST implementation of these undocumented prebuilt and alias controls."
+  },
+  "officialSources": [
+    "https://vercel.com/docs/build-output-api",
+    "https://vercel.com/docs/build-output-api/configuration",
+    "https://vercel.com/docs/cli/deploy",
+    "https://vercel.com/docs/cli/deploying-from-cli",
+    "https://vercel.com/docs/rest-api/deployments/create-a-new-deployment",
+    "https://www.npmjs.com/package/@vercel/client",
+    "https://github.com/vercel/vercel/blob/main/packages/cli/src/commands/deploy/index.ts",
+    "https://github.com/vercel/vercel/blob/main/packages/client/src/types.ts",
+    "https://github.com/vercel/vercel/blob/main/packages/client/src/create-deployment.ts"
+  ],
+  "mergeRecommendation": "Keep the official pinned CLI and preserve the moderate audit gate. Treat this work as blocked for merge until the locked official CLI dependency tree clears audit or an explicitly accepted, audited official replacement is available."
+}

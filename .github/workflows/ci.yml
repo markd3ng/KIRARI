@@ -2,10 +2,31 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main, dev, config]
     tags: ["v*"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      core_ref:
+        description: Core branch, tag, or commit to build
+        required: true
+        default: main
+        type: string
+      site_repository:
+        description: Site repository in owner/repository form
+        required: true
+        default: markd3ng/KIRARI
+        type: string
+      site_ref:
+        description: Site branch, tag, or commit to build
+        required: true
+        default: config
+        type: string
+      site_subdirectory:
+        description: Site source directory inside the Site checkout
+        required: true
+        default: site
+        type: string
 
 permissions:
   contents: read
@@ -18,10 +39,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v4
         with:
           version: 9.14.4
+          dest: /tmp/kirari-pnpm-${{ github.run_id }}-${{ github.run_attempt }}
 
       - uses: actions/setup-node@v4
         with:
@@ -29,16 +52,451 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+      - name: Verify source, portable artifacts, and browser safety
+        run: node --test scripts/tests/ci-profile-contract.test.mjs scripts/tests/ci-composed-artifact-contract.test.mjs scripts/tests/composed-build.test.mjs scripts/tests/ocr-review-workflow-contract.test.mjs scripts/tests/p3-browser-contract.test.mjs scripts/tests/browser-request-routing.test.mjs scripts/tests/site-package-output.test.mjs scripts/tests/site-artifact.test.mjs scripts/tests/static-site-validation.test.mjs scripts/tests/native-deployment-architecture.test.mjs scripts/tests/trellis-adapter-sync.test.mjs
+      - run: node apps/site/scripts/materialize-profile.mjs
+      - run: pnpm profile:check
+      - run: pnpm site:test
+      - run: pnpm site:contract:test
+      - run: pnpm trellis:check
       - run: node apps/site/scripts/qa-regression-check.mjs
       - run: pnpm site:type-check
       - run: pnpm site:astro-check
       - run: pnpm edge:type-check
       - run: pnpm edge:test
+      - run: pnpm gateway:type-check
+      - run: pnpm gateway:test
+      - run: pnpm gateway:vercel:type-check
+      - run: pnpm gateway:vercel:test
+      - run: pnpm gateway:edgeone:type-check
+      - run: pnpm gateway:edgeone:test
+      - run: pnpm gateway:edgeone:package
       - run: pnpm edge:deploy:dry
       - run: node apps/site/scripts/generate-vercel-config.mjs --check
       - run: pnpm build
       - run: pnpm release:check
       - run: pnpm release:version-check
-      - run: pnpm audit --audit-level moderate
-        continue-on-error: true
       - run: git diff --check
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Dependency advisories and audit-service failures are informational.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+        with:
+          version: 9.14.4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - name: Report dependency audit
+        continue-on-error: true
+        run: |
+          audit_status=0
+          json_status=0
+          pnpm audit --audit-level moderate > "$RUNNER_TEMP/dependency-audit.txt" 2>&1 || audit_status=$?
+          pnpm audit --json > "$RUNNER_TEMP/dependency-audit.json" 2> "$RUNNER_TEMP/dependency-audit.stderr.txt" || json_status=$?
+          cat "$RUNNER_TEMP/dependency-audit.txt"
+          {
+            printf '## Dependency audit (informational)\n\n'
+            printf 'Moderate-level report exit status: `%s`; full JSON inventory exit status: `%s`.\n\n' "$audit_status" "$json_status"
+            printf 'See the raw report artifact and job log for findings or service errors. JSON includes all severities.\n\n'
+            printf 'This report does not determine engineering CI success. Compatible upstream fixes are tracked separately.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$audit_status" == 0 ]]; then audit_status="$json_status"; fi
+          exit "$audit_status"
+
+      - name: Preserve raw dependency audit report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: kirari-dependency-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/dependency-audit.txt
+            ${{ runner.temp }}/dependency-audit.json
+            ${{ runner.temp }}/dependency-audit.stderr.txt
+          if-no-files-found: warn
+          retention-days: 30
+
+  site-browser-validation:
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+        with:
+          version: 9.14.4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+      - run: pnpm install --frozen-lockfile
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
+      - run: npm ci --prefix scripts/p3-browser
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
+      - run: npm audit --prefix scripts/p3-browser --audit-level moderate
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
+      - run: npx --prefix scripts/p3-browser playwright install --with-deps chromium
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
+      - name: Validate site routes, assets, navigation, canonicals, robots, and byte equality locally
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
+          REQUIRE_SITE_BROWSER: 'true'
+        run: >-
+          "${{ runner.tool_cache }}/node/22.12.0/x64/bin/node" --test scripts/tests/site-browser-fixture.test.mjs apps/site/scripts/tests/mermaid-browser.test.mjs
+      - name: Verify P5 TOC accessibility and analytics CSP in Chromium
+        env:
+          BASH_ENV: /dev/null
+          ENV: /dev/null
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          LD_PRELOAD: ''
+          LD_LIBRARY_PATH: ''
+        run: |
+          node scripts/p5-browser/toc-browser.mjs
+          node scripts/p5-browser/analytics-browser.mjs
+          pnpm build
+          node scripts/p5-browser/site-smoke.mjs
+
+  composition:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/config') ||
+      (github.event_name == 'pull_request' && github.base_ref == 'config')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ARTIFACT_NAME: kirari-composition-${{ github.run_id }}-${{ github.run_attempt }}
+      SITE_PACKAGE_ARTIFACT_NAME: kirari-site-package-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Checkout workflow source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Select Site revision
+        id: site_selection
+        env:
+          MANUAL_SITE_REPOSITORY: ${{ inputs.site_repository }}
+          MANUAL_SITE_REF: ${{ inputs.site_ref }}
+          MANUAL_SITE_SUBDIRECTORY: ${{ inputs.site_subdirectory }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_REPOSITORY: ${{ github.repository }}
+          EVENT_SHA: ${{ github.sha }}
+          PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          case "$EVENT_NAME" in
+            workflow_dispatch)
+              site_repository="$MANUAL_SITE_REPOSITORY"
+              site_ref="$MANUAL_SITE_REF"
+              site_subdirectory="$MANUAL_SITE_SUBDIRECTORY"
+              ;;
+            push)
+              [[ "$GITHUB_REF" == "refs/heads/config" ]] || { echo "Composition only accepts config pushes" >&2; exit 1; }
+              site_repository="$EVENT_REPOSITORY"
+              site_ref="$EVENT_SHA"
+              site_subdirectory="site"
+              ;;
+            pull_request)
+              [[ "$GITHUB_BASE_REF" == "config" ]] || { echo "Composition only accepts pull requests targeting config" >&2; exit 1; }
+              site_repository="$PR_HEAD_REPOSITORY"
+              site_ref="$PR_HEAD_SHA"
+              site_subdirectory="site"
+              ;;
+            *)
+              echo "Unsupported composition event: $EVENT_NAME" >&2
+              exit 1
+              ;;
+          esac
+
+          [[ "$site_repository" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || { echo "Site repository must be owner/repository" >&2; exit 1; }
+          for value in "$site_ref" "$site_subdirectory"; do
+            case "$value" in *$'\n'*|*$'\r'*) echo "Site selection values cannot contain line breaks" >&2; exit 1 ;; esac
+          done
+          [[ -n "$site_ref" && -n "$site_subdirectory" ]] || { echo "Site ref and subdirectory are required" >&2; exit 1; }
+          if [[ "$EVENT_NAME" != "workflow_dispatch" && ! "$site_ref" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "Automatic config composition requires the exact 40-character event Site SHA" >&2
+            exit 1
+          fi
+
+          {
+            printf 'repository=%s\n' "$site_repository"
+            printf 'ref=%s\n' "$site_ref"
+            printf 'subdirectory=%s\n' "$site_subdirectory"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Site
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.site_selection.outputs.repository }}
+          ref: ${{ steps.site_selection.outputs.ref }}
+          path: site
+          submodules: recursive
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate Site boundary and resolve Core ref
+        id: site_contract
+        env:
+          SITE_SUBDIRECTORY: ${{ steps.site_selection.outputs.subdirectory }}
+          MANUAL_CORE_REF: ${{ inputs.core_ref }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          site_checkout="$GITHUB_WORKSPACE/site"
+          if [[ -L "$site_checkout" || ! -d "$site_checkout" ]]; then
+            echo "Site checkout root must be a directory and cannot be a symlink" >&2
+            exit 1
+          fi
+          site_root="$(realpath "$site_checkout")"
+
+          case "$SITE_SUBDIRECTORY" in
+            ""|/*) echo "Site subdirectory must be a non-empty relative path" >&2; exit 1 ;;
+          esac
+          case "/$SITE_SUBDIRECTORY/" in
+            */../*) echo "Site subdirectory cannot traverse above the checkout" >&2; exit 1 ;;
+          esac
+
+          site_candidate="$site_root"
+          if [[ "$SITE_SUBDIRECTORY" != "." ]]; then
+            IFS='/' read -r -a site_segments <<< "$SITE_SUBDIRECTORY"
+            for segment in "${site_segments[@]}"; do
+              case "$segment" in ""|.) continue ;; ..) echo "Site subdirectory cannot contain traversal segments" >&2; exit 1 ;; esac
+              site_candidate="$site_candidate/$segment"
+              if [[ -L "$site_candidate" ]]; then
+                echo "Site subdirectory cannot traverse a symlink: $site_candidate" >&2
+                exit 1
+              fi
+            done
+          fi
+          site_source="$(realpath "$site_candidate")"
+          if [[ ! -d "$site_source" || ( "$site_source" != "$site_root" && "$site_source" != "$site_root/"* ) ]]; then
+            echo "Site subdirectory must resolve inside the Site checkout" >&2
+            exit 1
+          fi
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            core_ref="$MANUAL_CORE_REF"
+            [[ -n "$core_ref" ]] || { echo "Core ref is required for manual composition" >&2; exit 1; }
+            case "$core_ref" in *$'\n'*|*$'\r'*) echo "Core ref cannot contain line breaks" >&2; exit 1 ;; esac
+          else
+            gitlink_root="${SITE_SUBDIRECTORY%/}"
+            if [[ "$gitlink_root" == "." || -z "$gitlink_root" ]]; then
+              gitlink_path=".kirari/core"
+            else
+              gitlink_path="${gitlink_root#./}/.kirari/core"
+            fi
+            gitlink_record="$(git -C "$site_checkout" ls-tree HEAD -- "$gitlink_path")"
+            read -r gitlink_mode gitlink_type gitlink_sha gitlink_name <<< "$gitlink_record"
+            if [[ "$gitlink_mode" != "160000" || "$gitlink_type" != "commit" || "$gitlink_name" != "$gitlink_path" || ! "$gitlink_sha" =~ ^[a-f0-9]{40}$ ]]; then
+              echo "Site input $SITE_SUBDIRECTORY/.kirari/core must be a full 40-character Core submodule gitlink" >&2
+              exit 1
+            fi
+            core_ref="$gitlink_sha"
+          fi
+
+          printf 'source=%s\n' "$site_source" >> "$GITHUB_OUTPUT"
+          printf 'core_ref=%s\n' "$core_ref" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Core
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ steps.site_contract.outputs.core_ref }}
+          path: core
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: core/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: core/.nvmrc
+          cache: pnpm
+          cache-dependency-path: core/pnpm-lock.yaml
+
+      - name: Install workflow source dependencies
+        run: pnpm install --frozen-lockfile --filter kirari
+
+      - run: pnpm install --frozen-lockfile
+        working-directory: core
+
+      - run: pnpm composition:test
+        working-directory: core
+
+      - name: Compose selected revisions
+        working-directory: core
+        env:
+          CORE_REF: ${{ steps.site_contract.outputs.core_ref }}
+          SITE_REF: ${{ steps.site_selection.outputs.ref }}
+          SITE_SOURCE: ${{ steps.site_contract.outputs.source }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          artifact_dir="$RUNNER_TEMP/kirari-composed-artifact"
+          compose_args=(
+            --core-ref "$CORE_REF"
+            --site "$SITE_SOURCE"
+            --site-ref "$SITE_REF"
+            --artifact-dir "$artifact_dir"
+            --artifact-id "$ARTIFACT_NAME"
+          )
+          if [[ "$EVENT_NAME" != "workflow_dispatch" ]]; then
+            compose_args+=(--require-site-contract-v2)
+          fi
+          ./build.sh --compose "${compose_args[@]}"
+
+      - name: Upload composed artifact
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: |
+            ${{ runner.temp }}/kirari-composed-artifact/dist
+            ${{ runner.temp }}/kirari-composed-artifact/provenance.json
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 30
+
+      - name: Export portable Vercel Build Output
+        working-directory: core
+        env:
+          SITE_SOURCE: ${{ steps.site_contract.outputs.source }}
+          COMPOSED_ARTIFACT: ${{ runner.temp }}/kirari-composed-artifact
+          SITE_PACKAGE: ${{ runner.temp }}/kirari-site-package
+          SOURCE_ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          SOURCE_ARTIFACT_DIGEST: sha256:${{ steps.upload.outputs.artifact-digest }}
+          SOURCE_ARTIFACT_NAME: ${{ env.ARTIFACT_NAME }}
+          SOURCE_RUN_ID: ${{ github.run_id }}
+          SOURCE_RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          node "$GITHUB_WORKSPACE/scripts/package-vercel-site.mjs" \
+            --input "$COMPOSED_ARTIFACT" \
+            --output "$SITE_PACKAGE" \
+            --site-root "$SITE_SOURCE" \
+            --source-artifact-id "$SOURCE_ARTIFACT_ID" \
+            --source-artifact-digest "$SOURCE_ARTIFACT_DIGEST" \
+            --source-artifact-name "$SOURCE_ARTIFACT_NAME" \
+            --source-run-id "$SOURCE_RUN_ID" \
+            --source-run-attempt "$SOURCE_RUN_ATTEMPT"
+
+      - name: Upload immutable Vercel Site package
+        id: site_package_upload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: ${{ env.SITE_PACKAGE_ARTIFACT_NAME }}
+          path: ${{ runner.temp }}/kirari-site-package
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 30
+
+      - name: Add artifact details to summary
+        env:
+          ARTIFACT_NAME: ${{ env.ARTIFACT_NAME }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+          SITE_PACKAGE_URL: ${{ steps.site_package_upload.outputs.artifact-url }}
+          SITE_PACKAGE_ID: ${{ steps.site_package_upload.outputs.artifact-id }}
+          SITE_PACKAGE_DIGEST: ${{ steps.site_package_upload.outputs.artifact-digest }}
+          SITE_PACKAGE_NAME: ${{ env.SITE_PACKAGE_ARTIFACT_NAME }}
+        run: |
+          printf '%s\n' \
+            '## Composed artifact' \
+            '' \
+            "- Download: [$ARTIFACT_URL]($ARTIFACT_URL)" \
+            "- Provenance/upload name: \`$ARTIFACT_NAME\`" \
+            "- GitHub artifact ID: \`$ARTIFACT_ID\`" \
+            "- Uploaded artifact SHA-256: \`$ARTIFACT_DIGEST\`" \
+            '' \
+            '## Immutable Vercel Site package' \
+            '' \
+            "- Download: [$SITE_PACKAGE_URL]($SITE_PACKAGE_URL)" \
+            "- Package artifact name: \`$SITE_PACKAGE_NAME\`" \
+            "- GitHub artifact ID: \`$SITE_PACKAGE_ID\`" \
+            "- Uploaded artifact SHA-256: \`$SITE_PACKAGE_DIGEST\`" \
+            >> "$GITHUB_STEP_SUMMARY"
+
+  browser-fixtures:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+        with:
+          version: 9.14.4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: npm ci --prefix scripts/p3-browser
+      - run: npm audit --prefix scripts/p3-browser --audit-level moderate
+      - run: npx --prefix scripts/p3-browser playwright install --with-deps chromium
+      - run: node scripts/p3-browser/build-fixtures.mjs "$RUNNER_TEMP/kirari-p3-browser-results"
+
+      - name: Upload fixture browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: kirari-p3-browser-fixtures-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/kirari-p3-browser-results
+          if-no-files-found: warn
+          retention-days: 30

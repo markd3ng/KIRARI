@@ -4,22 +4,19 @@ import { sponsorConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
 import MainGridLayout from "../../layouts/MainGridLayout.astro";
-import { fromLangSlug, getPathAlternates, getPrefixedLanguages, toLangSlug, withLangPrefix } from "../../utils/i18n-utils";
+import { getPathAlternates, withLangPrefix } from "../../utils/i18n-utils";
+import { getLocalizedRouteContext, getPrefixedStaticPaths } from "../../utils/page-route-utils";
 
-export const getStaticPaths = (() =>
-	getPrefixedLanguages().map((lang) => ({
-		params: { lang: toLangSlug(lang) },
-		props: { lang },
-	}))) satisfies GetStaticPaths;
+export const getStaticPaths = getPrefixedStaticPaths satisfies GetStaticPaths;
 
-const lang = fromLangSlug(Astro.params.lang);
+const { lang } = getLocalizedRouteContext("/sponsor/", Astro.params.lang);
+const currentUrl = withLangPrefix("/sponsor/", lang);
+const alternates = getPathAlternates((itemLang) => withLangPrefix("/sponsor/", itemLang));
 if (!sponsorConfig.enabled) {
 	return Astro.redirect(withLangPrefix("/404/", lang));
 }
 
 const title = sponsorConfig.title || i18n(I18nKey.sponsor, lang);
-const currentUrl = withLangPrefix("/sponsor/", lang);
-const alternates = getPathAlternates((itemLang) => withLangPrefix("/sponsor/", itemLang));
 ---
 
 <MainGridLayout title={title} lang={lang} alternates={alternates} canonicalUrl={currentUrl} toc={false}>

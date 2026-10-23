@@ -39,6 +39,58 @@ committed. Treat every `PUBLIC_*` value as browser/build-visible and non-secret.
 Do not store private tokens, database URLs, or write-capable API keys in public
 config.
 
+## External Site Build and Composition
+
+`./build.sh --site <directory>` treats mapped Site files as trusted owner input.
+`./build.sh --compose` pins separate Core and Site inputs, requires clean Git
+checkouts for Git-backed inputs, and writes static output with a provenance
+manifest. Both validate paths/types and reject symlinks before copying mapped
+files into a disposable site workspace. Materialization stages the mapped
+inputs and does not write to the original Site Source; the source is not
+enforced as read-only. MDX and other build-time code can execute during the
+build with the invoking user's filesystem and network permissions. Snippets are
+loaded as raw text and injected into generated HTML/JavaScript for browser
+execution; they are trusted owner code, but current code does not execute
+snippet JavaScript in the Node build process. The temporary workspace and
+child-environment allowlist are not an OS sandbox. Do not build unreviewed Site
+input where build-time code could access sensitive files. `PUBLIC_*` values are
+still public and must not contain secrets. The manual composition CI workflow
+uses read-only repository permissions, publishes only a downloadable static
+artifact, and does not package Pages Functions or deploy.
+
+Postbuild never submits indexing notifications, even when legacy authorization
+variables are present. IndexNow runs only from the post-deployment GitHub
+workflow after an authenticated Vercel Production event, a matching canonical
+commit readback, `seo.indexNow = true`, a valid public verification key, and
+`KIRARI_INDEXNOW_ENABLED=true` in the repository's GitHub `repository_dispatch`
+workflow. Build, Preview, test, external-Site and local handler invocations do
+not submit. Google Indexing API stays disabled pending an Owner decision and
+proof of eligible content.
+
+The complete mapping, composition identity, and verification contract is
+documented in [`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md).
+
+## Native Site Hosting
+
+Vercel's connected Git integration owns Preview and Production deployment.
+GitHub Actions checks source and can publish portable build artifacts without
+Production deployment credentials. It does not upload, stage or promote an
+alternative Production artifact. Core/Site pinning, provenance, safe parsing,
+CSP and browser regression checks retain their independent security purpose.
+
+Build-time Site code remains trusted executable input. Isolate provider variables
+by environment; do not expose private credentials to `PUBLIC_*`, committed config,
+portable artifacts or unreviewed Preview builds. Use normal review and provider
+access controls; these controls are not a filesystem sandbox. The architecture
+correction does not assert that GitHub branch protection is configured.
+
+Production acceptance verifies the actual project, Production environment,
+commit, canonical domain and browser behavior. A successful CI or Preview result
+cannot substitute. The Owner-authorized native cutover completed in
+[PR #143](https://github.com/markd3ng/KIRARI/pull/143); P4 is complete.
+Documentation changes do not authorize new provider operations.
+See [Site Production](./docs/SITE_PRODUCTION.md).
+
 ## Search Providers
 
 `search.google.cx` is a public Google Programmable Search Engine ID, not a
@@ -47,10 +99,40 @@ must not be hidden, rewritten, covered, or styled in a way that obscures ads or
 Google labels. The ad inventory and final display are controlled by Google and
 AdSense.
 
+## Visitor Privacy And Ads
+
+Analytics and advertising have separate visitor switches in the footer's
+Privacy settings dialog. A missing choice allows a category by default, matching
+the site's configured default-load behavior; saved choices remain in the browser
+until changed. An unavailable or malformed preference store fails closed for
+third-party Analytics and AdSense scripts. Site-owner master switches still
+control whether a category is configured at all. Turning a category off saves
+the choice and reloads the page; provider data already sent before that choice is
+not recalled.
+
+AdSense is disabled by default and is rendered only when explicitly configured
+for a Vercel Production build. Local and Preview builds do not render content ad
+slots or enable search-ad mode. Google documents strict nonce-based CSP as the
+supported integration because its ad domains change over time; this static site
+cannot issue per-response nonces, so its bounded host allowlist may need review
+if AdSense changes its requests. Do not enable real inventory until Production
+browser checks confirm the current policy permits the configured account.
+
 ## IndexNow
 
-`seo.indexNowKey` can be supplied by `PUBLIC_INDEXNOW_KEY`. It is a public
-verification key that is served at `/{key}.txt` during postbuild. Do not reuse
+`seo.indexNowKey` is a public verification key that is served at `/{key}.txt`
+during postbuild. Notifications happen only after matching native Production
+commit and alias verification, with separate config and GitHub Actions opt-ins.
+The deployment workflow validates the GitHub Vercel bot, repository, project
+ID, Production environment, `main` ref, commit, alias and live canonical page;
+it reads the deployed sitemap from the canonical host and bounds response size,
+URL count and outbound origin. A successful commit status suppresses duplicate
+notifications; failures are recorded without automatic retry. Vercel's dispatch
+payload does not include Team ID, so the workflow pins the approved global
+project ID and relies on that binding. Successful commits and fresh pending
+attempts suppress replays; up to three total attempts are allowed per commit,
+with bounded status-history pagination. Do not add a Vercel API credential to CI.
+Do not reuse
 passwords, write-capable tokens, service-account material, or other private
 secrets as the IndexNow key.
 
@@ -59,11 +141,12 @@ and Yep. Google does not support IndexNow.
 
 ## Google Indexing API
 
-Google Indexing API is optional, advanced, and disabled by default. It mainly
-targets JobPosting and BroadcastEvent URLs; ordinary blog pages are not
-guaranteed to benefit. Service account JSON must be read from the env var named
-by `seo.google.serviceAccountJsonEnv`. Never put service account JSON in TOML,
-snippets, `PUBLIC_*`, or committed files.
+Google Indexing API remains disabled and the post-deployment workflow sends no
+Google requests. An Owner decision and verified eligible content are required
+before implementing that path. Google documents eligible pages as those with
+`JobPosting` or `BroadcastEvent` embedded in `VideoObject`; ordinary blog pages
+must not be submitted. Never put service account JSON in TOML, snippets,
+`PUBLIC_*`, or committed files.
 
 ## GitHub Card Adapter
 
@@ -81,7 +164,9 @@ requests receive no ACAO. Disallowed preflight requests return 403.
 `llms-full.txt` is a public aggregation of page text intended for AI/LLM
 consumption. It is not an access-controlled archive. Postbuild mitigates broad
 crawling and caching by adding `Disallow: /llms-full.txt` to `robots.txt` and
-`Cache-Control: no-store` for that file in generated deployment headers.
+`Cache-Control: no-store` for that file in generated deployment headers. Both paths include the configured Site base. These mitigations do not prevent direct retrieval.
+
+Source-backed `index.md` views are also public. They reuse published HTML content selection, exclude drafts and do not enumerate arbitrary source files or aliases. AST conversion preserves static meaning without exporting executable MDX imports/expressions. Source-relative document links resolve only through the published inventory; omitted targets become text. Index include/exclude patterns organize discovery and do not make published content private. The existing content model defines no private/unlisted field; adding one requires consistent HTML and export behavior.
 
 ## Dependency Governance
 
@@ -92,9 +177,25 @@ pnpm install --frozen-lockfile
 pnpm audit --audit-level moderate
 ```
 
-Security overrides in `package.json` are allowed when the affected transitive
-dependency is compatible and the upstream package has not released a patched
-dependency tree yet.
+Dependency audit is a non-blocking informational CI report with no advisory
+suppression. The moderate-level human report, full JSON inventory (all severities),
+exit statuses and audit-service errors remain visible in the raw artifact and logs. Upgrade
+through compatible upstream fixes; do not force unsupported versions to silence
+advisories. KIRARI does not require a custom dependency exception consumer, GitHub
+App trust root or atomic merge admission system.
+
+Build, tests, typechecks, QA, safe secret handling and native-deployment configuration
+checks remain strict. Subsequent development uses ordinary reviewed PRs and native Git deployment.
+
+## Portable Gateway Makers Adapter
+
+`packages/edge-gateway-edgeone` exposes only the accepted Core named operations.
+It always supplies `CACHE_NONE` and no token getter; project env, KV and cache
+bindings are never read. Calls remain anonymous even if runtime credentials exist.
+Public build-time origin policy is bundled source and must never contain secrets.
+CORS is a browser restriction, not API authentication. Packaging writes a separate
+local directory and never deploys or modifies the current Site settings. See the
+[adapter contract and capability limits](./packages/edge-gateway-edgeone/README.md).
 
 ## Edge Proxy Trust Boundary
 
@@ -119,3 +220,49 @@ boundary as the rest of the site. Visitor-supplied or third-party API data
 must still traverse text/attribute-safe rendering paths. The edge proxy is an
 additional trust boundary between the visitor and the upstream API — it does
 not relax the rendering model.
+
+## Retired Deployment Controller
+
+Per-release C1/T1 credential manifests, OIDC/Trusted Sources runtime admission,
+approval bindings and custom upload/promotion/rollback records are retired.
+Their historical security work remains traceable in [PR #142](https://github.com/markd3ng/KIRARI/pull/142)
+and Trellis task history. The native cutover completed separately in PR #143. Removing source
+consumers does not revoke live credentials or delete provider settings. Cleanup
+requires verified consumers and an appropriate separate operational decision.
+
+
+## Analytics Provider Sources
+
+Analytics stays off by default and renders only in a Production-mode build with
+its master switch enabled. Both static policy writers use the same resolved
+analytics settings as the component, including documented environment overrides.
+No baseline sources or inline-script policy were removed in P5 #103.
+
+| Existing provider | Script origin | Collector origin when selected |
+|---|---|---|
+| GA4 | `www.googletagmanager.com` | existing `www.google-analytics.com`, `analytics.google.com`, `region1.google-analytics.com` |
+| Clarity | `www.clarity.ms` | existing `*.clarity.ms` |
+| Umami | configured source, default `analytics.umami.is` | same origin; official Cloud hosts also allow `gateway.umami.is` |
+| Plausible | configured source, default `plausible.io` | same origin |
+| Fathom | `cdn.usefathom.com` | `cdn.usefathom.com` |
+| Simple Analytics | configured script hostname | same origin for proxy; `queue.simpleanalyticscdn.com` for standard script |
+| Matomo | configured source | same origin (`matomo.php`) |
+| Amplitude Browser 2.11.1 | `cdn.amplitude.com` | `api2.amplitude.com` (default US ingestion) |
+
+Origins use HTTPS unless the existing explicit custom URL selects HTTP; source
+mapping does not introduce wildcard grants for new providers. Image tracking
+continues to use the unchanged baseline `img-src https:`. Custom scripts that
+send to another collector need explicit review; arbitrary custom-script behavior
+cannot be inferred from its URL. Runtime provider APIs, consent, revocation and
+SPA event deduplication remain #106 rather than CSP acceptance.
+
+Primary references: [Umami Cloud ingestion](https://docs.umami.is/docs/api/sending-stats),
+[Plausible proxy](https://plausible.io/docs/proxy/introduction),
+[Matomo CSP](https://matomo.org/faq/general/faq_20904/),
+[Simple Analytics script](https://docs.simpleanalytics.com/script) and
+[proxy](https://docs.simpleanalytics.com/proxy),
+[Amplitude ingestion](https://amplitude.com/docs/sdks/analytics/proxy-requests).
+Fathom's shipped [script](https://cdn.usefathom.com/script.js) uses its script
+hostname for both image and Beacon collection. The existing Umami default returned
+403 during this audit; CSP mapping is not a claim that the vendor endpoint is
+currently available. No real tracking events or credentials were sent in tests.

@@ -1,6 +1,7 @@
 /// <reference types="mdast" />
 import { h } from "hastscript";
 import {
+	resolveGithubCardId,
 	resolveGithubCardApiBase,
 	toScriptLiteral,
 } from "./github-card-api-base.mjs";
@@ -67,7 +68,7 @@ export function GithubFileCardComponent(properties, children, githubCardApiBase)
 	const commitsUrl = `${apiBase}/repos/${repo}/commits?path=${encodeURIComponent(filePath)}&per_page=1${commitRefQuery}`;
 	const avatarFallbackUrl = `${apiBase}/avatar/${owner}?size=96`;
 
-	const cardUuid = `GFC${Math.random().toString(36).slice(-6)}`; // Collisions are not important
+	const cardUuid = resolveGithubCardId("GFC", properties);
 	const fileUrl = encodeURI(
 		`https://github.com/${repo}/blob/${ref}/${filePath}`,
 	);

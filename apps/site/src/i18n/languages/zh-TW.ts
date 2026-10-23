@@ -52,4 +52,11 @@ export const zhTW: Translation = {
 	[Key.publishedAt]: "發佈於",
 	[Key.lastUpdatedAt]: "最後更新於",
 	[Key.license]: "許可協議",
+	[Key.privacySettings]: "隱私設定",
+	[Key.privacySettingsDescription]: "網站擁有者啟用相關功能後，流量統計與廣告預設會載入。你可以在此分別關閉；選擇會儲存在這個瀏覽器中。",
+	[Key.analytics]: "流量統計",
+	[Key.advertising]: "廣告",
+	[Key.privacySave]: "儲存設定",
+	[Key.privacyCancel]: "取消",
+	[Key.privacySaveError]: "無法儲存你的選擇。請允許本網站使用本機儲存空間後再試一次。",
 };

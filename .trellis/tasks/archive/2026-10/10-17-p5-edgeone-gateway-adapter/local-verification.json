@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-17",
+  "baseline_main": "d7b72b0360f9b1c312fc1fa476a78ad62454c374",
+  "standard_checks": [
+    {
+      "command": "corepack pnpm check",
+      "exit": 0,
+      "seconds": 46.08
+    },
+    {
+      "command": "corepack pnpm site:test",
+      "exit": 0,
+      "seconds": 1528.09
+    },
+    {
+      "command": "corepack pnpm site:contract:test",
+      "exit": 0,
+      "seconds": 2.75
+    },
+    {
+      "command": "node apps/site/scripts/qa-regression-check.mjs",
+      "exit": 0,
+      "seconds": 0.12
+    },
+    {
+      "command": "corepack pnpm edge:deploy:dry",
+      "exit": 0,
+      "seconds": 1114.95
+    },
+    {
+      "command": "corepack pnpm deploy:config:check",
+      "exit": 0,
+      "seconds": 0.66
+    },
+    {
+      "command": "corepack pnpm build",
+      "exit": 0,
+      "seconds": 69.55
+    },
+    {
+      "command": "corepack pnpm release:check",
+      "exit": 0,
+      "seconds": 0.58
+    },
+    {
+      "command": "corepack pnpm release:version-check",
+      "exit": 0,
+      "seconds": 0.41
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0,
+      "seconds": 0.03
+    }
+  ],
+  "standard_contract_tests": {
+    "pass": 58,
+    "fail": 0
+  },
+  "site_tests": {
+    "pass": 97,
+    "skip": 1,
+    "fail": 0
+  },
+  "adapter_final_tests": {
+    "pass": 19,
+    "skip": 0,
+    "fail": 0
+  },
+  "adapter_type_check": "PASS after final runtime changes",
+  "adapter_package": "PASS; 30960 bytes per function, five files",
+  "independent_review": "research/independent-review.md; PASS",
+  "audit_informational": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 4,
+      "moderate": 2,
+      "high": 1,
+      "critical": 0
+    },
+    "dependencies": 900,
+    "devDependencies": 0,
+    "optionalDependencies": 0,
+    "totalDependencies": 900
+  },
+  "live_makers_deployment_performed": false,
+  "production_configuration_changed": false,
+  "note": "Full repository checks completed before final adapter compatibility adjustments; final identity-only TransformStream, string abort and string/ArrayBuffer/view normalization passed all 19 regressions, type-check, package and independent re-review. Exact-head standard CI remains authoritative on PR149 and Issue112."
+}

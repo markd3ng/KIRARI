@@ -14,3 +14,6 @@ JSON, workflow, and deployment files.
 
 Treat `tmp/`, historical plans, audits, and materialized copies as evidence to
 classify, not implementation authority.
+
+
+Dependency audit is informational; see [Repository Workflow](./repository-workflow.md).

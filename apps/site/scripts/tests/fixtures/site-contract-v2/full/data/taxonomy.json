@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "tags": [
+    {
+      "id": "tag:javascript",
+      "slug": "javascript",
+      "labels": {
+        "zh-Hans": "JavaScript",
+        "zh-Hant": "JavaScript",
+        "en": "JavaScript",
+        "ja": "JavaScript"
+      },
+      "descriptions": {
+        "en": "JavaScript articles"
+      },
+      "aliases": {
+        "zh-Hant": [
+          "JS"
+        ],
+        "en": [
+          "JS"
+        ]
+      }
+    }
+  ],
+  "categories": [
+    {
+      "id": "category:tutorials",
+      "slug": "tutorials",
+      "labels": {
+        "zh-Hans": "教程",
+        "zh-Hant": "教學",
+        "en": "Tutorials",
+        "ja": "チュートリアル"
+      },
+      "descriptions": {},
+      "aliases": {}
+    }
+  ]
+}

@@ -18,6 +18,7 @@ Current package boundaries:
 |---|---|---|
 | `@kirari/site` | `apps/site/` | `.trellis/spec/site/frontend/` |
 | `@kirari/edge` | `workers/kirari-edge/` | `.trellis/spec/edge/backend/`, `.trellis/spec/edge/frontend/` |
+| `@kirari/edge-gateway-core` | `packages/edge-gateway-core/` | `.trellis/spec/edge-gateway-core/backend/` |
 | `@kirari/site-profile` | `packages/site-profile/` | `.trellis/spec/site-profile/frontend/` |
 
 Use this evidence priority when docs disagree:
@@ -33,6 +34,27 @@ Use this evidence priority when docs disagree:
 Do not infer current behavior from `tmp/`, old plans, audits, or generated
 materialized copies. Do not modify runtime behavior during documentation-only
 tasks.
+
+## Deployment architecture
+
+KIRARI uses the hosting provider's native deployment mechanism. GitHub Actions
+validates source and produces optional portable artifacts, but does not duplicate
+the provider's native release controller.
+
+Keep Core/Site source pinning, reproducible builds, provenance, ordinary security
+controls and CI tests when they serve an independent product requirement. Edge
+Gateway adapters are optional application capabilities, separate from Site hosting.
+Do not rebuild custom OIDC deploy orchestration, runtime Trusted Sources gates,
+per-release approval bindings or redundant staging/promotion pipelines unless the
+Owner explicitly adopts a new deployment architecture. Production completion
+requires an actual provider deployment with matching project, environment, commit
+and canonical domain plus browser verification; green source CI is insufficient.
+
+## Pinned ADS v0.3 guidance
+
+This repository pins the published ADS v0.3 commit `1e07d6c4bbd296b7d37dcd31934cfc70426f73ac` in the `.ads` submodule. After a fresh clone, materialize it with `git submodule update --init -- .ads`. Read `.ads/STANDARD.md`, `.ads/SAFETY.md`, and `.ads/QUALITY.md` as the shared guidance. The selected Codex adoption skill is `.agents/skills/ads-adopt/SKILL.md`, which points to the canonical `.ads/skills/adopt/SKILL.md`; verify the pin with `git submodule status .ads` and do not advance it with `--remote`.
+
+KIRARI-specific Trellis workflow, package boundaries, deployment facts, and safety constraints in this file remain authoritative. Default branch is `main`; merging there may trigger the Vercel provider-native deployment. Use the existing root commands `pnpm build`, `pnpm site:type-check`, `pnpm site:astro-check`, `pnpm site:test`, and `pnpm check` as appropriate. GitHub Actions validates source and produces optional artifacts; it does not replace Vercel's release controller.
 
 <!-- TRELLIS:START -->
 # Trellis Instructions

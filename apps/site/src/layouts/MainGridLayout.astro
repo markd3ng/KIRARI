@@ -37,6 +37,7 @@ interface Props {
 	articleTags?: string[];
 	alternates?: AlternateLink[];
 	canonicalUrl?: string;
+	markdownUrl?: string;
 	toc?: boolean;
 }
 
@@ -53,6 +54,7 @@ const {
 	articleTags,
 	alternates,
 	canonicalUrl,
+	markdownUrl,
 	toc = true,
 } = Astro.props;
 const pageLang = normalizeLangCode(lang || siteConfig.lang);
@@ -81,6 +83,7 @@ const mainPanelTop = siteConfig.banner.enable
 	articleTags={articleTags}
 	alternates={alternates}
 	canonicalUrl={canonicalUrl}
+	markdownUrl={markdownUrl}
 >
 
 <!-- Navbar -->
@@ -149,13 +152,13 @@ const mainPanelTop = siteConfig.banner.enable
                         lang={pageLang}
                     ></SideBar>
                     <div class="footer col-span-2 onload-animation hidden lg:block">
-                        <Footer lang={pageLang}></Footer>
+						<Footer lang={pageLang} privacyId="desktop"></Footer>
                     </div>
                 </div>
             </main>
 
             <div class="footer col-span-1 lg:col-span-2 onload-animation block lg:hidden">
-                <Footer lang={pageLang}></Footer>
+				<Footer lang={pageLang} privacyId="mobile"></Footer>
             </div>
         </div>
 
@@ -172,7 +175,7 @@ const mainPanelTop = siteConfig.banner.enable
             <div id="toc-inner-wrapper" class="fixed w-[var(--toc-width)] max-h-[calc(100vh_-_6rem)] overflow-y-scroll overflow-x-hidden hide-scrollbar" style={`top: var(--toc-top, ${mainPanelTop});`}>
                 <div id="toc" class="w-full h-full transition-swup-fade" transition:name="toc-content">
                     <div class="h-8 w-full"></div>
-                    <TOC headings={headings} layout="floating"></TOC>
+                    <TOC headings={headings} layout="floating" lang={pageLang}></TOC>
                     <div class="h-8 w-full"></div>
                 </div>
             </div>

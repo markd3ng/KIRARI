@@ -53,4 +53,11 @@ export const ja: Translation = {
 	[Key.lastUpdatedAt]: "最終更新日",
 
 	[Key.license]: "ライセンス",
+	[Key.privacySettings]: "プライバシー設定",
+	[Key.privacySettingsDescription]: "サイト所有者が有効にした場合、アクセス解析と広告は標準で許可されます。ここで個別にオフにでき、選択内容はこのブラウザーに保存されます。",
+	[Key.analytics]: "アクセス解析",
+	[Key.advertising]: "広告",
+	[Key.privacySave]: "設定を保存",
+	[Key.privacyCancel]: "キャンセル",
+	[Key.privacySaveError]: "選択を保存できませんでした。このサイトのローカルストレージを許可して、もう一度お試しください。",
 };

@@ -1,0 +1,29 @@
+{
+  "fixture": "migrated",
+  "result": "FAIL",
+  "browserConsoleErrors": 0,
+  "failedBrowserRequests": [
+    {
+      "url": "https://api.simplesvg.com/material-symbols.json?icons=link",
+      "resourceType": "fetch",
+      "error": "route fetch failed"
+    },
+    {
+      "url": "https://api.unisvg.com/material-symbols.json?icons=link",
+      "resourceType": "fetch",
+      "error": "route fetch failed"
+    },
+    {
+      "url": "https://api.unisvg.com/fa6-brands.json?icons=facebook%2Cline%2Clinkedin%2Creddit%2Ctelegram%2Cwhatsapp%2Cx-twitter",
+      "resourceType": "fetch",
+      "error": "route fetch failed"
+    },
+    {
+      "url": "https://api.unisvg.com/fa6-solid.json?icons=envelope",
+      "resourceType": "fetch",
+      "error": "route fetch failed"
+    }
+  ],
+  "error": "Browser network failures: 4 failed requests, 0 error responses",
+  "production_action": false
+}

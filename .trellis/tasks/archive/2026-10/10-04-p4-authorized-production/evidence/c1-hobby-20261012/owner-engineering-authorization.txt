@@ -1,0 +1,362 @@
+Continue KIRARI Phase 4 / RM-05 from the verified post-merge state.
+
+This is an engineering authorization to remediate the currently impossible C1 credential contract for the actual Vercel Hobby account.
+
+**This is NOT Production deployment authorization.**
+
+Repository:
+
+`markd3ng/KIRARI`
+
+Authoritative baseline:
+
+```ini
+CURRENT_MAIN_SHA=c2231c8572fb9e0961bbd296e3678acdc86a407f
+PR133_MERGED=YES
+PR133_MERGE_COMMIT_SHA=c2231c8572fb9e0961bbd296e3678acdc86a407f
+POSTMERGE_CI=SUCCESS_38195793414
+
+P4_ENGINEERING_READINESS=PASS_MERGED_AND_VALIDATED
+P4_PRODUCTION_READINESS=NOT_READY
+ISSUE99=OPEN_IN_PROGRESS
+ISSUE129=OPEN_IN_REVIEW
+ISSUE135=CLOSED
+ISSUE122=UPSTREAM_TRACKING
+```
+
+Verified Vercel target:
+
+```ini
+VERCEL_TEAM_ID=team_NsBZHGUVnyygP7veiROKLuUx
+VERCEL_TEAM_PLAN=HOBBY
+VERCEL_PROJECT_ID=prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk
+VERCEL_PROJECT=kirari-main
+VERCEL_CANONICAL_ORIGIN=https://kirari-main.vercel.app
+CURRENT_LEGACY_DEPLOYMENT=dpl_7ACbEGqeC8f7yyqZqmAjzL78F5sB
+```
+
+Current candidate remains only a candidate and is NOT yet Production-authorized:
+
+```ini
+SOURCE_RUN_ID=37258535783
+SOURCE_RUN_ATTEMPT=1
+CORE_SHA=c79659046cf6ea73ba69e03c3937d904c07ba93b
+SITE_SHA=b1b488ce9491c75718a32cbcf06351d908204358
+
+PACKAGE_ARTIFACT_ID=11323926470
+PACKAGE_ARCHIVE_DIGEST=sha256:21c27932ae527b81afe5cc19ec6b163da6dfd11e455b210f594a211e04ced7cd
+
+OUTPUT_DIGEST=sha256:c162ec64f0793402dfa7c1d1aa96b84ba5c28bfdd8c35d9e6eb5a4567d456901
+
+PRODUCTION_ARTIFACT_AUTHORIZATION=NO
+PRODUCTION_DEPLOYMENT_AUTHORIZATION=NO
+```
+
+## Critical architectural finding
+
+The current C1 concrete credential contract cannot succeed on the actual Vercel account.
+
+Current repository contract requires:
+
+- team plan `Pro` or `Enterprise`;
+- direct/effective Team `Developer`;
+- effective `Project Developer`;
+- complete Access Group evidence;
+- exactly one extended permission: `Full Production Deployment`.
+
+The actual target team is **Hobby**.
+
+Do not ask the Owner to upgrade Vercel merely to satisfy repository-created governance machinery.
+
+Do not fake Enterprise RBAC semantics on Hobby.
+
+Do not weaken the immutable-artifact, exact-target, Owner authorization, credential-isolation, replay prevention, health/smoke, or rollback controls.
+
+The goal is to replace unavailable provider-RBAC proof with controls that Vercel Hobby actually exposes and can be authenticated.
+
+## 1. Re-establish provider capability truth
+
+Before editing code, verify current official Vercel behavior and APIs.
+
+At minimum investigate:
+
+- personal access token scope modes currently supported;
+- whether a PAT can be scoped to exactly one project;
+- `GET /v10/projects` behavior for project-scoped tokens;
+- `GET /v6/user/tokens` and what metadata it exposes;
+- user/principal identity endpoints;
+- whether a project-scoped token can introspect its own token metadata;
+- token label / token ID / creation time / expiry exposure;
+- project identity readback;
+- team identity/plan readback;
+- whether Hobby exposes any meaningful RBAC / extended-permission information;
+- whether Access Groups are unavailable by entitlement rather than merely empty.
+
+Use current Vercel documentation and authenticated read-only provider calls where available.
+
+Do not rely on historical assumptions from the previous C1 design.
+
+Record a capability matrix with:
+
+```text
+claim
+provider API/source
+available on Hobby?
+available to project-scoped PAT?
+authenticated?
+safe to retain?
+runtime-verifiable?
+setup-time-only?
+```
+
+If an important assertion cannot actually be obtained from Vercel, do not fabricate it.
+
+## 2. Redesign C1 for the real Hobby threat model
+
+Implement the smallest safe replacement contract.
+
+The new contract should primarily prove:
+
+1. the credential is authenticated by Vercel;
+2. it can operate against the exact approved target:
+   - team `team_NsBZHGUVnyygP7veiROKLuUx`
+   - project `prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk`
+   - project name `kirari-main`;
+3. its provider scope is limited to that project where Vercel supports project-scoped PATs;
+4. runtime readback does not reveal access to unrelated projects;
+5. the credential has a finite lifetime where the provider supports finite expiry;
+6. the actual token value is never written to repository files, logs, artifacts, comments, evidence JSON, or tests;
+7. revocation or expiry naturally fails closed;
+8. Production mutation remains impossible without the separate exact Owner artifact/target authorization;
+9. GitHub protected Environment remains the credential boundary.
+
+Prefer a model conceptually equivalent to:
+
+```text
+C1_HOBBY_PROJECT_SCOPED_PAT
+```
+
+rather than emulating Enterprise RBAC.
+
+## 3. Separate setup-time metadata from runtime proof
+
+Do not require a project-scoped deployment PAT to introspect metadata that Vercel does not permit it to read.
+
+If token label / token ID / expiry / scope metadata requires an Owner/control-plane readback unavailable to the scoped token itself:
+
+- capture that metadata through an authenticated Owner/provider setup read;
+- sanitize it;
+- never retain the secret value;
+- bind it into the concrete manifest;
+- bind Owner approval to the canonical manifest digest;
+- use runtime provider calls only for properties the Production token can actually prove itself.
+
+Runtime evidence should be fresh and bounded.
+
+A reasonable runtime scope proof may use the provider's project-list/project-read behavior to prove that the credential sees the exact target and no unrelated project, provided current Vercel semantics support that proof.
+
+If Vercel exposes a stronger authoritative token-scope endpoint, use it instead.
+
+Do not use deliberate destructive writes as permission probes.
+
+## 4. Remove impossible assertions, not security controls
+
+Remove or replace C1 checks whose only purpose was Enterprise RBAC:
+
+```text
+team.plan must be Pro/Enterprise
+direct_team_role == Developer
+effective_team_role == Developer
+effective_project_role == Project Developer
+Access Group enumeration as a mandatory Hobby condition
+extended_permissions == ["Full Production Deployment"]
+```
+
+Only remove them after confirming they are unavailable/inapplicable to Hobby.
+
+Do NOT remove:
+
+- exact team/project binding;
+- exact current-main requirement;
+- exact artifact digest/provenance binding;
+- Owner-only workflow dispatch;
+- one-time authorization/replay defense;
+- 15-minute Production approval lifetime;
+- secret isolation;
+- immutable artifact verification;
+- stage-without-aliases before validation;
+- explicit promote;
+- alias verification;
+- public health/browser validation;
+- rollback evidence handling;
+- fail-closed credential/provider failures.
+
+## 5. Preserve detached Owner approval
+
+Keep the concrete credential manifest and Owner decision separate.
+
+Issue #129 remains the authoritative C1 Owner-decision surface unless there is a concrete engineering reason to change it.
+
+Do not treat the old C1 approval as automatically approving the redesigned manifest.
+
+Any materially changed credential manifest requires a fresh digest-bound Owner decision.
+
+Do not post an APPROVED Owner decision on behalf of the Owner.
+
+Prepare the exact JSON the Owner would need to post later, but leave it unapproved.
+
+## 6. GitHub Production Environment contract
+
+Preserve/create support for the existing required Environment:
+
+`kirari-site-production`
+
+Its intended configuration remains:
+
+```ini
+ENVIRONMENT=kirari-site-production
+ALLOWED_BRANCH=main
+ADMIN_BYPASS=DISABLED
+REQUIRED_REVIEWER=repository_owner
+SELF_REVIEW=ALLOWED
+```
+
+Production workflow credential mapping remains:
+
+```ini
+SECRET=VERCEL_PRODUCTION_TOKEN
+VAR=VERCEL_PRODUCTION_ORG_ID
+VAR=VERCEL_PRODUCTION_PROJECT_ID
+```
+
+Expected variable values:
+
+```ini
+VERCEL_PRODUCTION_ORG_ID=team_NsBZHGUVnyygP7veiROKLuUx
+VERCEL_PRODUCTION_PROJECT_ID=prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk
+```
+
+Do not create, print, request in chat, commit, echo, or artifact the Production token.
+
+If Environment creation or secret insertion requires Owner UI, output the exact minimal UI steps and stop that portion there.
+
+## 7. Implementation workflow
+
+Create a dedicated branch/worktree from exact:
+
+`main@c2231c8572fb9e0961bbd296e3678acdc86a407f`
+
+Implement only the minimum files needed for the Hobby-compatible C1 gate.
+
+Add focused tests covering at least:
+
+- exact target PASS;
+- wrong project FAIL;
+- wrong team FAIL;
+- token sees unrelated project FAIL;
+- unauthenticated provider response FAIL;
+- stale observation FAIL;
+- revoked/expired credential behavior FAIL where testable;
+- malformed provider response FAIL;
+- secret-like value in retained manifest/evidence FAIL;
+- missing Owner decision FAIL;
+- wrong manifest digest FAIL;
+- expired Owner decision FAIL;
+- post-decision Owner comment/revocation semantics remain fail-closed;
+- Production operation cannot begin when C1 fails.
+
+Keep external provider tests deterministic through fixtures/mocks; perform bounded live read-only validation separately.
+
+Run all existing P4/P3 regressions, build, typecheck, browser/Production fixtures, Trellis checks and standard repository CI.
+
+Dependency audit remains informational under the existing Owner decision.
+
+## 8. Independent review and PR
+
+After implementation:
+
+- run a fresh independent source/security review;
+- specifically ask the reviewer whether the new Hobby design is weaker in any way that matters to:
+  - cross-project token compromise,
+  - unintended Production target selection,
+  - secret exposure,
+  - replay,
+  - artifact substitution,
+  - promotion without validation;
+- fix confirmed actionable findings;
+- create one PR against `main`;
+- do not merge it without a new exact Owner merge decision.
+
+Update #129 and #99 with factual engineering evidence.
+
+Do not create duplicate governance Issues.
+
+## 9. No Production action
+
+This authorization does NOT permit:
+
+- dispatch of `site-production.yml`;
+- Production deploy;
+- Vercel promotion;
+- alias/domain mutation;
+- Production secret creation using an unknown credential;
+- release/tag;
+- P5;
+- Gateway work;
+- closing #99.
+
+It also does not authorize the current candidate artifact for Production yet.
+
+## 10. Return the next Owner package
+
+End with:
+
+```ini
+P4_C1_REMEDIATION_RESULT=
+
+BASELINE_MAIN_SHA=c2231c8572fb9e0961bbd296e3678acdc86a407f
+
+VERCEL_TEAM_PLAN=HOBBY
+OLD_C1_CONTRACT_COMPATIBLE=NO
+
+HOBBY_C1_DESIGN=
+PROJECT_SCOPED_PAT_SUPPORTED=
+TOKEN_SCOPE_RUNTIME_READBACK=
+TOKEN_METADATA_SETUP_READBACK=
+TOKEN_EXPIRY_VERIFIABLE=
+PRINCIPAL_READBACK=
+PROJECT_SCOPE_PROOF=
+SECRET_RETENTION=NONE
+
+IMPLEMENTATION_PR=
+IMPLEMENTATION_HEAD_SHA=
+CI=
+INDEPENDENT_REVIEW=
+
+GITHUB_PRODUCTION_ENVIRONMENT=
+OWNER_UI_ACTIONS_REQUIRED=
+
+C1_MANIFEST_READY=
+C1_MANIFEST_SHA256=
+C1_OWNER_DECISION=NOT_AUTHORIZED
+
+PRODUCTION_ARTIFACT_SELECTED=NO
+PRODUCTION_DEPLOYMENT_PERFORMED=NO
+
+ISSUE129=
+ISSUE99=OPEN_IN_PROGRESS
+
+P4_PRODUCTION_READINESS=
+
+NEXT_OWNER_GATE=
+```
+
+If the Hobby-compatible design is technically sound and the PR is ready, the next Owner gate should be:
+
+`EXACT C1 REMEDIATION PR MERGE DECISION`
+
+Only after that merge should the process proceed to:
+
+`OWNER UI ENVIRONMENT/TOKEN SETUP -> FRESH C1 MANIFEST -> DIGEST-BOUND C1 OWNER APPROVAL -> EXACT ARTIFACT/TARGET PRODUCTION AUTHORIZATION`
+
+Do not collapse those gates.

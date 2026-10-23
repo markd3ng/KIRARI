@@ -1,0 +1,5 @@
+{"file":".trellis/spec/site/frontend/quality-guidelines.md","reason":"Use existing build, test, documentation-sync, and hosting acceptance contracts when updating Site documentation and tests."}
+{"file":".trellis/spec/site/frontend/directory-structure.md","reason":"Confirm source ownership and avoid generated/materialized content while scanning island implementations."}
+{"file":".trellis/spec/guides/repository-workflow.md","reason":"Follow repository validation and documentation-sync rules."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Check whether any generated copy or shared stack value is affected before changing README data."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Reconcile build, deployment, content, and provider boundaries without changing runtime behavior."}

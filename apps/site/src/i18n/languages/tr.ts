@@ -52,4 +52,11 @@ export const tr: Translation = {
 	[Key.publishedAt]: "Yayınlanma:",
 	[Key.lastUpdatedAt]: "Son güncelleme:",
 	[Key.license]: "Lisans",
+	[Key.privacySettings]: "Gizlilik ayarları",
+	[Key.privacySettingsDescription]: "Site sahibi etkinleştirdiğinde analiz ve reklamlara varsayılan olarak izin verilir. İkisini de buradan ayrı ayrı kapatabilirsiniz; tercihleriniz bu tarayıcıda saklanır.",
+	[Key.analytics]: "Analiz",
+	[Key.advertising]: "Reklamlar",
+	[Key.privacySave]: "Ayarları kaydet",
+	[Key.privacyCancel]: "İptal",
+	[Key.privacySaveError]: "Tercihiniz kaydedilemedi. Bu sitenin yerel depolamayı kullanmasına izin verip tekrar deneyin.",
 };

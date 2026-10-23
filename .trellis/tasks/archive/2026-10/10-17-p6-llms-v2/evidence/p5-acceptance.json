@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-17",
+  "merge_method": "squash",
+  "merges": [
+    {
+      "pr": 147,
+      "main_sha": "afab90110ed15b321983fd85c46e8275b38394d1",
+      "ci_run": 39004259844,
+      "ci": "SUCCESS"
+    },
+    {
+      "pr": 148,
+      "main_sha": "c5f60a27a57bffe8eae248fab3afde9e021a92be",
+      "ci_run": 39004848084,
+      "ci": "SUCCESS"
+    },
+    {
+      "pr": 149,
+      "main_sha": "1ae7b7efdd632db2b16c9daa07cd087576312484",
+      "ci_run": 39005176626,
+      "ci": "SUCCESS"
+    }
+  ],
+  "final_main": "1ae7b7efdd632db2b16c9daa07cd087576312484",
+  "production": {
+    "project_id": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+    "project": "kirari-main",
+    "deployment_id": "dpl_DBuKrrXdnmzUYB9GRR8jU7x5c9Ws",
+    "state": "READY",
+    "target": "production",
+    "commit": "1ae7b7efdd632db2b16c9daa07cd087576312484",
+    "alias": "kirari-main.vercel.app"
+  },
+  "p5_completed": 8,
+  "p5_total": 8,
+  "runtime_adapter_deployments_performed": false,
+  "provider_settings_or_credentials_changed": false,
+  "follow_up": "Makers local package Windows separators; separate small source PR, no runtime impact",
+  "owner_p6_decision": "START_ISSUE_101_RETAIN_LLMS_FULL"
+}

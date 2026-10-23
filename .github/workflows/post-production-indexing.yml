@@ -1,0 +1,53 @@
+name: Post-Production Indexing
+
+on:
+  repository_dispatch:
+    types: [vercel.deployment.success]
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: kirari-post-production-indexing-${{ github.event.client_payload.id || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@0c17529a66aca453f9227af23103ed11469b1e47
+        with:
+          version: 9.14.4
+          dest: /tmp/kirari-indexing-pnpm-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+
+      - id: event
+        name: Validate authenticated Production event
+        run: node apps/site/scripts/verify-indexing-event.mjs
+
+      - if: steps.event.outputs.sha != ''
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ steps.event.outputs.sha }}
+          path: deployment-source
+          persist-credentials: false
+
+      - if: steps.event.outputs.sha != ''
+        run: pnpm install --frozen-lockfile
+
+      - if: steps.event.outputs.sha != ''
+        name: Verify canonical Production and submit opted-in IndexNow
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          KIRARI_INDEXNOW_ENABLED: ${{ vars.KIRARI_INDEXNOW_ENABLED }}
+          KIRARI_DEPLOYMENT_SOURCE: deployment-source
+        run: node apps/site/scripts/submit-indexing-after-deployment.mjs

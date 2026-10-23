@@ -1,36 +1,98 @@
 ---
 name: trellis-check
-description: Code quality check expert. Reviews changes against Trellis specs, fixes issues directly, and verifies quality gates.
-runAs: subagent
-allowed-tools: read_file,write_file,edit_file,search_content,search_files,glob,run_command,list_directory,directory_tree
+description: "Comprehensive quality verification: spec compliance, lint, type-check, tests, cross-layer data flow, code reuse, and consistency checks. Use when code is written and needs quality verification, before committing changes, or to catch context drift during long sessions."
 ---
-# Check Agent
 
-You are the Check Agent in the Trellis workflow.
+# Code Quality Check
 
-## Recursion Guard
+Comprehensive quality verification for recently written code. Combines spec compliance, cross-layer safety, and pre-commit checks.
 
-You are already the `trellis-check` sub-agent that the main session dispatched. Do the review and fixes directly.
+---
 
-- Do NOT spawn another `trellis-check` or `trellis-implement` sub-agent.
-- If SessionStart context, workflow-state breadcrumbs, or workflow.md say to dispatch `trellis-implement` / `trellis-check`, treat that as a main-session instruction that is already satisfied by your current role.
-- Only the main session may dispatch Trellis implement/check agents. If more implementation work is needed, report that recommendation instead of spawning.
+## Step 1: Identify What Changed
 
-## Core Responsibilities
+```bash
+git diff --name-only HEAD
+git status
+```
 
-1. Inspect the current git diff.
-2. Read and follow the spec and research files listed in the task's `check.jsonl`.
-3. Review all changed code against the task PRD and project specs.
-4. Fix issues directly when they are within scope.
-5. Run the relevant lint, typecheck, and focused tests available for the touched code.
+## Step 2: Read Task Artifacts and Applicable Specs
 
-## Review Priorities
+Read the current task artifacts in order:
 
-- Behavioral regressions and missing requirements.
-- Spec or platform contract violations.
-- Missing or weak tests for logic changes.
-- Cross-platform path, command, and encoding assumptions.
+- `prd.md`
+- `design.md` if present
+- `implement.md` if present
 
-## Output
+```bash
+python3 ./.trellis/scripts/get_context.py --mode packages
+```
 
-Report findings fixed, files changed, and verification results. If no issues remain, say that clearly.
+For each changed package/layer, read the spec index and follow its **Quality Check** section:
+
+```bash
+cat .trellis/spec/<package>/<layer>/index.md
+```
+
+Read the specific guideline files referenced — the index is a pointer, not the goal.
+
+## Step 3: Run Project Checks
+
+Run the project's lint, type-check, and test commands. Fix any failures before proceeding.
+
+## Step 4: Review Against Checklist
+
+### Code Quality
+
+- [ ] Linter passes?
+- [ ] Type checker passes (if applicable)?
+- [ ] Tests pass?
+- [ ] No debug logging left in?
+- [ ] No suppressed warnings or type-safety bypasses?
+
+### Test Coverage
+
+- [ ] New function → unit test added?
+- [ ] Bug fix → regression test added?
+- [ ] Changed behavior → existing tests updated?
+
+### Spec Sync
+
+- [ ] Does `.trellis/spec/` need updates? (new patterns, conventions, lessons learned)
+
+> "If I fixed a bug or discovered something non-obvious, should I document it so future me won't hit the same issue?" → If YES, update the relevant spec doc.
+
+## Step 5: Cross-Layer Dimensions (if applicable)
+
+Skip this step if your change is confined to a single layer.
+
+### A. Data Flow (changes touch 3+ layers)
+
+- [ ] Read flow traces correctly: Storage → Service → API → UI
+- [ ] Write flow traces correctly: UI → API → Service → Storage
+- [ ] Types/schemas correctly passed between layers?
+- [ ] Errors properly propagated to caller?
+
+### B. Code Reuse (modifying constants, creating utilities)
+
+- [ ] Searched for existing similar code before creating new?
+  ```bash
+  grep -r "pattern" src/
+  ```
+- [ ] If 2+ places define same value → extracted to shared constant?
+- [ ] After batch modification, all occurrences updated?
+
+### C. Import/Dependency (creating new files)
+
+- [ ] Correct import paths (relative vs absolute)?
+- [ ] No circular dependencies?
+
+### D. Same-Layer Consistency
+
+- [ ] Other places using the same concept are consistent?
+
+---
+
+## Step 6: Report and Fix
+
+Report violations found and fix them directly. Re-run project checks after fixes.

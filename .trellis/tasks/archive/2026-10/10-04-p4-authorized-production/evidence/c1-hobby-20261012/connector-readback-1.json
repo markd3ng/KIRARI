@@ -1,0 +1,5 @@
+{
+  "endpoint": "GET /v2/user",
+  "status": 404,
+  "principal_readback": "UNAVAILABLE_FROM_THIS_CONNECTOR"
+}

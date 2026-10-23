@@ -1,0 +1,99 @@
+{
+  "base_main": "1ae7b7efdd632db2b16c9daa07cd087576312484",
+  "node": "22.23.3",
+  "pnpm": "9.14.4",
+  "commands": [
+    {
+      "command": "corepack pnpm check",
+      "exit": 0,
+      "seconds": 41.19
+    },
+    {
+      "command": "corepack pnpm site:test",
+      "exit": 0,
+      "seconds": 77.83
+    },
+    {
+      "command": "corepack pnpm site:contract:test",
+      "exit": 0,
+      "seconds": 2.23
+    },
+    {
+      "command": "node apps/site/scripts/qa-regression-check.mjs",
+      "exit": 0,
+      "seconds": 0.09
+    },
+    {
+      "command": "corepack pnpm edge:deploy:dry",
+      "exit": 0,
+      "seconds": 1.24
+    },
+    {
+      "command": "corepack pnpm deploy:config:check",
+      "exit": 0,
+      "seconds": 0.44
+    },
+    {
+      "command": "corepack pnpm build",
+      "exit": 0,
+      "seconds": 12.99
+    },
+    {
+      "command": "corepack pnpm release:check",
+      "exit": 0,
+      "seconds": 0.43
+    },
+    {
+      "command": "corepack pnpm release:version-check",
+      "exit": 0,
+      "seconds": 0.32
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0,
+      "seconds": 0.03
+    }
+  ],
+  "site_tests": {
+    "tests": 128,
+    "pass": 127,
+    "fail": 0,
+    "skip": 1,
+    "skip_reason": "optional local Mermaid browser; required Chromium jobs run in remote CI"
+  },
+  "site_contract_tests": 7,
+  "standard_source_artifact_contracts": 58,
+  "llm_regressions": {
+    "renderer": 11,
+    "url": 4,
+    "postbuild_and_policy": 6,
+    "actual_staged_builds": 4
+  },
+  "browser": "PASS: English/Chinese/spec discovery, views200 and text/markdown on local Astro preview",
+  "independent_review": "PASS",
+  "dependency_audit": {
+    "exit": 1,
+    "low": 4,
+    "moderate": 2,
+    "high": 1,
+    "blocking": false,
+    "new_transitive_packages": 0
+  },
+  "fixed_failure": "First full suite exposed shared dependency-relative Astro cache mixing concurrent Site entries; project-local cache and explicit content/asset race regression fix verified by complete passing rerun.",
+  "remote_ci": "Required on final PR head; recorded in GitHub",
+  "full_suite_snapshot": "2512adb6ab44b4e45b085269b6d04e98aa4a4048 (all standard local checks and exact-head CI39015742639 PASS)",
+  "review_follow_up": {
+    "changes": [
+      "escape plain description text",
+      "resolve only referenced definitions",
+      "shared non-i18n URL and canonical error context",
+      "HTML offset regression table"
+    ],
+    "independent_review": "PASS",
+    "targeted_tests": 25,
+    "pass": 25,
+    "includes_actual_staged_builds": 4,
+    "type_check": "PASS",
+    "remote_ci": "New final-head standard CI required; prior-head success is not final proof"
+  }
+}

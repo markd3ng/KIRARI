@@ -1,0 +1,13 @@
+{
+  "endpoint": "GET /v10/projects?teamId=team_NsBZHGUVnyygP7veiROKLuUx&limit=100",
+  "authenticated_connector_read": true,
+  "target": {
+    "id": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+    "name": "kirari-main",
+    "accountId": "team_NsBZHGUVnyygP7veiROKLuUx"
+  },
+  "visible_project_count": 12,
+  "unrelated_project_count": 11,
+  "credential": "CONNECTED_INTEGRATION_NOT_PRODUCTION_PAT",
+  "qualifies_C1_runtime_scope_proof": false
+}

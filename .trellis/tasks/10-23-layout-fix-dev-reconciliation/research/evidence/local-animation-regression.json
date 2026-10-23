@@ -1,0 +1,31 @@
+{
+  "target": "http://localhost:4321/",
+  "browserTool": "Ego Lite 2.1.0",
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "sampledFrames": 26,
+      "heroTopRangePx": 0,
+      "landingFadeInTransforms": ["none"],
+      "opacity": ["0", "1"]
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "sampledFrames": 33,
+      "heroCopyTopRangePx": 0,
+      "scrollYRangePx": [0, 0],
+      "landingFadeInTransforms": ["none"],
+      "opacity": ["0", "1"],
+      "observation": "The third below-fold article card moved 24.5px while document.fonts.status changed from loading to loaded. This was outside the first screen and did not coincide with a transform on any sampled landing-fade-in element."
+    }
+  ],
+  "result": "PASS for the reported first-screen animation: hero content fades in without positional translation at both viewports.",
+  "limits": [
+    "A mobile below-fold article card shifted during font loading; the font-related cause is plausible but not independently proven.",
+    "The browser was viewport-emulated; physical-device touch behavior was not tested."
+  ]
+}

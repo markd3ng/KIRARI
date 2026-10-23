@@ -1,0 +1,210 @@
+{
+  "checked_at": "2026-10-05T03:22:40Z",
+  "scope": "read-only Production readiness, credentials, Trusted Sources, and Git guard review",
+  "production_settings_or_secret_mutations_performed": false,
+  "external_comments_or_project_writes_performed": false,
+  "github": {
+    "repository": "markd3ng/KIRARI",
+    "owner_type": "User",
+    "dedicated_environment": {
+      "name": "kirari-site-production",
+      "exists": false,
+      "environment_secrets_or_variables_read": false
+    },
+    "legacy_production_environments": {
+      "protection_rules": [],
+      "deployment_branch_policy": null,
+      "environment_secret_names": [],
+      "environment_variable_names": [],
+      "secret_values_requested": false
+    },
+    "repository_actions_secret_names": [
+      "OCR_LLM_AUTH_TOKEN",
+      "OCR_LLM_PROTOCOL",
+      "OCR_LLM_URL"
+    ],
+    "repository_actions_variable_names": [
+      "OCR_LLM_MODEL"
+    ],
+    "production_credential_names_found_at_repository_scope": false,
+    "expected_environment_policy_from_source": {
+      "name": "kirari-site-production",
+      "can_admins_bypass": false,
+      "required_reviewers": [
+        {
+          "type": "User",
+          "login": "markd3ng"
+        }
+      ],
+      "prevent_self_review": false,
+      "deployment_branch_policy": {
+        "protected_branches": false,
+        "custom_branch_policies": true,
+        "branch_names": [
+          "main"
+        ]
+      }
+    },
+    "workflow_boundary": {
+      "event": "workflow_dispatch",
+      "prepare_ref": "refs/heads/main",
+      "owner_only_prepare": true,
+      "prepare_job_receives_vercel_credentials": false,
+      "production_job_environment": "kirari-site-production",
+      "id_token_write_only_in_production_job": true
+    }
+  },
+  "vercel": {
+    "team_id": "team_NsBZHGUVnyygP7veiROKLuUx",
+    "project_id": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+    "project_name": "kirari-main",
+    "connected_project_projection_identity_match": true,
+    "connected_project_projection_keys": [
+      "id",
+      "name",
+      "framework",
+      "accountId",
+      "createdAt",
+      "updatedAt",
+      "nodeVersion",
+      "live",
+      "latestDeployment",
+      "domains",
+      "passwordProtection",
+      "ssoProtection",
+      "trustedIps"
+    ],
+    "trustedSources": {
+      "api_field": "trustedSources",
+      "documented_project_get_endpoint": "GET /v9/projects/{idOrName}",
+      "documented_schema_fields": [
+        "enableVercelCiSameRepository",
+        "oidcProviders",
+        "projects"
+      ],
+      "api_readable": false,
+      "readback_method_available": "connected project projection; it omits trustedSources",
+      "raw_authenticated_api_readback_available": false,
+      "expected": {
+        "enableVercelCiSameRepository": false,
+        "projects": "no additional Vercel project caller rules; accept only an empty serialized container until documented default-self serialization has been reviewed",
+        "oidcProviders": [
+          {
+            "issuer": "https://token.actions.githubusercontent.com",
+            "claims": {
+              "aud": [
+                "https://github.com/markd3ng"
+              ],
+              "repository": [
+                "markd3ng/KIRARI"
+              ],
+              "ref": [
+                "refs/heads/main"
+              ],
+              "workflow_ref": [
+                "markd3ng/KIRARI/.github/workflows/site-production.yml@refs/heads/main"
+              ]
+            },
+            "target_environments": [
+              "production"
+            ]
+          }
+        ]
+      },
+      "actual": "UNKNOWN",
+      "match": "UNKNOWN",
+      "enableVercelCiSameRepository_documented_semantics": "The official project API schema lists this boolean field but the official docs reviewed do not define its behavior. Expected false is a fail-closed source policy, not a claim about undocumented semantics.",
+      "projects_documented_semantics": "Trusted Sources docs describe other Vercel projects added to this project as authorized callers; default same-project access is documented separately. No additional Vercel project callers are expected. If the API serializes default self-access as a project rule, its exact representation must be read and reviewed before accepting a parser exception.",
+      "validator_source_status": "Current source requires explicit false for enableVercelCiSameRepository and an empty projects object/array; unknown, missing, or nonempty values fail closed."
+    },
+    "credential": {
+      "local_vercel_bearer_credential_available": false,
+      "prior_project_get_status": 403,
+      "token_or_secret_values_printed": false,
+      "workflow_environment_secret_name": "VERCEL_PRODUCTION_TOKEN",
+      "workflow_environment_variables": {
+        "VERCEL_PRODUCTION_ORG_ID": "team_NsBZHGUVnyygP7veiROKLuUx",
+        "VERCEL_PRODUCTION_PROJECT_ID": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk"
+      },
+      "required_effective_operations": [
+        "Read the exact target project's identity, deployments, domains, aliases, and deployment file metadata required by the workflow",
+        "Create the reviewed staged Production deployment for the exact target project",
+        "Promote or restore a deployment only for the exact target project"
+      ],
+      "required_token_scope": "Project scope for prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk only; team scope and full-account scope are not acceptable.",
+      "documented_project_scope_behavior": "Vercel docs say a project-scoped token can only read and write resources belonging to that one project and denies requests to other projects, user-level resources, and team-level resources. Project scope is a resource boundary, not documented verb-level minimization.",
+      "documented_rbac_constraints": {
+        "full_production_deployment": "Current Extended Permissions docs describe CLI Production deployment, rollback, and promotion of any deployment; the permission is compatible with the Developer team role, already included in Owner/Member. The docs do not establish that this permission is limited to a single project's deployment actions.",
+        "project_developer": "Project-level role limited to assigned projects; docs describe project deployment and development/preview environment-variable management, but do not establish the exact CLI Production deployment, rollback, and promote/restore operation set required here.",
+        "project_admin": "Includes full control of the assigned project's settings and Production deployments; this is broader than the required action set.",
+        "access_groups": "Project role assignments only; docs say team roles cannot be overridden and effective role combinations retain the most permissive permissions."
+      },
+      "effective_permission_proof": "UNKNOWN; no existing token or provider permission readback was available, and official docs reviewed do not prove a role/token combination that grants only the required target-project reads and Production deployment/promote/restore actions while denying all other project/team writes.",
+      "readiness": "BLOCKED_UNVERIFIED_EFFECTIVE_MINIMUM_SCOPE",
+      "acceptance_rule": "Do not issue or accept a credential until owner evidence proves the token is project-scoped to the exact target and its effective permissions include only the required target-project reads and Production deployment/promote/restore actions. Project scope alone is insufficient proof of verb-level restrictions. Reject team/full-account scope and any unproven or extra project-settings, environment, variable, domain, or team write permissions. If Vercel cannot isolate or prove this minimum set, readiness remains blocked; do not broaden access for convenience.",
+      "provider_permission_setup_performed": false
+    },
+    "production_state": {
+      "current_deployment_id": "dpl_7ACbEGqeC8f7yyqZqmAjzL78F5sB",
+      "current_target": "production",
+      "current_ready_state": "READY",
+      "current_source_sha": "408dff70c5aa7b39cbd3df31103b5847dba9751f",
+      "current_aliases": [
+        "kirari-main-martyjstogner-2766s-projects.vercel.app",
+        "kirari-main.vercel.app",
+        "kirari-main-git-main-martyjstogner-2766s-projects.vercel.app"
+      ],
+      "current_artifact_provenance": "UNKNOWN",
+      "latest_project_projection_deployment": {
+        "deployment_id": "dpl_BQMWDtKtHi9jidiTNTQm4qXssoqV",
+        "target": "preview",
+        "branch": "codex/p4-authorized-production",
+        "sha": "18be78556ff9d0dc17fb714e0331c40dca83fe70",
+        "counts_as_production": false
+      },
+      "recent_production_deployments": [
+        {
+          "id": "dpl_7ACbEGqeC8f7yyqZqmAjzL78F5sB",
+          "sha": "408dff70c5aa7b39cbd3df31103b5847dba9751f"
+        },
+        {
+          "sha": "80f598d349fc1c2a759726e4cfeeaa5f5fe775bc"
+        },
+        {
+          "sha": "5d3739a84c8bb813b89784e86a73032d95bd1696"
+        },
+        {
+          "sha": "09bff0076920fa1c572c6e65d381db3e401e23ac"
+        },
+        {
+          "sha": "3ba03798cc3cf994e6a2e72a7873c951c5b808fc"
+        },
+        {
+          "sha": "215febd07ec989b933ccd53728d862898252b763"
+        }
+      ],
+      "baseline_main_sha": "c79659046cf6ea73ba69e03c3937d904c07ba93b",
+      "current_main_production_deployment_observed": false,
+      "current_main_production_alias_observed": false,
+      "direct_project_git_setting_readback": "UNKNOWN"
+    },
+    "main_git_guard": {
+      "baseline_main_sha": "c79659046cf6ea73ba69e03c3937d904c07ba93b",
+      "source_config": "vercel.json git.deploymentEnabled.main=false",
+      "source_guard": "PASS",
+      "provider_readback": "UNKNOWN; connected project projection omits git configuration",
+      "provider_deployment_and_alias_state": "No Production deployment or canonical alias for baseline main SHA observed in the fresh read-only provider results"
+    }
+  },
+  "official_documentation": {
+    "project_get_schema": "https://vercel.com/docs/rest-api/projects/find-a-project-by-id-or-name",
+    "trusted_sources_semantics": "https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/trusted-sources",
+    "git_deployment_enabled": "https://vercel.com/docs/project-configuration/git-configuration",
+    "rbac_access_roles": "https://vercel.com/docs/rbac/access-roles",
+    "rbac_extended_permissions": "https://vercel.com/docs/rbac/access-roles/extended-permissions",
+    "rbac_project_roles": "https://vercel.com/docs/rbac/access-roles/project-level-roles",
+    "rbac_access_groups": "https://vercel.com/docs/rbac/access-groups",
+    "access_token_scopes": "https://vercel.com/docs/accounts/access-tokens"
+  },
+  "not_self_certified_for_production": true
+}

@@ -1,0 +1,22 @@
+{
+  "diagnostic_only": true,
+  "ci_source_confirmation_pending": true,
+  "ci_execution_source_map_reconciled_by_independent_review": true,
+  "source_observation_note": "Historical Linux runtime/tree/audit with the post-fix independently reviewed source map; exact post-fix CI is still required.",
+  "rawAuditResult": "FAIL",
+  "p4AcceptanceResult": "FAIL",
+  "manifestSha256": "sha256:0287eda8ee977a18a7058b52b1e863826fcaa930f24316a713be2e8250020dad",
+  "auditSha256": "sha256:5692d1f55776c14036dbbf7bb3e1a3d6d48d2cdb130309853fb0b4d8b4f087e5",
+  "inventorySha256": "sha256:8ae91aa36cdd65090032a58fff2c6d84e238b161070e977c50211b6c524f65ba",
+  "counts": {
+    "info": 0,
+    "low": 0,
+    "moderate": 8,
+    "high": 24,
+    "critical": 1,
+    "total": 33
+  },
+  "failureCodes": [
+    "CONCRETE_OWNER_APPROVAL_MISSING_EXPIRED_OR_MISMATCHED"
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "main": {
+    "sha": "c79659046cf6ea73ba69e03c3937d904c07ba93b"
+  },
+  "pr": {
+    "baseRefName": "main",
+    "headRefName": "codex/p4-authorized-production",
+    "headRefOid": "18be78556ff9d0dc17fb714e0331c40dca83fe70",
+    "state": "OPEN",
+    "url": "https://github.com/markd3ng/KIRARI/pull/133"
+  },
+  "issues": [
+    {
+      "number": 99,
+      "projectItems": [
+        {
+          "status": {
+            "optionId": "bfd7f099",
+            "name": "Blocked"
+          },
+          "title": "KIRARI \u2014 Development & Security"
+        }
+      ],
+      "state": "OPEN",
+      "url": "https://github.com/markd3ng/KIRARI/issues/99"
+    },
+    {
+      "number": 129,
+      "projectItems": [
+        {
+          "status": {
+            "optionId": "07196ee1",
+            "name": "In Review"
+          },
+          "title": "KIRARI \u2014 Development & Security"
+        }
+      ],
+      "state": "OPEN",
+      "url": "https://github.com/markd3ng/KIRARI/issues/129"
+    },
+    {
+      "number": 130,
+      "projectItems": [
+        {
+          "status": {
+            "optionId": "bfd7f099",
+            "name": "Blocked"
+          },
+          "title": "KIRARI \u2014 Development & Security"
+        }
+      ],
+      "state": "OPEN",
+      "url": "https://github.com/markd3ng/KIRARI/issues/130"
+    },
+    {
+      "number": 131,
+      "projectItems": [
+        {
+          "status": {
+            "optionId": "07196ee1",
+            "name": "In Review"
+          },
+          "title": "KIRARI \u2014 Development & Security"
+        }
+      ],
+      "state": "OPEN",
+      "url": "https://github.com/markd3ng/KIRARI/issues/131"
+    },
+    {
+      "number": 132,
+      "projectItems": [
+        {
+          "status": {
+            "optionId": "07196ee1",
+            "name": "In Review"
+          },
+          "title": "KIRARI \u2014 Development & Security"
+        }
+      ],
+      "state": "OPEN",
+      "url": "https://github.com/markd3ng/KIRARI/issues/132"
+    }
+  ],
+  "latest_audit": "https://github.com/markd3ng/KIRARI/issues/99#issuecomment-5987257066",
+  "production_write_authorized": false
+}

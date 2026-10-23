@@ -1,0 +1,7 @@
+{
+  "endpoint": "GET /v1/access-groups?teamId=team_NsBZHGUVnyygP7veiROKLuUx",
+  "status": 403,
+  "groups_proven_empty": false,
+  "documented_entitlement": "Enterprise only",
+  "source": "https://vercel.com/docs/rbac/access-groups"
+}
