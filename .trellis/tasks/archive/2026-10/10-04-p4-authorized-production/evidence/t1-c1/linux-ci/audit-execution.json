@@ -1,0 +1,8 @@
+{
+  "plain_command": "npm audit --prefix scripts/p4-production/tooling --audit-level moderate",
+  "json_command": "npm audit --prefix scripts/p4-production/tooling --audit-level moderate --json",
+  "plain_executed": true,
+  "json_executed": true,
+  "plain_exit_code": 1,
+  "json_exit_code": 1
+}

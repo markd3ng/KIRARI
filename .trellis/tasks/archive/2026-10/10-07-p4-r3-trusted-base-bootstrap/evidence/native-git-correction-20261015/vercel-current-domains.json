@@ -1,0 +1,21 @@
+{
+  "started_at": "2026-10-15T01:57:24.707Z",
+  "completed_at": "2026-10-15T01:57:26.266Z",
+  "endpoint": "https://api.vercel.com/v9/projects/prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk/domains?teamId=team_NsBZHGUVnyygP7veiROKLuUx&limit=100",
+  "method": "GET",
+  "exit": 0,
+  "domains": [
+    {
+      "name": "kirari-main.vercel.app",
+      "verified": true,
+      "gitBranch": null,
+      "customEnvironmentId": null,
+      "redirect": null
+    }
+  ],
+  "pagination": {
+    "count": 1,
+    "next": null,
+    "prev": 1773294622353
+  }
+}

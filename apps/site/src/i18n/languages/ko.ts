@@ -52,4 +52,11 @@ export const ko: Translation = {
 	[Key.publishedAt]: "게시일",
 	[Key.lastUpdatedAt]: "마지막 업데이트",
 	[Key.license]: "라이선스",
+	[Key.privacySettings]: "개인정보 설정",
+	[Key.privacySettingsDescription]: "사이트 운영자가 기능을 켜면 방문 통계와 광고는 기본 허용됩니다. 여기에서 각각 끌 수 있으며 선택 사항은 이 브라우저에 저장됩니다.",
+	[Key.analytics]: "방문 통계",
+	[Key.advertising]: "광고",
+	[Key.privacySave]: "설정 저장",
+	[Key.privacyCancel]: "취소",
+	[Key.privacySaveError]: "선택 사항을 저장하지 못했습니다. 이 사이트의 로컬 저장소 사용을 허용한 뒤 다시 시도하세요.",
 };

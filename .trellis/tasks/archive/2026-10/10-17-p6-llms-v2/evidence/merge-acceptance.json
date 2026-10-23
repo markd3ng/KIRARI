@@ -1,0 +1,164 @@
+{
+  "acceptedAt": "2026-10-17T16:20:30.881Z",
+  "timezone": "Asia/Shanghai",
+  "authorization": "Owner approved ordered Squash Merges PR150/151 and all final GitHub closeout commits.",
+  "merges": [
+    {
+      "pr": 150,
+      "sourceHead": "c10a65650d70a44107f525141f62ad9b06ca63eb",
+      "mergeSha": "2bc7736552b61f15a883c12985221d161f189b3e",
+      "mainCi": 39018393304,
+      "result": "PASS"
+    },
+    {
+      "pr": 151,
+      "sourceHead": "f72d50b93c45d5f7cc435b81d472cf7215a6fed5",
+      "mergeSha": "219bd26fa6024876fc8a1ba9b334936d04b844e3",
+      "mainCi": 39018555825,
+      "result": "PASS"
+    }
+  ],
+  "integratedTree": "153c16d56463bfa2180e6337cb6416052c428700",
+  "mainCi": {
+    "head": "219bd26fa6024876fc8a1ba9b334936d04b844e3",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "browser-fixtures",
+        "conclusion": "success"
+      },
+      {
+        "name": "dependency-audit",
+        "conclusion": "success"
+      },
+      {
+        "name": "verify",
+        "conclusion": "success"
+      },
+      {
+        "name": "site-browser-validation",
+        "conclusion": "success"
+      },
+      {
+        "name": "composition",
+        "conclusion": "skipped"
+      }
+    ]
+  },
+  "production": {
+    "checkedAt": "2026-10-17T16:20:30.881Z",
+    "id": "dpl_94C71SsSMFinNfAUr2hYnxxcdBgU",
+    "state": "READY",
+    "target": "production",
+    "sha": "219bd26fa6024876fc8a1ba9b334936d04b844e3",
+    "branch": "main",
+    "repo": "KIRARI",
+    "owner": "markd3ng",
+    "project": "prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk",
+    "alias": "kirari-main.vercel.app"
+  },
+  "browser": {
+    "commit": "219bd26fa6024876fc8a1ba9b334936d04b844e3",
+    "home": 200,
+    "securityHeaders": {
+      "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://analytics.umami.is https://plausible.io https://www.clarity.ms https://scripts.simpleanalyticscdn.com https://www.google.com https://cse.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.google.com https://www.gstatic.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.github.com https://github.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://*.clarity.ms https://*.algolia.net https://*.algolianet.com https://api.indexnow.org https://indexing.googleapis.com https://api.bgm.tv; frame-src https://www.google.com https://cse.google.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "x-frame-options": "DENY",
+      "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+    },
+    "platformHsts": {
+      "url": "https://kirari-main.vercel.app/",
+      "status": 200,
+      "hsts": "max-age=63072000; includeSubDomains; preload",
+      "source": "fresh read-only Vercel connector raw HTTP fetch",
+      "commitConfirmed": true
+    },
+    "robots": 200,
+    "full": {
+      "status": 200,
+      "cacheControl": "no-store",
+      "bytes": 209042
+    },
+    "retired": 404,
+    "assets": [
+      {
+        "url": "https://kirari-main.vercel.app/_astro/ClientRouter.astro_astro_type_script_index_0_lang.BSGeYvm2.js",
+        "status": 200
+      },
+      {
+        "url": "https://kirari-main.vercel.app/_astro/Layout.DN277Tmi.css",
+        "status": 200
+      },
+      {
+        "url": "https://kirari-main.vercel.app/_astro/photoswipe.pe3E5Za-.css",
+        "status": 200
+      }
+    ],
+    "english": {
+      "canonical": "https://kirari-main.vercel.app/posts/mapping-test/",
+      "markdown": "https://kirari-main.vercel.app/posts/mapping-test/index.md",
+      "index": "https://kirari-main.vercel.app/llms.txt",
+      "status": 200,
+      "type": "text/markdown; charset=utf-8",
+      "indexStatus": 200
+    },
+    "spec": {
+      "url": "https://kirari-main.vercel.app/about/index.md",
+      "status": 200
+    },
+    "localized": {
+      "canonical": "https://kirari-main.vercel.app/zh-CN/posts/mermaid-test/",
+      "markdown": "https://kirari-main.vercel.app/zh-CN/posts/mermaid-test/index.md",
+      "index": "https://kirari-main.vercel.app/zh-CN/llms.txt",
+      "status": 200,
+      "indexStatus": 200,
+      "diagramSource": true
+    },
+    "search": {
+      "url": "https://kirari-main.vercel.app/search?q=Mermaid",
+      "status": "1 result(s).",
+      "results": [
+        {
+          "url": "https://kirari-main.vercel.app/posts/markdown/",
+          "title": "Markdown Examplethe left side). Here’s a code sample: 1. # Let <mark>me</mark> re-iterate ... 2. for i in 1 .. 10"
+        }
+      ]
+    },
+    "sitemap": {
+      "status": 200,
+      "children": [
+        {
+          "url": "https://kirari-main.vercel.app/sitemap-0.xml",
+          "status": 200
+        }
+      ]
+    },
+    "result": "PASS",
+    "finishedAt": "2026-10-17T16:20:15.171Z",
+    "searchNote": "Mermaid returns the indexed English Markdown Example; Chinese-only mermaid-test is not an English result. Prior wait used the wrong expected URL."
+  },
+  "independentReview": {
+    "result": "PASS",
+    "exactSourceHead": "f72d50b93c45d5f7cc435b81d472cf7215a6fed5",
+    "integratedTreeMatchesApprovedUnion": true,
+    "treeEntries": 914,
+    "makersFocusedTests": 22,
+    "ocrThreadsClassifiedRepliedResolved": 9
+  },
+  "p5": "8/8 accepted",
+  "p6": "ACCEPTED",
+  "retained": "llms-full.txt remains public; no-store/robots are mitigations, not access control.",
+  "next": {
+    "issue": 100,
+    "phase": "P7",
+    "implementation": "NOT_STARTED",
+    "providerEnablement": "Owner decision required before enabling external services."
+  },
+  "operationalLimits": [
+    "Native Windows execution not performed.",
+    "Live Cloudflare Zone cache, Vercel Runtime Cache retention and Makers runtime deployment not performed."
+  ],
+  "manualDeploymentPerformed": false,
+  "providerConfigurationOrCredentialsChanged": false
+}

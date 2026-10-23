@@ -14,13 +14,19 @@ pnpm site:astro-check
 pnpm edge:type-check
 pnpm edge:test
 pnpm build
-pnpm audit --audit-level moderate
 git diff --check
 ```
 
 Run focused checks while iterating, then the affected full-scope checks before
 completion. CI also runs site QA, edge dry deploy, generated Vercel config
-verification, and release regression/version checks.
+verification, and release regression/version checks. These engineering and
+deployment-policy checks remain blocking.
+
+Run `pnpm audit --audit-level moderate` for dependency information. CI runs it
+in a separate non-blocking job and retains the moderate-level human report,
+full `pnpm audit --json` inventory (all severities), exit statuses and service errors. Do not suppress advisories or require custom exceptions, App
+checks, consumption decisions or final-admission gates. Use compatible upstream
+patches when available; leave unsupported upgrades out of scope.
 
 ## Commits And Changelog
 
@@ -43,9 +49,27 @@ Documentation sync is blocking when a change alters a documented contract:
 | Astro/Svelte dependency | `README.md` tech stack |
 | Transition lifecycle | `.trellis/spec/site/frontend/hook-guidelines.md` and affected user docs |
 | Build/materialization pipeline | `.trellis/spec/site/frontend/quality-guidelines.md` and README build section |
+| External Site build POC | Site quality contract, `site-profile` lifecycle/quality specs, README/README_CN, DEPLOY, and SECURITY_MODEL |
 | Head/Footer snippet trust boundary | `SECURITY_MODEL.md`, snippet docs, and component/type-safety specs |
 | Search/SEO provider | Profile TOML, `README.md`, `README_CN.md`, `SECURITY_MODEL.md`, and site state/quality specs |
 | Package boundary or generated ownership | Relevant package specs and architecture/profile docs |
 
 Do not update documentation mechanically when behavior did not change. Do not
 leave a changed public or security contract documented only in source comments.
+
+## Hosting Architecture
+
+KIRARI uses the hosting provider's native deployment mechanism. GitHub Actions
+validates source and produces optional portable artifacts, but does not duplicate
+the provider's native release controller. Vercel uses native feature Preview and
+main Production Git builds; preserve source checks and advisory OCR independently
+of Production credentials. Core/Site pins/config refs/export/provenance stay product
+contracts. Optional Gateway adapters are independent application work.
+
+Do not restore per-release C1/OIDC approval bindings, raw Trusted Sources admission,
+or custom stage/promote pipelines without a new Owner architecture decision.
+This does not prohibit normal security controls/signing/provenance or provider-native
+GitHub Pages Actions for a separately chosen host. The correction PR's merge may
+publish Production and requires the separate Owner cutover decision. Actual public
+Production serving and browser evidence are required before P4 completion or
+opt-in indexing; CI/build success alone is insufficient.

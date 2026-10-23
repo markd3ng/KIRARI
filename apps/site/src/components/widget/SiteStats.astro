@@ -1,5 +1,6 @@
 ---
 import { widgetsConfig } from "../../config";
+import { getBuildDate } from "../../utils/build-clock.mjs";
 import { getCategoryList, getSortedPosts, getTagList } from "../../utils/content-utils";
 import WidgetLayout from "./WidgetLayout.astro";
 
@@ -31,11 +32,12 @@ const latestActivity = posts.reduce<Date | null>((latest, post) => {
 	return !latest || current > latest ? current : latest;
 }, null);
 const startDate = new Date(config.siteStartDate);
+const buildTime = getBuildDate().getTime();
 const runningDays = Number.isNaN(startDate.getTime())
 	? 0
-	: Math.max(0, Math.ceil((Date.now() - startDate.getTime()) / 86400000));
+	: Math.max(0, Math.ceil((buildTime - startDate.getTime()) / 86400000));
 const daysSinceUpdate = latestActivity
-	? Math.max(0, Math.floor((Date.now() - latestActivity.getTime()) / 86400000))
+	? Math.max(0, Math.floor((buildTime - latestActivity.getTime()) / 86400000))
 	: 0;
 const stats = [
 	["Posts", posts.length.toLocaleString()],

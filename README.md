@@ -11,7 +11,7 @@
 
 # KIRARI
 
-Static blog theme — Astro 6.4.8 + Svelte 5 + Tailwind CSS v4. Single TOML config file. Targets Cloudflare Pages, Vercel, Netlify, EdgeOne Pages.
+Static blog theme — Astro 7.3.5 + Svelte 5 + Tailwind CSS v4. Single TOML config file. Targets Cloudflare Pages, Vercel, Netlify, EdgeOne Pages.
 
 ## Architecture
 
@@ -28,7 +28,7 @@ for normal site settings; builds materialize it into `apps/site/kirari.config.to
 Environment variables are reserved for secrets, deployment overrides, and provider
 credentials that should not be committed.
 
-**Islands**: Only 3 Svelte components hydrate on the client — Search (`client:idle`), Theme Toggle (`client:idle`), Display Settings (`client:only="svelte"`). Everything else is static `.astro`.
+**Client islands (6)**: `Search` (`client:idle`, Navbar when search is enabled), `LightDarkSwitch` (`client:idle`), `DisplaySettings` (`client:only="svelte"`), `PrivacySettings` (`client:load`, Footer), `DevicesFilter` (`client:load`, `/devices/` and `/{lang}/devices/`), and `SharePoster` (`client:load`, post pages with a share URL). Other `.astro` components are static.
 
 **Transitions**: `TransitionManager` singleton (see `src/utils/transition-manager.ts`) wraps a dual-path strategy:
 
@@ -67,7 +67,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 |---|---|
 | materialize | `functions/ghc/` or `api/ghc/` (only when `githubCard.adapter.enabled`; Cloudflare output is written to the deployment root, including `apps/site` monorepos) |
 | astro build | `dist/` (SSG) |
-| postbuild | `_headers`, `_redirects`, `robots.txt`, Pagefind index, `llms.txt`, IndexNow submit |
+| postbuild | `_headers`, `_redirects`, `robots.txt`, Pagefind index, LLM files, optional public IndexNow verification file; no indexing submissions |
 
 **Performance invariants**:
 
@@ -84,22 +84,22 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 
 | Category | Package | Version |
 |---|---|---|
-| Framework | astro | 6.4.8 |
-| Islands | svelte | ^5.56.3 |
-| CSS | tailwindcss, @tailwindcss/vite, stylus | ^4.3.0, ^0.64.0 |
-| Search | pagefind (default), @docsearch/js (Algolia) | ^1.5.2, ^4.6.3 |
-| Code highlight | astro-expressive-code + 4 plugins | ^0.43.1 |
-| Math | remark-math, rehype-katex, katex | ^0.16.47 |
-| Diagrams | mermaid (client-side) | ^11.15.0 |
-| Icons | astro-icon, @iconify/svelte | — |
-| Transitions | Astro ClientRouter / swup fallback | ^4.9.0 |
-| Image viewer | photoswipe | ^5.4.4 |
-| Image processing | sharp | ^0.34.5 |
-| Scrollbar | overlayscrollbars | ^2.16.0 |
-| Content | @astrojs/mdx + remark/rehype chain | ^6.0.3 |
-| Feeds | @astrojs/rss, @astrojs/sitemap | — |
-| OG images | satori | ^0.26.0 |
-| Config | smol-toml | ^1.6.1 |
+| Framework | `astro` | `7.3.5` |
+| Islands | `svelte` | `^5.56.3` |
+| CSS | `tailwindcss`, `@tailwindcss/vite`, `stylus` | `^4.3.1`, `^4.3.1`, `^0.64.0` |
+| Search | `pagefind` (default), `@docsearch/js` (Algolia) | `^1.5.2`, `^4.6.3` |
+| Code highlight | `astro-expressive-code`, `@expressive-code/core`, `@expressive-code/plugin-collapsible-sections`, `@expressive-code/plugin-line-numbers` | `^0.44.1`, `^0.44.1`, `^0.44.1`, `^0.44.1` |
+| Math | `remark-math`, `rehype-katex`, `katex` | `^6.0.0`, `^7.0.1`, `^0.18.7` |
+| Diagrams | `mermaid` (client-side) | `^11.16.1` |
+| Icons | `astro-icon`, `@iconify/svelte` | `^1.2.0`, `^5.2.1` |
+| Transitions | Astro ClientRouter / `swup` fallback | `^4.9.0` |
+| Image viewer | `photoswipe` | `^5.4.4` |
+| Image processing | `sharp` | `^0.35.5` |
+| Scrollbar | `overlayscrollbars` | `^2.16.0` |
+| Content | `@astrojs/mdx` + remark/rehype chain | `^8.0.2` |
+| Feeds | `@astrojs/rss`, `@astrojs/sitemap` | `4.0.19`, `^3.7.3` |
+| OG images | `satori` | `^0.26.0` |
+| Config | `smol-toml` | `^1.9.0` |
 
 ## Deployment
 
@@ -117,6 +117,60 @@ pnpm build
 
 > pnpm ≥ 9.14.4 enforced via `packageManager` field.
 
+### External Site build modes
+
+`./build.sh --site /path/to/site` builds an external Site directory locally into
+`apps/site/dist`. The no-argument `./build.sh` and `pnpm build` continue to use
+`packages/site-profile`. Required files, types, JSON/TOML and symlinks are
+validated before materialization. Materialization stages mapped inputs and
+does not write to the original Site Source. See
+[`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md) for the input
+contract and security limits.
+
+P1 adds an immutable two-input artifact mode. Check out Core and Site revisions
+separately, then run from the Core checkout:
+
+```bash
+./build.sh --compose \
+  --core-ref <core-branch-tag-or-sha> \
+  --site /path/to/site-checkout/packages/site-profile \
+  --site-ref <site-branch-tag-or-sha> \
+  --artifact-dir /path/to/new-artifact
+```
+
+Install the Core dependencies with `pnpm install --frozen-lockfile` first.
+The command validates both revisions, then writes static output and
+`provenance.json` to the artifact directory. The manual GitHub Actions
+composition job uses the same entry point and uploads the output for 30 days.
+Git checkouts must have no staged, unstaged, or untracked changes. Composed
+build dates use UTC and the later selected input commit time (the Core time
+for a non-Git Site), which provenance records; ordinary builds keep the current
+runtime clock.
+Composed builds also isolate content caches and index search pages in a stable order.
+See the build guide for ref selection, schema/toolchain identity, diagnostics,
+and input-pair rebuild instructions.
+
+Vercel uses native Git deployment: reviewed feature PRs receive Preview deployments;
+merging into the configured Production branch `main` triggers Vercel's build and
+hosting. GitHub Actions runs source checks and produces optional portable artifacts.
+It does not upload or promote a separate Production artifact. Keep the Vercel root
+at the repository root, build with `pnpm build`, and serve `apps/site/dist`.
+See [Site Production](./docs/SITE_PRODUCTION.md) for deployment acceptance and recovery.
+
+Core/Site provenance describes build inputs and output; a native provider rebuild
+is not claimed to have the same bytes as a retained CI artifact. Dependency audits
+remain informational; ordinary build, test, typecheck and security checks remain.
+
+Both modes build static output only. They do not fetch or switch refs, commit,
+push, deploy, package Cloudflare Pages Functions, or submit IndexNow/Google
+indexing notifications. Site MDX and other build-time code are trusted inputs
+and can run with the invoking user's filesystem and network permissions. Snippets are
+also trusted owner code; their HTML/JavaScript is emitted into the site for
+browser execution. The build is not an OS sandbox. Do not build unreviewed Site
+input on a machine where build-time code could access sensitive files.
+It is a local build entry point, not the deployment workflow described in
+[DEPLOY.md](./DEPLOY.md).
+
 ## Fork Checklist
 
 Only edit files listed below. Do not modify program files under `apps/site/src/components/`,
@@ -126,11 +180,17 @@ Only edit files listed below. Do not modify program files under `apps/site/src/c
 |---|---|---|
 | `packages/site-profile/kirari.config.toml` | Set `site.url`, `site.title`, `profile.*`, `navBar.*`, `landingPage.*` | Yes |
 | `packages/site-profile/content/posts/` | Delete demo posts, add your `.md`/`.mdx` | Yes |
-| `packages/site-profile/content/spec/about.md` | Replace About content | Recommended |
+| `packages/site-profile/content/spec/{about,friends,projects}.md` | Replace the built-in pages | Recommended |
+| `packages/site-profile/data/friends.json` | Replace friend-link data (an empty array is valid) | Recommended |
+| `packages/site-profile/assets/images/` | Replace generic images, including demo avatar/banner | Recommended |
 | `packages/site-profile/assets/` | Replace favicon, OG images, and profile assets | Recommended |
-| `packages/site-profile/content/spec/friends.md` | Replace or remove Friends nav in config | Optional |
-| `packages/site-profile/content/spec/projects.md` | Replace GitHub project cards or remove Projects nav in config | Optional |
-| `packages/site-profile/data/friends.json` | Replace friend-link data | Optional |
+
+For `./build.sh --site`, the TOML, `content/spec/{about,friends,projects}.md`,
+`data/friends.json`, `assets/images/` (with `demo-avatar.png` and
+`demo-banner.png`), all eight favicon files, and `assets/og/default.png` are
+required. Posts, devices data/images, snippets, and `ads.txt` are optional;
+missing optional directories materialize empty so prior content cannot leak
+into the build.
 
 Validation:
 
@@ -143,6 +203,10 @@ pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```
+
+Dependency audit is informational: CI preserves its raw report without blocking
+build, test, typecheck, QA or deployment-policy results. Apply compatible upstream
+fixes when available; unresolved upstream advisories do not require custom exceptions.
 
 ## Configuration
 
@@ -393,11 +457,11 @@ server = "https://www.plantuml.com/plantuml"
 theme = "kirari" # kirari | github | vitepress | obsidian
 ```
 
-Mermaid fenced code blocks are auto-detected by the Markdown pipeline when Mermaid is enabled. PlantUML is optional and off by default.
+Mermaid renders only when both `[mermaid].enable` and the post frontmatter `mermaid: true` are enabled (post default: false). Disabled or invalid diagrams retain readable source. Rendering follows Astro navigation and light/dark theme changes. PlantUML is optional and off by default.
 
 ### Analytics
 
-Master switch: `analytics.enable`. Scripts load only when `true && PROD`.
+Master switch: `analytics.enable`. Provider scripts load in a production build only when this switch is enabled and the visitor's Analytics setting allows them. A visitor's first visit allows configured categories by default; the footer's **Privacy settings** control saves independent Analytics and Advertising choices in that browser. Turning a category off saves the choice and reloads the page so its scripts are not initialized again.
 
 | Provider | Config key | ENV override |
 |---|---|---|
@@ -406,11 +470,33 @@ Master switch: `analytics.enable`. Scripts load only when `true && PROD`.
 | Plausible | `analytics.plausible.domain` | `PUBLIC_PLAUSIBLE_DOMAIN` |
 | Microsoft Clarity | `analytics.clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` |
 | Fathom | `analytics.fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
-| Simple Analytics | `analytics.simpleAnalyticsDomain` | — |
+| Simple Analytics | `analytics.simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
 | Matomo | `analytics.matomo.siteId` + `src` | `PUBLIC_MATOMO_SITE_ID`, `PUBLIC_MATOMO_SRC` |
 | Amplitude | `analytics.amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
 
 Umami, Plausible, Matomo support optional `integrity` (SRI) for pinned scripts.
+The renderer and static CSP generators resolve the same `PUBLIC_*` analytics overrides.
+When changing provider settings, regenerate `vercel.json` with `node apps/site/scripts/generate-vercel-config.mjs` using the same build environment; Pages `_headers` is generated during postbuild. Disabled analytics adds no provider origins beyond the existing baseline. See the [provider origin matrix](./SECURITY_MODEL.md#analytics-provider-sources).
+KIRARI tracks SPA page views deliberately for GA4, Matomo, and Amplitude; Umami, Plausible, Clarity, Fathom, and Simple Analytics use their documented browser behavior. For GA4, disable Enhanced Measurement's browser-history page views in the Analytics property to avoid duplicate SPA events; this property-level setting must be verified separately.
+
+Leave `analytics.googleAnalyticsId` unset until a real GA4 measurement ID is available. `G-REPLACE_WITH_REAL_MEASUREMENT_ID` is a documentation placeholder only; replace it before enabling Analytics.
+
+### Advertising
+
+Advertising is off by default. Set `[ads].enable = true` only after filling in a valid AdSense publisher ID and named slot ID. Content ads render at the bottom of articles. Google Programmable Search ads additionally require `[search.google].adsense = true`. Both forms require the visitor's Advertising setting and a Vercel Production build (`VERCEL_ENV=production`); local and Preview builds do not render AdSense slots or enable AdSense search mode.
+
+```toml
+[ads]
+enable = false
+publisherId = "ca-pub-REPLACE_WITH_REAL_PUBLISHER_ID"
+
+[ads.slots]
+articleBottom = "REPLACE_WITH_REAL_SLOT_ID"
+```
+
+The IDs above are placeholders, not working AdSense configuration. Replace both with the real publisher and slot IDs before setting `enable = true`.
+
+Equivalent build-time overrides are `PUBLIC_ADS_ENABLE`, `PUBLIC_ADS_PUBLISHER_ID`, and `PUBLIC_ADS_SLOT_ARTICLE_BOTTOM`. The publisher and slot IDs are public identifiers, not secrets. AdSense's supported CSP setup uses a per-response nonce; KIRARI's static-host policy uses a bounded host allowlist, so verify ad delivery against the actual Production policy before enabling paid inventory. See [security notes](./SECURITY_MODEL.md#visitor-privacy-and-ads).
 
 ### Landing Page
 
@@ -442,7 +528,7 @@ route = "/ghc"
 serviceBinding = "GHCARD_CACHE"
 ```
 
-- **Cloudflare Pages**: Deploy the monorepo Edge Worker in `workers/kirari-edge` with `KIRARI_GITHUB_TOKEN` as an optional Worker Secret. Set `serviceBinding` to the binding name.
+- **Cloudflare Pages**: The optional Worker exposes the named `/_kirari/edge/*` Gateway. The existing `/ghc` Site adapter remains a legacy compatibility path until the Site integration in #98 is updated, and it no longer receives the Worker token. Core token use requires both the `KIRARI_GITHUB_TOKEN` Worker Secret and a comma-separated `KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES` allowlist of public repositories. See [Worker routing and cache setup](docs/WORKERS.md).
 - **Vercel**: Set `GITHUB_TOKEN` in Project Environment Variables. Set `GHC_ALLOWED_ORIGINS` to a comma-separated list of exact origins allowed to call the adapter. When empty, browser Origin requests are not granted CORS; same-origin/no-Origin server requests still work without `Access-Control-Allow-Origin`.
 
 ### SEO
@@ -453,14 +539,18 @@ serviceBinding = "GHCARD_CACHE"
 | Robots.txt | Generated in postbuild from `site.url` |
 | Canonical + hreflang | Per-page, auto-derived |
 | Search verification | `head.verification.{google,bing,yandex,naver}` |
-| IndexNow | `seo.indexNow = true` → submits to participating engines on every build |
-| Google indexing | `seo.google.indexingApi = true` → optional advanced Google Indexing API submit |
+| IndexNow | Enabled for the Owner-approved KIRARI profile; notifications also require GitHub Actions variable `KIRARI_INDEXNOW_ENABLED=true` and verified native Production |
+| Google indexing | Disabled; no notifications are sent until eligible content and an Owner decision are established |
 
-IndexNow covers participating engines such as Bing, Yandex, Naver, Seznam.cz, and Yep. Google does not support IndexNow; use sitemap/Search Console, or the optional Google Indexing API for eligible content. The IndexNow key is a public verification key served at `/{key}.txt`; do not reuse passwords, tokens, or other private secrets as the key. Google Indexing API is mainly intended for JobPosting and BroadcastEvent URLs, so ordinary blog pages are not guaranteed to benefit.
+IndexNow covers participating engines such as Bing, Yandex, Naver, Seznam.cz, and Yep. Google does not support IndexNow. The IndexNow key is public and served at `/{key}.txt`; do not reuse passwords, tokens, or other private secrets as the key. The current post-deploy flow uses only IndexNow. Google submissions remain off until the Owner approves eligible content; Google documents the Indexing API for pages with `JobPosting` or `BroadcastEvent` embedded in `VideoObject`, so ordinary blog pages are excluded.
 
 ### LLMs.txt
 
-Postbuild generates `llms.txt`, `llms-small.txt`, `llms-full.txt`. With `llms.i18n = true`, per-language files (`llms-en.txt`, `llms-zh.txt`) are also emitted. `llms-full.txt` is a public aggregation of page text with a 20,000-character cap per page; postbuild adds `Disallow: /llms-full.txt` to `robots.txt` and `Cache-Control: no-store` to deployment headers as mitigation, not access control.
+The `llms.txt` index follows the llmstxt.org community proposal. Published posts and selected About/Friends/Projects content have canonical `index.md` views next to their HTML routes. HTML advertises these with `alternate` (`text/markdown`) and the covering index with `describedby` (`text/plain`). Source AST processing preserves links, code, math, tables, footnotes and diagram fences. Supported MDX embeds/directives become static text or links; executable imports, expressions and unknown dynamic components are omitted with a visible fallback. Relative images use emitted assets, source-document links use published canonical routes, and unsupported local attachments fail the build rather than advertise missing files. Drafts and unselected source entries are not exported.
+
+With `llms.i18n = true`, prefixed language routes have covering `<language>/llms.txt` indexes; root `llms-<locale>.txt` files remain convenience indexes. Canonical base paths, nested post slugs and default-language subdirectory choices apply to the views and discovery. `llms.enable = false` disables view generation and discovery as well as the indexes. URL include/exclude patterns curate indexes; they are not a privacy control.
+
+Owner retains `llms-full.txt`, a public HTML-text aggregation with a 20,000-character cap per page. It remains separate from source-backed views. Postbuild adds a base-aware robots exclusion and `Cache-Control: no-store` to generated headers for it; these mitigate crawling/caching and provide no access control. Markdown views are excluded from the HTML sitemap, while the optional LLM sitemap entries retain the main index and full aggregation.
 
 ```toml
 [llms]
@@ -620,6 +710,10 @@ pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```
+
+Dependency audit is informational: CI preserves its raw report without blocking
+build, test, typecheck, QA or deployment-policy results. Apply compatible upstream
+fixes when available; unresolved upstream advisories do not require custom exceptions.
 
 CI must use `--frozen-lockfile`. `@astrojs/check` is devDependency only.
 

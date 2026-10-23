@@ -52,4 +52,11 @@ export const vi: Translation = {
 	[Key.publishedAt]: "Đăng vào lúc",
 	[Key.lastUpdatedAt]: "Cập nhật lần cuối vào",
 	[Key.license]: "Giấy phép bản quyền",
+	[Key.privacySettings]: "Cài đặt quyền riêng tư",
+	[Key.privacySettingsDescription]: "Khi được chủ trang web bật, công cụ phân tích và quảng cáo được cho phép theo mặc định. Bạn có thể tắt riêng từng mục tại đây; lựa chọn được lưu trong trình duyệt này.",
+	[Key.analytics]: "Phân tích truy cập",
+	[Key.advertising]: "Quảng cáo",
+	[Key.privacySave]: "Lưu cài đặt",
+	[Key.privacyCancel]: "Hủy",
+	[Key.privacySaveError]: "Không thể lưu lựa chọn. Hãy cho phép trang web này sử dụng bộ nhớ cục bộ rồi thử lại.",
 };

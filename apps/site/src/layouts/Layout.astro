@@ -3,8 +3,9 @@ import "../styles/fonts.css";
 
 import { ClientRouter } from "astro:transitions";
 import Analytics from "@components/Analytics.astro";
+import Ads from "@components/Ads.astro";
 import ConfigCarrier from "@components/ConfigCarrier.astro";
-import { analyticsConfig, fontsConfig, headConfig, ogConfig, profileConfig, searchConfig, siteConfig } from "@/config";
+import { adsConfig, analyticsConfig, fontsConfig, headConfig, llmsConfig, ogConfig, profileConfig, searchConfig, siteConfig } from "@/config";
 import {
 	AUTO_MODE,
 	BANNER_HEIGHT,
@@ -23,7 +24,9 @@ import { defaultFavicons } from "../constants/icon";
 import type { Favicon } from "../types/config";
 import type { AlternateLink } from "../utils/i18n-utils";
 import { getLangHomeUrl, getLanguageConfig, normalizeLangCode, toHreflang } from "../utils/i18n-utils";
+import { resolveSearchProvider } from "../utils/search-provider.mjs";
 import { pathsEqual, url } from "../utils/url-utils";
+import { resolveBuildCommit } from "../utils/build-commit";
 
 interface Props {
 	title?: string;
@@ -41,6 +44,7 @@ interface Props {
 	articleTags?: string[];
 	alternates?: AlternateLink[];
 	canonicalUrl?: string;
+	markdownUrl?: string;
 }
 
 let { 
@@ -54,6 +58,7 @@ let {
 	articleTags,
 	alternates = [],
 	canonicalUrl,
+	markdownUrl,
 } = Astro.props;
 
 // Resolve OG image URL
@@ -110,18 +115,10 @@ const siteDirection = languageConfig.direction === "auto" ? undefined : language
 const searchLang = toHreflang(pageLang);
 const absoluteUrl = (path: string) => new URL(path, Astro.site || Astro.url.origin).href;
 const canonicalHref = canonicalUrl ? absoluteUrl(canonicalUrl) : Astro.url.href;
+const llmsHref = absoluteUrl(`${llmsConfig.i18n ? getLangHomeUrl(pageLang) : url("/")}llms.txt`);
 const rssHref = absoluteUrl(getLangHomeUrl(pageLang).replace(/\/$/, "/rss.xml"));
 const xDefaultHref = absoluteUrl(getLangHomeUrl(Config.i18n.defaultLang));
-const activeSearchProvider =
-	searchConfig.provider === "docsearch" &&
-	!!searchConfig.docsearch.enable &&
-	!!searchConfig.docsearch.appId &&
-	!!searchConfig.docsearch.apiKey &&
-	!!searchConfig.docsearch.indexName
-		? "docsearch"
-		: searchConfig.provider === "google" && !!searchConfig.google.cx
-			? "google"
-			: "pagefind";
+const activeSearchProvider = resolveSearchProvider(searchConfig);
 const pagefindEnabled = activeSearchProvider === "pagefind";
 const docsearchMetaTags = Object.entries(searchConfig.docsearch.metaTags || {})
 	.filter(([key]) => key !== "language");
@@ -149,6 +146,8 @@ const bannerOffset = selectedBannerOffset.desktop;
 const bannerOffsetMobile = selectedBannerOffset.mobile;
 
 const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
+const shouldLoadAds = import.meta.env.PROD && process.env.VERCEL_ENV === "production" && adsConfig.enable;
+const buildCommit = resolveBuildCommit();
 ---
 
 
@@ -162,6 +161,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 		<title>{pageTitle}</title>
 
 		<meta charset="UTF-8" />
+		<meta name="kirari:build-commit" content={buildCommit.full} />
 		<meta name="title" content={pageTitle} />
 		<meta name="description" content={description || pageTitle}>
 		<meta name="author" content={profileConfig.name}>
@@ -171,6 +171,8 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 			<meta name={`docsearch:${key}`} content={value} />
 		))}
 		<link rel="canonical" href={canonicalHref} />
+			{llmsConfig.enable && <link rel="describedby" type="text/plain" href={llmsHref} />}
+			{llmsConfig.enable && markdownUrl && <link rel="alternate" type="text/markdown" href={absoluteUrl(markdownUrl)} />}
 		{alternates.map((alternate) => (
 			<link rel="alternate" hreflang={alternate.hreflang} href={absoluteUrl(alternate.url)} />
 		))}
@@ -355,6 +357,7 @@ const shouldLoadAnalytics = import.meta.env.PROD && !!analyticsConfig.enable;
 		)}
 		{/* Analytics - only loaded in production when enable is true */}
 		{shouldLoadAnalytics && <Analytics config={analyticsConfig} />}
+		{shouldLoadAds && <Ads config={adsConfig} />}
 
 
 		<link rel="alternate" type="application/rss+xml" title={`${profileConfig.name} (${siteLang})`} href={rssHref}/>

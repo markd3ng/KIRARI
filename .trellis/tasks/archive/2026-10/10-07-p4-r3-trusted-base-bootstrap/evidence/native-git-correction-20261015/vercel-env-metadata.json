@@ -1,0 +1,12 @@
+{
+  "started_at": "2026-10-15T01:57:05.359Z",
+  "completed_at": "2026-10-15T01:57:07.386Z",
+  "endpoint": "https://api.vercel.com/v10/projects/prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk/env?teamId=team_NsBZHGUVnyygP7veiROKLuUx&decrypt=false",
+  "method": "GET",
+  "authentication_source": "EXISTING_OWNER_CLI_SESSION",
+  "exit": 0,
+  "metadata_only": true,
+  "decryption_requested": false,
+  "envs": [],
+  "pagination": null
+}

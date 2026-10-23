@@ -1,0 +1,148 @@
+[
+  {
+    "command": [
+      "node",
+      "--test",
+      "scripts/tests/ci-profile-contract.test.mjs",
+      "scripts/tests/ci-composed-artifact-contract.test.mjs",
+      "scripts/tests/composed-build.test.mjs",
+      "scripts/tests/ocr-review-workflow-contract.test.mjs",
+      "scripts/tests/p3-browser-contract.test.mjs",
+      "scripts/tests/p3-browser-oidc.test.mjs",
+      "scripts/tests/p3-staging-workflow-contract.test.mjs",
+      "scripts/tests/vercel-preview-deployment.test.mjs"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:e50d78317876da18febebc020fa02f1905064baf65fff7020283d5bff206c6f0"
+  },
+  {
+    "command": [
+      "node",
+      "apps/site/scripts/materialize-profile.mjs"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:8225fc8313cd40f302a1dc4ae6cf0c31d95e63dcc8be166726263889ff8275fb"
+  },
+  {
+    "command": [
+      "pnpm",
+      "profile:check"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:f0f37130d870285cfd51e38fe1a90dc592d3674a77d6e0d7046c45ff58b80445"
+  },
+  {
+    "command": [
+      "pnpm",
+      "site:test"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:97ceccd83d0c2815d18fc96fd02bc6a6615f2b0e5fe7c17d03c59485e9b797c3"
+  },
+  {
+    "command": [
+      "pnpm",
+      "site:contract:test"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:94425c9b1e9a76777a264a8ff7e55ba37bf0bd13419763a3af04d56be88b9029"
+  },
+  {
+    "command": [
+      "pnpm",
+      "trellis:check"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:f5a423c363fa41ca40c3d9540b08040ea446f1a07bea6a753fcd28de74147273"
+  },
+  {
+    "command": [
+      "node",
+      "apps/site/scripts/qa-regression-check.mjs"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:b64dcda0019fb9e919d5c0852787246850b9f9375cd8118107bc9e38738ecb25"
+  },
+  {
+    "command": [
+      "pnpm",
+      "site:type-check"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:d71677b8ba696d7640a0b149a0a0aa24364d53e1134c93eca7fba9b0f9c8c455"
+  },
+  {
+    "command": [
+      "pnpm",
+      "site:astro-check"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:9354e8b2e0c97a2e8c9fab91bff558c1871fa41c8ef949e4ab7aefc10483dc7c"
+  },
+  {
+    "command": [
+      "pnpm",
+      "edge:type-check"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:c117117f1b1a82c55282a912a52483059411b036cc6da04fc9fe68a44a768672"
+  },
+  {
+    "command": [
+      "pnpm",
+      "edge:test"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:5cfbe77ca1963f25900df2a54df62469b725a981fdd5f51f933c20b9b4efa912"
+  },
+  {
+    "command": [
+      "pnpm",
+      "edge:deploy:dry"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:03302387a10ed8e33b38fd88e2cb6b677d63ef261a2bb4b5a5c89d7518333170"
+  },
+  {
+    "command": [
+      "node",
+      "apps/site/scripts/generate-vercel-config.mjs",
+      "--check"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "command": [
+      "pnpm",
+      "build"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:8d600300ef4d6d39e56e613356a26fc73bfd08de4091463798e5dbf935c172bb"
+  },
+  {
+    "command": [
+      "pnpm",
+      "release:check"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:02d905f61dc65f755f1b943f30b9193ba921f7254f0763fe407b70576c2f302d"
+  },
+  {
+    "command": [
+      "pnpm",
+      "release:version-check"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:7f87c294aa75758f1883861950fec0f11197285187429ee400cd94782200e929"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "local_log_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

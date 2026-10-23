@@ -1,0 +1,50 @@
+{
+  "captured_at": "2026-10-12T02:56:33.586289+00:00",
+  "credential_source": "EXISTING_NORMAL_VERCEL_CLI_LOGIN_NOT_PRODUCTION_PAT",
+  "production_token_created": false,
+  "token_value_retained": false,
+  "requests": [
+    {
+      "endpoint": "/v2/user",
+      "status": 403,
+      "error_code": "forbidden",
+      "usable_control_plane_readback": false
+    },
+    {
+      "endpoint": "/v2/teams/team_NsBZHGUVnyygP7veiROKLuUx",
+      "status": 403,
+      "error_code": "forbidden",
+      "usable_control_plane_readback": false
+    },
+    {
+      "endpoint": "/v6/user/tokens",
+      "status": 403,
+      "error_code": "forbidden",
+      "usable_control_plane_readback": false
+    },
+    {
+      "endpoint": "/v5/user/tokens/current",
+      "status": 403,
+      "error_code": "forbidden",
+      "usable_control_plane_readback": false
+    },
+    {
+      "endpoint": "/v10/projects?limit=100",
+      "status": 403,
+      "error_code": "forbidden",
+      "usable_control_plane_readback": false
+    },
+    {
+      "endpoint": "/v9/projects/prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk?teamId=team_NsBZHGUVnyygP7veiROKLuUx",
+      "status": 403,
+      "error_code": "forbidden",
+      "usable_control_plane_readback": false
+    },
+    {
+      "endpoint": "/v1/access-groups?teamId=team_NsBZHGUVnyygP7veiROKLuUx&limit=1",
+      "status": 403,
+      "error_code": "forbidden",
+      "usable_control_plane_readback": false
+    }
+  ]
+}

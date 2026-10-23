@@ -1,3 +1,6 @@
+import { DEFAULT_ROUTE_PREFIX } from "@kirari/edge-gateway-core";
+import { createCloudflareGatewayHandler, type CloudflareGatewayEnv } from "./cloudflare-gateway.ts";
+
 /**
  * KIRARI Edge worker entry point.
  *
@@ -5,13 +8,12 @@
  * All features default to disabled — the worker is inert until explicitly enabled.
  */
 
-export interface Env {
+export interface Env extends CloudflareGatewayEnv {
 	KIRARI_EDGE_ENABLED?: string;
 	KIRARI_GHCARD_ENABLED?: string;
 	KIRARI_AVATAR_PROXY_ENABLED?: string;
 	KIRARI_BANGUMI_API_PROXY_ENABLED?: string;
 	KIRARI_BANGUMI_IMAGE_PROXY_ENABLED?: string;
-	KIRARI_GITHUB_TOKEN?: string;
 }
 
 const ALLOWED_METHODS = "GET, HEAD, OPTIONS";
@@ -30,6 +32,53 @@ const CORS_HEADERS = {
 	"Access-Control-Max-Age": "86400",
 };
 
+type ProxyRouteName = "github" | "avatar" | "bangumi-api" | "bangumi-image";
+type ProxyRouteConfig = {
+	name: ProxyRouteName;
+	flag: keyof Env;
+	prefix: string;
+	origin: string;
+	cacheControl: string;
+	configureHeaders?: (headers: Headers, request: Request) => void;
+};
+
+const PROXY_ROUTES: ProxyRouteConfig[] = [
+	{
+		name: "github",
+		flag: "KIRARI_GHCARD_ENABLED",
+		prefix: "/api/github",
+		origin: "https://api.github.com",
+		cacheControl: "public, max-age=300, stale-while-revalidate=3600",
+		configureHeaders(headers, request) {
+			// This legacy suffix proxy stays anonymous; only named Gateway
+			// operations can attach a token under the public-repository allowlist.
+			headers.set("Accept", request.headers.get("accept") || "application/vnd.github+json");
+			headers.set("X-GitHub-Api-Version", "2022-11-28");
+		},
+	},
+	{
+		name: "avatar",
+		flag: "KIRARI_AVATAR_PROXY_ENABLED",
+		prefix: "/avatar",
+		origin: "https://cravatar.cn",
+		cacheControl: "public, max-age=86400, stale-while-revalidate=604800",
+	},
+	{
+		name: "bangumi-api",
+		flag: "KIRARI_BANGUMI_API_PROXY_ENABLED",
+		prefix: "/api/bangumi",
+		origin: "https://api.bgm.tv",
+		cacheControl: "public, max-age=300, stale-while-revalidate=3600",
+	},
+	{
+		name: "bangumi-image",
+		flag: "KIRARI_BANGUMI_IMAGE_PROXY_ENABLED",
+		prefix: "/images/bangumi",
+		origin: "https://lain.bgm.tv",
+		cacheControl: "public, max-age=86400, stale-while-revalidate=604800",
+	},
+];
+
 export default {
 	async fetch(request: Request, env: Env): Promise<Response> {
 		if (env.KIRARI_EDGE_ENABLED !== "true") {
@@ -37,6 +86,42 @@ export default {
 		}
 
 		const url = new URL(request.url);
+		if (isGatewayPath(url.pathname)) {
+			let gatewayHandler: ReturnType<typeof createCloudflareGatewayHandler>;
+			try {
+				// Use the platform-supplied request URL, never Origin/Host forwarding headers,
+				// as the zone-owned origin for Cache API keys.
+				gatewayHandler = createCloudflareGatewayHandler(env, { cacheKeyOrigin: url.origin });
+			} catch (error) {
+				console.error(
+					JSON.stringify({
+						event: "kirari_edge_gateway_configuration_failure",
+						error_name: error instanceof Error ? error.name : "UnknownError",
+					}),
+				);
+				return Response.json(
+					{ error: "gateway_configuration_error" },
+					{ status: 503, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } },
+				);
+			}
+			// This is a same-origin Core route. Keep its exact-origin CORS decision;
+			// the legacy wildcard CORS wrapper would weaken that boundary.
+			try {
+				return await gatewayHandler(request);
+			} catch (error) {
+				console.error(
+					JSON.stringify({
+						event: "kirari_edge_gateway_failure",
+						error_name: error instanceof Error ? error.name : "UnknownError",
+					}),
+				);
+				return Response.json(
+					{ error: "gateway_internal_error" },
+					{ status: 500, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } },
+				);
+			}
+		}
+
 		const route = resolveRoute(url.pathname, env);
 		if (!route) {
 			return withCors(new Response("Not found", { status: 404 }));
@@ -55,21 +140,12 @@ export default {
 		}
 
 		try {
-			switch (route) {
-				case "github":
-					return await proxyGitHubCard(request, url, env);
-				case "avatar":
-					return await proxyAvatar(request, url);
-				case "bangumi-api":
-					return await proxyBangumiApi(request, url);
-				case "bangumi-image":
-					return await proxyBangumiImage(request, url);
-			}
+			return await proxyRoute(route, request, url);
 		} catch (error) {
 			console.error(
 				JSON.stringify({
 					event: "kirari_edge_upstream_failure",
-					route,
+					route: route.name,
 					message: error instanceof Error ? error.message : "Unknown upstream error",
 				}),
 			);
@@ -83,79 +159,46 @@ export default {
 	},
 };
 
-type ProxyRoute = "github" | "avatar" | "bangumi-api" | "bangumi-image";
+function isGatewayPath(pathname: string) {
+	return pathname === DEFAULT_ROUTE_PREFIX || pathname.startsWith(`${DEFAULT_ROUTE_PREFIX}/`);
+}
 
-function resolveRoute(pathname: string, env: Env): ProxyRoute | null {
-	if (env.KIRARI_GHCARD_ENABLED === "true" && matchesPrefix(pathname, "/api/github")) {
-		return "github";
-	}
-	if (env.KIRARI_AVATAR_PROXY_ENABLED === "true" && matchesPrefix(pathname, "/avatar")) {
-		return "avatar";
-	}
-	if (
-		env.KIRARI_BANGUMI_API_PROXY_ENABLED === "true" &&
-		matchesPrefix(pathname, "/api/bangumi")
-	) {
-		return "bangumi-api";
-	}
-	if (
-		env.KIRARI_BANGUMI_IMAGE_PROXY_ENABLED === "true" &&
-		matchesPrefix(pathname, "/images/bangumi")
-	) {
-		return "bangumi-image";
-	}
-	return null;
+function resolveRoute(pathname: string, env: Env): ProxyRouteConfig | null {
+	return PROXY_ROUTES.find((route) => env[route.flag] === "true" && matchesPrefix(pathname, route.prefix)) || null;
 }
 
 function matchesPrefix(pathname: string, prefix: string) {
 	return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
-async function proxyGitHubCard(request: Request, url: URL, env: Env): Promise<Response> {
-	const headers = createUpstreamHeaders(request);
-	headers.set("Accept", request.headers.get("accept") || "application/vnd.github+json");
-	headers.set("X-GitHub-Api-Version", "2022-11-28");
-	if (env.KIRARI_GITHUB_TOKEN) {
-		headers.set("Authorization", `Bearer ${env.KIRARI_GITHUB_TOKEN}`);
+async function proxyRoute(
+	route: ProxyRouteConfig,
+	request: Request,
+	url: URL,
+): Promise<Response> {
+	const upstreamUrl = createUpstreamUrl(url, route.prefix, route.origin);
+	if (!upstreamUrl) {
+		return withCors(
+			Response.json(
+				{ error: "Invalid upstream path" },
+				{ status: 400, headers: { "Cache-Control": "no-store" } },
+			),
+		);
 	}
+	const headers = createUpstreamHeaders(request);
+	route.configureHeaders?.(headers, request);
 	return proxyRequest(
 		request,
-		createUpstreamUrl(url, "/api/github", "https://api.github.com"),
+		upstreamUrl,
 		headers,
-		"public, max-age=300, stale-while-revalidate=3600",
+		route.cacheControl,
 	);
 }
 
-async function proxyAvatar(request: Request, url: URL): Promise<Response> {
-	return proxyRequest(
-		request,
-		createUpstreamUrl(url, "/avatar", "https://cravatar.cn"),
-		createUpstreamHeaders(request),
-		"public, max-age=86400, stale-while-revalidate=604800",
-	);
-}
-
-async function proxyBangumiApi(request: Request, url: URL): Promise<Response> {
-	return proxyRequest(
-		request,
-		createUpstreamUrl(url, "/api/bangumi", "https://api.bgm.tv"),
-		createUpstreamHeaders(request),
-		"public, max-age=300, stale-while-revalidate=3600",
-	);
-}
-
-async function proxyBangumiImage(request: Request, url: URL): Promise<Response> {
-	return proxyRequest(
-		request,
-		createUpstreamUrl(url, "/images/bangumi", "https://lain.bgm.tv"),
-		createUpstreamHeaders(request),
-		"public, max-age=86400, stale-while-revalidate=604800",
-	);
-}
-
-function createUpstreamUrl(url: URL, prefix: string, origin: string) {
+function createUpstreamUrl(url: URL, prefix: string, origin: string): URL | null {
 	const pathname = url.pathname.slice(prefix.length) || "/";
 	const upstream = new URL(pathname, origin);
+	if (upstream.origin !== new URL(origin).origin) return null;
 	upstream.search = url.search;
 	return upstream;
 }

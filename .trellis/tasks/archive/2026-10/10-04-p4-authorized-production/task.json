@@ -1,0 +1,54 @@
+{
+  "id": "p4-authorized-production",
+  "name": "p4-authorized-production",
+  "title": "Historical P4 custom release plan — superseded by native Git correction",
+  "description": "",
+  "status": "completed",
+  "dev_type": "deployment",
+  "scope": "Retired historical custom release plan; do not execute. Superseded by completed native Git P4 / Issue #99.",
+  "package": null,
+  "priority": "P1",
+  "creator": "Ian",
+  "assignee": "Ian",
+  "createdAt": "2026-10-04",
+  "completedAt": "2026-10-16",
+  "branch": "codex/p4-c1-hobby",
+  "base_branch": "main",
+  "worktree_path": "/Users/ian/.codex/worktrees/p4-c1-hobby/KIRARI",
+  "commit": null,
+  "pr_url": "https://github.com/markd3ng/KIRARI/pull/133",
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "PR133 exact engineering merge is complete at mainc2231c8572fb9e0961bbd296e3678acdc86a407f with main CI38195793414 SUCCESS. Current Owner engineering authorization replaces impossible C1 paid RBAC assumptions on the verified Hobby target. No implementation merge, actual credential/Environment setup or Production operation is authorized. See evidence/c1-hobby-20261012.\n\nAdministrative retirement: this custom C1/Trusted Sources release plan is superseded by the native Git architecture delivered in PR #143. Archive means retired/superseded, not acceptance or reauthorization of the old controller. P4 completion is recorded in #99 and PR #143.",
+  "meta": {
+    "engineering_merge_gate": "RETIRED_SUPERSEDED_BY_NATIVE_GIT_PR143",
+    "production_readiness": "NOT_APPLICABLE_RETIRED_CONTROLLER",
+    "reconciliation_disposition": "SUPERSEDED_RETIRED_NOT_CONTROLLER_ACCEPTANCE",
+    "historical_gate_snapshot": {
+      "engineering_merge_gate": "HOBBY_C1_ENGINEERING_IMPLEMENTATION_IN_PROGRESS_NEW_EXACT_OWNER_MERGE_DECISION_REQUIRED",
+      "production_readiness": "HOBBY_C1_SETUP_MANIFEST_NEW_OWNER_DECISION_AND_SEPARATE_PRODUCTION_AUTHORIZATION_REQUIRED"
+    }
+  },
+  "evidence": {
+    "ownerResume20261010": {
+      "baseMain": "0945eb82e76cab1878e7324ef3447f37855dfe79",
+      "existingPr": 133,
+      "r3AndT1DependencyAdmission": "RETIRED",
+      "audit": "INFORMATIONAL_UNSUPPRESSED",
+      "productionDeploymentPerformed": false,
+      "nextGate": "EXACT_HEAD_CI_AND_INDEPENDENT_REVIEW_THEN_SEPARATE_PRODUCTION_DECISION"
+    },
+    "ownerHobbyC120261012": {
+      "baseline_main": "c2231c8572fb9e0961bbd296e3678acdc86a407f",
+      "model": "C1_HOBBY_PROJECT_SCOPED_PAT",
+      "merge_authorized": false,
+      "credential_setup_performed": false,
+      "production_authorized": false,
+      "production_deployment_performed": false
+    }
+  },
+  "superseded_by": "10-07-p4-r3-trusted-base-bootstrap",
+  "retirement_reason": "Owner-directed native hosting architecture; no Production completion claimed"
+}

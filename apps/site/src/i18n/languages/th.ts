@@ -52,4 +52,11 @@ export const th: Translation = {
 	[Key.publishedAt]: "เผยแพร่เมื่อ",
 	[Key.lastUpdatedAt]: "อัปเดตล่าสุดเมื่อ",
 	[Key.license]: "สัญญาอนุญาต",
+	[Key.privacySettings]: "การตั้งค่าความเป็นส่วนตัว",
+	[Key.privacySettingsDescription]: "เมื่อเจ้าของเว็บไซต์เปิดใช้ สถิติการใช้งานและโฆษณาจะได้รับอนุญาตเป็นค่าเริ่มต้น คุณปิดแต่ละรายการได้ที่นี่ และการเลือกจะบันทึกไว้ในเบราว์เซอร์นี้",
+	[Key.analytics]: "สถิติการใช้งาน",
+	[Key.advertising]: "โฆษณา",
+	[Key.privacySave]: "บันทึกการตั้งค่า",
+	[Key.privacyCancel]: "ยกเลิก",
+	[Key.privacySaveError]: "บันทึกตัวเลือกไม่ได้ โปรดอนุญาตให้เว็บไซต์นี้ใช้พื้นที่จัดเก็บในเครื่องแล้วลองอีกครั้ง",
 };

@@ -37,21 +37,11 @@ const shouldRender = config.enabled && config.content.trim().length > 0;
 )}
 
 <script>
-	function initAnnouncementWidgets() {
-		document.querySelectorAll<HTMLElement>("[data-announcement-widget]").forEach((widget) => {
-			const key = widget.dataset.storageKey;
-			if (!key) return;
-			const root = widget.closest("widget-layout") as HTMLElement | null;
-			if (localStorage.getItem(key) === "1") {
-				if (root) root.hidden = true;
-				return;
-			}
-			widget.querySelector("[data-close-announcement]")?.addEventListener("click", () => {
-				localStorage.setItem(key, "1");
-				if (root) root.hidden = true;
-			}, { once: true });
-		});
-	}
+	import { initDismissibleWidgets } from "@utils/dismissible-widget";
 
-	initAnnouncementWidgets();
+	initDismissibleWidgets({
+		widgetSelector: "[data-announcement-widget]",
+		closeSelector: "[data-close-announcement]",
+		closedKey: (key) => key,
+	});
 </script>

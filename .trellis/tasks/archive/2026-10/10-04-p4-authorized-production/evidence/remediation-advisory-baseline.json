@@ -1,0 +1,16 @@
+{
+  "run_id": 37256502043,
+  "head_sha": "18be78556ff9d0dc17fb714e0331c40dca83fe70",
+  "conclusion": "cancelled",
+  "result": "NOT_PASS",
+  "log_evidence": [
+    "2026-10-05T03:02:46Z Review filter: failed to parse LLM response: invalid character A looking for beginning of value",
+    "2026-10-05T03:09:16Z Review filter: failed to parse LLM response: invalid character a looking for beginning of value; raw response approve_all_comments",
+    "2026-10-05T03:13:38Z The operation was canceled; action duration 1806879 ms"
+  ],
+  "configured_job_timeout_minutes": 30,
+  "published_ocr_review_comments_found": 0,
+  "inference": "Cancellation occurred at the configured 30-minute limit; partial progress/parse failures do not constitute a completed review",
+  "url": "https://github.com/markd3ng/KIRARI/actions/runs/37256502043",
+  "superseded_by": "fresh final-head advisory run after remediation push"
+}

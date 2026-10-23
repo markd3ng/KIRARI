@@ -1,12 +1,13 @@
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { basename, join, relative, sep } from "node:path";
-import { spawnSync } from "node:child_process";
-import { webcrypto } from "node:crypto";
+import { ANALYTICS_BUILD_MODE, resolveBuildAds, resolveBuildAnalytics } from "./build-analytics-settings.mjs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 import { parse } from "smol-toml";
 import sanitizeHtml from "sanitize-html";
+import { buildPagefindIndex } from "./pagefind-index.mjs";
 import { buildContentSecurityPolicy, SECURITY_HEADERS } from "./security-policy.mjs";
+import { prepareIndexNowVerificationFile } from "./indexing.mjs";
+import { resolveSearchProvider } from "../src/utils/search-provider.mjs";
 
-const crypto = globalThis.crypto || webcrypto;
 const distDir = new URL("../dist", import.meta.url).pathname;
 const astroDir = join(distDir, "_astro");
 const configPath = new URL("../kirari.config.toml", import.meta.url).pathname;
@@ -18,6 +19,8 @@ function readConfigText() {
 
 const configText = readConfigText();
 const config = configText ? parse(configText) : {};
+config.analytics = resolveBuildAnalytics(config.analytics, { mode: ANALYTICS_BUILD_MODE });
+config.ads = resolveBuildAds(config.ads, { mode: ANALYTICS_BUILD_MODE });
 const siteDefaults = JSON.parse(readFileSync(defaultsPath, "utf8"));
 const contentSecurityPolicy = buildContentSecurityPolicy(config);
 
@@ -66,14 +69,7 @@ function getTomlValue(section, key) {
 }
 
 function activeSearchProvider() {
-	const configured = getTomlString("search", "provider", "");
-	if (configured === "docsearch") {
-		return docsearchEnabled() ? "docsearch" : "pagefind";
-	}
-	if (configured === "google") {
-		return getTomlString("search.google", "cx") ? "google" : "pagefind";
-	}
-	return docsearchEnabled() ? "docsearch" : "pagefind";
+	return resolveSearchProvider(config);
 }
 
 function siteUrl() {
@@ -107,6 +103,14 @@ function htmlFiles() {
 	return walk(distDir).filter((file) => file.endsWith(".html"));
 }
 
+function linkedResource(html, rel, type) {
+	for (const tag of html.match(/<link\b[^>]*>/gi) || []) {
+		const attributes = Object.fromEntries([...tag.matchAll(/([\w:-]+)=["']([^"']*)["']/g)].map((match) => [match[1].toLowerCase(), match[2]]));
+		if (attributes.rel?.split(/\s+/).includes(rel) && (!type || attributes.type === type)) return attributes.href || "";
+	}
+	return "";
+}
+
 function pageInfo(file) {
 	const html = readFileSync(file, "utf8");
 	const title = html.match(/<title>(.*?)<\/title>/i)?.[1] || "";
@@ -119,6 +123,8 @@ function pageInfo(file) {
 		title,
 		description,
 		canonical,
+		markdown: linkedResource(html, "alternate", "text/markdown"),
+		coveringIndex: linkedResource(html, "describedby", "text/plain"),
 		lang,
 		text: stripTags(html),
 	};
@@ -150,22 +156,32 @@ function matchesAny(value, patterns) {
 	return patterns.some((pattern) => globToRegExp(pattern).test(value));
 }
 
+function scopedPagePath(page) {
+	const path = pagePath(page);
+	const base = basePath();
+	return path.startsWith(base) ? path.slice(base.length) : "";
+}
+
 function isArticlePage(page) {
-	return /\/posts\/[^/]+\/$/.test(pagePath(page));
+	return /^(?:[^/]+\/)?posts\/.+\/$/.test(scopedPagePath(page));
 }
 
 function isNavigationPage(page) {
-	return /^\/(?:[a-z]{2}(?:-[A-Z]{2})?\/)?(?:|blog\/|archive\/|categories\/|tags\/|projects\/|about\/|friends\/)$/.test(pagePath(page));
+	return /^(?:[^/]+\/)?(?:|blog\/|archive\/|categories\/|tags\/|projects\/|about\/|friends\/)$/.test(scopedPagePath(page));
 }
 
 function sortByCanonical(a, b) {
 	return a.canonical.localeCompare(b.canonical);
 }
 
+function llmsText(value) {
+	return value.replace(/[\r\n]+/g, " ").replace(/([\\`*_[\]<>])/g, "\\$1");
+}
+
 function llmsLine(page, title = siteTitle(), includeDescription = true) {
-	const label = cleanPageTitle(page, title);
-	const description = includeDescription && page.description ? `: ${page.description}` : "";
-	return `- [${label}](${page.canonical})${description}`;
+	const label = llmsText(cleanPageTitle(page, title));
+	const description = includeDescription && page.description ? `: ${llmsText(page.description)}` : "";
+	return `- [${label}](${page.markdown || page.canonical})${description}`;
 }
 
 function llmsFileUrl(pages, filename) {
@@ -177,7 +193,7 @@ function llmsFileUrl(pages, filename) {
 	}
 }
 
-function buildLlmsIndex({ title, description, pages, lang, small = false }) {
+function buildLlmsIndex({ title, description, pages, lang, subIndexes = [] }) {
 	const includePatterns = getTomlStringArray("llms", "includePatterns", ["*"]);
 	const excludePatterns = getTomlStringArray("llms", "excludePatterns", [
 		"*/categories/*",
@@ -191,7 +207,6 @@ function buildLlmsIndex({ title, description, pages, lang, small = false }) {
 		.filter((page) => !matchesAny(page.canonical, excludePatterns) || isNavigationPage(page));
 	const articles = scopedPages.filter(isArticlePage).sort(sortByCanonical);
 	const navigation = scopedPages.filter(isNavigationPage).sort(sortByCanonical);
-	const articleLimit = small ? 30 : articles.length;
 	const lines = [
 		`# ${lang ? `${title} (${lang})` : title}`,
 		"",
@@ -203,13 +218,19 @@ function buildLlmsIndex({ title, description, pages, lang, small = false }) {
 
 	if (articles.length > 0) {
 		lines.push("## Articles", "");
-		for (const page of articles.slice(0, articleLimit)) lines.push(llmsLine(page, title));
+		for (const page of articles) lines.push(llmsLine(page, title));
 		lines.push("");
 	}
 
-	if (navigation.length > 0 && !small) {
+	if (navigation.length > 0) {
 		lines.push("## Navigation", "");
 		for (const page of navigation) lines.push(llmsLine(page, title));
+		lines.push("");
+	}
+
+	if (subIndexes.length) {
+		lines.push("## Language indexes", "");
+		for (const href of subIndexes) lines.push(`- [${new URL(href).pathname}](${href}): Scoped language index.`);
 		lines.push("");
 	}
 
@@ -217,7 +238,6 @@ function buildLlmsIndex({ title, description, pages, lang, small = false }) {
 		"## Optional",
 		"",
 		`- [Full extracted content](${llmsFileUrl(pages, "llms-full.txt")}): Full text aggregation generated from built HTML pages.`,
-		`- [Condensed entry point](${llmsFileUrl(pages, "llms-small.txt")}): Shorter version of this LLM entry point.`,
 	);
 
 	return lines.join("\n").replace(/\n{3,}/g, "\n\n");
@@ -306,7 +326,7 @@ function generateHeadersAndRedirects() {
 		"/favicon/*",
 		"  Cache-Control: public, max-age=86400",
 		"",
-		"/llms-full.txt",
+		`${basePath()}llms-full.txt`,
 		"  Cache-Control: no-store",
 		"",
 	]
@@ -325,7 +345,7 @@ function generateHeadersAndRedirects() {
 
 function generateRobots() {
 	const sitemapUrl = `${siteUrl()}${basePath()}sitemap-index.xml`.replace(/([^:]\/)\/+/g, "$1");
-	writeFileSync(join(distDir, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /llms-full.txt\n\nSitemap: ${sitemapUrl}\n`);
+	writeFileSync(join(distDir, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: ${basePath()}llms-full.txt\n\nSitemap: ${sitemapUrl}\n`);
 }
 
 function obfuscateMailtoLinks() {
@@ -336,31 +356,49 @@ function obfuscateMailtoLinks() {
 	}
 }
 
-function docsearchEnabled() {
-	return getTomlBool("search.docsearch", "enable", false) &&
-		!!getTomlString("search.docsearch", "appId") &&
-		!!getTomlString("search.docsearch", "apiKey") &&
-		!!getTomlString("search.docsearch", "indexName");
-}
-
-function generatePagefind() {
+async function generatePagefind() {
 	if (activeSearchProvider() !== "pagefind") return;
-	const executable = process.platform === "win32" ? "pagefind.cmd" : "pagefind";
-	const result = spawnSync(executable, ["--site", distDir], {
-		stdio: "inherit",
-		shell: process.platform === "win32",
-	});
-	if (result.status !== 0) process.exit(result.status ?? 1);
+	await buildPagefindIndex(distDir);
 }
 
 function generateLlms() {
+	// Retired output must not survive a repeated postbuild, including disabled mode.
+	rmSync(join(distDir, "llms-small.txt"), { force: true });
 	if (!getTomlBool("llms", "enable", true)) return;
+	// Keep the retained full aggregation behavior; indexes alone deduplicate aliases.
 	const pages = htmlFiles().map(pageInfo).filter((page) => page.canonical);
+	const canonicalPages = new Map();
+	for (const page of pages) {
+		const previous = canonicalPages.get(page.canonical);
+		const actualPath = `${basePath()}${relative(distDir, page.file).split(sep).join("/").replace(/index\.html$/, "")}`;
+		if (!previous || pagePath(page) === actualPath) canonicalPages.set(page.canonical, page);
+	}
+	const indexedPages = [...canonicalPages.values()];
 	const title = getTomlString("llms", "title", siteTitle());
 	const description = getTomlString("llms", "description", `Documentation for ${title}`);
 
-	writeFileSync(join(distDir, "llms.txt"), `${buildLlmsIndex({ title, description, pages })}\n`);
-	writeFileSync(join(distDir, "llms-small.txt"), `${buildLlmsIndex({ title, description, pages, small: true })}\n`);
+	const subIndexes = new Map();
+	if (getTomlBool("llms", "i18n", true)) {
+		for (const page of indexedPages) {
+			if (!page.coveringIndex) continue;
+			try {
+				const href = new URL(page.coveringIndex);
+				const canonical = new URL(page.canonical);
+				const path = href.pathname;
+				const scoped = path.startsWith(basePath()) ? path.slice(basePath().length) : "";
+				// Only the known direct locale scope can own a postbuild index file.
+				if (href.origin !== canonical.origin || href.search || href.hash || !/^[A-Za-z]{2}(?:-[A-Za-z0-9]+)*\/llms\.txt$/.test(scoped)) continue;
+				subIndexes.set(href.href, [...(subIndexes.get(href.href) || []), page]);
+			} catch { /* Malformed discovery does not authorize a filesystem path. */ }
+		}
+	}
+	for (const [href, scopedPages] of subIndexes) {
+		const relativePath = new URL(href).pathname.slice(basePath().length);
+		const directory = join(distDir, relativePath.split("/")[0]);
+		mkdirSync(directory, { recursive: true });
+		writeFileSync(join(directory, "llms.txt"), `${buildLlmsIndex({ title, description, pages: scopedPages })}\n`);
+	}
+	writeFileSync(join(distDir, "llms.txt"), `${buildLlmsIndex({ title, description, pages: indexedPages, subIndexes: [...subIndexes.keys()].sort() })}\n`);
 
 	const full = [`# ${title}`, "", `> ${description}`, ""];
 	for (const page of pages) {
@@ -375,137 +413,14 @@ function generateLlms() {
 			groups.set(lang, [...(groups.get(lang) || []), page]);
 		}
 		for (const lang of groups.keys()) {
-			writeFileSync(join(distDir, `llms-${lang}.txt`), `${buildLlmsIndex({ title, description, pages, lang })}\n`);
+			writeFileSync(join(distDir, `llms-${lang}.txt`), `${buildLlmsIndex({ title, description, pages: indexedPages, lang })}\n`);
 		}
-	}
-}
-
-function sitemapUrls() {
-	const xmlFiles = walk(distDir).filter((file) => file.endsWith(".xml") && basename(file).includes("sitemap"));
-	const urls = [];
-	for (const file of xmlFiles) {
-		const xml = readFileSync(file, "utf8");
-		for (const match of xml.matchAll(/<loc>(.*?)<\/loc>/g)) urls.push(match[1]);
-	}
-	return Array.from(new Set(urls.filter((url) => !url.endsWith(".xml"))));
-}
-
-async function submitIndexNow() {
-	const enabled = process.env.PUBLIC_INDEXNOW_ENABLE === "true" || getTomlBool("seo", "indexNow", false);
-	const key = process.env.PUBLIC_INDEXNOW_KEY || getTomlString("seo", "indexNowKey");
-	if (!enabled || !key) return;
-
-	writeFileSync(join(distDir, `${key}.txt`), key);
-	const urls = sitemapUrls();
-	if (urls.length === 0) return;
-	const endpoint = "https://api.indexnow.org/indexnow";
-	const host = new URL(siteUrl()).host;
-	const response = await fetch(endpoint, {
-		method: "POST",
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify({
-			host,
-			key,
-			keyLocation: `${siteUrl()}${basePath()}${key}.txt`.replace(/([^:]\/)\/+/g, "$1"),
-			urlList: urls,
-		}),
-	});
-	if (!response.ok) {
-		console.warn(`[postbuild] IndexNow submission failed: ${response.status} ${response.statusText}`);
-	}
-}
-
-function base64UrlEncode(value) {
-	return Buffer.from(value)
-		.toString("base64")
-		.replace(/=/g, "")
-		.replace(/\+/g, "-")
-		.replace(/\//g, "_");
-}
-
-async function createGoogleAccessToken(serviceAccountJson) {
-	const header = base64UrlEncode(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-	const now = Math.floor(Date.now() / 1000);
-	const payload = base64UrlEncode(JSON.stringify({
-		iss: serviceAccountJson.client_email,
-		scope: "https://www.googleapis.com/auth/indexing",
-		aud: "https://oauth2.googleapis.com/token",
-		iat: now,
-		exp: now + 3600,
-	}));
-	const key = await crypto.subtle.importKey(
-		"pkcs8",
-		Buffer.from(serviceAccountJson.private_key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, ""), "base64"),
-		{ name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-		false,
-		["sign"],
-	);
-	const signature = await crypto.subtle.sign(
-		"RSASSA-PKCS1-v1_5",
-		key,
-		new TextEncoder().encode(`${header}.${payload}`),
-	);
-	const assertion = `${header}.${payload}.${base64UrlEncode(Buffer.from(signature))}`;
-	const response = await fetch("https://oauth2.googleapis.com/token", {
-		method: "POST",
-		headers: { "content-type": "application/x-www-form-urlencoded" },
-		body: new URLSearchParams({
-			grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-			assertion,
-		}),
-	});
-	if (!response.ok) {
-		throw new Error(`Google OAuth token request failed: ${response.status} ${response.statusText}`);
-	}
-	const data = await response.json();
-	if (!data.access_token) throw new Error("Google OAuth token response did not include access_token.");
-	return data.access_token;
-}
-
-async function submitGoogleIndexing() {
-	const enabled = getTomlBool("seo.google", "indexingApi", false);
-	if (!enabled) return;
-
-	const envName = getTomlString("seo.google", "serviceAccountJsonEnv", "GOOGLE_INDEXING_SERVICE_ACCOUNT_JSON");
-	const rawCredentials = process.env[envName];
-	if (!rawCredentials) {
-		console.warn(`[postbuild] Google Indexing API enabled but ${envName} is not set.`);
-		return;
-	}
-
-	try {
-		const serviceAccountJson = JSON.parse(rawCredentials);
-		if (!serviceAccountJson.client_email || !serviceAccountJson.private_key) {
-			console.warn(`[postbuild] Google Indexing API skipped: ${envName} is missing client_email or private_key.`);
-			return;
-		}
-		const token = await createGoogleAccessToken(serviceAccountJson);
-		const urls = sitemapUrls();
-		for (const url of urls) {
-			const response = await fetch("https://indexing.googleapis.com/v3/urlNotifications:publish", {
-				method: "POST",
-				headers: {
-					authorization: `Bearer ${token}`,
-					"content-type": "application/json",
-				},
-				body: JSON.stringify({
-					url,
-					type: "URL_UPDATED",
-				}),
-			});
-			if (!response.ok) {
-				console.warn(`[postbuild] Google Indexing API submission failed for ${url}: ${response.status} ${response.statusText}`);
-			}
-		}
-	} catch (error) {
-		console.warn("[postbuild] Google Indexing API submission skipped:", error);
 	}
 }
 
 generateHeadersAndRedirects();
 generateRobots();
 obfuscateMailtoLinks();
-generatePagefind();
+await generatePagefind();
 generateLlms();
-await submitIndexNow();
-await submitGoogleIndexing();
+prepareIndexNowVerificationFile({ config, distDir });

@@ -1,6 +1,6 @@
 ---
-import path from "node:path";
 import type { CollectionEntry } from "astro:content";
+import { getPostLlmViewPath } from "@utils/llm-content";
 import { render } from "astro:content";
 import { Icon } from "astro-icon/components";
 import License from "@components/misc/License.astro";
@@ -14,20 +14,20 @@ import {
 	toHreflang,
 	type AlternateLink,
 } from "@utils/i18n-utils";
-import { getPostRouteSlug, getPostUrl, getPostUrlBySlug } from "@utils/post-route-utils";
+import { getPostAssetBasePath, getPostRouteSlug, getPostUrl, getPostUrlBySlug } from "@utils/post-route-utils";
 import {
 	getPostTranslationLinks,
 	getPostTranslationMap,
 	getSortedPosts,
 	getTaxonomyDisplayMappings,
 } from "@utils/content-utils";
-import { getDir } from "@utils/url-utils";
 import { Config } from "../../constants";
 import { licenseConfig, mermaidConfig, ogConfig, profileConfig, sponsorConfig } from "../../config";
 import PostSponsor from "../../components/sponsor/PostSponsor.astro";
 import ImageWrapper from "../../components/misc/ImageWrapper.astro";
 import PostMetadata from "../../components/PostMeta.astro";
 import Comments from "../../components/comments/Comments.astro";
+import AdSlot from "../../components/AdSlot.astro";
 import { formatDateToYYYYMMDD } from "../../utils/date-utils";
 
 export async function getStaticPaths() {
@@ -88,6 +88,7 @@ const jsonLd = {
 	lang={lang}
 	alternates={alternates}
 	canonicalUrl={canonicalUrl}
+	markdownUrl={getPostLlmViewPath(entry, lang)}
 	setOGTypeArticle={true}
 	headings={headings}
 	ogImage={ogImageUrl}
@@ -98,7 +99,7 @@ const jsonLd = {
 >
 	<script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
 	<div class="flex w-full rounded-[var(--radius-large)] overflow-hidden relative mb-4">
-		<div id="post-container" class="card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
+		<div id="post-container" data-mermaid-enabled={mermaidConfig.enable && entry.data.mermaid ? "true" : "false"} class="card-base z-10 px-6 md:px-9 pt-6 pb-4 relative w-full">
 			<div class="flex flex-row text-black/30 dark:text-white/30 gap-5 mb-3 transition onload-animation">
 				<div class="flex flex-row items-center">
 					<div class="transition h-6 w-6 rounded-md bg-black/5 dark:bg-white/10 text-black/50 dark:text-white/50 flex items-center justify-center mr-2">
@@ -144,7 +145,7 @@ const jsonLd = {
 			</div>
 
 			{entry.data.image &&
-				<ImageWrapper id="post-cover" src={entry.data.image} basePath={path.join("content/posts/", getDir(getDir(entry.id) === "/" ? (entry as any).filePath.replace("src/content/posts/", "") : entry.id))} class="mb-8 aspect-[16/9] rounded-xl banner-container onload-animation"/>
+				<ImageWrapper id="post-cover" src={entry.data.image} basePath={getPostAssetBasePath(entry)} class="mb-8 aspect-[16/9] rounded-xl banner-container onload-animation"/>
 			}
 
 			<div class="markdown-wrapper relative">
@@ -152,6 +153,7 @@ const jsonLd = {
 					<Content />
 				</Markdown>
 			</div>
+			<AdSlot />
 
 			{licenseConfig.enable && <License title={entry.data.title} pubDate={entry.data.published} lastUpdated={entry.data.updated} lang={lang} notByAi={entry.data.notbyai} class="mb-6 rounded-xl license-container onload-animation"></License>}
 				{sponsorConfig.enabled && sponsorConfig.showButtonInPost && <PostSponsor lang={lang} post={{ title: entry.data.title, url: fullPostUrl }} />}
@@ -201,27 +203,9 @@ lazyLoadImages();
 transitionManager.on("transition:after-swap", lazyLoadImages);
 </script>
 
-{mermaidConfig.enable && entry.data.mermaid && (
-	<script>
-	import mermaid from "mermaid";
-	import { transitionManager } from "../../utils/transition-manager";
+<script>
+	import { installMermaid } from "@utils/mermaid-runtime";
+	import { transitionManager } from "@utils/transition-manager";
 
-	function getTheme() {
-		return document.documentElement.classList.contains("dark") ? "dark" : "default";
-	}
-
-	async function initMermaid() {
-		const mermaidBlocks = document.querySelectorAll("pre.mermaid");
-		if (mermaidBlocks.length === 0) return;
-
-		mermaid.initialize({
-			startOnLoad: false,
-			theme: getTheme(),
-		});
-		await mermaid.run({ querySelector: "pre.mermaid" });
-	}
-
-	initMermaid();
-	transitionManager.on("transition:after-swap", initMermaid);
-	</script>
-)}
+	installMermaid(transitionManager);
+</script>

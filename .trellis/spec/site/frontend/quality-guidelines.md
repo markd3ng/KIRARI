@@ -9,16 +9,92 @@
 3. `astro build`
 4. `postbuild.mjs`
 
-Postbuild runs seven ordered actions: generate headers/redirects, generate
-robots metadata, obfuscate mailto links, conditionally build Pagefind, generate
-LLM files, optionally submit IndexNow, and optionally submit Google Indexing
-API notifications. Read the script before changing the list; old docs contain
-shortened summaries.
+Postbuild generates headers/redirects, robots metadata, mailto links, Pagefind,
+LLM files and (when configured) the public IndexNow verification key file. It
+never sends indexing notifications. The separate GitHub post-deployment
+workflow may submit IndexNow only after an authenticated Vercel Production
+event and matching canonical commit readback; config and a GitHub Actions
+variable must both opt in. Google Indexing API remains disabled until eligible
+content is approved.
+
+Pagefind uses its installed Node API and ingests HTML in sorted dist-relative
+path order; its filesystem walker otherwise assigns unstable search page numbers.
+Composition keeps Astro's content cache inside the temporary Site workspace and
+derives rendered GitHub Card IDs from logical source paths and directive offsets.
+Card IDs, their script references, and search assets remain byte-significant.
+
+## Scenario: External Site Build and Composition
+
+### 1. Scope / Trigger
+- Trigger: local `./build.sh --site <directory>` composes owner input into `apps/site/dist`.
+- The no-argument command and `pnpm build` retain the default `packages/site-profile` flow.
+
+### 2. Signatures
+- `./build.sh` → default `pnpm build`.
+- `./build.sh --site <directory>` → `node scripts/build-external-site.mjs <directory>`.
+- `./build.sh --compose --core-ref <ref> --site <path> --site-ref <ref> --artifact-dir <new-directory>` → pinned Core/Site artifact composition.
+- `pnpm site:profile:check -- --site <directory>` validates external input without writing it.
+- `pnpm site:test` runs Node built-in tests for materialization, QA guard, and external output.
+- `pnpm composition:test` checks provenance, local composition, and the CI artifact contract.
+
+### 3. Contracts
+- The authoritative source-to-target map is `apps/site/scripts/profile-manifest.mjs` (`PROFILE_MAPPINGS`).
+- Required: `kirari.config.toml`; `content/spec/{about,friends,projects}.md`; `data/friends.json` (array of objects with string `siteTitle`, `siteDesc`, `siteUrl`, `siteIcon`); `assets/images/{demo-avatar,demo-banner}.png`; eight `assets/favicon/favicon-{light,dark}-{32,128,180,192}.png`; `assets/og/default.png`.
+- Optional: `content/posts/`, `data/devices.json`, `assets/images/devices/`, `snippets/`, `ads.txt`. Absent optional directories become empty; absent optional files are removed from generated output.
+- `KIRARI_SITE_SOURCE` selects the profile during the copied app build. Postbuild and external-Site builds never submit indexing notifications, regardless of legacy flags. Only the separate GitHub workflow can submit IndexNow after verified native Production; it is off unless both the Site config and `KIRARI_INDEXNOW_ENABLED` GitHub variable enable it. Google Indexing API remains disabled.
+- The input root must resolve to a directory disjoint from `apps/site`; mapped inputs must be regular files/directories with no symlinks or special files. Materialization validates and stages the input without using the original Site Source as a write target. Successful external build replaces only `apps/site/dist`, with rollback on replacement failure.
+- This is not an OS sandbox or enforced read-only source. MDX and other build-time code can execute with the invoking user's filesystem and network permissions. Snippets are loaded as raw text and emitted as browser-executable HTML/JavaScript; they are trusted owner code, but current code does not run snippet JavaScript in the Node build process. Environment filtering does not isolate filesystem access.
+- This is a local static build. It does not fetch Git refs, mutate Git, deploy, or package `functions/` alongside `dist`.
+- The authoritative contract is also recorded in `docs/EXTERNAL_SITE_BUILD.md` so future engineering-guide changes do not erase it.
+- Composition records full Core and Git-backed Site SHAs. Both checkouts must be clean of staged, unstaged, and untracked changes; the Site checkout must be distinct from Core. A non-Git Site input receives a content digest, never a Git SHA.
+- Composition writes static output and `provenance.json` to a new artifact directory. Its normalized SHA-256 covers sorted relative paths and file bytes, excluding the manifest; it normalizes only the quoted bare `uid` value on parsed HTML `<astro-island>` elements outside comments, raw-text/RCDATA, templates, and SVG/MathML. `data-uid`, `aria-uid`, and other attributes remain significant. For `pagefind/pagefind-entry.json`, it sorts only the `languages` keys, then reserializes the parsed JSON with `JSON.stringify`; formatting is ignored and JavaScript's normal JSON serialization/key-enumeration rules apply. No other fields are intentionally omitted or sorted. A matching digest is a semantic-equivalence signal only for verified KIRARI Site output whose code does not consume the generated UID; trusted Site JavaScript can inspect it, so this is not a general guarantee for arbitrary Site code. It is not byte-for-byte identity. The `build_clock` configuration records the maximum selected input commit timestamp (Core timestamp for a non-Git Site source) and composition uses `SOURCE_DATE_EPOCH` with `TZ=UTC`. The manual CI workflow uses the same entry point, read-only repository access, and uploads the artifact without deployment credentials or indexing side effects.
+- Run `pnpm install --frozen-lockfile` before local composition. The entry point verifies the active pnpm version and installed lock state, and fingerprints the selected child-build environment without exposing its values.
+
+### 4. Validation & Error Matrix
+| Condition | Result |
+|---|---|
+| Missing required mapping or required child | Fail before materialization with source → target path |
+| Invalid TOML/JSON, wrong type, symlink, special file, or overlapping source/target | Fail; do not replace generated mappings |
+| Missing optional directory | Materialize an empty directory to prevent stale content |
+| External Astro build fails | Preserve previous `apps/site/dist` |
+| External build succeeds | Install its static `dist` as `apps/site/dist` |
+| Next invocation finds a stale publication stage | Restore its backup if `dist` is absent; otherwise keep installed `dist`; remove the stale stage |
+| Concurrent builds target the same `dist` | Serialize recovery and publication with a destination-keyed filesystem ticket; reclaim only a verified dead owner |
+| External builds target different `dist` paths | Allow independent builds; each recovers only its SHA-256-keyed build temp roots |
+| QA regression script sees `KIRARI_SITE_SOURCE` | Exit 2; demo-only assertions are not run |
+
+### 5. Good/Base/Bad Cases
+- Good: external fixture with valid required files and a custom article builds without changing its source; custom output contains it and omits demo posts.
+- Base: no `--site` argument uses the unchanged default profile.
+- Bad: missing `friends.json`, symlinked input, invalid config, source/destination overlap, failed copy, or unreviewed executable Site content (which is outside this trust model).
+- Composition bad: dirty Git input, a requested ref that does not resolve to the checked-out `HEAD`, reusing the Core checkout as Site, or an existing artifact destination.
+
+### 6. Tests Required
+- `node --test apps/site/scripts/tests/*.test.mjs` asserts required/optional inputs, types, symlinks, staged replacement/rollback, stale-stage recovery, and demo-QA refusal.
+- `pnpm site:test` additionally compares default and equivalent external routes/metadata/assets; custom fixture assertions check route presence, demo-route absence, and verify build-only/test indexing vetoes with both integrations enabled and dummy credentials.
+- `pnpm composition:test` checks the provenance schema/digest, distinct input revisions, rebuild stability, and the manual CI artifact contract.
+- Run `pnpm site:profile:check -- --site <fixture>`, `pnpm profile:check`, `node apps/site/scripts/qa-regression-check.mjs`, `pnpm site:type-check`, `pnpm site:astro-check`, `pnpm build`, and `git diff --check` for the affected change.
+
+### 7. Wrong vs Correct
+#### Wrong
+```bash
+./build.sh --site ../site && pnpm deploy
+```
+#### Correct
+```bash
+./build.sh --site /absolute/path/to/site
+```
+Review `apps/site/dist` locally; deployment remains a separate authorized workflow.
 
 `materialize-ghc-adapter.mjs` reads the materialized TOML before Astro builds.
-It first removes generated adapter route directories from site and deployment
-roots, but refuses to remove non-generated directories unless a file contains
-the `@kirari-generated-ghc-adapter` marker. Disabled adapters generate nothing.
+It removes only regular files containing the
+`@kirari-generated-ghc-adapter` marker, prunes empty directories, and preserves
+unmarked sibling routes and symlinks without traversing them. Repeated builds
+regenerate marker-owned files; a non-empty selected route target containing
+owner files or symlinks is rejected rather than overwritten.
+Reject symlinked `api`/`functions` roots and any symlink component in a generated
+write target before cleanup or writing; nested unowned symlinks are preserved.
+Disabled adapters generate nothing.
 Provider `auto` resolves from `VERCEL=1`, `CF_PAGES=1`, or `PAGES=1`; an enabled
 adapter with no hosted provider fails the build. Cloudflare output is
 `<deploy-root>/functions/<route>/[[path]].ts`; Vercel output is
@@ -58,6 +134,20 @@ created by browser scripts.
 
 ## Verification
 
+### Native Deployment And Production Evidence
+
+GitHub Actions validates source and optional portable Core/Site artifacts; Vercel
+native Git integration controls Preview and Production. Keep the repository root,
+`pnpm build` and `apps/site/dist`. Browser fixture PASS is local engineering proof;
+actual Production acceptance needs fresh exact project/team/environment/commit,
+READY deployment, canonical serving domain and real browser smoke evidence.
+Do not use CI success, Preview or a local snapshot as public Production proof.
+
+Keep composition, safe parsing/path/archive and meaningful browser/security tests.
+Negative architecture tests must reject a competing GitHub Production controller
+and a main-disable rule; they must not recreate per-release C1/OIDC/Trusted Sources
+or approval-binding admission. No tests mutate a real Production target.
+
 Run from the workspace root:
 
 ```bash
@@ -69,8 +159,66 @@ pnpm release:check
 node apps/site/scripts/generate-vercel-config.mjs --check
 ```
 
-CI additionally runs edge checks, release version checks, audit, and
-`git diff --check`. Use pnpm and Node `>=22.12.0`.
+CI additionally requires edge checks, release version checks, and
+`git diff --check`. Dependency audit runs separately as an informational report.
+Use pnpm and Node `>=22.12.0`.
 
 Repository-wide commit, release, and documentation rules live in
 `.trellis/spec/guides/repository-workflow.md`.
+
+## Native Hosting Architecture Contract
+
+- `createVercelConfig(config)` in `apps/site/scripts/security-policy.mjs` generates
+  root `vercel.json`; update the generator and materialized output together.
+- Native Git deployment keeps main and feature branches eligible. Do not add a
+  main-disable override or a duplicate manual Production upload/promotion workflow.
+- Run config parity and QA/native-architecture regressions. Provider settings,
+  domains and secrets require separate operational decisions; source changes alone
+  do not prove a current public deployment.
+- Preserve PR source checks, read-only config composition and advisory OCR with
+  informational dependency audits. Build jobs do not need Production credentials.
+- Optional Build Output export preserves product provenance without project,
+  environment or release destination binding; verify its current source schema.
+- Optional Gateway runtime adapters are application capabilities independent of
+  Site hosting and P4 acceptance. P5/P6/P8 do not inherit retired admission gates.
+- Indexing stays opt-in/default-off; #100 requires verified native Production
+  project/environment/commit/domain/deployment identity, never generic main CI.
+- P4 native architecture cutover was accepted under #99. Optional Gateway
+  adapter PRs retain their own open review/merge state and do not reopen P4.
+  Native rollback can disable automatic domain assignment until undone; follow
+  [Site Production](../../../../docs/SITE_PRODUCTION.md) and current provider docs.
+
+KIRARI uses the hosting provider's native deployment mechanism. GitHub Actions
+validates source and produces optional portable artifacts, but does not duplicate
+the provider's native release controller. Normal signing, provenance and security
+checks with independent purpose remain valid. Provider-native GitHub Pages Actions
+are valid for a separately selected hosting platform. Do not rebuild retired C1,
+raw Trusted Sources or per-release approval machinery without a new Owner choice.
+
+
+### P5 lifecycle and provider regressions
+
+TOC custom-element disconnect must release capture-matched listeners, animation
+callbacks, timers, RAFs and both observers, and reset reconnect state. Both layout
+variants expose a named navigation landmark and one active `aria-current=location`;
+keyboard activation moves focus to the heading without adding a Tab stop.
+
+Mermaid conversion preserves source independently of runtime enablement. Only a
+post explicitly marked enabled by both global configuration and frontmatter may
+render; persistent Astro handlers must not render a later disabled destination.
+Share the renderer across locale routes, serialize its global configuration, keep
+source for theme redraw/error fallback, and test initial and SPA entry.
+
+Analytics configuration resolution is shared between the component and static
+CSP writers. Preserve the disabled policy baseline, gate additions on configured
+providers, cover default/custom scripts and collectors, and use intercepted vendor
+requests for browser CSP tests. Consent and actual provider event semantics are
+separate acceptance conditions in #106.
+
+GHCard cleanup owns only its direct `[...path].ts` / `[[path]].ts` files with the exact generated first-line header. Quoting the marker elsewhere, using another filename or nesting a file does not transfer ownership. Preserve owner files during cleanup and refuse collisions during generation.
+
+### P6 LLM output lifecycle
+
+Owner retains `llms-full.txt`. Keep full aggregation and existing no-store/robots mitigations; these are not access control. Postbuild emits the main index, optional full-locale indexes and full aggregation. The retired condensed artifact is removed before the enabled check so incremental disabled runs cannot retain it; emit no redirect or discovery link. Run the actual-postbuild fixtures in `scripts/tests/llms-output.test.mjs`. Source-backed canonical directory `index.md` views share `llm-content.ts` published selection and URL identity with HTML discovery. `llm-markdown.mjs` preserves source AST meaning; `llm-url-utils.mjs` resolves only published source documents/emitted assets. Drafts and arbitrary source entries are never view routes. Postbuild consumes actual alternate/describedby links for Markdown targets and covering locale indexes, deduplicates canonical aliases for indexes, and preserves full aggregation behavior. Test actual staged root/prefixed/base/disabled builds and source fidelity before claiming #101 accepted; no PR completion claim substitutes for these fixtures.
+
+External Site stages symlink dependencies, so Astro mutable content/image caches must use project-local `./.astro` for ordinary and deterministic builds. A default dependency-relative cache can mix simultaneous Site collections and resolve a foreign article against the wrong assets. The LLM build fixture races distinct Sites sharing content IDs and asserts each output retains only its own content. Invoke the build CLI via `node node_modules/astro/bin/astro.mjs` so pnpm-generated relative-depth shims cannot break staged roots.

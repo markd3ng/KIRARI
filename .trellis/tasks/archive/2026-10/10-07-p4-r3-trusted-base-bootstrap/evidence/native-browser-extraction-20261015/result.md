@@ -1,0 +1,15 @@
+# Browser/static extraction validation
+
+PASS for the owned extraction on working-tree changes based on `c6db5da47d1b5d853a38032e1b676fb0cf2c013a`. Final file hashes and exact command are in `results.json`; these are engineering checks, not native Production acceptance.
+
+- Focused Node 22.12.0 run: **19 tests, 19 pass, 0 fail, 0 skip**, 23.46 seconds. `REQUIRE_SITE_BROWSER=true` required installed Playwright and actual Chromium.
+- Chromium covers configured canonical/robots/indexing policy, root/post content, navigation, stylesheet/script/image loads, unknown-route 404, dynamic canonical mismatch, removed navigation, missing asset, console error and unexpected external request. Both explicit indexable and noindex fixture policies pass.
+- Ordinary local Preview and Production browser CLI checks pass without provider credentials, metadata or release bindings. Retired binding/phase/manifest/deployment/alias arguments are rejected.
+- Static checks preserve noindex metadata/header policy, canonical origin/complete route, robots/sitemap constraints, symlink rejection, exact remote/local byte comparison and cross-origin redirect/physical-file shadowing rejection. Request routing preserves destination containment, stripping inherited bypass headers and external-hop browser credentials, and sanitized fetch failures.
+- `git diff --check` and syntax checks pass. Initial Chromium timeouts revealed the existing image scroll wait on image-free post pages; the helper now checks that page's image count before scrolling. The passing positive fixture exercises a root image followed by an image-free post.
+
+Retained entry points: `scripts/p3-browser/validate.mjs`, `build-fixtures.mjs`, `site-fixture.mjs`, `browser-health.mjs`, `page-policy.mjs`, `request-routing.mjs`; shared static validation is `scripts/static-site-validation.mjs`. New suites: `static-site-validation.test.mjs`, `site-browser-fixture.test.mjs`, `browser-request-routing.test.mjs`. Automatic GitHub OIDC, staging record and custom Production phase/binding/report contracts are removed from owned browser code. The old P4 validation module was removed by the workflow worker after all owned imports moved.
+
+Live browser use takes `--dist-root <matching local output> --base-url <plain HTTPS origin> --report <file>`, optionally `--mode production --canonical-origin <plain HTTPS origin> --indexable true|false`. The default is Preview/noindex. Production indexing remains opt-in. This validator reports `providerDeploymentIdentityVerified:false` and `byteEquality:NOT_CHECKED`; it does not prove repository/commit/project identity or provider rebuild equality. The separate `compareStaticOutput` utility reports only observed local-output byte matching and is exercised against local fixtures.
+
+No provider, GitHub, credential, configuration, deployment, merge or commit actions were performed. Full workspace CI/build, external Site build-fixtures and live native deployment verification remain outside this worker's focused run.

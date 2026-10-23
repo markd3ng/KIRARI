@@ -43,7 +43,7 @@ const removeTrailingHash = (text: string) => {
 let heading1Count = 1;
 ---
 {layout === "floating" && showTOC &&
-<table-of-contents class:list={[className, "toc-content group block relative"]}>
+<table-of-contents role="navigation" aria-label={i18n(I18nKey.toc, lang)} class:list={[className, "toc-content group block relative"]}>
     {tocEntries.map((heading) =>
             <a href={`#${heading.slug}`} class:list={["toc-item",
                     {
@@ -80,7 +80,7 @@ let heading1Count = 1;
     lang={lang}
 >
     {showTOC && <div data-toc-scroll-container class="toc-scroll-container max-h-[min(55vh,32rem)] overflow-y-auto overflow-x-hidden hide-scrollbar">
-        <table-of-contents class="toc-content group block relative w-full">
+        <table-of-contents role="navigation" aria-label={i18n(I18nKey.toc, lang)} class="toc-content group block relative w-full">
             {tocEntries.map((heading) =>
                     <a href={`#${heading.slug}`} class:list={["toc-item",
                             {
@@ -313,6 +313,38 @@ class TableOfContents extends HTMLElement {
     prevActiveMax = -1;
     activeCount = 0;
     pendingTocScrollTop: number | null = null;
+    initTimer = 0;
+    observerTimer = 0;
+    updateAnimationId = 0;
+    lifecycle = 0;
+    animationWrapper: HTMLElement | null = null;
+    forcedMdContainer: Element | null = null;
+    previousScrollBehavior: string | null = null;
+
+    clearScrollCorrections() {
+        this.scrollCorrectionTimers.forEach(clearTimeout);
+        this.scrollCorrectionTimers = [];
+        this.resizeObserver?.disconnect();
+        this.resizeObserver = null;
+        this.forcedMdContainer?.classList.remove('cv-force-visible');
+        this.forcedMdContainer = null;
+    }
+
+    stopScrollAnimation() {
+        cancelAnimationFrame(this.scrollAnimationId);
+        this.scrollAnimationId = 0;
+        if (this.previousScrollBehavior !== null) {
+            document.documentElement.style.scrollBehavior = this.previousScrollBehavior;
+            this.previousScrollBehavior = null;
+        }
+    }
+
+    tryInit = () => {
+        if (this.isConnected && !this.tocEl) this.init();
+        clearTimeout(this.initTimer);
+        this.animationWrapper?.removeEventListener('animationend', this.tryInit);
+        this.animationWrapper = null;
+    };
 
     constructor() {
         super();
@@ -322,6 +354,7 @@ class TableOfContents extends HTMLElement {
     };
 
     markVisibleSection = (entries: IntersectionObserverEntry[]) => {
+        if (!this.isConnected) return;
         entries.forEach((entry) => {
             const id = entry.target.children[0]?.getAttribute("id");
             const idx = id ? this.headingIdxMap.get(id) : undefined;
@@ -358,9 +391,14 @@ class TableOfContents extends HTMLElement {
         this.prevActiveMin = min;
         this.prevActiveMax = max;
 
+        this.tocEntries.forEach((entry, index) => {
+            if (index === min && min <= max) entry.setAttribute('aria-current', 'location');
+            else entry.removeAttribute('aria-current');
+        });
         let indicatorStyle = "opacity: 0";
         this.pendingTocScrollTop = null;
         if (min > max) {
+            this.tocEntries.forEach((entry) => entry.classList.remove(this.visibleClass));
             this.activeIndicator?.setAttribute("style", indicatorStyle);
             return true;
         }
@@ -409,9 +447,12 @@ class TableOfContents extends HTMLElement {
     };
 
     update = () => {
-        if (this.updatePending) return;
+        if (!this.isConnected || this.updatePending) return;
         this.updatePending = true;
-        requestAnimationFrame(() => {
+        const lifecycle = this.lifecycle;
+        this.updateAnimationId = requestAnimationFrame(() => {
+            if (!this.isConnected || lifecycle !== this.lifecycle) return;
+            this.updateAnimationId = 0;
             this.updatePending = false;
             if (this.toggleActiveHeading()) {
                 this.scrollToActiveHeading();
@@ -423,7 +464,9 @@ class TableOfContents extends HTMLElement {
         if (!this.sections.length) return;
 
         for (let i = 0; i < this.sections.length; i++) {
-            const rect = this.sections[i].getBoundingClientRect();
+            const section = this.sections[i];
+            if (!section) continue;
+            const rect = section.getBoundingClientRect();
 
             if (this.isInRange(rect.top, 0, window.innerHeight)
                 || this.isInRange(rect.bottom, 0, window.innerHeight)
@@ -435,7 +478,10 @@ class TableOfContents extends HTMLElement {
     };
 
     markActiveHeading = (idx: number)=> {
-        this.active[idx] = true;
+        if (!this.active[idx]) {
+            this.active[idx] = true;
+            this.activeCount++;
+        }
     };
 
     // Fast animated scroll with easeOutCubic.
@@ -443,7 +489,8 @@ class TableOfContents extends HTMLElement {
     // We disable CSS scroll-behavior during the animation so our
     // per-frame scrollTop assignments aren't intercepted by the browser.
     fastScrollTo = (target: HTMLElement) => {
-        cancelAnimationFrame(this.scrollAnimationId);
+        this.stopScrollAnimation();
+        const lifecycle = this.lifecycle;
         const distance = target.getBoundingClientRect().top;
         // For very short distances, just jump instantly
         if (Math.abs(distance) < 4) return;
@@ -455,8 +502,10 @@ class TableOfContents extends HTMLElement {
         const scroller = os ? os.elements().viewport : document.documentElement;
         const startPos = scroller.scrollTop;
         // Disable CSS scroll-behavior so scrollTop is applied instantly per frame
+        this.previousScrollBehavior = document.documentElement.style.scrollBehavior;
         document.documentElement.style.scrollBehavior = 'auto';
         const step = (now: number) => {
+            if (!this.isConnected || lifecycle !== this.lifecycle) return;
             const elapsed = now - start;
             const t = Math.min(elapsed / duration, 1);
             // easeOutCubic: fast start, gentle stop
@@ -466,7 +515,7 @@ class TableOfContents extends HTMLElement {
                 this.scrollAnimationId = requestAnimationFrame(step);
             } else {
                 // Restore CSS scroll-behavior after animation completes
-                document.documentElement.style.removeProperty('scroll-behavior');
+                this.stopScrollAnimation();
             }
         };
         this.scrollAnimationId = requestAnimationFrame(step);
@@ -477,29 +526,33 @@ class TableOfContents extends HTMLElement {
             .composedPath()
             .find((element) => element instanceof HTMLAnchorElement);
 
-        if (anchor) {
+        if (anchor && this.contains(anchor)) {
             const id = decodeURIComponent(anchor.hash?.substring(1));
             const idx = this.headingIdxMap.get(id);
             if (idx !== undefined) {
                 event.preventDefault(); // Only prevent default if we can handle the scroll
                 this.anchorNavTarget = this.headings[idx];
                 // Cancel any pending scroll corrections from a previous click
-                this.scrollCorrectionTimers.forEach(clearTimeout);
-                this.scrollCorrectionTimers = [];
-                this.resizeObserver?.disconnect();
-                this.resizeObserver = null;
+                this.clearScrollCorrections();
 
                 const heading = this.headings[idx];
                 if (heading) {
                     // Force all content-visibility:auto elements to render at
                     // actual heights so scroll positions are accurate.
                     const mdContainer = document.querySelector('.custom-md');
-                    if (mdContainer) mdContainer.classList.add('cv-force-visible');
+                    this.forcedMdContainer = mdContainer;
+                    mdContainer?.classList.add('cv-force-visible');
+                    if (event instanceof MouseEvent && event.detail === 0) {
+                        if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+                        heading.focus({ preventScroll: true });
+                    }
 
                     this.fastScrollTo(heading);
                     // Correct scroll if async content (expressive code, LaTeX,
                     // tables, images) renders and shifts element positions.
+                    const lifecycle = this.lifecycle;
                     const correctScroll = () => {
+                        if (!this.isConnected || lifecycle !== this.lifecycle) return;
                         if (Math.abs(heading.getBoundingClientRect().top) > 2) {
                             heading.scrollIntoView({ behavior: 'instant', block: 'start' });
                         }
@@ -513,10 +566,7 @@ class TableOfContents extends HTMLElement {
                         setTimeout(correctScroll, 800) as unknown as number,
                         setTimeout(correctScroll, 1500) as unknown as number,
                         setTimeout(() => {
-                            this.resizeObserver?.disconnect();
-                            this.resizeObserver = null;
-                            // Restore content-visibility:auto for performance
-                            if (mdContainer) mdContainer.classList.remove('cv-force-visible');
+                            if (lifecycle === this.lifecycle) this.clearScrollCorrections();
                         }, 10000) as unknown as number,
                     );
                 }
@@ -534,19 +584,13 @@ class TableOfContents extends HTMLElement {
         // returns correct values. The animation is on #content-wrapper (not
         // .prose), so we listen there. animationend bubbles UP, so listening
         // on a descendant like .prose would never catch it.
-        const contentWrapper = document.getElementById('content-wrapper');
-        if (contentWrapper) {
-            const tryInit = () => {
-                if (!this.tocEl) this.init();
-            };
-            contentWrapper.addEventListener('animationend', tryInit, { once: true });
-            // Fallback: if animation was already stripped (hash navigation,
-            // subsequent page loads) or finished before this runs, init after
-            // a short delay matching the animation duration.
-            setTimeout(tryInit, 500);
+        this.lifecycle++;
+        this.animationWrapper = document.getElementById('content-wrapper');
+        if (this.animationWrapper) {
+            this.animationWrapper.addEventListener('animationend', this.tryInit, { once: true });
+            this.initTimer = window.setTimeout(this.tryInit, 500);
         } else {
-            // No content wrapper (e.g. non-post page), try init immediately
-            this.init();
+            this.tryInit();
         }
     };
 
@@ -558,8 +602,11 @@ class TableOfContents extends HTMLElement {
         this.observer.disconnect();
         const bodyEl = document.querySelector('body');
         const os = bodyEl ? (window as any).OverlayScrollbars?.(bodyEl) : null;
+        const lifecycle = this.lifecycle;
         this.observer = new IntersectionObserver(
-            this.markVisibleSection,
+            (entries) => {
+                if (lifecycle === this.lifecycle) this.markVisibleSection(entries);
+            },
             { threshold: 0, root: os ? os.elements().viewport : null }
         );
         this.sections.forEach((section) => {
@@ -568,6 +615,7 @@ class TableOfContents extends HTMLElement {
     };
 
     init() {
+        if (!this.isConnected || this.tocEl) return;
         this.tocEl = this.closest<HTMLElement>("[data-toc-scroll-container]")
             || document.getElementById("toc-inner-wrapper")
             || this;
@@ -608,7 +656,9 @@ class TableOfContents extends HTMLElement {
         const bodyEl = document.querySelector('body');
         const os = bodyEl ? (window as any).OverlayScrollbars?.(bodyEl) : null;
         if (!os) {
-            setTimeout(() => {
+            const lifecycle = this.lifecycle;
+            this.observerTimer = window.setTimeout(() => {
+                if (!this.isConnected || lifecycle !== this.lifecycle) return;
                 this.setupObserver();
                 this.fallback();
                 this.update();
@@ -620,11 +670,34 @@ class TableOfContents extends HTMLElement {
     };
 
     disconnectedCallback() {
-        this.sections.forEach((section) =>
-            this.observer.unobserve(section)
-        );
+        this.lifecycle++;
+        clearTimeout(this.initTimer);
+        clearTimeout(this.observerTimer);
+        this.animationWrapper?.removeEventListener('animationend', this.tryInit);
+        this.animationWrapper = null;
         this.observer.disconnect();
-        this.tocEl?.removeEventListener("click", this.handleAnchorClick);
+        this.tocEl?.removeEventListener("click", this.handleAnchorClick, true);
+        cancelAnimationFrame(this.updateAnimationId);
+        this.updatePending = false;
+        this.stopScrollAnimation();
+        this.clearScrollCorrections();
+        this.tocEntries.forEach((entry) => {
+            entry.classList.remove(this.visibleClass);
+            entry.removeAttribute('aria-current');
+        });
+        this.activeIndicator?.setAttribute('style', 'opacity: 0');
+        this.tocEl = null;
+        this.activeIndicator = null;
+        this.anchorNavTarget = null;
+        this.headingIdxMap.clear();
+        this.headings = [];
+        this.sections = [];
+        this.tocEntries = [];
+        this.active = [];
+        this.activeCount = 0;
+        this.prevActiveMin = -1;
+        this.prevActiveMax = -1;
+        this.pendingTocScrollTop = null;
     };
 }
 

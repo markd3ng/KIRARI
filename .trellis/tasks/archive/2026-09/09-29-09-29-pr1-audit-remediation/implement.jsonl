@@ -1,0 +1,4 @@
+{"file":".trellis/spec/site/frontend/index.md","reason":"Site package boundaries and implementation guidance for external build and indexing changes."}
+{"file":".trellis/spec/site/frontend/quality-guidelines.md","reason":"Verified build, test, and dist publication requirements updated for the external publisher lock and recovery contract."}
+{"file":".trellis/spec/site-profile/frontend/index.md","reason":"Profile package boundary and materialization behavior used by clean-checkout validation."}
+{"file":".trellis/spec/guides/repository-workflow.md","reason":"Shared repository workflow guidance updated to describe the verified trust and validation boundaries."}

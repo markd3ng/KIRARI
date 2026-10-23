@@ -1,0 +1,5 @@
+{"file":".trellis/spec/site/frontend/quality-guidelines.md","reason":"Check all external Site build safety invariants and the repository quality gate."}
+{"file":".trellis/spec/site/frontend/type-safety.md","reason":"Check config/content validation and typed contract boundaries."}
+{"file":".trellis/spec/site-profile/frontend/quality-guidelines.md","reason":"Ensure legacy Profile behavior and regression checks remain explicit."}
+{"file":".trellis/spec/guides/repository-workflow.md","reason":"Run existing repository CI/security checks without weakening gates."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Review schema-to-build-to-artifact flow and all affected consumers."}

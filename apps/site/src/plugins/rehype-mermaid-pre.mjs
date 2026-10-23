@@ -24,15 +24,14 @@ export function rehypeMermaidPreProcess() {
 				const classes = codeNode.properties?.className || [];
 
 				if (Array.isArray(classes) && classes.includes("language-mermaid")) {
-					// Extract the text content from the code block
-					const textContent = codeNode.children
-						?.filter((child) => child.type === "text")
-						.map((child) => child.value)
-						.join("");
-
-					// Replace with <pre class="mermaid">textContent</pre>
-					node.properties = { className: ["mermaid"] };
-					node.children = [{ type: "text", value: textContent }];
+					// Remove the code wrapper so Expressive Code does not consume Mermaid fences.
+					node.children = codeNode.children;
+					node.properties = {
+						...node.properties,
+						className: [...(node.properties?.className || []), "mermaid"],
+						tabIndex: 0,
+						ariaLabel: "Mermaid diagram source",
+					};
 				}
 			}
 		});

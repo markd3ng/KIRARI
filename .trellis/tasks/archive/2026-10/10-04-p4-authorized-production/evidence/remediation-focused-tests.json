@@ -1,0 +1,45 @@
+{
+  "node": "v22.12.0",
+  "checks": [
+    {
+      "suite": "p4",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/production-authorization.test.mjs",
+        "scripts/tests/p4-production-browser-fixture.test.mjs",
+        "scripts/tests/p4-production-preflight.test.mjs",
+        "scripts/tests/p4-production-validation.test.mjs",
+        "scripts/tests/p4-production-workflow.test.mjs",
+        "scripts/tests/p4-rollback.test.mjs",
+        "scripts/tests/p4-runtime-adapter.test.mjs",
+        "scripts/tests/p4-runtime.test.mjs",
+        "scripts/tests/site-artifact.test.mjs",
+        "scripts/tests/vercel-production-artifact.test.mjs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.08,
+      "log_path": "/tmp/kirari-p4-remediation-checks/p4-final.log",
+      "summary": "put path and file digest\nok 73 - remote file tree must match each expected Build Output path and file digest\n  ---\n  duration_ms: 0.907708\n  ...\n# Subtest: pre-promotion digest binds the complete staged-validation envelope\nok 74 - pre-promotion digest binds the complete staged-validation envelope\n  ---\n  duration_ms: 0.760709\n  ...\n# Subtest: Vercel CLI subprocess is isolated to its token and temporary project home\nok 75 - Vercel CLI subprocess is isolated to its token and temporary project home\n  ---\n  duration_ms: 184.367542\n  ...\n# Subtest: stages exact prebuilt output without domain assignment, then promotes only after bound validation\nok 76 - stages exact prebuilt output without domain assignment, then promotes only after bound validation\n  ---\n  duration_ms: 357.694958\n  ...\n1..76\n# tests 90\n# suites 0\n# pass 90\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 2949.206375\n"
+    },
+    {
+      "suite": "p3",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/ci-profile-contract.test.mjs",
+        "scripts/tests/ci-composed-artifact-contract.test.mjs",
+        "scripts/tests/composed-build.test.mjs",
+        "scripts/tests/ocr-review-workflow-contract.test.mjs",
+        "scripts/tests/p3-browser-contract.test.mjs",
+        "scripts/tests/p3-browser-oidc.test.mjs",
+        "scripts/tests/p3-staging-workflow-contract.test.mjs",
+        "scripts/tests/vercel-preview-deployment.test.mjs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.69,
+      "log_path": "/tmp/kirari-p4-remediation-checks/p3-final.log",
+      "summary": "th CLI-compatible paths\n  ---\n  duration_ms: 4.222083\n  ...\n# Subtest: deployment manifest rejects symlinks in uploaded output\nok 26 - deployment manifest rejects symlinks in uploaded output\n  ---\n  duration_ms: 2.626708\n  ...\n# Subtest: upload deduplication rejects different files that claim the same digest\nok 27 - upload deduplication rejects different files that claim the same digest\n  ---\n  duration_ms: 2.034417\n  ...\n# Subtest: deployment status requests retry transient API failures\nok 28 - deployment status requests retry transient API failures\n  ---\n  duration_ms: 263.046041\n  ...\n# Subtest: Build Output header parsing ignores comments outside and inside groups\nok 29 - Build Output header parsing ignores comments outside and inside groups\n  ---\n  duration_ms: 1.093667\n  ...\n1..29\n# tests 29\n# suites 0\n# pass 29\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 8627.134542\n"
+    }
+  ]
+}

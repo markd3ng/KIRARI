@@ -1,0 +1,23 @@
+{
+  "result": "PASS",
+  "fixtures": [
+    {
+      "fixture": "minimal",
+      "report": "/tmp/kirari-c1-hobby-browser-fixtures-retry/minimal.json",
+      "routes": 1,
+      "assets": 32
+    },
+    {
+      "fixture": "full",
+      "report": "/tmp/kirari-c1-hobby-browser-fixtures-retry/full.json",
+      "routes": 3,
+      "assets": 39
+    },
+    {
+      "fixture": "migrated",
+      "report": "/tmp/kirari-c1-hobby-browser-fixtures-retry/migrated.json",
+      "routes": 3,
+      "assets": 43
+    }
+  ]
+}

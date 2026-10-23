@@ -1,0 +1,18 @@
+[
+  {
+    "url": "https://github.com/vercel/sdk/blob/main/docs/models/getprojecttrustedsources.md",
+    "blob_sha": "01b8edb2e53927f9da6b93a8b99a7d72bde065a2"
+  },
+  {
+    "url": "https://github.com/vercel/sdk/blob/main/docs/models/getprojectoidcproviders.md",
+    "blob_sha": "97f7ba2b0a0976c4a3754ec2a3e8b79a2011ceb0"
+  },
+  {
+    "url": "https://github.com/vercel/sdk/blob/main/docs/models/getprojectto.md",
+    "blob_sha": "bfd11aafbe7008e04c842f9eeb742dd49c22590c"
+  },
+  {
+    "url": "https://github.com/vercel/sdk/blob/main/src/models/getprojectresponsebody.ts",
+    "blob_sha": "36a12421ee46cde5fb120556857143f1af320c3d"
+  }
+]

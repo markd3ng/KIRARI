@@ -52,4 +52,11 @@ export const id: Translation = {
 	[Key.publishedAt]: "Diterbitkan pada",
 	[Key.lastUpdatedAt]: "Terakhir diperbarui pada",
 	[Key.license]: "Lisensi",
+	[Key.privacySettings]: "Pengaturan privasi",
+	[Key.privacySettingsDescription]: "Jika diaktifkan oleh pemilik situs, analitik dan iklan diizinkan secara default. Anda dapat menonaktifkan salah satunya di sini; pilihan disimpan di browser ini.",
+	[Key.analytics]: "Analitik",
+	[Key.advertising]: "Iklan",
+	[Key.privacySave]: "Simpan pengaturan",
+	[Key.privacyCancel]: "Batal",
+	[Key.privacySaveError]: "Pilihan Anda tidak dapat disimpan. Izinkan situs ini menggunakan penyimpanan lokal, lalu coba lagi.",
 };

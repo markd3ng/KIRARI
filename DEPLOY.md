@@ -4,6 +4,19 @@
 
 **阅读耗时**：按步骤操作约 15 分钟（不含 DNS 生效等待）。
 
+> **外部 Site 构建**：`./build.sh --site <目录>` 用于本地构建静态文件并输出到
+> `apps/site/dist`；`./build.sh --compose` 将独立的 Core/Site revision 构建到新制品
+> 目录，手动 CI 可下载该制品。两者都不会部署、发送收录通知或打包 `functions/`；本指南中
+> 的 `pnpm build` 平台部署设置仍适用于默认 `packages/site-profile` 流程。完整输入与
+> 信任边界见 [`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md)。
+
+> **原生托管部署（RM-05）**：GitHub Actions 验证源代码并可生成可移植制品，
+> 托管平台负责自己的部署。Vercel 使用 Git 集成：功能分支为 Preview，`main` 为
+> Production；不再使用自定义授权、制品上传或提升控制器。生产验收必须核对真实
+> 部署的项目、环境、commit、域名和浏览器行为，不能以 CI 成功代替。
+> 当前架构迁移 PR 的合并可能触发首次新的 Production，需单独的 Owner 切换决定。
+> 详见 [Site Production](./docs/SITE_PRODUCTION.md)。
+
 ---
 
 ## 目录
@@ -606,12 +619,18 @@ GitHub Pages 不读取 `dist/_headers`，所以无法直接应用 `/_astro/*` im
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/markd3ng/KIRARI)
 
 一键部署配置：
-- Framework: **Other**（或手动选择 Astro）
+- Framework: **Astro**（现有项目的有效设置应先核验）
+- Root Directory: 仓库根目录（留空或 `.`），不要设为 `apps/site`
 - Build Command: `pnpm build`
 - Output Directory: `apps/site/dist`
 - Install Command: `pnpm install --frozen-lockfile`
 
-Vercel 会读取根 `package.json` 的 `packageManager` 和 `engines`。部署后的域名格式为 `项目名.vercel.app`。
+Vercel 会读取根 `package.json` 的 `packageManager` 和 `engines`。Production Branch 为
+`main`，功能分支保留原生 Preview；保留生成的根 `vercel.json` 安全头、缓存与路由。
+Git 构建可能重新执行 Astro，因此不能声称它等同于旧 CI 制品的字节。可选 Gateway
+是应用能力，独立于 Site 托管；其他平台（包括 GitHub Pages 的原生 Actions）仍可作为
+另一种托管选择，但不要为同一站点并行建立第二个 Production 控制器。
+收录通知默认关闭，构建成功不代表站点已公开部署。
 
 ### Netlify
 

@@ -1,0 +1,13 @@
+{
+  "exit": 0,
+  "started_at": "2026-10-15T01:43:01.661Z",
+  "completed_at": "2026-10-15T01:43:05.295Z",
+  "endpoint": "https://api.vercel.com/v2/user",
+  "method": "GET",
+  "authentication_source": "EXISTING_OWNER_CLI_SESSION",
+  "authenticated_raw_response": true,
+  "identity": {
+    "id": "rY3kmH3VCcbt5YgaXMraHu40",
+    "username": "martyjstogner-2766"
+  }
+}

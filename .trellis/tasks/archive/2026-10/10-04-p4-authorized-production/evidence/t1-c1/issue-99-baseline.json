@@ -1,0 +1,15 @@
+{
+  "body": "ROADMAP_ID=RM-05\nPROPOSED_PHASE=P4_AUTHORIZED_PRODUCTION_DEPLOYMENT\nPRIORITY=P1\n\nGOAL\nProvide an owner-authorized production path for promoting a previously verified external KIRARI Site artifact and restoring a known prior artifact.\n\nSCOPE\nOnly after #98 staging evidence, define production authorization, credential separation, immutable Site-artifact promotion, deployed Core/Site/artifact provenance, health/smoke verification, failure recovery, and rollback to a prior retained Site artifact. Preserve the verified Vercel main-branch Git guard.\n\nOUT_OF_SCOPE\n- Edge Gateway runtime deployment, Gateway secrets, and Gateway lifecycle. These require their own explicitly authorized future delivery scope after the adapter work.\n- Production action in PR/CI preview jobs, bypass or redesign of the Vercel main Git guard, or deployment before the owner separately authorizes a concrete target and operation.\n\nACCEPTANCE_CRITERIA\n- Production is a separate explicit approval from build and staging.\n- Production promotes the exact reviewed Site artifact; no rebuild can silently change its contents.\n- Deployment records Core SHA, Site SHA, artifact digest, and target.\n- A failed Site deploy can restore the last approved artifact and verifies the restored target.\n- Main-head deployment guard remains in force.\n\nDEPENDENCIES\nRM-04 / Issue #98 staging proof; owner selects and approves the Site production platform, environment, and release authorization policy.\n\nDELIVERY_EVIDENCE\nApproved workflow/authorization evidence, Site deployment provenance, health/smoke result, and a reviewed rollback record (simulation or authorized execution).\n\nSOURCE_ROADMAP\nKIRARI_NEXT_SPEC.md \u00a7\u00a71, 3, 5, 10; PR-1 guard scope in PR #94 and archived guard task; external Site product outcome. Edge Gateway production lifecycle is not included here.\n",
+  "number": 99,
+  "projectItems": [
+    {
+      "status": {
+        "optionId": "bfd7f099",
+        "name": "Blocked"
+      },
+      "title": "KIRARI \u2014 Development & Security"
+    }
+  ],
+  "state": "OPEN",
+  "title": "[RM-05] Promote an approved external Site artifact with provenance and rollback"
+}

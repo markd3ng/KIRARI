@@ -1,0 +1,23 @@
+{
+	"name": "@kirari/edge-gateway-edgeone",
+	"private": true,
+	"type": "module",
+	"version": "0.1.0",
+	"description": "Anonymous CACHE_NONE EdgeOne Makers adapter for KIRARI Gateway Core",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"type-check": "tsc --noEmit",
+		"test": "node --test --experimental-strip-types test/*.test.ts test/*.test.mjs",
+		"package": "node scripts/package.mjs"
+	},
+	"dependencies": {
+		"@kirari/edge-gateway-core": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/node": "24.12.4",
+		"typescript": "5.9.3",
+		"esbuild": "0.28.1"
+	}
+}

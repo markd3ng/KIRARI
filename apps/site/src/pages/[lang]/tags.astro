@@ -9,29 +9,17 @@ import {
 	getTagList,
 	getTaxonomyDisplayMappings,
 } from "../../utils/content-utils";
-import {
-	fromLangSlug,
-	getPathAlternates,
-	getPrefixedLanguages,
-	toLangSlug,
-	withLangPrefix,
-} from "../../utils/i18n-utils";
+import { getLocalizedRouteContext, getPrefixedStaticPaths } from "../../utils/page-route-utils";
 import { getTagName, getTagUrl } from "../../utils/url-utils";
 
-export const getStaticPaths = (() =>
-	getPrefixedLanguages().map((lang) => ({
-		params: { lang: toLangSlug(lang) },
-		props: { lang },
-	}))) satisfies GetStaticPaths;
+export const getStaticPaths = getPrefixedStaticPaths satisfies GetStaticPaths;
 
-const lang = fromLangSlug(Astro.params.lang);
+const { lang, currentUrl, alternates } = getLocalizedRouteContext("/tags/", Astro.params.lang);
 const tags = await getTagList(lang);
 const { tags: tagDisplayMap } = await getTaxonomyDisplayMappings(lang);
-const tagsUrl = withLangPrefix("/tags/", lang);
-const alternates = getPathAlternates((itemLang) => withLangPrefix("/tags/", itemLang));
 ---
 
-<MainGridLayout title={i18n(I18nKey.tags, lang)} lang={lang} alternates={alternates} canonicalUrl={tagsUrl}>
+<MainGridLayout title={i18n(I18nKey.tags, lang)} lang={lang} alternates={alternates} canonicalUrl={currentUrl}>
 	<div class="card-base px-8 py-6">
 		<h1 class="text-3xl font-bold mb-6 text-black/90 dark:text-white/90">{i18n(I18nKey.tags, lang)}</h1>
 		<div class="flex flex-wrap gap-2">

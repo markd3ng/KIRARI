@@ -26,6 +26,28 @@ One change per commit. Separate style, logic, and feature work.
 - PRs that touch architecture (new dependencies, `transition-manager.ts`, new config schema) must sync the corresponding docs (see sync table in [AGENTS.md](./AGENTS.md)).
 - Use the PR template (`.github/pull_request_template.md`).
 
+## Build And Hosting Architecture
+
+KIRARI uses the hosting provider's native deployment mechanism. GitHub Actions
+validates source and produces optional portable artifacts, but does not duplicate
+the provider's native release controller. For Vercel: feature branch → PR/source
+checks and advisory OCR → review/merge → main → native Production build/hosting.
+Use the repository root, `pnpm build`, and `apps/site/dist`.
+
+Preserve immutable Core/Site composition, config-ref CI and artifact provenance.
+These product guarantees do not require C1 manifests, raw Trusted Sources gates
+or per-release approval bindings. Signing, provenance and normal security checks
+remain valid when they serve a concrete independent purpose. Provider-native
+GitHub Pages Actions remain valid for a separately chosen hosting platform.
+Optional Gateway adapters are application capabilities, not Site release controllers.
+
+Dependency audit and OCR are informational/advisory; Production does not depend
+on OCR success. Run source checks without Production deployment credentials.
+Follow review requirements where configured; do not assume branch protection is
+already enforced. The current cutover PR must await Owner merge/deployment approval.
+Indexing stays opt-in/default-off and needs verified actual Production deployment,
+not CI or native build success alone.
+
 ## Pre-Release Validation
 
 ```bash

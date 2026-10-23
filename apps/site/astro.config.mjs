@@ -35,24 +35,18 @@ import { rehypeTableWrapper } from "./src/plugins/rehype-table-wrapper.mjs";
 import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
 import { remarkPlantuml } from "./src/plugins/remark-plantuml.js";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
+import { resolveSearchProvider } from "./src/utils/search-provider.mjs";
 
 // https://astro.build/config
 
-const activeSearchProvider =
-	Config.search?.provider === "docsearch" &&
-	!!Config.search.docsearch.enable &&
-	!!Config.search.docsearch.appId &&
-	!!Config.search.docsearch.apiKey &&
-	!!Config.search.docsearch.indexName
-		? "docsearch"
-		: Config.search?.provider === "google" && !!Config.search.google.cx
-			? "google"
-			: "pagefind";
+const activeSearchProvider = resolveSearchProvider(Config);
 
 export default defineConfig({
 	site: Config.site.url,
 	base: Config.site.base,
 	trailingSlash: "always",
+	// External stages share dependencies, never mutable content/asset caches.
+	cacheDir: "./.astro",
 	build: {
 		inlineStylesheets: "auto",
 	},
@@ -157,15 +151,12 @@ export default defineConfig({
 		mdx(),
 
 		sitemap({
+			filter: (page) => !new URL(page).pathname.endsWith("/index.md"),
 			customPages:
 				Config.llms.enable && Config.llms.sitemap
 					? [
 						// Use site + base + path, removing any double slashes from the middle
 						`${Config.site.url}${Config.site.base}llms.txt`.replace(
-							/([^:]\/)\/+/g,
-							"$1",
-						),
-						`${Config.site.url}${Config.site.base}llms-small.txt`.replace(
 							/([^:]\/)\/+/g,
 							"$1",
 						),

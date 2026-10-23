@@ -11,7 +11,7 @@
 
 # KIRARI
 
-静态博客主题 — Astro 6.4.8 + Svelte 5 + Tailwind CSS v4。单一 TOML 配置驱动。支持 Cloudflare Pages、Vercel、Netlify、EdgeOne Pages 部署。
+静态博客主题 — Astro 7.3.5 + Svelte 5 + Tailwind CSS v4。单一 TOML 配置驱动。支持 Cloudflare Pages、Vercel、Netlify、EdgeOne Pages 部署。
 
 ## 架构
 
@@ -27,7 +27,7 @@ kirari.config.toml  ──→  smol-toml 解析  ──→  config-loader.ts（�
 `packages/site-profile/kirari.config.toml`，构建时会 materialize 到
 `apps/site/kirari.config.toml`。环境变量只用于密钥、部署差异，以及不适合提交到仓库的服务凭据。
 
-**Islands**：仅 3 个 Svelte 组件在客户端水合 — 搜索（`client:idle`）、主题切换（`client:idle`）、显示设置（`client:only="svelte"`）。其余全部为静态 `.astro`。
+**客户端 Islands（6）**：`Search`（`client:idle`，启用搜索时显示在导航栏）、`LightDarkSwitch`（`client:idle`）、`DisplaySettings`（`client:only="svelte"`）、`PrivacySettings`（`client:load`，页脚）、`DevicesFilter`（`client:load`，`/devices/` 和 `/{lang}/devices/`）以及 `SharePoster`（`client:load`，文章有分享链接时显示）。其他 `.astro` 组件均为静态渲染。
 
 **页面过渡**：`TransitionManager` 单例（`src/utils/transition-manager.ts`）封装双路径策略：
 
@@ -66,7 +66,7 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 |---|---|
 | materialize | `functions/ghc/` 或 `api/ghc/`（仅 `githubCard.adapter.enabled` 时；Cloudflare 产物会写入部署根目录，兼容 `apps/site` monorepo） |
 | astro build | `dist/`（SSG） |
-| postbuild | `_headers`、`_redirects`、`robots.txt`、Pagefind 索引、`llms.txt`、IndexNow 提交 |
+| postbuild | `_headers`、`_redirects`、`robots.txt`、Pagefind 索引、LLM 文件、可选的 IndexNow 公开验证文件；不发送收录通知 |
 
 **性能保证**：
 
@@ -83,22 +83,22 @@ materialize-ghc-adapter.mjs → astro build → postbuild.mjs
 
 | 类别 | 包 | 版本 |
 |---|---|---|
-| 框架 | astro | 6.4.8 |
-| Islands | svelte | ^5.56.3 |
-| CSS | tailwindcss、@tailwindcss/vite、stylus | ^4.3.0、^0.64.0 |
-| 搜索 | pagefind（默认）、@docsearch/js（Algolia） | ^1.5.2、^4.6.3 |
-| 代码高亮 | astro-expressive-code + 4 插件 | ^0.43.1 |
-| 公式 | remark-math、rehype-katex、katex | ^0.16.47 |
-| 图表 | mermaid（仅客户端） | ^11.15.0 |
-| 图标 | astro-icon、@iconify/svelte | — |
-| 过渡 | Astro ClientRouter / swup 降级 | ^4.9.0 |
-| 图片灯箱 | photoswipe | ^5.4.4 |
-| 图片处理 | sharp | ^0.34.5 |
-| 滚动条 | overlayscrollbars | ^2.16.0 |
-| 内容 | @astrojs/mdx + remark/rehype 链 | ^6.0.3 |
-| 订阅 | @astrojs/rss、@astrojs/sitemap | — |
-| OG 图片 | satori | ^0.26.0 |
-| 配置 | smol-toml | ^1.6.1 |
+| 框架 | `astro` | `7.3.5` |
+| Islands | `svelte` | `^5.56.3` |
+| CSS | `tailwindcss`、`@tailwindcss/vite`、`stylus` | `^4.3.1`、`^4.3.1`、`^0.64.0` |
+| 搜索 | `pagefind`（默认）、`@docsearch/js`（Algolia） | `^1.5.2`、`^4.6.3` |
+| 代码高亮 | `astro-expressive-code`、`@expressive-code/core`、`@expressive-code/plugin-collapsible-sections`、`@expressive-code/plugin-line-numbers` | `^0.44.1`、`^0.44.1`、`^0.44.1`、`^0.44.1` |
+| 公式 | `remark-math`、`rehype-katex`、`katex` | `^6.0.0`、`^7.0.1`、`^0.18.7` |
+| 图表 | `mermaid`（仅客户端） | `^11.16.1` |
+| 图标 | `astro-icon`、`@iconify/svelte` | `^1.2.0`、`^5.2.1` |
+| 过渡 | Astro ClientRouter / `swup` 降级 | `^4.9.0` |
+| 图片灯箱 | `photoswipe` | `^5.4.4` |
+| 图片处理 | `sharp` | `^0.35.5` |
+| 滚动条 | `overlayscrollbars` | `^2.16.0` |
+| 内容 | `@astrojs/mdx` + remark/rehype 链 | `^8.0.2` |
+| 订阅 | `@astrojs/rss`、`@astrojs/sitemap` | `4.0.19`、`^3.7.3` |
+| OG 图片 | `satori` | `^0.26.0` |
+| 配置 | `smol-toml` | `^1.9.0` |
 
 ## 部署
 
@@ -116,6 +116,51 @@ pnpm build
 
 > pnpm ≥ 9.14.4，通过 `packageManager` 字段强制。
 
+### 外部 Site 构建方式
+
+`./build.sh --site /path/to/site` 可在本地从外部 Site 目录构建到
+`apps/site/dist`。不带参数的 `./build.sh` 和 `pnpm build` 仍使用
+`packages/site-profile`。程序会在 materialize 前验证必需文件、类型、JSON/TOML
+内容和符号链接。materialize 会将映射输入暂存后写入生成的站点副本，
+不会修改原始 Site Source。输入约定与安全边界见
+[`docs/EXTERNAL_SITE_BUILD.md`](./docs/EXTERNAL_SITE_BUILD.md)。
+
+P1 还增加了绑定 Core 和 Site 两个不可变 revision 的 artifact 构建模式。
+先在 Core checkout 执行 `pnpm install --frozen-lockfile`，再运行以下命令；Site 必须是独立 checkout，不能与 Core 合并：
+
+```bash
+./build.sh --compose \
+  --core-ref <core-branch-tag-or-sha> \
+  --site /path/to/site-checkout/packages/site-profile \
+  --site-ref <site-branch-tag-or-sha> \
+  --artifact-dir /path/to/new-artifact
+```
+
+构建会验证两个 revision，并在 artifact 目录中写入静态输出和
+`provenance.json`。GitHub Actions 的手动 composition job 使用同一入口，
+artifact 保留 30 天。组合构建使用 UTC，并以所选输入中较晚的 commit 时间作为构建时钟
+（Site 不是 Git checkout 时使用 Core 的时间）；该值会记录在 provenance 中。普通构建仍使用当前运行时钟。
+组合构建还会隔离内容缓存，并按稳定顺序生成搜索索引。
+revision 选择、Site schema、toolchain、错误诊断和按原始 SHA pair 重建方式见外部 Site 构建文档。
+Git checkout 不能有暂存、未暂存或未跟踪的改动。
+
+Vercel 使用原生 Git 部署：功能分支 PR 使用 Preview，审阅后合并到生产分支
+`main`，由 Vercel 构建和托管。GitHub Actions 负责源代码检查与可选的可移植制品，
+不再上传或提升另一份 Production 制品。Vercel 根目录保持仓库根目录，构建命令为
+`pnpm build`，输出目录为 `apps/site/dist`。
+生产验证与恢复见 [Site Production](./docs/SITE_PRODUCTION.md)。
+
+Core/Site provenance 描述构建输入和输出；原生托管平台重新构建不代表与保留的 CI
+制品字节相同。依赖审计保持信息报告，正常构建、测试、类型与安全检查保留。
+
+这两种模式都只生成静态产物：不拉取或切换 Git ref、不提交、不推送、不部署、不打包
+Cloudflare Pages Functions，也不发送 IndexNow/Google 收录通知。
+Site MDX 和其他构建时代码属于可信输入，可使用调用者进程的文件系统和网络权限。
+snippets 也是可信的所有者代码；其中的 HTML/JavaScript 会输出到网站并在浏览器中执行。
+构建并非操作系统沙箱。不要在能访问敏感文件的机器上构建未经审阅的 Site
+输入。这是本地构建入口，不是
+[DEPLOY.md](./DEPLOY.md) 中的部署流程。
+
 ## Fork 后最小修改清单
 
 仅修改以下文件。不要修改 `apps/site/src/components/`、`apps/site/src/layouts/`、
@@ -125,11 +170,16 @@ pnpm build
 |---|---|---|
 | `packages/site-profile/kirari.config.toml` | 设置 `site.url`、`site.title`、`profile.*`、`navBar.*`、`landingPage.*` | 是 |
 | `packages/site-profile/content/posts/` | 删除示例文章，添加自己的 `.md`/`.mdx` | 是 |
-| `packages/site-profile/content/spec/about.md` | 替换关于页内容 | 推荐 |
+| `packages/site-profile/content/spec/{about,friends,projects}.md` | 替换内置页面 | 推荐 |
+| `packages/site-profile/data/friends.json` | 替换友链数据（可使用空数组） | 推荐 |
+| `packages/site-profile/assets/images/` | 替换通用图片，包括示例头像和横幅 | 推荐 |
 | `packages/site-profile/assets/` | 替换 favicon、OG 图片和 profile 资产 | 推荐 |
-| `packages/site-profile/content/spec/friends.md` | 替换或移除 Friends 导航 | 可选 |
-| `packages/site-profile/content/spec/projects.md` | 替换 GitHub 项目卡片或移除 Projects 导航 | 可选 |
-| `packages/site-profile/data/friends.json` | 替换友链数据 | 可选 |
+
+使用 `./build.sh --site` 时，TOML、`content/spec/{about,friends,projects}.md`、
+`data/friends.json`、包含 `demo-avatar.png` 和 `demo-banner.png` 的
+`assets/images/`、8 个 favicon 文件及 `assets/og/default.png` 都是必需项。
+posts、devices 数据/图片、snippets 和 `ads.txt` 可选；缺少可选目录时会生成空目录，
+避免旧内容混入构建。
 
 验证：
 
@@ -142,6 +192,9 @@ pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```
+
+依赖审计仅用于信息报告：CI 保留原始输出，不阻断构建、测试、类型检查、QA 或部署策略检查。
+上游提供兼容修复后再升级；未解决的上游公告不需要自定义例外机制。
 
 ## 配置
 
@@ -390,7 +443,7 @@ server = "https://www.plantuml.com/plantuml"
 theme = "kirari" # kirari | github | vitepress | obsidian
 ```
 
-启用 Mermaid 时，Markdown pipeline 会自动识别 fenced `mermaid` 代码块。PlantUML 为可选功能，默认关闭。
+Mermaid 仅在全局 `[mermaid].enable` 与文章 frontmatter `mermaid: true` 同时启用时渲染（文章默认关闭）。禁用或语法错误时保留可读源码；Astro 路由切换及明暗主题变化会更新图表。PlantUML 为可选功能，默认关闭。
 
 ### 统计分析
 
@@ -403,11 +456,20 @@ theme = "kirari" # kirari | github | vitepress | obsidian
 | Plausible | `analytics.plausible.domain` | `PUBLIC_PLAUSIBLE_DOMAIN` |
 | Microsoft Clarity | `analytics.clarityProjectId` | `PUBLIC_CLARITY_PROJECT_ID` |
 | Fathom | `analytics.fathomSiteId` | `PUBLIC_FATHOM_SITE_ID` |
-| Simple Analytics | `analytics.simpleAnalyticsDomain` | — |
+| Simple Analytics | `analytics.simpleAnalyticsDomain` | `PUBLIC_SIMPLE_ANALYTICS_DOMAIN` |
 | Matomo | `analytics.matomo.siteId` + `src` | `PUBLIC_MATOMO_SITE_ID`、`PUBLIC_MATOMO_SRC` |
 | Amplitude | `analytics.amplitudeApiKey` | `PUBLIC_AMPLITUDE_API_KEY` |
 
 Umami、Plausible、Matomo 支持可选 `integrity`（SRI），用于固定版本脚本。
+统计组件与静态 CSP 生成器使用相同的 `PUBLIC_*` 配置覆盖，包括 Astro 的 `.env.production`。更换提供商配置时，在相同构建环境中运行 `node apps/site/scripts/generate-vercel-config.mjs` 更新 `vercel.json`；Pages 的 `_headers` 在 postbuild 生成。禁用统计不会在现有基线之外增加提供商来源，详见 [来源矩阵](./SECURITY_MODEL.md#analytics-provider-sources)。Consent 与 SPA 事件语义属于 #106，CSP 兼容不代表已取得同意。
+
+站点所有者启用并配置统计后，访客首次访问默认允许加载；页脚的「隐私设置」可单独关闭统计或广告，选择会保存在当前浏览器中，直到访客更改。关闭后页面会重新加载，以免再次初始化对应脚本；此前已发送给服务商的数据无法撤回。站点所有者的总开关仍决定该功能是否启用。
+
+没有真实 GA4 衡量 ID 前，请保持 `analytics.googleAnalyticsId` 未设置。`G-REPLACE_WITH_REAL_MEASUREMENT_ID` 仅为文档占位符，启用统计前必须替换。
+
+广告默认关闭。填写 `[ads]` 的 AdSense 发布商 ID 和命名广告位，并设置 `enable = true` 后，文章广告只在 Vercel Production 展示；本地及 Preview 不加载广告，也不启用 Google 搜索广告模式。环境变量覆盖为 `PUBLIC_ADS_ENABLE`、`PUBLIC_ADS_PUBLISHER_ID` 和 `PUBLIC_ADS_SLOT_ARTICLE_BOTTOM`。静态站点使用有界的 CSP 来源列表，而 AdSense 推荐按每次响应生成 nonce；在真实 Production 浏览器检查通过前，不要启用实际广告库存。若使用 GA4，请在 Analytics 属性中关闭基于浏览器历史记录的增强型衡量页面浏览，避免与 KIRARI 的 SPA 页面浏览重复；该属性设置需另行核实。
+
+没有真实 AdSense 发布商与广告位 ID 前，请保持 `[ads].enable = false`。`ca-pub-REPLACE_WITH_REAL_PUBLISHER_ID` 和 `REPLACE_WITH_REAL_SLOT_ID` 仅为文档占位符，启用广告前必须替换。
 
 ### Landing Page
 
@@ -439,7 +501,7 @@ route = "/ghc"
 serviceBinding = "GHCARD_CACHE"
 ```
 
-- **Cloudflare Pages**：部署 monorepo 内的 `workers/kirari-edge` Edge Worker，可选将 GitHub token 设为 `KIRARI_GITHUB_TOKEN` Worker Secret。`serviceBinding` 设为 binding 名称。
+- **Cloudflare Pages**：可选 Worker 提供命名操作路由 `/_kirari/edge/*`。现有 `/ghc` Site 适配器在 #98 的 Site 集成更新前仍是旧兼容路径，且不会收到 Worker token。Core 只有在同时提供 `KIRARI_GITHUB_TOKEN` Worker Secret 和逗号分隔的 `KIRARI_GITHUB_TOKEN_PUBLIC_REPOSITORIES` 公共仓库白名单时才会使用 token。路由和缓存说明见 [Worker 文档](docs/WORKERS.md)。
 - **Vercel**：在 Project Environment Variables 中设置 `GITHUB_TOKEN`。将 `GHC_ALLOWED_ORIGINS` 设为允许调用适配器的精确 origin 列表（逗号分隔）。留空时不会给浏览器 Origin 请求授予 CORS；同源/no-Origin 服务端请求仍可工作，但不返回 `Access-Control-Allow-Origin`。
 
 ### SEO
@@ -450,14 +512,18 @@ serviceBinding = "GHCARD_CACHE"
 | Robots.txt | postbuild 阶段从 `site.url` 生成 |
 | Canonical + hreflang | 每页自动推导 |
 | 搜索验证 | `head.verification.{google,bing,yandex,naver}` |
-| IndexNow | `seo.indexNow = true` → 每次构建提交到参与协议的搜索引擎 |
-| Google 索引 | `seo.google.indexingApi = true` → 可选高级 Google Indexing API 提交 |
+| IndexNow | 已在 Owner 批准的 KIRARI 配置中启用；仍需 GitHub Actions 变量 `KIRARI_INDEXNOW_ENABLED=true` 且原生 Production 验证通过才会通知 |
+| Google 索引 | 保持关闭；Owner 决定适用内容前不发送通知 |
 
-IndexNow 覆盖 Bing、Yandex、Naver、Seznam.cz、Yep 等参与方。Google 不支持 IndexNow；Google 仍依赖 sitemap/Search Console，或针对适用内容使用可选 Google Indexing API。IndexNow key 是部署到 `/{key}.txt` 的公开验证 key；不要复用密码、token 或其他私密 secret。Google Indexing API 主要面向 JobPosting 和 BroadcastEvent URL，普通博客页面不保证受益。
+IndexNow 覆盖 Bing、Yandex、Naver、Seznam.cz、Yep 等参与方。Google 不支持 IndexNow。IndexNow key 是部署到 `/{key}.txt` 的公开验证 key；不要复用密码、token 或其他私密 secret。当前部署后流程只使用 IndexNow。Google Indexing API 保持关闭，等待 Owner 确认适用内容；Google 文档限定为包含 `JobPosting` 或嵌套在 `VideoObject` 中的 `BroadcastEvent` 页面，普通博客页面不提交。
 
 ### LLMs.txt
 
-postbuild 生成 `llms.txt`、`llms-small.txt`、`llms-full.txt`。`llms.i18n = true` 时额外生成按语言分类文件（`llms-en.txt`、`llms-zh.txt`）。`llms-full.txt` 是公开的页面文本聚合文件，每页上限 20,000 字符；postbuild 会在 `robots.txt` 加入 `Disallow: /llms-full.txt`，并在部署 headers 中为它设置 `Cache-Control: no-store`。这些是缓解措施，不是访问控制。
+`llms.txt` 索引遵循 llmstxt.org 社区提案。已发布文章及选定的关于、友链、项目页面在其 HTML 路由下提供规范 `index.md` 视图。HTML 用 `alternate`（`text/markdown`）指向视图，用 `describedby`（`text/plain`）指向覆盖当前页面的索引。源码 AST 处理保留链接、代码、数学、表格、脚注及图表围栏；支持的 MDX 嵌入和指令转换成静态文字或链接，导入、表达式及未知动态组件以明确的省略提示替代。相对图片引用实际构建资源，源码文档链接映射至已发布的规范路由；不支持的本地附件会明确报构建错误，不生成猜测的失效链接。草稿和未选定的源码条目不会导出。
+
+`llms.i18n = true` 时，带语言前缀的路由提供 `<语言>/llms.txt` 覆盖索引；根目录 `llms-<locale>.txt` 保留为便捷索引。视图与发现链接遵循 base、自定义嵌套文章路径及默认语言子目录设置。`llms.enable = false` 同时关闭索引、视图及发现链接。URL include/exclude 模式用于整理索引，不构成隐私控制。
+
+按 Owner 决定保留 `llms-full.txt`：它仍是独立的 HTML 文本公开聚合，每页上限 20,000 字符。postbuild 为它生成遵循 base 路径的 robots 排除和 `Cache-Control: no-store` headers；这些是爬取和缓存缓解措施，不是访问控制。Markdown 视图不进入 HTML sitemap；可选的 LLM sitemap 条目保留主索引和全文聚合。
 
 ```toml
 [llms]
@@ -615,6 +681,9 @@ pnpm edge:test
 pnpm build
 pnpm audit --audit-level moderate
 ```
+
+依赖审计仅用于信息报告：CI 保留原始输出，不阻断构建、测试、类型检查、QA 或部署策略检查。
+上游提供兼容修复后再升级；未解决的上游公告不需要自定义例外机制。
 
 CI 必须使用 `--frozen-lockfile`。`@astrojs/check` 仅 devDependency。
 

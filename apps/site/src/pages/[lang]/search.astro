@@ -4,22 +4,19 @@ import MainGridLayout from "../../layouts/MainGridLayout.astro";
 import { searchConfig } from "../../config";
 import I18nKey from "../../i18n/i18nKey";
 import { i18n } from "../../i18n/translation";
-import { fromLangSlug, getPathAlternates, getPrefixedLanguages, toLangSlug, withLangPrefix } from "../../utils/i18n-utils";
+import { getLocalizedRouteContext, getPrefixedStaticPaths } from "../../utils/page-route-utils";
+import { resolveSearchProvider } from "../../utils/search-provider.mjs";
+import { withLangPrefix } from "../../utils/i18n-utils";
 import { url } from "../../utils/url-utils";
 
-export const getStaticPaths = (() =>
-	getPrefixedLanguages().map((lang) => ({
-		params: { lang: toLangSlug(lang) },
-		props: { lang },
-	}))) satisfies GetStaticPaths;
+export const getStaticPaths = getPrefixedStaticPaths satisfies GetStaticPaths;
 
-const lang = fromLangSlug(Astro.params.lang);
+const { lang, alternates } = getLocalizedRouteContext("/search/", Astro.params.lang);
+const currentUrl = withLangPrefix("/search", lang);
 const searchParams = Astro.url.searchParams;
 const initialQuery = searchParams.get("q") || "";
-const provider = searchConfig.provider;
+const provider = resolveSearchProvider(searchConfig);
 const pageTitle = i18n(I18nKey.search, lang);
-const currentUrl = withLangPrefix("/search", lang);
-const alternates = getPathAlternates((itemLang) => withLangPrefix("/search/", itemLang));
 const scriptUrl = url("/pagefind/pagefind.js");
 ---
 
@@ -41,7 +38,7 @@ const scriptUrl = url("/pagefind/pagefind.js");
 		<div data-search-results class="mt-4 flex flex-col gap-3"></div>
 	</section>
 
-	<script is:inline define:vars={{ initialQuery, provider, scriptUrl }}>
+	<script is:inline define:vars={{ initialQuery, provider, scriptUrl, currentUrl }}>
 		(function () {
 			var form = document.querySelector("[data-search-form]");
 			var input = document.querySelector("[data-search-input]");

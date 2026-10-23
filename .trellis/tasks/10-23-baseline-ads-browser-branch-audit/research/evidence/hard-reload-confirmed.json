@@ -1,0 +1,204 @@
+{
+  "productionSha": "60691880f04ae8d36ef49f710edea09a89075514",
+  "url": "https://kirari-main.vercel.app/",
+  "runs": {
+    "desktop-1440x900": [
+      {
+        "iteration": 1,
+        "url": "https://kirari-main.vercel.app/",
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "dpr": 1,
+          "coarse": false
+        },
+        "scrollY": 0,
+        "hero": {
+          "x": 120,
+          "y": 72,
+          "w": 1200,
+          "h": 541.09375
+        },
+        "fontStatus": "loaded",
+        "image": {},
+        "shifts": [],
+        "errors": [],
+        "rejections": []
+      },
+      {
+        "iteration": 2,
+        "url": "https://kirari-main.vercel.app/",
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "dpr": 1,
+          "coarse": false
+        },
+        "scrollY": 0,
+        "hero": {
+          "x": 120,
+          "y": 72,
+          "w": 1200,
+          "h": 541.09375
+        },
+        "fontStatus": "loaded",
+        "image": {},
+        "shifts": [
+          {
+            "value": 0.03879561042524005,
+            "startTime": 317.39999997615814,
+            "sources": [
+              {
+                "node": "DIV",
+                "id": "",
+                "cls": "landing-glow landing-glow-b",
+                "previousRect": {},
+                "currentRect": {}
+              }
+            ]
+          },
+          {
+            "value": 0.000007580114293981481,
+            "startTime": 386.39999997615814,
+            "sources": [
+              {
+                "node": "A",
+                "id": "",
+                "cls": "landing-text-link",
+                "previousRect": {},
+                "currentRect": {}
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "rejections": []
+      },
+      {
+        "iteration": 3,
+        "url": "https://kirari-main.vercel.app/",
+        "viewport": {
+          "width": 1440,
+          "height": 900,
+          "dpr": 1,
+          "coarse": false
+        },
+        "scrollY": 0,
+        "hero": {
+          "x": 120,
+          "y": 72,
+          "w": 1200,
+          "h": 541.09375
+        },
+        "fontStatus": "loaded",
+        "image": {},
+        "shifts": [
+          {
+            "value": 0.03879561042524005,
+            "startTime": 190,
+            "sources": [
+              {
+                "node": "DIV",
+                "id": "",
+                "cls": "landing-glow landing-glow-b",
+                "previousRect": {},
+                "currentRect": {}
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "rejections": []
+      }
+    ],
+    "mobile-390x844": [
+      {
+        "iteration": 1,
+        "url": "https://kirari-main.vercel.app/",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1,
+          "coarse": false
+        },
+        "scrollY": 0,
+        "hero": {
+          "x": 0,
+          "y": 63,
+          "w": 390,
+          "h": 765.453125
+        },
+        "fontStatus": "loaded",
+        "image": {},
+        "shifts": [],
+        "errors": [],
+        "rejections": []
+      },
+      {
+        "iteration": 2,
+        "url": "https://kirari-main.vercel.app/",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1,
+          "coarse": false
+        },
+        "scrollY": 0,
+        "hero": {
+          "x": 0,
+          "y": 63,
+          "w": 390,
+          "h": 765.453125
+        },
+        "fontStatus": "loaded",
+        "image": {},
+        "shifts": [],
+        "errors": [],
+        "rejections": []
+      },
+      {
+        "iteration": 3,
+        "url": "https://kirari-main.vercel.app/",
+        "viewport": {
+          "width": 390,
+          "height": 844,
+          "dpr": 1,
+          "coarse": false
+        },
+        "scrollY": 0,
+        "hero": {
+          "x": 0,
+          "y": 63,
+          "w": 390,
+          "h": 765.453125
+        },
+        "fontStatus": "loaded",
+        "image": {},
+        "shifts": [
+          {
+            "value": 0.000046882185358346445,
+            "startTime": 802,
+            "sources": [
+              {
+                "node": "SPAN",
+                "id": "",
+                "cls": "",
+                "previousRect": {},
+                "currentRect": {}
+              },
+              {
+                "node": "svg",
+                "id": "",
+                "cls": {},
+                "previousRect": {},
+                "currentRect": {}
+              }
+            ]
+          }
+        ],
+        "errors": [],
+        "rejections": []
+      }
+    ]
+  }
+}

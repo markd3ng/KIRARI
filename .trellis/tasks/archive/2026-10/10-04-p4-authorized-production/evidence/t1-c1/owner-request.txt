@@ -1,0 +1,690 @@
+Continue KIRARI P4 / RM-05 from the current GitHub control-plane state.
+
+Repository:
+
+`markd3ng/KIRARI`
+
+Current main:
+
+`c79659046cf6ea73ba69e03c3937d904c07ba93b`
+
+PR #133 frozen HEAD:
+
+`30ed167ed57e18de0308e7ba1e0c9d0e70ab7570`
+
+Parent:
+
+`#99` OPEN / Blocked
+
+Children:
+
+`#129` OPEN / In Review  
+`#130` OPEN / Blocked  
+`#131` CLOSED / Done local-browser only  
+`#132` CLOSED / Done rollback-simulation only
+
+The Owner has now explicitly approved the T1 and C1 POLICY FRAMEWORKS exactly as described in:
+
+- Issue #130 comment `5996717676`
+- Issue #129 comment `5996720224`
+
+Read the exact Owner approval supplied with this task and record it verbatim or by durable reference in the relevant GitHub control-plane evidence.
+
+IMPORTANT:
+
+T1/C1 policy approval is NOT:
+- approval of `vercel@59.16.0`
+- approval of `vercel@62.2.0`
+- approval of any advisory inventory
+- approval of any Vercel token
+- authorization to create a token
+- authorization to create/change Production secrets
+- authorization to deploy/promote/rollback Production
+- Production Owner Gate approval
+
+`PRODUCTION_OWNER_GATE=NOT_READY`
+
+`PRODUCTION_AUTHORIZATION=NO`
+
+Use GitHub Project / Issues as the control plane.
+
+Use `gpt-6-luna` with `max` reasoning for delegated subagents.
+
+Maximum concurrent subagents: 4.
+
+MAIN owns integration and GitHub reconciliation.
+
+# Phase goal
+
+Apply the now-approved T1/C1 contract amendments correctly and produce two concrete, independently reviewed Owner-decision manifests:
+
+1. `T1_CONCRETE_TOOLING_MANIFEST`
+2. `C1_CONCRETE_CREDENTIAL_MANIFEST`
+
+Do not proceed beyond those decision gates.
+
+No Production mutation is authorized.
+
+# 1. Reconcile before editing
+
+Read:
+
+- Project objective / README
+- #99
+- #129
+- #130
+- #131
+- #132
+- PR #133
+- exact Owner approval
+- T1 proposal comment 5996717676
+- C1 proposal comment 5996720224
+- latest #99 status comment 5996761370
+- current P4 source/tests/workflows
+- remediation-readiness evidence
+- remediation-tooling evidence
+- current main `vercel.json`
+- relevant P1–P3 invariants
+
+Verify remote main and PR #133 HEAD before making assumptions.
+
+If the HEAD changed, reconcile first.
+
+# 2. Parallel decomposition
+
+Use up to four independent `gpt-6-luna/max` streams:
+
+A — T1 engineering contract implementation and concrete tooling manifest
+
+B — C1 engineering contract implementation and concrete credential manifest requirements
+
+C — regression/security review of amended gates and fail-closed behavior
+
+D — independent contract/audit challenge
+
+Do not allow multiple agents to edit the same files concurrently.
+
+MAIN integrates.
+
+# 3. Apply T1 policy amendment
+
+The old unconditional rule:
+
+`npm audit --audit-level moderate` must return zero qualifying findings
+
+is no longer by itself the complete P4 deployment-tool acceptance contract.
+
+However:
+
+THE FULL AUDIT MUST STILL RUN UNCHANGED.
+
+The actual audit result must never be relabeled PASS.
+
+For a nonzero audit to satisfy the amended P4 deployment-tool gate, all T1 concrete-manifest requirements must PASS.
+
+Implement this distinction explicitly.
+
+Use separate states, for example conceptually:
+
+`TOOLING_RAW_AUDIT_RESULT=PASS|FAIL`
+
+and:
+
+`TOOLING_P4_ACCEPTANCE_RESULT=PASS|FAIL`
+
+A raw audit FAIL may only yield P4 acceptance PASS if:
+
+- T1 framework approval exists;
+- exact concrete CLI manifest exists;
+- exact version matches;
+- exact lock matches;
+- exact package/tarball integrity matches;
+- Node/npm/runtime identity matches;
+- runner OS/arch/image matches;
+- install mode matches;
+- complete audit JSON exists;
+- complete human-readable advisory inventory exists;
+- advisory inventory hash matches;
+- independent security review exists;
+- declared UNKNOWN paths are preserved as exposed residual risks;
+- whole runtime/package identity requirements are met as far as evidence allows;
+- missing SBOM/provenance/signature coverage is explicitly represented;
+- finite Owner approval expiration exists;
+- approval is currently unexpired;
+- no revocation/re-review trigger has fired;
+- exact concrete manifest has a separate Owner approval.
+
+If the concrete manifest approval is missing:
+
+FAIL CLOSED.
+
+If the manifest is expired:
+
+FAIL CLOSED.
+
+If CLI version, lock, runtime, runner image, architecture, install mode, advisory inventory or material command path differs:
+
+FAIL CLOSED.
+
+If a new or changed advisory appears:
+
+FAIL CLOSED pending re-review.
+
+Never automatically inherit a previous risk acceptance.
+
+Do not introduce advisory suppression.
+
+Do not create an ignored-advisories mechanism.
+
+Do not make the audit command conditional.
+
+# 4. Select the concrete T1 candidate
+
+Freshly verify current stable Vercel CLI metadata once.
+
+If 62.2.0 remains the stable candidate and no materially safer supported stable release exists, use:
+
+`vercel@62.2.0`
+
+as the concrete manifest candidate.
+
+This is candidate selection for Owner review only.
+
+It is NOT automatically approved.
+
+Produce a concrete T1 manifest binding at minimum:
+
+- CLI name
+- exact version
+- npm package identity
+- exact package-lock hash
+- exact tarball integrity/hash
+- registry signature status
+- whole-tree signature status
+- publisher provenance/SBOM status
+- Node version
+- npm version
+- runner OS
+- runner architecture
+- runner image/version where deterministic
+- install command/mode
+- temporary HOME behavior
+- auto-update/native fallback disabled state
+- exact allowed CLI command path
+- exact target team/project
+- complete raw npm audit result
+- full retained audit JSON hash
+- human-readable advisory inventory hash
+- every advisory ID/severity/package/path/fixed-version information
+- installation/startup/command-path reachability assessment
+- every UNKNOWN treated as exposed
+- aggregate residual-risk analysis
+- T1/C1 coupled-risk statement
+- finite proposed expiry timestamp
+- immediate invalidation triggers
+- Owner approval field initially `PENDING`
+
+Choose a defensible finite expiry.
+
+Do not use unlimited/open-ended approval.
+
+Prefer a short operational window suitable for completing P4 rather than a long policy waiver.
+
+Explain the chosen window.
+
+Do not approve it yourself.
+
+# 5. Independent T1 security review
+
+Use an implementation-independent `gpt-6-luna/max` reviewer.
+
+It must challenge every actual moderate/high/critical advisory and aggregate dependency path.
+
+At minimum assess:
+
+- install-time execution
+- startup/import execution
+- fixed deploy command path
+- parsing of local artifact/config
+- network response parsing
+- archive extraction
+- fallback/dynamic paths
+- credential-bearing phase
+- whether the vulnerability can act before credentials are mapped
+- whether it can act after credentials are mapped
+- blast radius under C1
+
+UNKNOWN remains UNKNOWN/exposed.
+
+Do not convert “not observed” into “not reachable”.
+
+Attach/report the independent conclusion with the concrete manifest.
+
+# 6. Apply C1 policy amendment
+
+Replace the impossible exact-verb-only credential acceptance rule with the approved C1 model.
+
+The acceptable candidate model is:
+
+exactly one Vercel project:
+
+`prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk`
+
+project:
+
+`kirari-main`
+
+team:
+
+`team_NsBZHGUVnyygP7veiROKLuUx`
+
+principal effective role target:
+
+Team Developer
+
+plus only:
+
+Full Production Deployment
+
+Reject:
+
+- Owner
+- Member when it implies broader effective Production privileges than approved
+- Project Admin
+- direct Admin elevation
+- group-derived Admin elevation
+- additional extended permissions
+- team/full-account token
+- multi-project token
+- unknown role/group state
+
+Do not assert endpoint-level denial that Vercel does not document.
+
+Explicitly preserve disclosed extra same-project capability.
+
+# 7. Produce the concrete C1 manifest template/evidence request
+
+No token value may be requested or printed.
+
+Produce the concrete C1 decision manifest containing sanitized metadata only:
+
+- principal identity
+- account/team identity
+- Vercel plan
+- direct team role
+- project role
+- all access-group-derived roles
+- all extended permissions
+- exact PAT project resource scope
+- project ID
+- token creation metadata if safely exposed
+- token expiry
+- revocation procedure
+- disclosed extra project capabilities
+- unresolved endpoint-granularity uncertainty
+- absence/presence of additional elevation
+- Owner approval field initially `PENDING`
+
+If the actual principal/scope/grants cannot yet be read because Owner setup has not occurred:
+
+do not fabricate the manifest.
+
+Produce an exact Owner setup procedure plus exact sanitized evidence required after setup.
+
+Keep:
+
+`C1_CONCRETE_CREDENTIAL_MANIFEST=INCOMPLETE_OWNER_SETUP_REQUIRED`
+
+# 8. Protected GitHub Environment
+
+The approved target configuration remains:
+
+Environment:
+
+`kirari-site-production`
+
+Required reviewer:
+
+exactly `markd3ng`
+
+reviewer type:
+
+User
+
+`can_admins_bypass=false`
+
+`prevent_self_review=false`
+
+custom deployment branch policy:
+
+only `main`
+
+Environment variables:
+
+`VERCEL_PRODUCTION_ORG_ID=team_NsBZHGUVnyygP7veiROKLuUx`
+
+`VERCEL_PRODUCTION_PROJECT_ID=prj_QNMVdxTkPOad4ynN4fwFCYEST8Jk`
+
+Environment secret name:
+
+`VERCEL_PRODUCTION_TOKEN`
+
+This task does NOT authorize the agent to create the token or reveal a value.
+
+If creating the GitHub Environment/settings itself has not been separately Owner-authorized, do not mutate it.
+
+Return the exact minimal UI/API setup procedure instead.
+
+# 9. Trusted Sources
+
+Do not weaken the current UNKNOWN treatment.
+
+Expected GitHub OIDC source remains:
+
+issuer:
+
+`https://token.actions.githubusercontent.com`
+
+audience:
+
+`https://github.com/markd3ng`
+
+repository:
+
+`markd3ng/KIRARI`
+
+ref:
+
+`refs/heads/main`
+
+workflow_ref:
+
+`markd3ng/KIRARI/.github/workflows/site-production.yml@refs/heads/main`
+
+target:
+
+Production only
+
+No unrelated providers or projects.
+
+Do not invent semantics for:
+
+`enableVercelCiSameRepository`
+
+Do not make an undocumented boolean value an Owner instruction.
+
+Authenticated actual provider readback plus authoritative semantic interpretation remains required.
+
+If unavailable:
+
+`TRUSTED_SOURCES_VERIFIED=NO`
+
+# 10. Source changes
+
+Make source changes only where required to encode T1/C1 correctly.
+
+Expected likely areas include:
+
+- production tooling acceptance logic
+- CI gate distinction between raw audit and approved T1 acceptance
+- manifest schema/validator
+- expiration/invalidation logic
+- credential contract validator/evidence schema
+- tests
+- documentation/evidence
+
+Do NOT change deployment semantics.
+
+Preserve:
+
+- immutable exact artifact
+- no rebuild
+- exact target identity
+- owner authorization binding
+- replay prevention
+- credential isolation
+- main-only workflow
+- protected Environment
+- stage → validate → promote
+- rollback approved-record contract
+- post-operation readback
+- P1–P3 behavior
+- `git.deploymentEnabled.main=false`
+
+# 11. Tests
+
+Add strong negative tests for at least:
+
+T1:
+
+- no concrete Owner manifest
+- wrong CLI version
+- wrong lock hash
+- wrong audit hash
+- changed advisory inventory
+- expired approval
+- missing expiry
+- new advisory
+- runner mismatch
+- Node/npm mismatch
+- install-mode mismatch
+- integrity mismatch
+- missing independent review
+- UNKNOWN incorrectly omitted
+- raw audit failure incorrectly relabeled PASS
+- audit command skipped/suppressed
+- experimental native fallback
+
+C1:
+
+- wrong project scope
+- multi-project token
+- team/full-account scope
+- Owner/Member/Admin elevation outside approved contract
+- Project Admin
+- group-derived Admin
+- additional extended permission
+- missing plan evidence
+- missing role/group evidence
+- missing expiry
+- unknown scope
+- manifest without separate Owner approval
+
+Existing positive P4/P3 paths must continue to pass.
+
+# 12. Validation
+
+After source changes:
+
+run focused new T1/C1 tests.
+
+Then full P4 tests.
+
+Then P3 regressions.
+
+Then root repository checks.
+
+Then root dependency audit under existing rules.
+
+Then Production browser fixture.
+
+Then `git diff --check`.
+
+Push PR #133 only after local validation.
+
+Record its new exact HEAD.
+
+Run exact-head CI.
+
+The raw Vercel CLI audit may remain FAIL.
+
+The amended gate itself must fail until a concrete T1 manifest has separate Owner approval.
+
+That is expected.
+
+Do not hack CI green prematurely.
+
+# 13. Independent code review
+
+Because this task likely changes PR #133 HEAD, run a fresh independent:
+
+`gpt-6-luna / max`
+
+code review after HEAD freeze.
+
+Review specifically:
+
+- policy approval vs concrete approval separation
+- raw FAIL vs amended acceptance state
+- finite expiration
+- invalidation triggers
+- manifest substitution attacks
+- hash/version/runtime binding
+- advisory inventory substitution
+- credential manifest substitution
+- scope/elevation failures
+- secret exposure
+- Production authorization boundary
+- regressions
+
+No self-review by implementation agents.
+
+# 14. GitHub reconciliation
+
+Record the Owner approval in #129/#130.
+
+Update #129/#130 acceptance text/status only as necessary to represent approved T1/C1 policy.
+
+Do NOT close #129 merely because C1 framework is approved.
+
+Do NOT close #130 merely because T1 framework is approved.
+
+Expected state after this round is likely:
+
+#129 OPEN / awaiting concrete credential/setup evidence
+
+#130 OPEN / awaiting concrete T1 version risk decision
+
+#99 OPEN / Blocked
+
+Project scope drift must remain zero.
+
+# 15. Stop gate
+
+STOP and return to Owner when both concrete decision packages are ready.
+
+Do not continue into Production readiness automatically.
+
+Specifically stop before:
+
+- accepting the T1 concrete version manifest
+- accepting the C1 concrete credential manifest
+- creating/using Production credential unless separately authorized
+- Production authorization
+- deploy
+- promote
+- rollback
+
+The next Owner decision should be small and explicit.
+
+# 16. Final output
+
+Return human-readable summaries of:
+
+A. exact source changes
+
+B. T1 concrete candidate manifest
+
+C. independent T1 advisory/security assessment
+
+D. C1 concrete manifest or exact missing Owner evidence
+
+E. Environment/Trusted Sources readiness
+
+F. exact-head CI/review
+
+G. GitHub Project reconciliation
+
+End with:
+
+```ini
+P4_T1_C1_APPLICATION_RESULT=
+
+BASELINE_MAIN_SHA=
+FINAL_MAIN_SHA=
+PR_133_HEAD_BEFORE=
+PR_133_HEAD_AFTER=
+PR_133_CHANGED=
+PR_133_MERGED=
+
+T1_POLICY_FRAMEWORK=APPROVED
+T1_POLICY_APPLIED_TO_CONTRACT=
+T1_CONCRETE_CLI_VERSION=
+T1_RAW_AUDIT_RESULT=
+T1_RAW_AUDIT_COUNTS=
+T1_LOCK_HASH=
+T1_ARTIFACT_INTEGRITY=
+T1_ADVISORY_MANIFEST_HASH=
+T1_INDEPENDENT_SECURITY_REVIEW=
+T1_PROPOSED_EXPIRY=
+T1_CONCRETE_OWNER_APPROVAL=PENDING
+T1_P4_ACCEPTANCE_RESULT=
+
+C1_POLICY_FRAMEWORK=APPROVED
+C1_POLICY_APPLIED_TO_CONTRACT=
+C1_CONCRETE_PRINCIPAL=
+C1_CONCRETE_PLAN=
+C1_DIRECT_ROLE=
+C1_GROUP_DERIVED_ROLES=
+C1_EXTENDED_PERMISSIONS=
+C1_TOKEN_RESOURCE_SCOPE=
+C1_TOKEN_EXPIRY=
+C1_EXTRA_CAPABILITIES_DISCLOSED=
+C1_CONCRETE_OWNER_APPROVAL=PENDING
+C1_CREDENTIAL_READINESS=
+
+PRODUCTION_ENVIRONMENT_READY=
+TRUSTED_SOURCES_API_READABLE=
+TRUSTED_SOURCES_VERIFIED=
+TRUSTED_SOURCES_MATCH=
+MAIN_GIT_DEPLOYMENT_GUARD=
+MAIN_GIT_PROVIDER_SETTING_READBACK=
+
+P4_TESTS=
+P3_REGRESSION_TESTS=
+ROOT_CHECKS=
+PRODUCTION_CHROMIUM=
+EXACT_HEAD_CI=
+INDEPENDENT_CODE_REVIEW=
+
+ISSUE_129_STATE=
+ISSUE_130_STATE=
+ISSUE_99_STATE=
+PROJECT_SCOPE_DRIFT=
+
+OWNER_ACTION_REQUIRED=
+NEXT_OWNER_DECISIONS=
+
+PRODUCTION_OWNER_GATE=NOT_READY
+PRODUCTION_AUTHORIZATION=NO
+PRODUCTION_AUTHORIZATION_PHRASE_ISSUED=NO
+
+PRODUCTION_MUTATION_PERFORMED=NO
+PRODUCTION_DEPLOYMENT=NO
+PRODUCTION_PROMOTION=NO
+ROLLBACK_PERFORMED=NO
+PRODUCTION_ALIAS_CHANGE=NO
+PRODUCTION_SETTINGS_CHANGE=NO
+PRODUCTION_SECRET_CHANGE=NO
+DNS_ACTION=NO
+INDEXING_ACTION=NO
+RELEASE_OR_TAG_PUBLISHED=NO
+P5_STARTED=NO
+GATEWAY_IMPLEMENTATION_STARTED=NO
+
+NEXT_ACTION=RETURN_CONCRETE_T1_AND_C1_MANIFESTS_FOR_SEPARATE_OWNER_DECISION
+```
+
+The target result of this execution is not Production.
+
+The target result is two small, concrete, auditable Owner decisions replacing the current abstract blockers.

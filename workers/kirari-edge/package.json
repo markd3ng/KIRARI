@@ -4,6 +4,9 @@
   "type": "module",
   "version": "0.1.0",
   "description": "KIRARI Edge runtime — proxy, cache, and API enhancement features for Cloudflare Workers",
+  "dependencies": {
+    "@kirari/edge-gateway-core": "workspace:*"
+  },
   "scripts": {
     "type-check": "tsc --noEmit",
     "test": "node --test --experimental-strip-types test/*.test.ts",
@@ -11,9 +14,9 @@
     "deploy": "WRANGLER_WRITE_LOGS=false WRANGLER_SEND_METRICS=false wrangler deploy --config wrangler.jsonc"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261006.1",
+    "@cloudflare/workers-types": "^4.20260617.1",
     "typescript": "^5.9.3",
-    "wrangler": "4.151.1"
+    "wrangler": "4.101.0"
   },
   "packageManager": "pnpm@9.14.4"
 }
