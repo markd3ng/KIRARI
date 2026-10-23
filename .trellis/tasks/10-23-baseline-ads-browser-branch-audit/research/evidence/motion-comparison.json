@@ -1,0 +1,37 @@
+{
+  "productionSha": "60691880f04ae8d36ef49f710edea09a89075514",
+  "browser": "Ego Lite 2.1.0 / Chromium 154.0.8037.44 / macOS 27.0.1 arm64",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "cssIntervention": ".landing-hero .landing-fade-up{transform:none!important}",
+  "baselineAt400ms": {
+    "copy": {
+      "opacity": "0",
+      "transform": "matrix(1, 0, 0, 1, 0, 18)"
+    },
+    "art": {
+      "opacity": "0",
+      "transform": "matrix(1, 0, 0, 1, 0, 18)",
+      "y": 166.0859375
+    },
+    "scrollY": 0,
+    "layoutShifts": [],
+    "screenshot": "motion-baseline-400ms.png"
+  },
+  "translationDisabledAt400ms": {
+    "copy": {
+      "opacity": "0",
+      "transform": "none"
+    },
+    "art": {
+      "opacity": "0",
+      "transform": "none",
+      "y": 148.0859375
+    },
+    "scrollY": 0,
+    "layoutShifts": [],
+    "screenshot": "motion-translate-disabled-400ms.png"
+  }
+}
