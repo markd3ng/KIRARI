@@ -10,6 +10,12 @@ test("ordinary builds keep using the current clock", () => {
 	assert.ok(buildDate.getTime() <= Date.now());
 });
 
+test("ordinary builds share one clock across rendered components", async () => {
+	const firstBuildTime = getBuildDate().getTime();
+	await new Promise((resolve) => setTimeout(resolve, 10));
+	assert.equal(getBuildDate().getTime(), firstBuildTime);
+});
+
 test("composition builds use SOURCE_DATE_EPOCH and reject invalid values", () => {
 	const environment = { KIRARI_DETERMINISTIC_BUILD_CLOCK: "true", SOURCE_DATE_EPOCH: "1790899200" };
 	assert.equal(getBuildDate(environment).toISOString(), "2026-10-02T00:00:00.000Z");

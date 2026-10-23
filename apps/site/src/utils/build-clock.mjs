@@ -1,7 +1,11 @@
 const MAX_EPOCH_SECONDS = 8_640_000_000_000;
+let ordinaryBuildDate;
 
 export function getBuildDate(environment = process.env) {
-	if (environment.KIRARI_DETERMINISTIC_BUILD_CLOCK !== "true") return new Date();
+	if (environment.KIRARI_DETERMINISTIC_BUILD_CLOCK !== "true") {
+		ordinaryBuildDate ??= new Date();
+		return new Date(ordinaryBuildDate);
+	}
 	const sourceDateEpoch = environment.SOURCE_DATE_EPOCH;
 	if (sourceDateEpoch === undefined) throw new Error("A deterministic build clock requires SOURCE_DATE_EPOCH.");
 	if (!/^(0|[1-9]\d*)$/.test(sourceDateEpoch)) {

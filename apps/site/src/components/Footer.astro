@@ -5,9 +5,11 @@ import { getBuildDate } from "../utils/build-clock.mjs";
 import { resolveBuildCommit } from "../utils/build-commit";
 import { getLangHomeUrl } from "../utils/i18n-utils";
 import { url } from "../utils/url-utils";
+import packageJson from "../../package.json";
 import PrivacySettings from "./PrivacySettings.svelte";
 
-const currentYear = getBuildDate().getFullYear();
+const buildDate = getBuildDate();
+const currentYear = buildDate.getFullYear();
 const lang = Astro.props.lang;
 const privacyId = Astro.props.privacyId || "footer";
 const rssUrl = lang ? getLangHomeUrl(lang).replace(/\/$/, "/rss.xml") : url("rss.xml");
@@ -21,20 +23,20 @@ const kirariCommitUrl = buildCommit.full
 <div class="transition border-t border-black/10 dark:border-white/15 my-10 border-dashed mx-32"></div>
 <div class="transition border-dashed border-[oklch(85%_0.01_var(--hue))] dark:border-white/15 rounded-2xl mb-12 flex flex-col items-center justify-center px-6">
     <div class="transition text-50 text-sm text-center">
-        &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. All Rights Reserved. /
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={rssUrl}>RSS</a> /
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={url('sitemap-index.xml')}>Sitemap</a>
-        / <PrivacySettings lang={lang} idPrefix={privacyId} client:load />
+        &copy; <span id="copyright-year">{currentYear}</span> {profileConfig.name}. All Rights Reserved.{' '}/{' '}
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={rssUrl}>RSS</a>{' '}/{' '}
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={url('sitemap-index.xml')}>Sitemap</a>{' '}/{' '}<PrivacySettings lang={lang} idPrefix={privacyId} client:load />
         {llmsConfig.enable && (
-            <> / <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={url('llms.txt')}>LLMs</a></>
+            <>{' '}/{' '}<a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={url('llms.txt')}>LLMs</a></>
         )}
         <br>
-        Powered by
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://astro.build/">Astro</a> &middot;
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/markd3ng/KIRARI">KIRARI</a>
-        @ <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={kirariCommitUrl}>{kirariCommit}</a> &middot;
-        Based on
-        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/JoeyC-Dev/saicaca-fuwari">JoeyC-Dev/saicaca-fuwari</a> &
+        Powered by{' '}
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://astro.build/">Astro</a>{' '}&middot;{' '}
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/markd3ng/KIRARI">KIRARI</a>{' '}@{' '}
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href={kirariCommitUrl}>{kirariCommit}</a>{' '}&middot;{' '}
+        v{packageJson.version}{' '}&middot;{' '}Build:{' '}
+        <time datetime={buildDate.toISOString()} data-build-local-time style="display: inline-block; min-width: 19ch; visibility: hidden">0000-00-00 00:00:00</time>{' '}&middot;{' '}Based on{' '}
+        <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/JoeyC-Dev/saicaca-fuwari">JoeyC-Dev/saicaca-fuwari</a>{' '}&{' '}
         <a class="transition link text-[var(--primary)] font-medium" target="_blank" rel="noopener noreferrer" href="https://github.com/saicaca/fuwari">saicaca/fuwari</a>
     </div>
     {footerConfig.customHtml && (
@@ -44,3 +46,18 @@ const kirariCommitUrl = buildCommit.full
         <script is:inline set:html={footerConfig.customScript} />
     )}
 </div>
+
+<script>
+import { formatLocalBuildTime } from "../utils/format-local-build-time.mjs";
+import { transitionManager } from "../utils/transition-manager";
+
+function formatBuildTimes() {
+    document.querySelectorAll<HTMLTimeElement>("time[data-build-local-time]").forEach((element) => {
+        element.textContent = formatLocalBuildTime(new Date(element.dateTime));
+        element.style.visibility = "visible";
+    });
+}
+
+formatBuildTimes();
+transitionManager.on("transition:after-swap", formatBuildTimes);
+</script>
