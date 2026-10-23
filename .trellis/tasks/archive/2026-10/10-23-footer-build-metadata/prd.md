@@ -18,7 +18,7 @@ Add the current release version and build timestamp in each visitor's browser-lo
 - [x] The timestamp has the agreed numeric format and no timezone label.
 - [x] Footer timestamp remains present after Astro/Swup navigation and does not produce a layout shift.
 - [x] Relevant tests, type checks, and production build pass.
-- [ ] Change is reviewed, merged through a PR, and verified in the automatic Production deployment.
+- [x] Change is reviewed, merged through a PR, and verified in the automatic Production deployment.
 
 ## Notes
 
