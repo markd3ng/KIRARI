@@ -148,3 +148,37 @@ Merged PR #155 as 3f134c71e01c7731f35d6f637ff2e1fccfca74db. Main CI run 39567098
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: Footer build metadata shipped
+
+**Date**: 2026-10-23
+**Task**: Footer build metadata shipped
+**Package**: site
+**Branch**: `codex/footer-build-metadata`
+
+### Summary
+
+Added version and browser-local build time to the shared footer with consistent SSR spacing. PR #173 merged; Vercel Production deployment dpl_Bg43GcLwiRnPsQsPVvey868Uxp4H and the canonical blog page were verified on desktop and mobile.
+
+### Main Changes
+
+(Add details)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `bb1f1df2ff4d3787f6cd87bdb99ad9c476ad7db0` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

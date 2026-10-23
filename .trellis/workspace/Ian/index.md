@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 4
-- **Last Active**: 2026-10-21
+- **Total Sessions**: 5
+- **Last Active**: 2026-10-23
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~150 | Active |
+| `journal-1.md` | ~184 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 5 | 2026-10-23 | Footer build metadata shipped | `bb1f1df2ff4d3787f6cd87bdb99ad9c476ad7db0` | `codex/footer-build-metadata` |
 | 4 | 2026-10-21 | P8 analytics consent and ads production acceptance | `6d430272a77d4fa1d6a25482e2038b25eb5ca2b2`, `a16bbaa5cd9c1aa1bfc0d9436c477f8345344e73`, `2c03204d1dc6c5b77bfb4f2d6d2fa8846f3a5e7e`, `2f14e7487c54c42afb1463a00f34fa045e428d64` | `codex/p8-analytics-consent-ads` |
 | 3 | 2026-10-17 | P5 roadmap reconciliation and Vercel review fixes | `4324fb3e7a09be26384f9cbdc841662e4dc9bb98` | `codex/p5-vercel-gateway-adapter` |
 | 2 | 2026-09-29 | PR-1 Finalization | `9d489a1` | `codex/external-site-build-poc` |
