@@ -20,3 +20,16 @@ After the baseline audit is reviewed, correct the confirmed first-screen layout 
 - Every dev-only entry is resolved with recorded evidence.
 - Required checks and independent review pass before merge; post-merge CI passes.
 - Only intended changes appear in each PR.
+
+
+## Follow-up scope: route transitions and shared navigation
+
+The user reported that `/blog/` still appears to re-render when content loads, asked for page-wide review including the top progress bar, and reported a ghost image after selecting an Explore item. Production reproduction confirms the Explore ghost: on Blog → Explore → Categories, the outgoing open dropdown remains as a translucent old-page snapshot around 80ms and is gone by 140ms. The shared navbar View Transition captures the hover-open dropdown because it has no independent transition treatment.
+
+Acceptance for this follow-up:
+
+- Prevent the outgoing Explore dropdown snapshot from appearing over the destination route while preserving the navbar transition and keyboard `:focus-within` behavior.
+- Confirm the fixed behavior using a real browser route transition and retain a regression check.
+- Review each shared layout route family (home, blog/list, category, tag, post, search, and static/feature pages) on desktop and mobile; record which route families are sampled rather than claiming every content URL was visited.
+- Verify the 3px top progress bar starts and settles cleanly on client navigation and is hidden on direct page load.
+- Record and classify any visible layout movement; do not claim a general page-wide pass from homepage-only evidence.

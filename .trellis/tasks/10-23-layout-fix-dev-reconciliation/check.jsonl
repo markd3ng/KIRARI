@@ -1,1 +1,5 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/site/frontend/component-guidelines.md", "reason": "Shared Astro navigation markup and browser-side interaction conventions."}
+{"file": ".trellis/spec/site/frontend/hook-guidelines.md", "reason": "Astro ClientRouter transition lifecycle and navigation-safe behavior."}
+{"file": ".trellis/spec/site/frontend/quality-guidelines.md", "reason": "Required Site verification and browser acceptance guidance."}
+{"file": ".trellis/spec/guides/repository-workflow.md", "reason": "Repository verification and PR workflow."}
+{"file": ".trellis/tasks/10-23-layout-fix-dev-reconciliation/research/route-follow-up/production-reproduction.md", "reason": "Production browser reproduction and direct-load baseline for this follow-up."}

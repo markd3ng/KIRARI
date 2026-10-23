@@ -198,6 +198,15 @@ html.is-animating .transition-swup-fade {
 }
 
 /* Navbar - subtle fade to acknowledge transition */
+/* The outgoing hover menu is a stale overlay, not route content. */
+::view-transition-old(navbar-explore-menu) {
+    display: none;
+}
+
+::view-transition-old(navbar-mobile-menu) {
+    display: none;
+}
+
 ::view-transition-old(navbar) {
     animation: vt-subtle-fade-out 200ms ease-out both;
     will-change: opacity;

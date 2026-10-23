@@ -131,7 +131,7 @@ const searchInputInputMode = searchProvider === "google" && searchAdsEnabled ? "
                                 {l.external && <Icon name="fa6-solid:arrow-up-right-from-square" class="text-[0.875rem] transition -translate-y-[1px] ml-1 text-black/[0.2] dark:text-white/[0.2]"></Icon>}
                             </div>
                         </a>
-                        <div class="navbar-dropdown-menu absolute left-0 top-full z-50 min-w-44 pt-2" role="menu">
+                        <div class="navbar-dropdown-menu absolute left-0 top-full z-50 min-w-44 pt-2" role="menu" transition:name="navbar-explore-menu">
                             <div class="rounded-xl border border-black/10 bg-[var(--card-bg)] p-2 shadow-xl shadow-black/10 dark:border-white/10 dark:shadow-none">
                                 {l.children?.map((child) => (
                                     <a href={resolveNavUrl(child)}
@@ -238,6 +238,12 @@ function bindPanelToggle(buttonId: string, panelId: string) {
 		panel.classList.toggle("float-panel-closed");
 		setExpandedState(button, panel);
 	};
+	panel.addEventListener("click", (event) => {
+		const target = event.target;
+		if (!(target instanceof Element) || !target.closest('a[href]:not([href="#"])')) return;
+		panel.classList.add("float-panel-closed");
+		setExpandedState(button, panel);
+	});
 }
 
 function loadButtonScript() {

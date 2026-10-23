@@ -17,7 +17,7 @@ const resolveNavUrl = (link: NavBarLink) => {
 	return lang ? withLangPrefix(link.url, lang) : url(link.url);
 };
 ---
-<div id="nav-menu-panel" class:list={["float-panel float-panel-closed absolute transition-all fixed right-4 px-2 py-2"]}>
+<div id="nav-menu-panel" class:list={["float-panel float-panel-closed absolute transition-all fixed right-4 px-2 py-2"]} transition:name="navbar-mobile-menu">
     {links.map((link) => {
         const hasChildren = !!link.children?.length;
         return (
