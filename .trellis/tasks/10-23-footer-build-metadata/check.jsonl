@@ -1,0 +1,4 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/site/frontend/index.md", "reason": "Package quality-check pointers."}
+{"file": ".trellis/spec/site/frontend/component-guidelines.md", "reason": "Review SSR-visible spacing and footer transition behavior."}
+{"file": ".trellis/spec/site/frontend/quality-guidelines.md", "reason": "Required Site build and validation gates."}

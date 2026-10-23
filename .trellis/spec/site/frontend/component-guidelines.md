@@ -27,6 +27,15 @@ guards against deprecated event syntax.
 Runtime-created DOM cannot receive Astro scoped attributes. Style it with
 Tailwind classes, `:global(...)`, or `<style is:global>`.
 
+## Footer Rendering
+
+Astro does not preserve source newlines and indentation as spaces between inline
+content in rendered HTML. Write visible footer spacing explicitly with `{' '}`
+around separators, then inspect the built HTML. Footer build times retain the
+build instant in `<time datetime="...">` and format only the displayed value
+in the visitor's browser-local timezone; refresh it after
+`transition:after-swap` for client-side navigation.
+
 ## HTML Injection Boundary
 
 Current `set:html` uses are limited to:
