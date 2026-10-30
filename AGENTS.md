@@ -50,11 +50,13 @@ Owner explicitly adopts a new deployment architecture. Production completion
 requires an actual provider deployment with matching project, environment, commit
 and canonical domain plus browser verification; green source CI is insufficient.
 
-## Pinned ADS v0.3 guidance
+## ADS v0.5.0 Lite — pinned guidance
 
-This repository pins the published ADS v0.3 commit `1e07d6c4bbd296b7d37dcd31934cfc70426f73ac` in the `.ads` submodule. After a fresh clone, materialize it with `git submodule update --init -- .ads`. Read `.ads/STANDARD.md`, `.ads/SAFETY.md`, and `.ads/QUALITY.md` as the shared guidance. The selected Codex adoption skill is `.agents/skills/ads-adopt/SKILL.md`, which points to the canonical `.ads/skills/adopt/SKILL.md`; verify the pin with `git submodule status .ads` and do not advance it with `--remote`.
+The project pins ADS release `v0.5.0` at `.ads` (commit `9bd8b115fa7a3bff19c0d69c22c0423c7141e63f`). On authorized hosts, materialize it with `git submodule update --init -- .ads`; do not use `--remote`. Read `.ads/STANDARD.md`, `.ads/SAFETY.md`, `.ads/QUALITY.md` and `.ads/docs/lite-adoption.md` as relevant. The host adapter `.agents/skills/ads-adopt/SKILL.md` points to the canonical pinned adoption Skill.
 
-KIRARI-specific Trellis workflow, package boundaries, deployment facts, and safety constraints in this file remain authoritative. Default branch is `main`; merging there may trigger the Vercel provider-native deployment. Use the existing root commands `pnpm build`, `pnpm site:type-check`, `pnpm site:astro-check`, `pnpm site:test`, and `pnpm check` as appropriate. GitHub Actions validates source and produces optional artifacts; it does not replace Vercel's release controller.
+No optional ADS Strict Git, CodeGraph/RTK developer-toolchain or Strict Lifecycle profile is activated here. Reuse KIRARI's existing Trellis task/spec workflow, project-local safety, product tests and Vercel-native delivery; do not copy optional ADS scripts or duplicate these facilities. KIRARI's existing Codegraph evidence preference does not by itself enable a mandatory toolchain preflight.
+
+The default branch is `main`; merging there may trigger provider-native Vercel deployment. This ADS pin upgrade targets `dev` via a reviewable PR and does not authorize production publication. Relevant existing commands: `pnpm build`, `pnpm site:type-check`, `pnpm site:astro-check`, `pnpm site:test`, and `pnpm check`.
 
 <!-- TRELLIS:START -->
 # Trellis Instructions

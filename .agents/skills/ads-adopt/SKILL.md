@@ -1,6 +1,6 @@
 ---
 name: ads-adopt
-description: Apply KIRARI's pinned ADS v0.3 adoption guidance when changing this repository's ADS integration.
+description: Apply KIRARI's pinned ADS v0.5.0 Lite adoption guidance when changing this repository's ADS integration.
 ---
 
 # ADS adoption guidance for KIRARI
